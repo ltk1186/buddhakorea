@@ -3,13 +3,18 @@
 
 /* 기본 설정 */
 :root {
-    /* 새로운 다이내믹한 그라데이션 색상 팔레트 */
-    --dynamic-gradient-color1: #ff7e5f; /* 기존 시작색 (코랄 핑크) */
-    --dynamic-gradient-color2: #feb47b; /* 기존 끝색 (오렌지 옐로우) */
-    --dynamic-gradient-color3: #a37dfd; /* 새로운 색상 (연한 보라) */
-    --dynamic-gradient-color4: #6a93cb; /* 새로운 색상 (하늘색) */
-    --dynamic-gradient-color5: #88d498; /* 새로운 색상 (민트 그린) */
+    /* 새로운 그라데이션 색상 */
+    --gradient-start: #ff7e5f; /* 밝은 코랄 핑크 */
+    --gradient-end: #feb47b;   /* 부드러운 오렌지 옐로우 */
+    --text-color-dark: #333;
+    --text-color-light: #ffffff;
+    --button-bg-color: rgba(255, 255, 255, 0.9); /* 버튼 배경 거의 불투명한 흰색 */
+    --button-text-color: #555;
+    --button-hover-bg-color: #ffffff; /* 버튼 호버 시 완전히 흰색 */
+    --button-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    --button-hover-shadow: 0 6px 15px rgba(0,0,0,0.15);
 }
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -17,39 +22,16 @@
 }
 
 body {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Montserrat', sans-serif; /* 기본 폰트 */
     line-height: 1.6;
     color: var(--text-color-dark);
-    /* 수정된 그라데이션 배경 적용 */
-    /* 여러 색상과 다양한 방향을 시도해보세요 */
-    background: linear-gradient(
-        45deg, /* 45도 방향 */
-        var(--dynamic-gradient-color1) 0%, /* 코랄 핑크 */
-        var(--dynamic-gradient-color2) 25%, /* 오렌지 옐로우 */
-        var(--dynamic-gradient-color3) 50%, /* 연한 보라 */
-        var(--dynamic-gradient-color4) 75%, /* 하늘색 */
-        var(--dynamic-gradient-color5) 100% /* 민트 그린 */
-    );
-    background-size: 400% 400%; /* 그라데이션 사이즈를 키워 애니메이션 준비 */
-    animation: gradientAnimation 15s ease infinite; /* 애니메이션 적용 */
-
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-}
-/* 그라데이션 애니메이션 키프레임 */
-@keyframes gradientAnimation {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
+    /* 그라데이션 배경 적용 */
+    background: linear-gradient(to right top, var(--gradient-start), var(--gradient-end));
+    min-height: 100vh; /* 전체 화면 높이 사용 */
+    display: flex; /* 중앙 정렬을 위해 flexbox 사용 */
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    overflow: hidden; /* 스크롤바 방지 */
 }
 
 .container {
