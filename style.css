@@ -1,0 +1,236 @@
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=Playfair+Display:wght@700&display=swap');
+
+/* 기본 설정 */
+:root {
+    --primary-color: #4CAF50; /* 녹색 계열 */
+    --secondary-color: #607D8B; /* 청회색 계열 */
+    --text-color: #333;
+    --light-text-color: #f4f4f4;
+    --background-color: #ffffff;
+    --light-background-color: #f9f9f9;
+    --dark-background-color: #2c3e50; /* 어두운 배경 (푸터) */
+    --border-color: #e0e0e0;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Noto Serif KR', serif; /* 한국어 폰트 */
+    line-height: 1.6;
+    color: var(--text-color);
+    background: var(--background-color);
+    scroll-behavior: smooth;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* 헤더 (히어로 섹션) */
+.hero {
+    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1549727394-b223ff97203b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80') no-repeat center center/cover;
+    color: var(--light-text-color);
+    text-align: center;
+    padding: 100px 0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 60vh; /* 최소 높이 설정 */
+}
+
+.hero::before { /* 오버레이로 텍스트 가독성 향상 */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 1;
+}
+
+.hero .container {
+    position: relative;
+    z-index: 2;
+}
+
+.hero h1 {
+    font-family: 'Playfair Display', serif; /* 영어 폰트 */
+    font-size: 4rem;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+}
+
+.hero p {
+    font-size: 1.5rem;
+    margin-bottom: 40px;
+    opacity: 0.9;
+}
+
+.buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap; /* 작은 화면에서 버튼 줄 바꿈 */
+}
+
+.button {
+    display: inline-block;
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.button.primary {
+    background: var(--primary-color);
+    color: var(--light-text-color);
+    border: 2px solid var(--primary-color);
+}
+
+.button.primary:hover {
+    background: #43a047;
+    border-color: #43a047;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+.button.secondary {
+    background: transparent;
+    color: var(--light-text-color);
+    border: 2px solid var(--light-text-color);
+}
+
+.button.secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+/* 주요 콘텐츠 섹션 */
+.content-section {
+    padding: 60px 0;
+    background: var(--light-background-color);
+}
+
+.content-section h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+    color: var(--primary-color);
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.content-section h2::after { /* 제목 밑줄 디자인 */
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: -10px;
+    width: 80px;
+    height: 4px;
+    background-color: var(--primary-color);
+    border-radius: 2px;
+}
+
+.intro {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto 60px auto;
+    font-size: 1.15rem;
+    line-height: 1.8;
+}
+
+.intro p {
+    margin-bottom: 20px;
+}
+
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.feature-item {
+    background: var(--background-color);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.feature-item h3 {
+    font-size: 1.8rem;
+    color: var(--secondary-color);
+    margin-bottom: 15px;
+}
+
+.feature-item p {
+    font-size: 1rem;
+    color: #555;
+}
+
+/* 푸터 */
+.footer {
+    background: var(--dark-background-color);
+    color: var(--light-text-color);
+    text-align: center;
+    padding: 30px 0;
+    font-size: 0.9rem;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 3rem;
+    }
+
+    .hero p {
+        font-size: 1.2rem;
+    }
+
+    .buttons {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .button {
+        width: 80%;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+
+    .content-section h2 {
+        font-size: 2rem;
+    }
+
+    .intro {
+        font-size: 1rem;
+        margin-bottom: 40px;
+    }
+
+    .features {
+        grid-template-columns: 1fr;
+    }
+}
