@@ -58,7 +58,7 @@ body {
 
 .hero h1 {
     font-family: 'Hi Melody', cursive; /* 손글씨 폰트 적용 */
-    font-size: 7rem; /* 더 크게 */
+    font-size: 8.5rem; /* 더 크게 */
     font-weight: normal; /* 손글씨 폰트의 기본 두께 사용 */
     margin-bottom: 40px;
     letter-spacing: 2px;
@@ -75,7 +75,6 @@ body {
 }
 
 .button {
-    font-family: 'Hi Melody', cursive; /* 손글씨 폰트 적용 */
     display: inline-block;
     padding: 18px 40px; /* 버튼 크기 증가 */
     font-size: 1.2rem; /* 폰트 크기 증가 */
