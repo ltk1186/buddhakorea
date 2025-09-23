@@ -1,78 +1,60 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Buddha Korea — 아비담마AI & 청정도론AI</title>
-  <meta name="description" content="Buddha Korea. 아비담마AI와 청정도론AI로 바로 이동하세요." />
-  <meta name="theme-color" content="#f5efe6" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --bg: #f7f5f1; --ink:#1a1a1a; --muted:#6b6b6b;
-      --brand:#b38b59; --brand-2:#8b6f45; --card:rgba(255,255,255,.75); --ring:rgba(179,139,89,.45);
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; font-family:"Noto Sans KR", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple SD Gothic Neo", sans-serif;
-      color:var(--ink); background:radial-gradient(1200px 800px at 10% 10%, #ffffff, var(--bg));
-      background-attachment:fixed; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
-    }
-    .wrap{min-height:100dvh; display:grid; place-items:center; padding:48px 20px}
-    .card{
-      width:min(840px, 100%); background:var(--card); backdrop-filter:saturate(1.2) blur(8px);
-      border:1px solid #ece7de; border-radius:28px; box-shadow:0 10px 25px rgba(0,0,0,.06);
-      padding:48px 36px; position:relative; overflow:hidden;
-    }
-    .lotus{position:absolute; inset:auto -40px -60px auto; width:220px; opacity:.08}
-    h1{font-family:"Noto Serif KR", serif; font-weight:700; letter-spacing:.2px; font-size:clamp(28px, 4vw, 44px); margin:0 0 12px}
-    .subtitle{font-size:clamp(15px, 2vw, 18px); color:var(--muted); margin:0 0 28px}
-    .cta{display:flex; flex-wrap:wrap; gap:14px; margin:26px 0 6px}
-    .btn{
-      --_pad:15px 22px; --_radius:16px;
-      display:inline-flex; align-items:center; justify-content:center; gap:10px; min-width:200px;
-      padding:var(--_pad); border-radius:var(--_radius); font-weight:600; text-decoration:none; color:var(--ink);
-      background:linear-gradient(#fff,#fff) padding-box, linear-gradient(135deg, var(--brand), var(--brand-2)) border-box;
-      border:2px solid transparent; box-shadow:0 2px 8px rgba(0,0,0,.05); transition:transform .12s ease, box-shadow .12s ease;
-    }
-    .btn:hover{transform:translateY(-1px); box-shadow:0 8px 18px rgba(0,0,0,.08)}
-    .btn:focus-visible{outline:3px solid var(--ring); outline-offset:3px}
-    .divider{height:1px; background:linear-gradient(90deg, rgba(179,139,89,.25), rgba(179,139,89,.05) 40%, rgba(179,139,89,.25)); margin:22px 0 12px}
-    footer{margin-top:22px; color:var(--muted); font-size:13px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px}
-    a.link{color:var(--brand-2); text-underline-offset:3px}
-    @media (prefers-color-scheme: dark){
-      :root{--bg:#0f0f0f; --ink:#eae7e2; --muted:#b8b3ab; --card:rgba(24,22,20,.6)}
-      body{background:radial-gradient(1200px 800px at 10% 10%, #1a1917, var(--bg))}
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buddha Korea - 불교 핵심 지식</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
-  <div class="wrap">
-    <main class="card" role="main">
-      <svg class="lotus" viewBox="0 0 256 256" aria-hidden="true">
-        <path fill="currentColor" d="M128 20c9 20 28 53 57 69c31 17 53 42 53 79c-25-8-47-8-67 0c-18 8-32 21-43 39c-11-18-25-31-43-39c-20-8-42-8-67 0c0-37 22-62 53-79c29-16 48-49 57-69z"/>
-      </svg>
-      <header>
-        <div class="badges" aria-hidden="true">BUDDHA · KOREA</div>
-        <h1>Buddha Korea</h1>
-        <p class="subtitle">부처님의 가르침을 현대적으로 탐구합니다 · 아비담마AI · 청정도론AI</p>
-      </header>
+    <header class="hero">
+        <div class="container">
+            <h1>Buddha Korea</h1>
+            <p>불교 핵심 지식의 깊이 있는 탐구</p>
+            <div class="buttons">
+                <a href="https://notebooklm.google.com/notebook/1f5450ac-8ba6-4c30-b1ce-f63977dabfc1" target="_blank" class="button primary">
+                    아비담마AI
+                </a>
+                <a href="https://notebooklm.google.com/notebook/18c4a48e-3225-4ddc-abe8-42515c19cbba" target="_blank" class="button secondary">
+                    청정도론AI
+                </a>
+            </div>
+        </div>
+    </header>
 
-      <div class="divider" aria-hidden="true"></div>
+    <main class="content-section">
+        <div class="container">
+            <section class="intro">
+                <h2>환영합니다</h2>
+                <p>Buddha Korea는 불교의 심오한 가르침을 현대적으로 탐구하는 여정에 함께합니다. 고대 경전의 지혜를 이해하고, 명상과 수행의 길을 밝히는 데 필요한 핵심 지식을 제공합니다.</p>
+                <p>인공지능 기술을 활용하여, 방대한 불교 문헌 속에서 핵심 개념과 통찰을 쉽고 깊이 있게 접근할 수 있도록 돕습니다.</p>
+            </section>
 
-      <section class="cta" aria-label="주요 링크">
-        <a class="btn" href="https://notebooklm.google.com/notebook/1f5450ac-8ba6-4c30-b1ce-f63977dabfc1" target="_blank" rel="noopener noreferrer">📘 아비담마AI</a>
-        <a class="btn" href="https://notebooklm.google.com/notebook/18c4a48e-3225-4ddc-abe8-42515c19cbba" target="_blank" rel="noopener noreferrer">📙 청정도론AI</a>
-      </section>
-
-      <footer>
-        <span>© <span id="y"></span> BuddhaKorea</span>
-        <span><a class="link" href="mailto:contact@buddhakorea.com">contact@buddhakorea.com</a></span>
-      </footer>
+            <section class="features">
+                <div class="feature-item">
+                    <h3>심층적인 지식</h3>
+                    <p>아비담마와 청정도론을 통해 마음의 구조와 번뇌의 소멸에 대한 통찰을 얻으세요.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>현대적인 접근</h3>
+                    <p>복잡한 교리도 AI를 통해 체계적으로 분석하고 이해할 수 있도록 돕습니다.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>지속적인 배움</h3>
+                    <p>꾸준한 학습과 탐구를 통해 불교 지혜를 삶에 적용하는 길을 제시합니다.</p>
+                </div>
+            </section>
+        </div>
     </main>
-  </div>
-  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2023 Buddha Korea. All rights reserved.</p>
+        </div>
+    </footer>
 </body>
 </html>
