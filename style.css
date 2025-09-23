@@ -77,7 +77,7 @@ body {
 .button {
     display: inline-block;
     padding: 18px 40px; /* 버튼 크기 증가 */
-    font-size: 1.2rem; /* 폰트 크기 증가 */
+    font-size: 1.8rem; /* 폰트 크기 증가 */
     text-decoration: none;
     border-radius: 20px; /* 둥근 버튼 */
     transition: all 0.3s ease;
