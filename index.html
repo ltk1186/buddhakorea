@@ -4,37 +4,25 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Buddha Korea — 아비담마AI & 청정도론AI</title>
-  <meta name="description" content="부처님의 가르침을 현대적으로 탐구합니다. 아비담마AI와 청정도론AI로 바로 이동하세요." />
-  <link rel="canonical" href="https://buddhakorea.com/" />
-  <meta property="og:title" content="Buddha Korea" />
-  <meta property="og:description" content="아비담마AI · 청정도론AI" />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://buddhakorea.com/" />
+  <meta name="description" content="Buddha Korea. 아비담마AI와 청정도론AI로 바로 이동하세요." />
   <meta name="theme-color" content="#f5efe6" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg: #f7f5f1;
-      --ink: #1a1a1a;
-      --muted: #6b6b6b;
-      --brand: #b38b59;  /* 차분한 골드 */
-      --brand-2: #8b6f45;
-      --card: rgba(255,255,255,0.75);
-      --ring: rgba(179,139,89,.45);
+      --bg: #f7f5f1; --ink:#1a1a1a; --muted:#6b6b6b;
+      --brand:#b38b59; --brand-2:#8b6f45; --card:rgba(255,255,255,.75); --ring:rgba(179,139,89,.45);
     }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0; font-family:"Noto Sans KR", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple SD Gothic Neo", sans-serif;
       color:var(--ink); background:radial-gradient(1200px 800px at 10% 10%, #ffffff, var(--bg));
-      background-attachment: fixed; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+      background-attachment:fixed; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
     }
     .wrap{min-height:100dvh; display:grid; place-items:center; padding:48px 20px}
     .card{
-      width:min(840px, 100%);
-      background:var(--card);
-      backdrop-filter:saturate(1.2) blur(8px);
+      width:min(840px, 100%); background:var(--card); backdrop-filter:saturate(1.2) blur(8px);
       border:1px solid #ece7de; border-radius:28px; box-shadow:0 10px 25px rgba(0,0,0,.06);
       padding:48px 36px; position:relative; overflow:hidden;
     }
@@ -43,27 +31,20 @@
     .subtitle{font-size:clamp(15px, 2vw, 18px); color:var(--muted); margin:0 0 28px}
     .cta{display:flex; flex-wrap:wrap; gap:14px; margin:26px 0 6px}
     .btn{
-      --_pad: 15px 22px; --_radius: 16px; --_bg: #fff;
-      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      --_pad:15px 22px; --_radius:16px;
+      display:inline-flex; align-items:center; justify-content:center; gap:10px; min-width:200px;
       padding:var(--_pad); border-radius:var(--_radius); font-weight:600; text-decoration:none; color:var(--ink);
-      background:
-        linear-gradient(#fff,#fff) padding-box,
-        linear-gradient(135deg, var(--brand), var(--brand-2)) border-box;
-      border:2px solid transparent; box-shadow:0 2px 8px rgba(0,0,0,.05);
-      transition: transform .12s ease, box-shadow .12s ease, background .2s ease;
-      min-width: 200px;
+      background:linear-gradient(#fff,#fff) padding-box, linear-gradient(135deg, var(--brand), var(--brand-2)) border-box;
+      border:2px solid transparent; box-shadow:0 2px 8px rgba(0,0,0,.05); transition:transform .12s ease, box-shadow .12s ease;
     }
-    .btn:hover{ transform: translateY(-1px); box-shadow:0 8px 18px rgba(0,0,0,.08)}
-    .btn:focus-visible{ outline: 3px solid var(--ring); outline-offset:3px}
-    .btn .label{font-size:16px}
-    .badges{display:flex; gap:10px; color:#a8906b; font-weight:600; font-size:13px; letter-spacing:.4px}
+    .btn:hover{transform:translateY(-1px); box-shadow:0 8px 18px rgba(0,0,0,.08)}
+    .btn:focus-visible{outline:3px solid var(--ring); outline-offset:3px}
     .divider{height:1px; background:linear-gradient(90deg, rgba(179,139,89,.25), rgba(179,139,89,.05) 40%, rgba(179,139,89,.25)); margin:22px 0 12px}
     footer{margin-top:22px; color:var(--muted); font-size:13px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px}
     a.link{color:var(--brand-2); text-underline-offset:3px}
     @media (prefers-color-scheme: dark){
-      :root{--bg:#0f0f0f; --ink:#eae7e2; --muted:#b8b3ab; --card: rgba(24,22,20,.6)}
+      :root{--bg:#0f0f0f; --ink:#eae7e2; --muted:#b8b3ab; --card:rgba(24,22,20,.6)}
       body{background:radial-gradient(1200px 800px at 10% 10%, #1a1917, var(--bg))}
-      .card{border-color:#2a261f; box-shadow:0 10px 30px rgba(0,0,0,.35)}
     }
   </style>
 </head>
@@ -82,12 +63,8 @@
       <div class="divider" aria-hidden="true"></div>
 
       <section class="cta" aria-label="주요 링크">
-        <a class="btn" href="https://notebooklm.google.com/notebook/1f5450ac-8ba6-4c30-b1ce-f63977dabfc1" target="_blank" rel="noopener noreferrer external" aria-label="아비담마 AI 노트북으로 이동">
-          <span class="label">📘 아비담마AI</span>
-        </a>
-        <a class="btn" href="https://notebooklm.google.com/notebook/18c4a48e-3225-4ddc-abe8-42515c19cbba" target="_blank" rel="noopener noreferrer external" aria-label="청정도론 AI 노트북으로 이동">
-          <span class="label">📙 청정도론AI</span>
-        </a>
+        <a class="btn" href="https://notebooklm.google.com/notebook/1f5450ac-8ba6-4c30-b1ce-f63977dabfc1" target="_blank" rel="noopener noreferrer">📘 아비담마AI</a>
+        <a class="btn" href="https://notebooklm.google.com/notebook/18c4a48e-3225-4ddc-abe8-42515c19cbba" target="_blank" rel="noopener noreferrer">📙 청정도론AI</a>
       </section>
 
       <footer>
@@ -96,8 +73,6 @@
       </footer>
     </main>
   </div>
-  <script>
-    document.getElementById('y').textContent = new Date().getFullYear();
-  </script>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
 </body>
 </html>
