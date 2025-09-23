@@ -109,7 +109,7 @@ body {
 /* 반응형 디자인 */
 @media (max-width: 768px) {
     .hero h1 {
-        font-size: 4.5rem; /* 모바일에서 폰트 크기 조절 */
+        font-size: 6.5rem; /* 모바일에서 폰트 크기 조절 */
     }
 
     .welcome-text {
