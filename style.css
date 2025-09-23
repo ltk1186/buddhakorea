@@ -129,7 +129,7 @@ body {
     font-family: 'Hi Melody', cursive; /* 손글씨 폰트 적용 */
     font-size: 1.5rem; /* 폰트 크기 (원하는 대로 조절) */
     color: rgba(255, 255, 255, 0.85); /* 너무 밝지 않은 흰색 */
-    margin-top: 50px; /* 버튼과의 간격 */
+    margin-top: 80px; /* 버튼과의 간격 */
     line-height: 1.8; /* 줄 간격 */
     text-shadow: 1px 1px 4px rgba(0,0,0,0.2); /* 부드러운 그림자 효과 */
     transform: rotate(-1deg); /* 살짝 기울여서 손글씨 느낌 강조 */
