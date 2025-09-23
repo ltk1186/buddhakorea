@@ -77,7 +77,7 @@ body {
 .button {
     display: inline-block;
     padding: 18px 40px; /* 버튼 크기 증가 */
-    font-size: 1.8rem; /* 폰트 크기 증가 */
+    font-size: 2rem; /* 폰트 크기 증가 */
     text-decoration: none;
     border-radius: 20px; /* 둥근 버튼 */
     transition: all 0.3s ease;
@@ -127,7 +127,7 @@ body {
 /* 안내 문구 스타일 (손글씨) */
 .info-text {
     font-family: 'Hi Melody', cursive; /* 손글씨 폰트 적용 */
-    font-size: 1.2rem; /* 폰트 크기 (원하는 대로 조절) */
+    font-size: 1.5rem; /* 폰트 크기 (원하는 대로 조절) */
     color: rgba(255, 255, 255, 0.85); /* 너무 밝지 않은 흰색 */
     margin-top: 80px; /* 버튼과의 간격 */
     line-height: 1.8; /* 줄 간격 */
