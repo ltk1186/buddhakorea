@@ -3,14 +3,16 @@
 
 /* 기본 설정 */
 :root {
-    /* 새로운 그라데이션 색상 */
-    --gradient-start: #ff7e5f; /* 밝은 코랄 핑크 */
-    --gradient-end: #feb47b;   /* 부드러운 오렌지 옐로우 */
+    /* ✨ 수정된 그라데이션 색상 ✨ */
+    --gradient-start: #a770ef;  /* 부드러운 라일락 */
+    --gradient-mid: #cf8bf3;     /* 핑크빛이 도는 연보라 */
+    --gradient-end: #fdb99b;     /* 부드러운 살구색 */
+
     --text-color-dark: #333;
     --text-color-light: #ffffff;
-    --button-bg-color: rgba(255, 255, 255, 0.9); /* 버튼 배경 거의 불투명한 흰색 */
+    --button-bg-color: rgba(255, 255, 255, 0.9);
     --button-text-color: #555;
-    --button-hover-bg-color: #ffffff; /* 버튼 호버 시 완전히 흰색 */
+    --button-hover-bg-color: #ffffff;
     --button-shadow: 0 4px 10px rgba(0,0,0,0.1);
     --button-hover-shadow: 0 6px 15px rgba(0,0,0,0.15);
 }
@@ -22,27 +24,35 @@
 }
 
 body {
-    font-family: 'Montserrat', sans-serif; /* 기본 폰트 */
+    font-family: 'Montserrat', sans-serif;
     line-height: 1.6;
     color: var(--text-color-dark);
-    /* 그라데이션 배경 적용 */
-    background: linear-gradient(to right top, var(--gradient-start), var(--gradient-end));
-    min-height: 100vh; /* 전체 화면 높이 사용 */
-    display: flex; /* 중앙 정렬을 위해 flexbox 사용 */
-    justify-content: center; /* 가로 중앙 정렬 */
-    align-items: center; /* 세로 중앙 정렬 */
-    overflow: hidden; /* 스크롤바 방지 */
+    
+    /* ✨ 수정된 그라데이션 배경 적용 ✨ */
+    background: linear-gradient(
+        135deg, 
+        var(--gradient-start) 0%, 
+        var(--gradient-mid) 50%, 
+        var(--gradient-end) 100%
+    );
+
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
 }
+
+/* --- 이하 코드는 모두 동일합니다 --- */
 
 .container {
     max-width: 900px;
     margin: 0 auto;
     padding: 0 20px;
     text-align: center;
-    color: var(--text-color-light); /* 모든 텍스트를 밝은 색으로 */
+    color: var(--text-color-light);
 }
 
-/* 히어로 섹션 (전체 화면 중앙에 배치) */
 .hero {
     width: 100%;
     padding: 50px 0;
@@ -57,51 +67,49 @@ body {
 }
 
 .hero h1 {
-    font-family: 'Hi Melody', cursive; /* 손글씨 폰트 적용 */
-    font-size: 8.5rem; /* 더 크게 */
-    font-weight: normal; /* 손글씨 폰트의 기본 두께 사용 */
+    font-family: 'Hi Melody', cursive;
+    font-size: 8.5rem;
+    font-weight: normal;
     margin-bottom: 40px;
     letter-spacing: 2px;
-    text-shadow: 2px 2px 8px rgba(0,0,0,0.3); /* 그림자 더 강하게 */
-    line-height: 1; /* 줄간격 조절 */
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+    line-height: 1;
 }
 
 .buttons {
     display: flex;
     justify-content: center;
-    gap: 25px; /* 버튼 간격 증가 */
+    gap: 25px;
     flex-wrap: wrap;
     margin-top: 20px;
 }
 
 .button {
-    font-family: 'Hi Melody', cursive; /* 손글씨 폰트 적용 */
+    font-family: 'Hi Melody', cursive;
     display: inline-block;
-    padding: 18px 40px; /* 버튼 크기 증가 */
-    font-size: 2rem; /* 폰트 크기 증가 */
+    padding: 18px 40px;
+    font-size: 2rem;
     text-decoration: none;
-    border-radius: 20px; /* 둥근 버튼 */
+    border-radius: 20px;
     transition: all 0.3s ease;
-    font-weight: 700; /* 버튼 텍스트 두껍게 */
+    font-weight: 700;
     box-shadow: var(--button-shadow);
     color: var(--button-text-color);
     background: var(--button-bg-color);
-    border: none; /* 테두리 제거 */
-    min-width: 200px; /* 최소 너비 지정 */
+    border: none;
+    min-width: 200px;
 }
 
 .button:hover {
     background: var(--button-hover-bg-color);
-    transform: translateY(-5px); /* 호버 시 위로 살짝 이동 */
+    transform: translateY(-5px);
     box-shadow: var(--button-hover-shadow);
 }
 
-/* 푸터 등 불필요한 섹션 제거 */
 
-/* 반응형 디자인 */
 @media (max-width: 768px) {
     .hero h1 {
-        font-size: 4.5rem; /* 모바일에서 폰트 크기 조절 */
+        font-size: 4.5rem;
     }
 
     .welcome-text {
@@ -125,22 +133,20 @@ body {
     }
 }
 
-/* 안내 문구 스타일 (손글씨) */
 .info-text {
-    font-family: 'Hi Melody', cursive; /* 손글씨 폰트 적용 */
-    font-size: 1.5rem; /* 폰트 크기 (원하는 대로 조절) */
-    color: rgba(255, 255, 255, 0.85); /* 너무 밝지 않은 흰색 */
-    margin-top: 80px; /* 버튼과의 간격 */
-    line-height: 1.8; /* 줄 간격 */
-    text-shadow: 1px 1px 4px rgba(0,0,0,0.2); /* 부드러운 그림자 효과 */
-    transform: rotate(-1deg); /* 살짝 기울여서 손글씨 느낌 강조 */
+    font-family: 'Hi Melody', cursive;
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.85);
+    margin-top: 80px;
+    line-height: 1.8;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+    transform: rotate(-1deg);
 }
 
-/* 모바일 화면에서는 기울임 효과 제거 및 폰트 크기 조절 */
 @media (max-width: 768px) {
     .info-text {
         font-size: 1.2rem;
-        transform: rotate(0deg); /* 모바일에선 기울이지 않음 */
+        transform: rotate(0deg);
         margin-top: 40px;
     }
 }
