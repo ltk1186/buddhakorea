@@ -135,8 +135,9 @@ body {
 
 /* 안내 문구 스타일 (손글씨) */
 .info-text {
-    font-family: 'Hi Melody', cursive; /* 손글씨 폰트 적용 */
-    font-size: 1.5rem; /* 폰트 크기 (원하는 대로 조절) */
+    /*font-family: 'Hi Melody', cursive;  손글씨 폰트 */
+    font-family: 'Montserrat', sans-serif; /* 기본 폰트로 가독성 확보 */
+    font-size: 1rem; /* 폰트 크기 (원하는 대로 조절) */
     color: rgba(255, 255, 255, 0.90); /* 너무 밝지 않은 흰색 */
     margin-top: 80px; /* 버튼과의 간격 */
     line-height: 1.8; /* 줄 간격 */
@@ -153,13 +154,13 @@ body {
     }
 }
 
-/* 감사 메시지 스타일 */
+/* 스님께 감사 메시지 스타일 */
 .credit-text {
     font-family: 'Montserrat', sans-serif; /* 기본 폰트로 가독성 확보 */
-    font-size: 0.9rem; /* 안내 문구보다 살짝 작게 */
-    color: rgba(255, 255, 255, 0.75); /* 살짝 더 투명하게 */
+    font-size: 1rem; /* 안내 문구보다 살짝 작게 */
+    color: rgba(255, 255, 255, 0.95); /* 살짝 더 투명하게 */
     margin-top: 25px; /* 안내 문구와의 간격 */
-    font-style: italic; /* 살짝 기울여서 강조 */
+    /* font-style: italic; 살짝 기울여서 강조 */
 }
 
 /* 모바일 화면 대응 */
