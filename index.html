@@ -5,16 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buddha Korea | 붓다 코리아</title>
     
-    <!-- SEO Meta Tags (기존 내용 유지 및 개선) -->
+    <!-- SEO Meta Tags -->
     <meta name="description" content="A serene space for exploring the core teachings of Buddhism through AI. 각묵스님과 여러 선각자들의 가르침을 바탕으로 한 아비담마, 청정도론, 초기불교 AI를 만나보세요.">
     <meta name="keywords" content="Buddha Korea, 붓다 코리아, 초기불교, 불교 AI, 아비담마, 청정도론, 니까야, 각묵스님, 명상, 위빠사나">
     <meta name="robots" content="index, follow">
-    <!-- 네이버, 구글 소유확인 태그는 이곳에 붙여넣으시면 됩니다 -->
 
-    <!-- Favicon (업데이트된 파비콘 경로) -->
+    <!-- Favicon -->
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 
-    <!-- Fonts: Pretendard (한글/영문 모두 아름다운 폰트) -->
+    <!-- Fonts: Pretendard -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 
     <style>
@@ -22,9 +21,10 @@
         :root {
             --font-main: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
             
-            --color-background: #F8F9FA; /* 거의 흰색에 가까운 부드러운 배경 */
-            --color-text-primary: #212529; /* 완전한 검정이 아닌 짙은 회색 */
-            --color-text-secondary: #6C757D; /* 부차적인 텍스트를 위한 연한 회색 */
+            /* [수정] 배경색을 더 명확한 톤으로 변경 */
+            --color-background: #F5F5F7; 
+            --color-text-primary: #1d1d1f; /* 애플 스타일의 짙은 검정 */
+            --color-text-secondary: #6e6e73; /* 애플 스타일의 회색 */
             
             --gradient-start: #ff9a9e;
             --gradient-mid: #ffc3a0;
@@ -34,9 +34,7 @@
         }
 
         /* --- BASE & TYPOGRAPHY --- */
-        html {
-            scroll-behavior: smooth;
-        }
+        html { scroll-behavior: smooth; }
 
         body {
             background-color: var(--color-background);
@@ -56,39 +54,55 @@
             padding: 0 40px;
         }
 
-        /* --- INTERACTIVE BACKGROUND (Option A) --- */
+        /* --- INTERACTIVE BACKGROUND --- */
         .interactive-light {
             position: fixed;
             top: 0;
             left: 0;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(255, 195, 160, 0.3), transparent 70%);
+            /* [수정] 크기와 투명도를 높여 더 잘 보이게 함 */
+            width: 500px; 
+            height: 500px;
+            background: radial-gradient(circle, rgba(255, 195, 160, 0.5), transparent 70%);
             border-radius: 50%;
-            pointer-events: none; /* 마우스 클릭에 방해되지 않도록 설정 */
-            filter: blur(100px);
+            pointer-events: none;
+            filter: blur(120px);
             z-index: -1;
             transition: transform 0.2s ease-out;
         }
 
         /* --- LAYOUT SECTIONS --- */
         .section {
-            min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
-            padding: 120px 0;
+            padding: 120px 0; /* [수정] 모든 섹션의 기본 간격 */
+            width: 100%;
+        }
+        
+        /* [수정] 첫 화면만 전체 높이를 차지하도록 설정 */
+        #hero {
+            min-height: 100vh;
+        }
+        
+        /* [수정] AI 도구 섹션의 상단 간격을 줄여 바로 보이게 함 */
+        #ai-tools {
+            padding-top: 60px;
         }
 
         /* --- HERO SECTION --- */
         #hero h1 {
-            font-size: clamp(3rem, 12vw, 8rem); /* 화면 크기에 따라 유동적으로 조절 */
-            font-weight: 200; /* 아주 얇은 굵기 */
+            font-size: clamp(3rem, 12vw, 8rem);
+            font-weight: 200;
             letter-spacing: -0.02em;
             margin: 0;
-            color: var(--color-text-primary);
+            /* [추가] 텍스트에 그라데이션 적용 */
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
         }
 
         #hero p {
@@ -121,14 +135,14 @@
             padding: 40px;
             text-decoration: none;
             color: var(--color-text-primary);
-            border: 1px solid #E9ECEF;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            border: 1px solid rgba(0, 0, 0, 0.05); /* [수정] 경계선을 더 부드럽게 */
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
             transition: var(--transition-smooth);
             position: relative;
             overflow: hidden;
         }
         
-        .card::before { /* 호버 효과를 위한 그라데이션 레이어 */
+        .card::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -144,9 +158,7 @@
             border-color: transparent;
         }
 
-        .card:hover::before {
-            opacity: 1;
-        }
+        .card:hover::before { opacity: 1; }
         
         .card-content {
             position: relative;
@@ -158,7 +170,7 @@
             color: white;
             text-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
-
+        
         .card h2 {
             font-size: 1.75rem;
             font-weight: 600;
@@ -225,9 +237,9 @@
         @media (max-width: 768px) {
             .container { padding: 0 20px; }
             .section { padding: 80px 0; }
+            #ai-tools { padding-top: 40px; }
             #acknowledgement .content-block { font-size: 1rem; }
         }
-
     </style>
 </head>
 <body>
@@ -297,7 +309,7 @@
     <!-- 5. Footer -->
     <footer>
         <div class="container reveal">
-            <p>AI 탐구를 위해 Google 계정 로그인이 필요할 수 있습니다.</p>
+            <p>노트북LM 이용을 위해 Google 계정 로그인이 필요할 수 있습니다.</p>
         </div>
     </footer>
 
@@ -306,27 +318,20 @@
         // --- Interactive Light Effect Script ---
         const light = document.querySelector('.interactive-light');
         window.addEventListener('mousemove', (e) => {
-            // We use translate to move the element for better performance
             light.style.transform = `translate(${e.clientX - light.offsetWidth / 2}px, ${e.clientY - light.offsetHeight / 2}px)`;
         });
 
         // --- Scroll Animation Script ---
         const revealElements = document.querySelectorAll('.reveal');
-
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('is-visible');
-                    observer.unobserve(entry.target); // Animate only once
+                    observer.unobserve(entry.target);
                 }
             });
-        }, {
-            threshold: 0.1 // Trigger when 10% of the element is visible
-        });
-
-        revealElements.forEach(element => {
-            observer.observe(element);
-        });
+        }, { threshold: 0.1 });
+        revealElements.forEach(element => { observer.observe(element); });
     </script>
 
 </body>
