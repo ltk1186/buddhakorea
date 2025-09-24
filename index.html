@@ -192,6 +192,7 @@
             font-weight: 400;
             line-height: 1.6;
             margin: 0;
+            word-break: keep-all;
         }
 
         /* --- ACKNOWLEDGEMENT SECTION --- */
@@ -205,6 +206,11 @@
             margin-left: auto;
             margin-right: auto;
         }
+
+        #acknowledgement .content-block p {
+            letter-spacing: -0.025em; /* 글자 간격을 미세하게 줄입니다. */
+        }
+        
         /* [FIX] 제목과 감사 인사만 중앙 정렬 적용 */
         .content-block h4, .gratitude {
             text-align: center;
@@ -325,7 +331,7 @@
     <!-- 5. Footer -->
     <footer>
         <div class="container reveal">
-            <p>AI 탐구를 위해 Google 계정 로그인이 필요할 수 있습니다.</p>
+            <p>노트북LM 이용을 위해 Google 계정 로그인이 필요합니다.</p>
         </div>
     </footer>
 
