@@ -39,13 +39,13 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
+    overflow-y: auto; /* 내용 길이에 맞춰 스크롤이 가능하도록 수정 */
 }
 
 .container {
     max-width: 900px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 40px 20px; /* 상하 패딩 추가 */
     text-align: center;
     color: var(--text-color-light); /* 모든 텍스트를 밝은 색으로 */
 }
@@ -53,7 +53,6 @@ body {
 /* 히어로 섹션 (전체 화면 중앙에 배치) */
 .hero {
     width: 100%;
-    padding: 50px 0;
 }
 
 .welcome-text {
@@ -82,6 +81,8 @@ body {
     margin-top: 20px;
 }
 
+.buttons.single-button { margin-top: 15px; }
+
 .button {
     font-family: 'Hi Melody', cursive; /* 손글씨 폰트 적용 */
     display: inline-block;
@@ -104,9 +105,67 @@ body {
     box-shadow: var(--button-hover-shadow);
 }
 
-/* 푸터 등 불필요한 섹션 제거 */
+/* --- 설명글 섹션 스타일 (새 HTML 구조에 맞게 추가됨) --- */
+.acknowledgement {
+    margin-top: 60px;
+    padding: 25px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+}
 
-/* 반응형 디자인 */
+.acknowledgement p {
+    font-family: 'Montserrat', sans-serif;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.main-message {
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+
+.source-list {
+    margin: 25px 0;
+    font-size: 0.85rem;
+    text-align: left;
+    padding: 0 20px;
+    opacity: 0.9;
+}
+
+.source-list h4 {
+    font-family: 'Hi Melody', cursive;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    text-align: center;
+    font-weight: normal;
+}
+
+.source-list p {
+    margin-bottom: 8px;
+}
+
+.gratitude {
+    font-size: 0.95rem;
+    font-style: italic;
+    opacity: 0.95;
+    margin-top: 15px;
+}
+
+/* 안내 문구 스타일 (유지됨) */
+.info-text {
+    font-family: 'Montserrat', sans-serif; /* 기본 폰트로 가독성 확보 */
+    font-size: 1rem; /* 폰트 크기 (원하는 대로 조절) */
+    color: rgba(255, 255, 255, 0.90); /* 너무 밝지 않은 흰색 */
+    margin-top: 30px; /* 버튼과의 간격 */
+    line-height: 1.8; /* 줄 간격 */
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.2); /* 부드러운 그림자 효과 */
+    transform: rotate(-1deg); /* 살짝 기울여서 손글씨 느낌 강조 */
+}
+
+/* --- 반응형 디자인 --- */
 @media (max-width: 768px) {
     .hero h1 {
         font-size: 7.5rem; /* 모바일에서 폰트 크기 조절 */
@@ -120,7 +179,22 @@ body {
         width: 90%;
         max-width: 280px;
         padding: 15px 30px;
+        font-size: 1.1rem; /* 직접 수정하신 크기 유지 */
+    }
+    
+    /* 설명글 섹션 반응형 스타일 추가 */
+    .acknowledgement {
+        margin-top: 40px;
+        padding: 20px;
+    }
+    .main-message { font-size: 0.85rem; }
+    .source-list { font-size: 0.8rem; }
+    .gratitude { font-size: 0.9rem; }
+
+    .info-text {
         font-size: 1.1rem;
+        transform: rotate(0deg); /* 모바일에선 기울이지 않음 */
+        margin-top: 40px;
     }
 }
 
@@ -130,46 +204,6 @@ body {
     }
     .welcome-text {
         font-size: 0.9rem;
-    }
-}
-
-/* 스님께 감사 메시지 스타일 */
-.credit-text {
-    font-family: 'Montserrat', sans-serif; /* 기본 폰트로 가독성 확보 */
-    font-size: 1rem; /* 안내 문구보다 살짝 작게 */
-    color: rgba(255, 255, 255, 0.95); /* 살짝 더 투명하게 */
-    margin-top: 40px; /* 안내 문구와의 간격 */
-    text-shadow: 1px 1px 4px rgba(0,0,0,0.2); /* 부드러운 그림자 효과 */
-    transform: rotate(-1deg); /* 살짝 기울여서 손글씨 느낌 강조 */
-    /* font-style: italic; 살짝 기울여서 강조 */
-}
-
-/* 모바일 화면 대응 */
-@media (max-width: 768px) {
-    .credit-text {
-        font-size: 1.1rem;
-    }
-}
-
-
-/* 안내 문구 스타일 (손글씨) */
-.info-text {
-    /*font-family: 'Hi Melody', cursive;  손글씨 폰트 */
-    font-family: 'Montserrat', sans-serif; /* 기본 폰트로 가독성 확보 */
-    font-size: 1rem; /* 폰트 크기 (원하는 대로 조절) */
-    color: rgba(255, 255, 255, 0.90); /* 너무 밝지 않은 흰색 */
-    margin-top: 30px; /* 버튼과의 간격 */
-    line-height: 1.8; /* 줄 간격 */
-    text-shadow: 1px 1px 4px rgba(0,0,0,0.2); /* 부드러운 그림자 효과 */
-    transform: rotate(-1deg); /* 살짝 기울여서 손글씨 느낌 강조 */
-}
-
-/* 모바일 화면에서는 기울임 효과 제거 및 폰트 크기 조절 */
-@media (max-width: 768px) {
-    .info-text {
-        font-size: 1.1rem;
-        transform: rotate(0deg); /* 모바일에선 기울이지 않음 */
-        margin-top: 40px;
     }
 }
 
