@@ -23,20 +23,26 @@
         :root {
             --font-main: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
             
-            /* [수정] 배경색을 더 명확한 톤으로 변경 */
             --color-background: #F5F5F7; 
-            --color-text-primary: #1d1d1f; /* 애플 스타일의 짙은 검정 */
-            --color-text-secondary: #6e6e73; /* 애플 스타일의 회색 */
+            --color-text-primary: #1d1d1f;
+            --color-text-secondary: #6e6e73;
             
-            --gradient-start: #ff9a9e;
-            --gradient-mid: #ffc3a0;
-            --gradient-end: #fecf71;
+            /* [NEW] 파비콘에서 영감을 받은 새로운 시그니처 컬러 */
+            --gradient-color-1: #6a11cb; /* 신비로운 보라 */
+            --gradient-color-2: #2575fc; /* 깊은 파랑 */
+            --gradient-color-3: #4bde97; /* 생동감 있는 초록 */
             
             --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         /* --- BASE & TYPOGRAPHY --- */
-        html { scroll-behavior: smooth; }
+        html { 
+            scroll-behavior: smooth;
+            box-sizing: border-box;
+        }
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
 
         body {
             background-color: var(--color-background);
@@ -59,12 +65,10 @@
         /* --- INTERACTIVE BACKGROUND --- */
         .interactive-light {
             position: fixed;
-            top: 0;
-            left: 0;
-            /* [수정] 크기와 투명도를 높여 더 잘 보이게 함 */
-            width: 500px; 
-            height: 500px;
-            background: radial-gradient(circle, rgba(255, 195, 160, 0.5), transparent 70%);
+            top: 0; left: 0;
+            width: 500px; height: 500px;
+            /* [NEW] 새로운 그라데이션의 첫 색상을 빛의 중심으로 사용 */
+            background: radial-gradient(circle, rgba(106, 17, 203, 0.3), transparent 75%);
             border-radius: 50%;
             pointer-events: none;
             filter: blur(120px);
@@ -79,30 +83,28 @@
             justify-content: center;
             align-items: center;
             text-align: center;
-            padding: 120px 0; /* [수정] 모든 섹션의 기본 간격 */
+            padding: 120px 0;
             width: 100%;
+            position: relative; /* 자식 요소의 위치 기준이 되도록 추가 */
         }
         
-        /* [수정] 첫 화면만 전체 높이를 차지하도록 설정 */
         #hero {
             min-height: 100vh;
-            padding-bottom: 15vh;
-            box-sizing: border-box; /* 패딩이 높이 계산에 포함되도록 합니다. */
+            padding-bottom: 10vh; /* 타이틀을 살짝 위로 올리는 효과 */
         }
         
-        /* [수정] AI 도구 섹션의 상단 간격을 줄여 바로 보이게 함 */
         #ai-tools {
             padding-top: 60px;
         }
 
         /* --- HERO SECTION --- */
         #hero h1 {
-            font-size: clamp(3rem, 12vw, 8rem);
+            font-size: clamp(3rem, 12vw, 8.5rem); /* 최대 크기를 살짝 키움 */
             font-weight: 200;
-            letter-spacing: -0.02em;
+            letter-spacing: -0.025em;
             margin: 0;
-            /* [추가] 텍스트에 그라데이션 적용 */
-            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
+            /* [NEW] 새로운 시그니처 컬러 적용 */
+            background: linear-gradient(90deg, var(--gradient-color-1), var(--gradient-color-2), var(--gradient-color-3));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -119,6 +121,9 @@
         .scroll-indicator {
             position: absolute;
             bottom: 40px;
+            /* [FIX] 화면 너비에 상관없이 항상 중앙에 위치하도록 수정 */
+            left: 50%;
+            transform: translateX(-50%);
             font-size: 0.8rem;
             color: var(--color-text-secondary);
             opacity: 0.7;
@@ -134,12 +139,13 @@
 
         .card {
             display: block;
-            background-color: #FFFFFF;
+            background-color: rgba(255, 255, 255, 0.7); /* 배경과 더 잘 어우러지도록 살짝 투명도 추가 */
+            backdrop-filter: blur(10px); /* Glassmorphism 효과 */
             border-radius: 20px;
             padding: 40px;
             text-decoration: none;
             color: var(--color-text-primary);
-            border: 1px solid rgba(0, 0, 0, 0.05); /* [수정] 경계선을 더 부드럽게 */
+            border: 1px solid rgba(0, 0, 0, 0.05);
             box-shadow: 0 4px 20px rgba(0,0,0,0.04);
             transition: var(--transition-smooth);
             position: relative;
@@ -150,23 +156,22 @@
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
+            /* [NEW] 호버 효과에 새로운 시그니처 컬러 적용 */
+            background: linear-gradient(135deg, var(--gradient-color-1), var(--gradient-color-2), var(--gradient-color-3));
             opacity: 0;
             transition: var(--transition-smooth);
             z-index: 1;
         }
 
         .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             border-color: transparent;
         }
-
         .card:hover::before { opacity: 1; }
         
         .card-content {
-            position: relative;
-            z-index: 2;
+            position: relative; z-index: 2;
             transition: var(--transition-smooth);
         }
         
@@ -191,10 +196,15 @@
         /* --- ACKNOWLEDGEMENT SECTION --- */
         #acknowledgement .content-block {
             max-width: 720px;
-            text-align: center;
+            /* [FIX] 기본 정렬은 왼쪽으로 유지하여 가독성 확보 */
+            text-align: left; 
             font-size: 1.1rem;
             line-height: 1.8;
             color: var(--color-text-secondary);
+        }
+        /* [FIX] 제목과 감사 인사만 중앙 정렬 적용 */
+        .content-block h4, .gratitude {
+            text-align: center;
         }
 
         .content-block h4 {
@@ -202,12 +212,10 @@
             font-weight: 600;
             color: var(--color-text-primary);
             margin: 40px 0 15px 0;
-            text-align: center;
         }
         
         .gratitude {
             margin-top: 40px;
-            text-align: center;
             font-style: italic;
         }
 
@@ -239,7 +247,8 @@
         }
         
         @media (max-width: 768px) {
-            .container { padding: 0 20px; }
+            /* [FIX] 모바일 화면에서 좌우 패딩을 줄여 줌 아웃 문제 해결 */
+            .container { padding: 0 20px; } 
             .section { padding: 80px 0; }
             #ai-tools { padding-top: 40px; }
             #acknowledgement .content-block { font-size: 1rem; }
@@ -313,10 +322,9 @@
     <!-- 5. Footer -->
     <footer>
         <div class="container reveal">
-            <p>노트북LM 이용을 위해 Google 계정 로그인이 필요할 수 있습니다.</p>
+            <p>AI 탐구를 위해 Google 계정 로그인이 필요할 수 있습니다.</p>
         </div>
     </footer>
-
 
     <script>
         // --- Interactive Light Effect Script ---
