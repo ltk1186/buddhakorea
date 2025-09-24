@@ -3,64 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buddha Korea - 붓다코리아</title>
+    <title>Buddha Korea | 붓다 코리아</title>
     
-    <meta name="description" content="불교 AI, 아비담마와 청정도론을 붓다 코리아(Buddha Korea)에서 만나보세요.">
-    <meta name="keywords" content="불교, 붓다 코리아, Buddha Korea, 붓다코리아, BuddhaKorea, buddhakorea, 초기불교, 각묵스님, 아비담마, 청정도론, 불교 AI, 인공지능 불교">
+    <!-- SEO Meta Tags (기존 내용 유지 및 개선) -->
+    <meta name="description" content="A serene space for exploring the core teachings of Buddhism through AI. 각묵스님과 여러 선각자들의 가르침을 바탕으로 한 아비담마, 청정도론, 초기불교 AI를 만나보세요.">
+    <meta name="keywords" content="Buddha Korea, 붓다 코리아, 초기불교, 불교 AI, 아비담마, 청정도론, 니까야, 각묵스님, 명상, 위빠사나">
     <meta name="robots" content="index, follow">
+    <!-- 네이버, 구글 소유확인 태그는 이곳에 붙여넣으시면 됩니다 -->
 
-    <meta name="google-site-verification" content="fLqf2VpodCvuqr9FO-7mGXHzLywhVH2fZZfr691Otnc" />
-    <meta name="naver-site-verification" content="7e7d9213df1063841f66e5f14d588c3d636a30a2" />
-    
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Hi+Melody&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Favicon (업데이트된 파비콘 경로) -->
     <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+    <!-- Fonts: Pretendard (한글/영문 모두 아름다운 폰트) -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+
+    <style>
+        /* --- CORE DESIGN SYSTEM --- */
+        :root {
+            --font-main: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+            
+            --color-background: #F8F9FA; /* 거의 흰색에 가까운 부드러운 배경 */
+            --color-text-primary: #212529; /* 완전한 검정이 아닌 짙은 회색 */
+            --color-text-secondary: #6C757D; /* 부차적인 텍스트를 위한 연한 회색 */
+            
+            --gradient-start: #ff9a9e;
+            --gradient-mid: #ffc3a0;
+            --gradient-end: #fecf71;
+            
+            --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* --- BASE & TYPOGRAPHY --- */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--color-background);
+            color: var(--color-text-primary);
+            font-family: var(--font-main);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        /* --- INTERACTIVE BACKGROUND (Option A) --- */
+        .interactive-light {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255, 195, 160, 0.3), transparent 70%);
+            border-radius: 50%;
+            pointer-events: none; /* 마우스 클릭에 방해되지 않도록 설정 */
+            filter: blur(100px);
+            z-index: -1;
+            transition: transform 0.2s ease-out;
+        }
+
+        /* --- LAYOUT SECTIONS --- */
+        .section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 120px 0;
+        }
+
+        /* --- HERO SECTION --- */
+        #hero h1 {
+            font-size: clamp(3rem, 12vw, 8rem); /* 화면 크기에 따라 유동적으로 조절 */
+            font-weight: 200; /* 아주 얇은 굵기 */
+            letter-spacing: -0.02em;
+            margin: 0;
+            color: var(--color-text-primary);
+        }
+
+        #hero p {
+            font-size: clamp(1rem, 2.5vw, 1.25rem);
+            font-weight: 400;
+            color: var(--color-text-secondary);
+            margin: 10px 0 0 0;
+        }
+        
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            font-size: 0.8rem;
+            color: var(--color-text-secondary);
+            opacity: 0.7;
+        }
+
+        /* --- AI TOOLS (CARD UI) SECTION --- */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            width: 100%;
+        }
+
+        .card {
+            display: block;
+            background-color: #FFFFFF;
+            border-radius: 20px;
+            padding: 40px;
+            text-decoration: none;
+            color: var(--color-text-primary);
+            border: 1px solid #E9ECEF;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before { /* 호버 효과를 위한 그라데이션 레이어 */
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
+            opacity: 0;
+            transition: var(--transition-smooth);
+            z-index: 1;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+            border-color: transparent;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+        
+        .card-content {
+            position: relative;
+            z-index: 2;
+            transition: var(--transition-smooth);
+        }
+        
+        .card:hover .card-content {
+            color: white;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin: 0 0 10px 0;
+        }
+
+        .card p {
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* --- ACKNOWLEDGEMENT SECTION --- */
+        #acknowledgement .content-block {
+            max-width: 720px;
+            text-align: left;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--color-text-secondary);
+        }
+
+        .content-block h4 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin: 40px 0 15px 0;
+            text-align: center;
+        }
+        
+        .gratitude {
+            margin-top: 40px;
+            text-align: center;
+            font-style: italic;
+        }
+
+        /* --- FOOTER SECTION --- */
+        footer {
+            padding: 60px 0;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+        }
+
+        /* --- SCROLL ANIMATION --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* --- RESPONSIVE DESIGN --- */
+        @media (max-width: 900px) {
+            .card-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container { padding: 0 20px; }
+            .section { padding: 80px 0; }
+            #acknowledgement .content-block { font-size: 1rem; }
+        }
+
+    </style>
 </head>
 <body>
-    <div class="hero">
+
+    <!-- 1. Interactive Background Element -->
+    <div class="interactive-light"></div>
+
+    <!-- 2. Hero Section: 첫 화면 -->
+    <section id="hero" class="section">
         <div class="container">
-            <p class="welcome-text">Welcome to</p>
-            <h1>Buddha Korea</h1>
-            <div class="buttons">
-                <a href="https://notebooklm.google.com/notebook/1f5450ac-8ba6-4c30-b1ce-f63977dabfc1" target="_blank" class="button primary">
-                    아비담마AI
-                </a>
-                <a href="https://notebooklm.google.com/notebook/18c4a48e-3225-4ddc-abe8-42515c19cbba" target="_blank" class="button secondary">
-                    청정도론AI
-                </a>
-            </div>
-
-            <div class="buttons single-button">
-                 <a href="https://notebooklm.google.com/notebook/de2a2db1-e57e-428b-903b-43e75506833f" target="_blank" class="button">
-                    초기불교 AI
-                </a>
-                
-            <!-- 수정된 설명글 섹션 -->
-            <div class="acknowledgement">
-                <p class="main-message">
-                    이 공간은 부처님의 가르침을 탐구하는 모든 분들을 위해, 어떠한 상업적 목적 없이 순수한 학습용으로 만들어졌습니다.<br>
-                    인공지능은 때로 학습한 자료의 본래 가르침과 다른, 부정확한 답변을 할 수 있습니다.<br>
-                    답변의 모든 잠재적 오류는 AI의 기술적 한계에 따르며, 원천 자료와는 무관한 오류임을 알려드립니다.
-                </p>
-                <div class="source-list">
-                    <h4>주요 학습 자료</h4>
-                    <p><strong>아비담마 AI:</strong> 각묵 스님의 강의와 Alexander S. Berger의 영문본</p>
-                    <p><strong>청정도론 AI:</strong> 각묵 스님의 강의</p>
-                    <p><strong>초기불교 AI:</strong>
-                        경장(수자토 스님), 율장(Brahmali 스님), 논장(Caroline Rhys Davids, Pathamakyaw Ashin Thittila, U Nārada, Bimala Charan Law, Shwe Zan Aung, U Kumārābhivaṁsa)의 선각자들의 귀한 번역본을 바탕으로 합니다.
-                    </p>
-                </div>
-                <p class="gratitude">
-                    이 프로젝트가 있기까지 귀한 법을 세상에 펼쳐주신 각묵 스님과 모든 스승, 번역가, 학자분들께 깊은 존경과 감사를 드립니다.
-                </p>
-            </div>
-
-            <p class="info-text">
-                노트북LM은 구글 로그인이 필요합니다.
-            </p>
+            <p class="reveal">Welcome to the journey within</p>
+            <h1 class="reveal" style="transition-delay: 100ms;">Buddha Korea</h1>
         </div>
-    </div>
+        <div class="scroll-indicator reveal" style="transition-delay: 300ms;">Scroll to explore</div>
+    </section>
+
+    <!-- 3. AI Tools Section: 핵심 경험 영역 -->
+    <section id="ai-tools" class="section">
+        <div class="container">
+            <div class="card-grid">
+                <a href="https://notebooklm.google.com/notebook/1f5450ac-8ba6-4c30-b1ce-f63977dabfc1" target="_blank" class="card reveal">
+                    <div class="card-content">
+                        <h2>아비담마 AI</h2>
+                        <p>마음과 물질을 해체하여 실재를 통찰하는 분석적 지혜의 탐구</p>
+                    </div>
+                </a>
+                <a href="https://notebooklm.google.com/notebook/18c4a48e-3225-4ddc-abe8-42515c19cbba" target="_blank" class="card reveal" style="transition-delay: 150ms;">
+                    <div class="card-content">
+                        <h2>청정도론 AI</h2>
+                        <p>계·정·혜 삼학의 체계적인 수행 로드맵에 대한 심층적 이해</p>
+                    </div>
+                </a>
+                <a href="https://notebooklm.google.com/notebook/de2a2db1-e57e-428b-903b-43e75506833f" target="_blank" class="card reveal" style="transition-delay: 300ms;">
+                    <div class="card-content">
+                        <h2>초기불교 AI</h2>
+                        <p>니까야와 율장, 논장에 기반하여 부처님의 근본 가르침을 탐구</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Acknowledgement Section: 프로젝트의 정신 -->
+    <section id="acknowledgement" class="section">
+        <div class="container">
+            <div class="content-block reveal">
+                <p>
+                    이 공간은 부처님의 지혜를 탐구하는 모든 분들을 위해, 어떠한 상업적 목적 없이 순수한 학습용으로 만들어졌습니다.
+                    인공지능은 때로 학습한 자료의 본래 가르침과 다른, 부정확한 답변을 할 수 있습니다.
+                    답변의 모든 잠재적 오류는 AI의 기술적 한계에 따르며, 원천 자료를 제공해주신 스승들과는 무관함을 알려드립니다.
+                </p>
+                
+                <h4>주요 학습 자료</h4>
+                <p>
+                    <strong>아비담마 AI:</strong> 각묵 스님의 강의와 Alexander S. Berger의 영문본<br>
+                    <strong>청정도론 AI:</strong> 각묵 스님의 강의<br>
+                    <strong>초기불교 AI:</strong> 경장(수자토 스님), 율장(브라흐마리 스님), 논장 및 주석서(Caroline A.F. Rhys Davids, Pathamakyaw Ashin Thittila, U Nārada, Bimala Charan Law, Shwe Zan Aung, U Kumārābhivaṁsa) 등 여러 선각자들의 귀한 번역본을 바탕으로 합니다.
+                </p>
+
+                <p class="gratitude">
+                    이 프로젝트가 있기까지 귀한 법을 세상에 펼쳐주신 모든 스승, 번역가, 학자분들께 깊은 존경과 감사를 드립니다.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Footer -->
+    <footer>
+        <div class="container reveal">
+            <p>AI 탐구를 위해 Google 계정 로그인이 필요할 수 있습니다.</p>
+        </div>
+    </footer>
+
+
+    <script>
+        // --- Interactive Light Effect Script ---
+        const light = document.querySelector('.interactive-light');
+        window.addEventListener('mousemove', (e) => {
+            // We use translate to move the element for better performance
+            light.style.transform = `translate(${e.clientX - light.offsetWidth / 2}px, ${e.clientY - light.offsetHeight / 2}px)`;
+        });
+
+        // --- Scroll Animation Script ---
+        const revealElements = document.querySelectorAll('.reveal');
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target); // Animate only once
+                }
+            });
+        }, {
+            threshold: 0.1 // Trigger when 10% of the element is visible
+        });
+
+        revealElements.forEach(element => {
+            observer.observe(element);
+        });
+    </script>
+
 </body>
 </html>
+
