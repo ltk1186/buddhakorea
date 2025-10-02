@@ -1,0 +1,259 @@
+/* --- CORE DESIGN SYSTEM --- */
+:root {
+    --font-main: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+    
+    --color-background: #F5F5F7; 
+    --color-text-primary: #1d1d1f;
+    --color-text-secondary: #6e6e73;
+    
+    /* 파비콘에서 영감을 받은 시그니처 컬러 */
+    --gradient-color-1: #a794e0;
+    --gradient-color-2: #89b8ff;
+    --gradient-color-3: #9bebb4;
+    
+    --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- BASE & TYPOGRAPHY --- */
+html { 
+    scroll-behavior: smooth;
+    box-sizing: border-box;
+}
+
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+body {
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    font-family: var(--font-main);
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 40px;
+}
+
+/* --- INTERACTIVE BACKGROUND --- */
+.interactive-light {
+    position: fixed;
+    top: 0; 
+    left: 0;
+    width: 500px; 
+    height: 500px;
+    background: radial-gradient(circle, rgba(106, 17, 203, 0.3), transparent 75%);
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(120px);
+    z-index: -1;
+    transition: transform 0.2s ease-out;
+}
+
+/* --- LAYOUT SECTIONS --- */
+.section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 120px 0;
+    width: 100%;
+    position: relative;
+}
+
+#hero {
+    min-height: 100vh;
+    padding-bottom: 10vh;
+}
+
+#ai-tools {
+    padding-top: 60px;
+}
+
+/* --- HERO SECTION --- */
+#hero h1 {
+    font-size: clamp(3rem, 12vw, 8.5rem);
+    font-weight: 200;
+    letter-spacing: -0.025em;
+    margin: 0;
+    background: linear-gradient(90deg, var(--gradient-color-1), var(--gradient-color-2), var(--gradient-color-3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+}
+
+#hero p {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    font-weight: 400;
+    color: var(--color-text-secondary);
+    margin: 10px 0 0 0;
+}
+
+.scroll-indicator {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    opacity: 0.7;
+}
+
+/* --- AI TOOLS (CARD UI) SECTION --- */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    width: 100%;
+}
+
+.card {
+    display: block;
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 40px;
+    text-decoration: none;
+    color: var(--color-text-primary);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    bottom: 0;
+    background: linear-gradient(135deg, var(--gradient-color-1), var(--gradient-color-2), var(--gradient-color-3));
+    opacity: 0;
+    transition: var(--transition-smooth);
+    z-index: 1;
+}
+
+.card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    border-color: transparent;
+}
+
+.card:hover::before { 
+    opacity: 1; 
+}
+
+.card-content {
+    position: relative; 
+    z-index: 2;
+    transition: var(--transition-smooth);
+}
+
+.card:hover .card-content {
+    color: white;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.card h2 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0 0 10px 0;
+}
+
+.card p {
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.6;
+    margin: 0;
+    word-break: keep-all;
+}
+
+/* --- ACKNOWLEDGEMENT SECTION --- */
+#acknowledgement .content-block {
+    max-width: 720px;
+    text-align: left; 
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--color-text-secondary);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#acknowledgement .content-block p {
+    letter-spacing: -0.025em;
+}
+
+.content-block h4, 
+.gratitude {
+    text-align: center;
+}
+
+.content-block h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 40px 0 15px 0;
+}
+
+.gratitude {
+    margin-top: 40px;
+    font-style: italic;
+    word-break: keep-all;
+}
+
+/* --- FOOTER SECTION --- */
+footer {
+    padding: 60px 0;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+}
+
+/* --- SCROLL ANIMATION --- */
+.reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* --- RESPONSIVE DESIGN --- */
+@media (max-width: 900px) {
+    .card-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container { 
+        padding: 0 20px; 
+    } 
+    
+    .section { 
+        padding: 80px 0; 
+    }
+    
+    #ai-tools { 
+        padding-top: 40px; 
+    }
+    
+    #acknowledgement .content-block { 
+        font-size: 1rem; 
+    }
+}
