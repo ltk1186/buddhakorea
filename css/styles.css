@@ -212,6 +212,391 @@ body {
     word-break: keep-all;
 }
 
+/* --- EXPERIENCE LAB SECTION --- */
+#experience-lab {
+    padding: 100px 0;
+}
+
+.section-title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin: 0 0 10px 0;
+}
+
+.section-subtitle {
+    font-size: 1.1rem;
+    color: var(--color-text-secondary);
+    margin: 0 0 40px 0;
+}
+
+.experience-card {
+    max-width: 600px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 50px 40px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+}
+
+.experience-card::before {
+    content: '';
+    position: absolute;
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    bottom: 0;
+    background: linear-gradient(135deg, var(--gradient-color-1), var(--gradient-color-2), var(--gradient-color-3));
+    opacity: 0;
+    transition: var(--transition-smooth);
+    z-index: 1;
+}
+
+.experience-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    border-color: transparent;
+}
+
+.experience-card:hover::before {
+    opacity: 1;
+}
+
+.experience-content {
+    position: relative;
+    z-index: 2;
+    transition: var(--transition-smooth);
+}
+
+.experience-card:hover .experience-content {
+    color: white;
+}
+
+.experience-card h4 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 0 0 10px 0;
+}
+
+.experience-card p {
+    font-size: 1.1rem;
+    margin: 0 0 20px 0;
+    opacity: 0.9;
+}
+
+.cta-arrow {
+    display: inline-block;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: transform 0.3s ease;
+}
+
+.experience-card:hover .cta-arrow {
+    transform: translateX(5px);
+}
+
+/* --- FLOATING ACTION BUTTON --- */
+.fab {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gradient-color-1), var(--gradient-color-2));
+    border: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 999;
+    color: white;
+}
+
+.fab:hover {
+    transform: scale(1.1) translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+}
+
+.fab:active {
+    transform: scale(0.95);
+}
+
+.fab-icon {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.fab-text {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* --- MODAL --- */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+}
+
+.modal-close {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 10001;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+}
+
+.modal-content {
+    background: var(--color-background);
+    border-radius: 20px;
+    padding: 60px 50px;
+    max-width: 800px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- EPHEMERAL SENTENCES --- */
+.ephemeral-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.ephemeral-header h2 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 500;
+    margin: 0 0 15px 0;
+    background: linear-gradient(90deg, var(--gradient-color-1), var(--gradient-color-2), var(--gradient-color-3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.ephemeral-subtitle {
+    font-size: 1.1rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.ephemeral-input-wrapper {
+    min-height: 300px;
+    margin-bottom: 40px;
+}
+
+#ephemeral-canvas {
+    /* 🎨 글씨 색상 커스터마이징 
+     * 현재: 은은한 보라빛 투명 글씨
+     * 변경하려면:
+     * - color: 글자 기본 색상
+     * - text-shadow: 빛나는 효과 (첫번째 값: 흐림 정도, 두번째: 색상)
+     */
+    color: rgba(167, 148, 224, 0.9); /* 은은한 라벤더 */
+    text-shadow: 0 0 20px rgba(167, 148, 224, 0.4); /* 빛나는 효과 */
+    
+    /* 🎨 폰트 커스터마이징
+     * 현재: 얇고 우아한 Pretendard
+     * 변경하려면:
+     * - font-weight: 100 (가장 얇음) ~ 900 (가장 굵음)
+     * - letter-spacing: 글자 간격 (음수면 좁게, 양수면 넓게)
+     */
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    font-weight: 200; /* 매우 얇음 */
+    letter-spacing: 0.02em; /* 살짝 넓게 */
+    
+    line-height: 1.8;
+    padding: 30px;
+    min-height: 300px;
+    outline: none;
+    border: 2px solid transparent;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.03);
+    transition: all 0.3s ease;
+    word-break: keep-all;
+}
+
+#ephemeral-canvas:focus {
+    border-color: rgba(167, 148, 224, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+#ephemeral-canvas:empty:before {
+    content: attr(placeholder);
+    color: rgba(167, 148, 224, 0.3);
+    text-shadow: none;
+    pointer-events: none;
+}
+
+/* 🎨 사라지는 글자 애니메이션 커스터마이징 */
+.char-fade {
+    /* 현재: 부드럽게 투명해지며 위로 떠오름 + 흐려짐
+     * 
+     * 변경 옵션:
+     * 1. 파티클처럼 부서지기: particle-break 클래스 사용
+     * 2. 아래로 떨어지기: animation을 charFadeDown으로 변경
+     * 3. 회전하며 사라지기: animation을 charFadeSpin으로 변경
+     * 4. 속도 조절: animation-duration 값 변경 (현재 2초)
+     */
+    display: inline-block;
+    animation: charFadeUp 2s ease-out forwards;
+}
+
+/* 기본: 위로 떠오르며 사라지기 */
+@keyframes charFadeUp {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0px);
+    }
+    50% {
+        opacity: 0.5;
+        transform: translateY(-20px) scale(0.95);
+        filter: blur(2px);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-40px) scale(0.9);
+        filter: blur(5px);
+    }
+}
+
+/* 옵션 1: 아래로 떨어지며 사라지기 (사용하려면 위 animation을 charFadeDown으로 변경) */
+@keyframes charFadeDown {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(50px) scale(0.8);
+        filter: blur(8px);
+    }
+}
+
+/* 옵션 2: 회전하며 사라지기 */
+@keyframes charFadeSpin {
+    0% {
+        opacity: 1;
+        transform: rotate(0deg) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: rotate(360deg) scale(0.5);
+        filter: blur(10px);
+    }
+}
+
+/* 옵션 3: 파티클처럼 부서지기 (클래스 추가 필요) */
+/* 옵션 3: 파티클처럼 부서지기 */
+.particle-break {
+    animation: particleBreak 1.5s ease-out forwards;
+}
+
+@keyframes particleBreak {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+        filter: blur(0px);
+    }
+    30% {
+        opacity: 0.8;
+        filter: blur(2px);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(var(--tx, 0), var(--ty, 0)) scale(0.3);
+        filter: blur(10px);
+    }
+}
+
+@keyframes particleBreak {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+        filter: blur(0px);
+    }
+    50% {
+        opacity: 0.7;
+        filter: blur(3px);
+    }
+    100% {
+        opacity: 0;
+        /* 랜덤 방향으로 흩어지는 효과는 JS에서 동적 생성 */
+        transform: translate(var(--tx), var(--ty)) scale(0.3);
+        filter: blur(10px);
+    }
+}
+
+.ephemeral-footer {
+    text-align: center;
+    padding-top: 30px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.dhamma-quote {
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    font-style: italic;
+    margin: 0;
+}
+
 /* --- FOOTER SECTION --- */
 footer {
     padding: 60px 0;
@@ -238,6 +623,21 @@ footer {
         grid-template-columns: 1fr;
         gap: 20px;
     }
+    
+    .fab {
+        width: 60px;
+        height: 60px;
+        bottom: 30px;
+        right: 30px;
+    }
+    
+    .fab-icon {
+        font-size: 20px;
+    }
+    
+    .fab-text {
+        font-size: 10px;
+    }
 }
 
 @media (max-width: 768px) {
@@ -251,6 +651,30 @@ footer {
     
     #ai-tools { 
         padding-top: 40px; 
+    }
+    
+    #experience-lab {
+        padding: 80px 0;
+    }
+    
+    .experience-card {
+        padding: 40px 30px;
+    }
+    
+    .modal-content {
+        padding: 40px 30px;
+        width: 95%;
+    }
+    
+    .modal-close {
+        top: 20px;
+        right: 20px;
+    }
+    
+    #ephemeral-canvas {
+        font-size: 1.5rem;
+        padding: 20px;
+        min-height: 250px;
     }
     
     #acknowledgement .content-block { 

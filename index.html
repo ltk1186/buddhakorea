@@ -61,7 +61,23 @@
         </div>
     </section>
 
-    <!-- 4. Acknowledgement Section: 프로젝트의 정신 -->
+    <!-- 4. Experience Lab Section: 직접 체득 -->
+    <section id="experience-lab" class="section">
+        <div class="container">
+            <h3 class="section-title reveal">직접 체득하는 무상</h3>
+            <p class="section-subtitle reveal" style="transition-delay: 100ms;">체험을 통해 삼특상을 발견하세요</p>
+            
+            <div class="experience-card reveal" style="transition-delay: 200ms;" onclick="openEphemeralSentences()">
+                <div class="experience-content">
+                    <h4>찰나의 문장</h4>
+                    <p>오늘 가장 중요한 것을 타이핑하는 순간, 사라지는 글자</p>
+                    <span class="cta-arrow">체험하기 →</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Acknowledgement Section: 프로젝트의 정신 -->
     <section id="acknowledgement" class="section">
         <div class="container">
             <div class="content-block reveal">
@@ -92,8 +108,37 @@
         </div>
     </footer>
 
+    <!-- Floating Action Button -->
+    <button class="fab" onclick="openEphemeralSentences()" aria-label="체험하기">
+        <span class="fab-icon">✨</span>
+        <span class="fab-text">체험</span>
+    </button>
+
+    <!-- Ephemeral Sentences Modal -->
+    <div id="ephemeral-modal" class="modal">
+        <button class="modal-close" onclick="closeEphemeralSentences()" aria-label="닫기">✕</button>
+        
+        <div class="modal-content">
+            <div class="ephemeral-header">
+                <h2>찰나의 문장</h2>
+                <p class="ephemeral-subtitle">오늘 당신에게 가장 중요한 것을 적어보세요.<br> 
+                                                그것이 사라지는 모습을 관찰하세요.</p>
+            </div>
+            
+            <div class="ephemeral-input-wrapper">
+                <div id="ephemeral-canvas" contenteditable="true" spellcheck="false" 
+                     placeholder="여기에 타이핑하세요..."></div>
+            </div>
+            
+            <div class="ephemeral-footer">
+                <p class="dhamma-quote">"모든 형성된 것들은 사라지기 마련이다" - 부처님</p>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript -->
     <script src="js/main.js"></script>
+    <script src="js/ephemeral.js"></script>
 
 </body>
 </html>
