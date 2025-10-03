@@ -13,7 +13,7 @@ function initInteractiveLight() {
     });
 }
 
-// --- Scroll Reveal Animation ---
+// --- Scroll Reveal Animation  ---
 function initScrollReveal() {
     const revealElements = document.querySelectorAll('.reveal');
     
