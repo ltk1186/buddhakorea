@@ -72,7 +72,7 @@ body {
 /* --- HERO SECTION for reducing space --- */
 #hero {
     min-height: 100vh;
-    padding-bottom: 30vh; /* 또는 25vh, 30vh  */
+    padding-bottom: 30vh; /* 또는 25vh, 30vh */
 }
 
 #ai-tools {
