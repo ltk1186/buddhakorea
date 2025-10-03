@@ -69,9 +69,10 @@ body {
     position: relative;
 }
 
+/* --- HERO SECTION for reducing space --- */
 #hero {
     min-height: 100vh;
-    padding-bottom: 10vh;
+    padding-bottom: 30vh; /* 또는 25vh, 30vh  */
 }
 
 #ai-tools {
@@ -89,6 +90,45 @@ body {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     color: transparent;
+}
+
+/* 부처님 아이콘 스타일 */
+.buddha-icon {
+    /* 🎨 크기 조절 */
+    width: 310px;
+    height: auto;
+    
+    /* 흰색/회색 배경 제거 */
+    mix-blend-mode: multiply;
+    background: transparent;
+    
+    /* 🎨 색상 및 빛 효과 */
+    filter: drop-shadow(0 0 8px rgba(167, 148, 224, 0.4));
+    opacity: 0.85;
+    
+    /* Welcome to와의 간격 */
+    margin-bottom: 30px;
+    
+    /* 부드러운 등장 */
+    animation: fadeInScale 1s ease-out;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 0.85;
+        transform: scale(1);
+    }
+}
+
+/* 호버 효과 */
+.buddha-icon:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 15px rgba(167, 148, 224, 0.7));
+    transition: var(--transition-smooth);
 }
 
 #hero p {
