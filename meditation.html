@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self';
+                   style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+                   font-src 'self' https://cdn.jsdelivr.net;
+                   script-src 'self';
+                   img-src 'self' data:;
+                   connect-src 'self';">
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <title>명상 타이머 | Buddha Korea</title>
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/meditation.css">
+</head>
+<body>
+    <!-- 접근성: 건너뛰기 링크 -->
+    <a href="#screen-setup" class="skip-link">명상 설정으로 건너뛰기</a>
+
+    <!-- 헤더 -->
+    <header class="site-header">
+        <div class="header-container">
+            <a href="index.html" class="header-logo">
+                <img src="assets/buddha-line.png" alt="Buddha Korea" class="logo-icon">
+                <span class="logo-text">Buddha Korea</span>
+            </a>
+            <nav class="header-nav">
+                <a href="index.html" class="nav-link">홈</a>
+                <a href="sutra-writing.html" class="nav-link">사경</a>
+                <a href="meditation.html" class="nav-link">명상</a>
+            </nav>
+        </div>
+    </header>
+    <div class="header-spacer"></div>
+
+    <!-- 마우스 따라다니는 빛 효과 -->
+    <div class="mouse-light"></div>
+
+    <!-- 메인 컨테이너 -->
+    <div class="meditation-page">
+
+        <!-- 1. 명상 설정 화면 -->
+        <div id="screen-setup" class="screen show">
+            <div class="center-box">
+                <h1>명상 타이머</h1>
+                <p class="subtitle">고요히 앉아 마음을 관찰하는 수행</p>
+
+                <!-- 수행 안내 섹션 (접이식) -->
+                <div class="guidance-container">
+                    <button class="guidance-toggle" aria-expanded="false" aria-controls="guidance-content" aria-label="호흡 마음챙김 수행 안내 열기">
+                        <span class="toggle-title">수행 안내</span>
+                        <span class="toggle-icon" aria-hidden="true">▼</span>
+                    </button>
+
+                    <div class="guidance-content closed" id="guidance-content">
+                        <h3 class="guidance-title">호흡 마음챙김 <span class="pali">(Ānāpānassati)</span></h3>
+                        <p class="guidance-intro">호흡에 대한 마음챙김은 몸 관찰의 한 형태이며, 가장 기본적이고 효과적인 명상 방법입니다.</p>
+
+                        <div class="guidance-section">
+                            <h4>준비</h4>
+                            <p>조용한 장소에서 편안하게 앉아 허리를 곧게 세우고 정면을 향해 마음챙김을 확립합니다.</p>
+                        </div>
+
+                        <div class="guidance-section">
+                            <h4>수행 방법</h4>
+                            <p>마음챙김하여 들이쉬고, 마음챙김하여 내쉽니다.</p>
+                        </div>
+
+                        <div class="guidance-section">
+                            <h4>관찰하기</h4>
+                            <p>
+                                길게 들이쉬면 길게 들이쉰다는 것을 알아차립니다.<br>
+                                길게 내쉬면 길게 내쉰다는 것을 알아차립니다.<br>
+                                짧게 들이쉬고 내쉬는 것을 알아차립니다.<br>
+                                온몸을 경험하며 들이쉬고 내쉽니다.<br>
+                                신체적 작용을 고요히 하며 호흡합니다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="duration-cards">
+                    <div class="card" data-duration="10"
+                         role="button" tabindex="0"
+                         aria-label="10분 명상 시작">
+                        <h2>10분</h2>
+                        <p>짧은 수행</p>
+                    </div>
+                    <div class="card" data-duration="20"
+                         role="button" tabindex="0"
+                         aria-label="20분 명상 시작">
+                        <h2>20분</h2>
+                        <p>기본 수행</p>
+                    </div>
+                    <div class="card" data-duration="30"
+                         role="button" tabindex="0"
+                         aria-label="30분 명상 시작">
+                        <h2>30분</h2>
+                        <p>깊은 수행</p>
+                    </div>
+                </div>
+
+                <div class="custom-duration">
+                    <label for="custom-minutes">맞춤 시간 (분)</label>
+                    <input type="number" id="custom-minutes" min="1" max="120" placeholder="" aria-label="맞춤 명상 시간 입력">
+                    <button id="custom-start-btn" aria-label="맞춤 시간으로 명상 시작">시작</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 명상 진행 화면 -->
+        <div id="screen-meditation" class="screen">
+            <div class="meditation-container">
+                <button class="back-btn" id="stop-btn" aria-label="명상 중단하고 설정으로 돌아가기">중단</button>
+
+                <!-- 호흡 원 -->
+                <div class="breathing-circle" role="region" aria-label="명상 진행 표시">
+                    <svg class="progress-ring" width="300" height="300">
+                        <circle class="progress-ring-bg" cx="150" cy="150" r="140" />
+                        <circle class="progress-ring-circle" cx="150" cy="150" r="140" />
+                    </svg>
+                    <div class="time-display" aria-live="polite" aria-atomic="true">
+                        <span id="time-remaining">00:00</span>
+                    </div>
+                </div>
+
+                <p class="meditation-instruction">호흡을 관찰하세요</p>
+            </div>
+        </div>
+
+        <!-- 3. 명상 완료 화면 -->
+        <div id="screen-complete" class="screen">
+            <div class="center-box">
+                <div class="completion-icon">
+                    <div class="glow"></div>
+                    <div class="lotus">🪷</div>
+                </div>
+                <h2 class="completion-text">명상 완료</h2>
+                <p class="completion-msg">고요한 마음으로 돌아갑니다</p>
+                <button class="primary-btn" id="return-btn">다시 시작</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="js/meditation.js"></script>
+</body>
+</html>

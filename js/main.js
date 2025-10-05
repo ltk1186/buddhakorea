@@ -13,10 +13,22 @@ function initInteractiveLight() {
     });
 }
 
+// --- Scroll to AI Section ---
+function scrollToAI(event) {
+    event.stopPropagation(); // 드롭다운 메뉴가 열리지 않도록
+    const aiSection = document.getElementById('ai-tools');
+    if (aiSection) {
+        aiSection.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        });
+    }
+}
+
 // --- Scroll Reveal Animation  ---
 function initScrollReveal() {
     const revealElements = document.querySelectorAll('.reveal');
-    
+
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -24,11 +36,11 @@ function initScrollReveal() {
                 observer.unobserve(entry.target);
             }
         });
-    }, { 
+    }, {
         threshold: 0.1,
         rootMargin: '0px 0px -50px 0px'
     });
-    
+
     revealElements.forEach(element => {
         observer.observe(element);
     });

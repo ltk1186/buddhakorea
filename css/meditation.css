@@ -1,0 +1,782 @@
+/* ========================================
+   위빠사나 명상 - 고요하고 신성한 디자인
+   ======================================== */
+
+:root {
+    /* Animation Timing */
+    --breathing-duration: 8s;
+    --bell-fade-duration: 2s;
+
+    /* Color Palette */
+    --gradient-color-1: #a794e0;
+    --gradient-color-2: #89b8ff;
+    --gradient-color-3: #9bebb4;
+    --meditation-primary: #89b8ff;
+    --meditation-light: #b4d4ff;
+    --text-dark: #212529;
+    --text-muted: #6c757d;
+    --bg-neutral: #F5F5F7;
+    --white: #ffffff;
+
+    /* Transitions */
+    --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-reverent: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-quick: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* Spacing */
+    --spacing-xs: 8px;
+    --spacing-sm: 16px;
+    --spacing-md: 24px;
+    --spacing-lg: 40px;
+    --spacing-xl: 60px;
+
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-md: 20px;
+    --radius-lg: 24px;
+    --radius-xl: 28px;
+
+    /* Shadows */
+    --shadow-soft: 0 15px 60px rgba(0, 0, 0, 0.1);
+    --shadow-meditation-subtle: 0 15px 80px rgba(137, 184, 255, 0.12);
+    --shadow-meditation-hover: 0 15px 100px rgba(137, 184, 255, 0.18);
+    --shadow-card-hover: 0 25px 60px rgba(137, 184, 255, 0.35);
+}
+
+/* 페이지 배경 */
+body {
+    background: var(--bg-neutral);
+}
+
+/* 마우스 빛 효과 (청록빛) - Performance Optimized */
+.mouse-light {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(137, 184, 255, 0.2), transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(120px);
+    z-index: 1;
+    /* Performance: GPU acceleration hints */
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
+}
+
+/* 전체 페이지 */
+.meditation-page {
+    min-height: 100vh;
+    background: transparent;
+    position: relative;
+    z-index: 2;
+}
+
+/* 화면 전환 시스템 - Performance Optimized */
+.screen {
+    display: none;
+    min-height: calc(100vh - 70px);
+    padding: 40px 20px;
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+}
+
+.screen.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* GPU-accelerated screen transitions */
+.screen-exit {
+    animation: screenExit 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.screen-enter {
+    animation: screenEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes screenExit {
+    from {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translate3d(0, -20px, 0) scale(0.98);
+    }
+}
+
+@keyframes screenEnter {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 20px, 0) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+}
+
+/* 중앙 박스 */
+.center-box {
+    max-width: 650px;
+    width: 100%;
+    text-align: center;
+}
+
+#screen-setup h1 {
+    font-size: clamp(2.5rem, 7vw, 4rem);
+    font-weight: 300;
+    margin: 0 0 12px;
+    background: linear-gradient(120deg, var(--meditation-primary), var(--gradient-color-3));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    margin: 0 0 30px;
+    line-height: 1.6;
+}
+
+/* ========================================
+   수행 안내 섹션 (Guidance Section)
+   ======================================== */
+
+.guidance-container {
+    background: rgba(255, 255, 255, 0.7);
+    /* Performance: backdrop-filter removed for better mobile performance */
+    /* Increased background opacity for better readability without filter */
+    border: 1px solid rgba(137, 184, 255, 0.15);
+    border-radius: var(--radius-lg);
+    margin-bottom: 40px;
+    overflow: hidden;
+    animation: guidanceFadeIn 0.8s ease-out;
+}
+
+@keyframes guidanceFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.guidance-toggle {
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.guidance-toggle:hover {
+    background: rgba(137, 184, 255, 0.05);
+}
+
+.toggle-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-dark);
+    letter-spacing: 0.02em;
+}
+
+.toggle-icon {
+    font-size: 0.9rem;
+    color: var(--meditation-primary);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.guidance-toggle[aria-expanded="true"] .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.guidance-content {
+    max-height: 800px;
+    overflow: hidden;
+    transition: max-height 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                padding 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 1;
+    padding: 0 24px 28px;
+}
+
+.guidance-content.closed {
+    max-height: 0;
+    opacity: 0;
+    padding: 0 24px;
+}
+
+.guidance-title {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--text-dark);
+    margin: 0 0 16px;
+    letter-spacing: -0.01em;
+}
+
+.guidance-intro {
+    font-size: 1rem;
+    color: var(--text-muted);
+    line-height: 2;
+    margin: 0 0 28px;
+    letter-spacing: -0.003em;
+}
+
+.guidance-section {
+    margin-bottom: 24px;
+}
+
+.guidance-section:last-child {
+    margin-bottom: 0;
+}
+
+.guidance-section h4 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--meditation-primary);
+    margin: 0 0 12px;
+    letter-spacing: 0.01em;
+}
+
+.guidance-section p {
+    font-size: 0.98rem;
+    color: var(--text-dark);
+    line-height: 2.1;
+    margin: 0;
+    letter-spacing: -0.003em;
+}
+
+.guidance-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.guidance-list li {
+    font-size: 0.98rem;
+    color: var(--text-dark);
+    line-height: 2.3;
+    padding-left: 24px;
+    position: relative;
+    margin-bottom: 8px;
+}
+
+.guidance-list li::before {
+    content: '·';
+    position: absolute;
+    left: 8px;
+    color: var(--meditation-primary);
+    font-size: 1.4em;
+    line-height: 2;
+}
+
+.guidance-list li:last-child {
+    margin-bottom: 0;
+}
+
+.pali {
+    font-style: italic;
+    color: var(--text-muted);
+    font-size: 0.92em;
+    letter-spacing: 0.02em;
+    font-weight: 400;
+}
+
+/* Accessibility: Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .guidance-container {
+        animation: none;
+        opacity: 1;
+        transform: none;
+    }
+
+    .toggle-icon,
+    .guidance-content {
+        transition-duration: 0.1s;
+    }
+
+    .screen-exit,
+    .screen-enter {
+        animation: none;
+    }
+
+    .lotus {
+        animation: none;
+    }
+
+    .glow {
+        animation: none;
+    }
+}
+
+.duration-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.duration-cards .card {
+    background: rgba(255, 255, 255, 0.85);
+    /* Performance: backdrop-filter removed for better mobile performance */
+    border: 2px solid rgba(137, 184, 255, 0.2);
+    border-radius: var(--radius-lg);
+    padding: 35px 25px;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+    /* Performance: GPU acceleration for hover animations */
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
+}
+
+.duration-cards .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--meditation-primary), var(--gradient-color-3));
+    opacity: 0;
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 0;
+}
+
+.duration-cards .card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: var(--shadow-card-hover);
+    border-color: rgba(137, 184, 255, 0.4);
+}
+
+.duration-cards .card:hover::before {
+    opacity: 1;
+}
+
+.duration-cards .card h2 {
+    font-size: 2.2rem;
+    font-weight: 600;
+    margin: 0 0 8px;
+    color: var(--text-dark);
+    position: relative;
+    z-index: 1;
+    transition: color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.duration-cards .card p {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin: 0;
+    position: relative;
+    z-index: 1;
+    transition: color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.duration-cards .card:hover h2,
+.duration-cards .card:hover p {
+    color: var(--white);
+}
+
+/* 맞춤 시간 입력 */
+.custom-duration {
+    background: rgba(255, 255, 255, 0.8);
+    /* Performance: backdrop-filter removed for better mobile performance */
+    border: 2px solid rgba(137, 184, 255, 0.2);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+}
+
+.custom-duration label {
+    font-size: 1rem;
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+.custom-duration input {
+    width: 200px;
+    padding: 12px 20px;
+    font-size: 1.1rem;
+    border: 2px solid rgba(137, 184, 255, 0.3);
+    border-radius: var(--radius-md);
+    background: var(--white);
+    text-align: center;
+    transition: var(--transition-quick);
+}
+
+.custom-duration input:focus {
+    outline: none;
+    border-color: var(--meditation-primary);
+    box-shadow: 0 0 0 3px rgba(137, 184, 255, 0.1);
+}
+
+.custom-duration button {
+    padding: 12px 40px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    background: linear-gradient(135deg, var(--meditation-primary), var(--gradient-color-3));
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition-quick);
+}
+
+.custom-duration button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(137, 184, 255, 0.3);
+}
+
+/* ========================================
+   2. 명상 진행 화면
+   ======================================== */
+
+.meditation-container {
+    width: 100%;
+    max-width: 650px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.back-btn {
+    position: relative;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 12px 20px;
+    margin-bottom: 40px;
+    transition: var(--transition-quick);
+}
+
+.back-btn::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    background: radial-gradient(circle, rgba(137, 184, 255, 0.15), transparent 70%);
+    opacity: 0;
+    border-radius: 50%;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.back-btn:hover {
+    color: var(--meditation-primary);
+}
+
+.back-btn:hover::before {
+    opacity: 1;
+}
+
+/* 호흡 원 (Breathing Circle) */
+.breathing-circle {
+    width: 300px;
+    height: 300px;
+    margin: 0 auto var(--spacing-lg);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress-ring {
+    transform: rotate(-90deg);
+}
+
+.progress-ring-bg {
+    fill: none;
+    stroke: rgba(137, 184, 255, 0.1);
+    stroke-width: 4;
+}
+
+.progress-ring-circle {
+    fill: none;
+    stroke: url(#breathing-gradient);
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-dasharray: 880;
+    stroke-dashoffset: 880;
+    /* Performance: Remove transition to avoid conflict with JS updates */
+    /* JavaScript handles smooth updates via requestAnimationFrame */
+}
+
+/* SVG gradient 정의 */
+svg defs linearGradient {
+    --color-start: var(--meditation-primary);
+    --color-end: var(--gradient-color-3);
+}
+
+.time-display {
+    position: absolute;
+    font-size: 3rem;
+    font-weight: 300;
+    color: var(--text-dark);
+    letter-spacing: 0.05em;
+}
+
+.meditation-instruction {
+    font-size: 1.3rem;
+    color: var(--text-muted);
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    margin: 0;
+    text-align: center;
+}
+
+/* ========================================
+   3. 명상 완료 화면
+   ======================================== */
+
+.completion-icon {
+    position: relative;
+    width: 240px;
+    height: 240px;
+    margin: 0 auto 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.glow {
+    position: absolute;
+    width: 240px;
+    height: 240px;
+    background: radial-gradient(circle, rgba(137, 184, 255, 0.3), transparent 70%);
+    border-radius: 50%;
+    filter: blur(40px);
+    animation: pulse 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+.lotus {
+    font-size: 6rem;
+    position: relative;
+    z-index: 1;
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+.completion-text {
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: var(--text-dark);
+    margin: 0 0 20px;
+}
+
+.completion-msg {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    margin: 0 0 40px;
+}
+
+.primary-btn {
+    padding: 16px 48px;
+    font-size: 1.2rem;
+    font-weight: 500;
+    background: linear-gradient(135deg, var(--meditation-primary), var(--gradient-color-3));
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition-quick);
+}
+
+.primary-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 40px rgba(137, 184, 255, 0.4);
+}
+
+/* ========================================
+   반응형 디자인
+   ======================================== */
+
+@media (max-width: 768px) {
+    .duration-cards {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .breathing-circle {
+        width: 250px;
+        height: 250px;
+    }
+
+    .progress-ring {
+        width: 250px;
+        height: 250px;
+    }
+
+    .time-display {
+        font-size: 2.5rem;
+    }
+
+    .completion-icon,
+    .glow {
+        width: 180px;
+        height: 180px;
+    }
+
+    .lotus {
+        font-size: 5rem;
+    }
+
+    /* Performance: Disable mouse light on mobile devices */
+    .mouse-light {
+        display: none;
+    }
+
+    /* Performance: Reduce animation complexity on mobile */
+    .glow {
+        filter: blur(30px);
+    }
+
+    /* Performance: Optimize card hover for touch devices */
+    .duration-cards .card {
+        /* Remove will-change on mobile to save memory */
+        will-change: auto;
+    }
+}
+
+@media (max-width: 428px) {
+    .screen {
+        padding: 24px 16px;
+    }
+
+    .breathing-circle {
+        width: 220px;
+        height: 220px;
+    }
+
+    .progress-ring {
+        width: 220px;
+        height: 220px;
+    }
+
+    .time-display {
+        font-size: 2.2rem;
+    }
+
+    /* Mobile typography optimization */
+    .guidance-content {
+        padding: 24px 20px;
+    }
+
+    .guidance-title {
+        font-size: 1.25rem;
+        line-height: 1.5;
+        margin-bottom: 14px;
+    }
+
+    .guidance-intro {
+        font-size: 0.95rem;
+        line-height: 2.2;
+        margin-bottom: 24px;
+    }
+
+    .guidance-section h4 {
+        font-size: 1rem;
+        margin-bottom: 10px;
+    }
+
+    .guidance-section p {
+        font-size: 0.95rem;
+        line-height: 2.2;
+    }
+
+    .duration-cards {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .duration-cards .card {
+        padding: 28px 20px;
+    }
+
+    .duration-cards .card h2 {
+        font-size: 2rem;
+    }
+
+    .custom-duration {
+        padding: 20px 16px;
+    }
+
+    .custom-duration input {
+        width: 100%;
+        max-width: 280px;
+        font-size: 1rem;
+    }
+
+    .custom-duration button {
+        width: 100%;
+        max-width: 280px;
+        padding: 14px 32px;
+    }
+}
+
+/* Extra small screens (iPhone SE, etc.) */
+@media (max-width: 320px) {
+    .guidance-content {
+        padding: 20px 16px;
+    }
+
+    .guidance-intro {
+        font-size: 0.94rem;
+        line-height: 2.1;
+    }
+
+    #screen-setup h1 {
+        font-size: 2.5rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    /* Hide mouse light on touch devices */
+    .mouse-light {
+        display: none;
+    }
+
+    /* Touch feedback for cards */
+    .duration-cards .card:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+    }
+
+    /* Touch feedback for buttons */
+    .custom-duration button:active,
+    .back-btn:active,
+    .primary-btn:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+    }
+}
