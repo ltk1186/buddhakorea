@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="css/sutra.css">
 </head>
 <body>
+    <!-- 접근성: 건너뛰기 링크 -->
+    <a href="#screen-select" class="skip-link">사경 선택으로 건너뛰기</a>
 
     <!-- 헤더 -->
     <header class="site-header">
@@ -39,11 +41,19 @@
                 <p class="subtitle">한 글자 한 글자 정성스럽게 타이핑하며 마음을 가다듬는 수행</p>
 
                 <div class="sutra-cards">
-                    <div class="card" onclick="selectSutra('metta')">
+                    <div class="card" onclick="selectSutra('metta')"
+                         role="button"
+                         tabindex="0"
+                         aria-label="자애경 선택: 자애의 마음을 기르는 경전"
+                         onkeypress="if(event.key==='Enter'||event.key===' ')selectSutra('metta')">
                         <h2>자애경</h2>
                         <p>자애의 마음을 기르는 경전</p>
                     </div>
-                    <div class="card" onclick="selectSutra('mangala')">
+                    <div class="card" onclick="selectSutra('mangala')"
+                         role="button"
+                         tabindex="0"
+                         aria-label="행복경 선택: 참된 행복으로 가는 길"
+                         onkeypress="if(event.key==='Enter'||event.key===' ')selectSutra('mangala')">
                         <h2>행복경</h2>
                         <p>참된 행복으로 가는 길</p>
                     </div>
@@ -54,43 +64,40 @@
         <!-- 2. 사경 작성 화면 -->
         <div id="screen-write" class="screen">
             <div class="write-container">
-                <button class="back-btn" onclick="goBack()">← 돌아가기</button>
+                <button class="back-btn" onclick="goBack()" aria-label="경전 선택 화면으로 돌아가기">← 돌아가기</button>
 
                 <h2 id="sutra-name" class="sutra-name">자애경</h2>
 
                 <!-- 타이핑 박스 -->
-                <div class="type-box">
-                    <div id="text-bg" class="text-bg"></div>
-                    <textarea id="text-input" class="text-input"></textarea>
+                <div class="type-box" role="region" aria-label="사경 작성 영역">
+                    <div id="text-bg" class="text-bg" aria-live="polite" aria-atomic="false"></div>
+                    <textarea id="text-input" class="text-input"
+                              aria-label="경전 타이핑 입력창"
+                              aria-describedby="sutra-name"></textarea>
                 </div>
 
                 <!-- 회향 버튼들 (완성 후 나타남) -->
-                <div id="dedication-box" class="dedication-box">
-                    <h3>공덕을 회향합니다</h3>
+                <div id="dedication-box" class="dedication-box" role="region" aria-labelledby="dedication-heading">
+                    <h3 id="dedication-heading">공덕을 회향합니다</h3>
                     <p>이 작은 수행의 공덕을 모든 중생과 함께 나눕니다</p>
 
                     <div class="realm-buttons">
-                        <button onclick="dedicate('hell')">지옥 중생</button>
-                        <button onclick="dedicate('animal')">축생</button>
-                        <button onclick="dedicate('hungry-ghost')">아귀</button>
-                        <button onclick="dedicate('asura')">아수라</button>
-                        <button onclick="dedicate('human')">인간</button>
-                        <button onclick="dedicate('deva')">천신</button>
-                        <button class="primary" onclick="dedicate('all')">일체 중생</button>
+                        <button onclick="dedicate('hell')" aria-label="지옥 중생에게 공덕 회향">지옥 중생</button>
+                        <button onclick="dedicate('animal')" aria-label="축생에게 공덕 회향">축생</button>
+                        <button onclick="dedicate('hungry-ghost')" aria-label="아귀에게 공덕 회향">아귀</button>
+                        <button onclick="dedicate('asura')" aria-label="아수라에게 공덕 회향">아수라</button>
+                        <button onclick="dedicate('human')" aria-label="인간에게 공덕 회향">인간</button>
+                        <button onclick="dedicate('deva')" aria-label="천신에게 공덕 회향">천신</button>
+                        <button class="primary" onclick="dedicate('all')" aria-label="일체 중생에게 공덕 회향">일체 중생</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 3. 완료 화면 -->
-        <div id="screen-done" class="screen">
+        <!-- 3. 회향 완료 화면 -->
+        <div id="screen-dedication-complete" class="screen">
             <div class="center-box">
-                <div class="prayer-icon">
-                    <div class="glow"></div>
-                    <div class="hands">🙏</div>
-                </div>
-                <h2>회향되었습니다</h2>
-                <p id="done-message" class="done-msg">이 사경으로 얻은 공덕을<br>일체 중생에게 회향합니다</p>
+                <h2 class="dedication-complete-text">회향 완료</h2>
             </div>
         </div>
 

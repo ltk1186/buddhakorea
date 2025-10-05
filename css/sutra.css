@@ -3,8 +3,49 @@
    ======================================== */
 
 :root {
+    /* Animation Timing */
     --char-fade-duration: 1.2s;
     --total-dedication-time: 5s;
+
+    /* Color Palette */
+    --gradient-color-1: #a794e0;
+    --gradient-color-2: #89b8ff;
+    --gradient-color-3: #9bebb4;
+    --golden-primary: #daa520;
+    --golden-light: #f4d03f;
+    --text-dark: #212529;
+    --text-muted: #6c757d;
+    --bg-neutral: #F5F5F7;
+    --white: #ffffff;
+
+    /* Transitions */
+    --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-reverent: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-quick: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* Spacing */
+    --spacing-xs: 8px;
+    --spacing-sm: 16px;
+    --spacing-md: 24px;
+    --spacing-lg: 40px;
+    --spacing-xl: 60px;
+
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-md: 20px;
+    --radius-lg: 24px;
+    --radius-xl: 28px;
+
+    /* Shadows */
+    --shadow-soft: 0 15px 60px rgba(0, 0, 0, 0.1);
+    --shadow-golden-subtle: 0 15px 80px rgba(218, 165, 32, 0.12);
+    --shadow-golden-hover: 0 15px 100px rgba(218, 165, 32, 0.18);
+    --shadow-card-hover: 0 25px 60px rgba(167, 148, 224, 0.35);
+}
+
+/* 페이지 배경 */
+body {
+    background: var(--bg-neutral);
 }
 
 /* 마우스 빛 효과 (황금빛) */
@@ -24,7 +65,7 @@
 /* 전체 페이지 */
 .sutra-page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    background: transparent;
     position: relative;
     z-index: 2;
 }
@@ -59,7 +100,9 @@
     margin: 0 0 20px;
     background: linear-gradient(120deg, #a794e0, #89b8ff);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
+    color: transparent;
 }
 
 .subtitle {
@@ -76,37 +119,61 @@
 }
 
 .sutra-cards .card {
-    background: white;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: 2px solid rgba(167, 148, 224, 0.2);
-    border-radius: 24px;
-    padding: 60px 40px;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl) var(--spacing-lg);
     cursor: pointer;
-    transition: all 0.4s ease;
+    transition: var(--transition-smooth);
     position: relative;
+    overflow: hidden;
     z-index: 1;
 }
 
+.sutra-cards .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--gradient-color-1), var(--gradient-color-2));
+    opacity: 0;
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 0;
+}
+
 .sutra-cards .card:hover {
-    transform: translateY(-12px);
-    box-shadow: 0 25px 60px rgba(167, 148, 224, 0.3);
-    border-color: rgba(167, 148, 224, 0.6);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: var(--shadow-card-hover);
+    border-color: rgba(167, 148, 224, 0.4);
+}
+
+.sutra-cards .card:hover::before {
+    opacity: 1;
 }
 
 .sutra-cards .card h2 {
     font-size: 2rem;
     font-weight: 600;
     margin: 0 0 15px;
-    color: #212529;
+    color: var(--text-dark);
     position: relative;
-    z-index: 2;
+    z-index: 1;
+    transition: color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sutra-cards .card p {
     font-size: 1.1rem;
-    color: #6c757d;
+    color: var(--text-muted);
     margin: 0;
     position: relative;
-    z-index: 2;
+    z-index: 1;
+    transition: color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sutra-cards .card:hover h2,
+.sutra-cards .card:hover p {
+    color: var(--white);
 }
 
 /* ========================================
@@ -120,19 +187,40 @@
 }
 
 .back-btn {
+    position: relative;
     background: none;
     border: none;
-    color: #6c757d;
+    color: var(--text-muted);
     font-size: 1.1rem;
     cursor: pointer;
     padding: 12px 0;
     margin-bottom: 30px;
-    transition: all 0.3s;
+    transition: var(--transition-quick);
+}
+
+.back-btn::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    background: radial-gradient(circle, rgba(218, 165, 32, 0.15), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: -1;
+    border-radius: var(--radius-sm);
 }
 
 .back-btn:hover {
-    color: #a794e0;
+    color: var(--golden-primary);
     transform: translateX(-8px);
+}
+
+.back-btn:hover::before {
+    opacity: 1;
+}
+
+.back-btn:focus-visible {
+    outline: 2px solid var(--gradient-color-1);
+    outline-offset: 4px;
 }
 
 .sutra-name {
@@ -142,18 +230,38 @@
     margin: 0 0 50px;
     background: linear-gradient(120deg, #a794e0, #89b8ff);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
+    color: transparent;
 }
 
 /* 타이핑 박스 */
 .type-box {
     position: relative;
-    background: white;
-    border-radius: 28px;
-    padding: 60px;
-    box-shadow: 0 15px 60px rgba(0, 0, 0, 0.1);
+    background: var(--white);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-soft);
     min-height: 450px;
     margin-bottom: 30px;
+    animation: breathingGlow 8s ease-in-out infinite;
+    will-change: box-shadow;
+}
+
+@keyframes breathingGlow {
+    0%, 100% {
+        box-shadow: var(--shadow-golden-subtle);
+    }
+    50% {
+        box-shadow: var(--shadow-golden-hover);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .type-box {
+        animation: none;
+        box-shadow: var(--shadow-golden-subtle);
+    }
 }
 
 /* 배경 텍스트 */
@@ -169,11 +277,12 @@
 
 .text-bg span {
     display: inline;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.2s ease, color 0.15s ease;
 }
 
 .text-bg span.done {
     opacity: 0;
+    color: var(--golden-primary);
 }
 
 
@@ -248,33 +357,54 @@
 }
 
 .realm-buttons button {
+    position: relative;
     background: rgba(255, 255, 255, 0.85);
     border: 2px solid rgba(218, 165, 32, 0.2);
-    border-radius: 20px;
+    border-radius: var(--radius-md);
     padding: 28px 20px;
     font-size: 1.1rem;
     font-weight: 500;
-    color: #212529;
+    color: var(--text-dark);
     cursor: pointer;
-    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: var(--transition-quick);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.realm-buttons button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(218, 165, 32, 0.1), rgba(244, 208, 63, 0.1));
+    opacity: 0;
+    border-radius: inherit;
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 0;
 }
 
 .realm-buttons button:hover {
     transform: translateY(-6px) scale(1.02);
-    border-color: #daa520;
+    border-color: var(--golden-primary);
     box-shadow: 0 15px 40px rgba(218, 165, 32, 0.3);
-    background: white;
+    background: var(--white);
+}
+
+.realm-buttons button:hover::before {
+    opacity: 1;
 }
 
 .realm-buttons button.primary {
     grid-column: 1 / -1;
-    background: linear-gradient(135deg, #daa520 0%, #f4d03f 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--golden-primary) 0%, var(--golden-light) 100%);
+    color: var(--white);
     border: none;
     font-size: 1.25rem;
     padding: 32px 20px;
     box-shadow: 0 8px 30px rgba(218, 165, 32, 0.4);
+}
+
+.realm-buttons button.primary::before {
+    background: linear-gradient(135deg, var(--golden-light), var(--golden-primary));
 }
 
 .realm-buttons button.primary:hover {
@@ -283,13 +413,57 @@
 }
 
 /* ========================================
-   3. 완료 화면
+   3. 회향 완료 화면
    ======================================== */
 
-.prayer-icon {
-    position: relative;
-    display: inline-block;
-    margin-bottom: 50px;
+.dedication-complete-text {
+    font-size: clamp(3rem, 8vw, 5rem);
+    font-weight: 300;
+    background: linear-gradient(120deg, var(--golden-primary), var(--golden-light));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: dedicationComplete 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+    letter-spacing: 0.05em;
+}
+
+@keyframes dedicationComplete {
+    0% {
+        opacity: 0;
+        transform: scale(0.95);
+        filter: blur(10px);
+    }
+    60% {
+        opacity: 1;
+        filter: blur(0);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        filter: blur(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dedication-complete-text {
+        animation: none;
+        opacity: 1;
+        filter: none;
+        transform: none;
+    }
+}
+
+@keyframes iconAscend {
+    0% {
+        opacity: 0;
+        transform: translateY(40px) scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 .glow {
@@ -326,17 +500,32 @@
     font-size: 3rem;
     font-weight: 300;
     margin: 0 0 25px;
-    background: linear-gradient(120deg, #daa520, #f4d03f);
+    background: linear-gradient(120deg, var(--golden-primary), var(--golden-light));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     color: transparent;
+    animation: fadeSlideUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+    opacity: 0;
 }
 
 .done-msg {
     font-size: 1.3rem;
-    color: #6c757d;
+    color: var(--text-muted);
     line-height: 1.9;
+    animation: fadeSlideUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+    opacity: 0;
+}
+
+@keyframes fadeSlideUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* 화면 전환 애니메이션 개선 */
@@ -392,6 +581,28 @@
 
 /* 접근성: 움직임 선호도 감소 설정 지원 */
 @media (prefers-reduced-motion: reduce) {
+    /* 타이핑 박스 호흡 애니메이션 비활성화 */
+    .type-box {
+        animation: none;
+        box-shadow: var(--shadow-golden-subtle);
+    }
+
+    /* 완료 화면 애니메이션 간소화 */
+    .prayer-icon,
+    #screen-done h2,
+    .done-msg {
+        animation: none;
+        opacity: 1;
+        transform: none;
+    }
+
+    /* 펄스 애니메이션 비활성화 */
+    .glow {
+        animation: none;
+        opacity: 0.5;
+    }
+
+    /* 글자 사라지기 애니메이션 단축 */
     #char-container span.char-fade {
         animation-duration: 0.4s;
     }
@@ -409,6 +620,12 @@
             filter: blur(1px);
             -webkit-filter: blur(1px);
         }
+    }
+
+    /* 호버 트랜스폼 비활성화 */
+    .sutra-cards .card:hover,
+    .realm-buttons button:hover {
+        transform: none;
     }
 }
 
@@ -461,4 +678,65 @@
         width: 200px;
         height: 200px;
     }
+}
+
+/* ========================================
+   접근성: 건너뛰기 링크
+   ======================================== */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--gradient-color-1);
+    color: var(--white);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    text-decoration: none;
+    border-radius: 0 0 var(--radius-sm) 0;
+    z-index: 1000;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: top 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.skip-link:focus {
+    top: 0;
+    outline: 2px solid var(--gradient-color-1);
+    outline-offset: 2px;
+}
+
+/* ========================================
+   접근성: 포커스 표시
+   ======================================== */
+
+/* 전역 포커스 스타일 */
+*:focus-visible {
+    outline: 2px solid var(--gradient-color-1);
+    outline-offset: 4px;
+    border-radius: var(--radius-sm);
+}
+
+/* 선택 카드 포커스 */
+.sutra-cards .card:focus-visible {
+    outline: 3px solid var(--gradient-color-1);
+    outline-offset: 4px;
+    box-shadow: 0 0 0 6px rgba(167, 148, 224, 0.2);
+}
+
+/* 타이핑 입력창 포커스 */
+.text-input:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(167, 148, 224, 0.3);
+}
+
+/* 회향 버튼 포커스 */
+.realm-buttons button:focus-visible {
+    outline: 2px solid var(--golden-primary);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 5px rgba(218, 165, 32, 0.2);
+}
+
+.realm-buttons button.primary:focus-visible {
+    outline: 3px solid var(--white);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 6px rgba(244, 208, 63, 0.4);
 }

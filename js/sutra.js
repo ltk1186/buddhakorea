@@ -66,16 +66,35 @@ if (mouseLight) {
 // 화면 전환 (부드럽게)
 // ========================================
 function showScreen(id) {
-    // 현재 화면 페이드 아웃
     const currentScreen = document.querySelector('.screen.show');
-    if (currentScreen) {
-        currentScreen.classList.remove('show');
-    }
 
-    // 새 화면 페이드 인
-    setTimeout(() => {
-        document.getElementById(id).classList.add('show');
-    }, 100);
+    if (currentScreen) {
+        // Fade out current screen
+        currentScreen.style.transition = 'opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+        currentScreen.style.opacity = '0';
+
+        setTimeout(() => {
+            currentScreen.classList.remove('show');
+            currentScreen.style.display = 'none';
+
+            // Fade in new screen
+            const newScreen = document.getElementById(id);
+            newScreen.style.display = 'flex';
+            newScreen.style.opacity = '0';
+            newScreen.classList.add('show');
+
+            requestAnimationFrame(() => {
+                newScreen.style.transition = 'opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+                newScreen.style.opacity = '1';
+            });
+        }, 500);
+    } else {
+        // Initial load
+        const newScreen = document.getElementById(id);
+        newScreen.style.display = 'flex';
+        newScreen.classList.add('show');
+        newScreen.style.opacity = '1';
+    }
 }
 
 // ========================================
@@ -310,13 +329,20 @@ function dedicate(realm) {
         }, reverseIndex * delayPerChar);
     });
 
-    // 모든 애니메이션 완료 후 즉시 선택 화면으로
+    // 모든 애니메이션 완료 후 회향 완료 화면 표시
     setTimeout(() => {
         // charContainer 제거
         if (charContainer.parentNode) {
             charContainer.parentNode.removeChild(charContainer);
         }
-        goBack();
+
+        // 회향 완료 화면 표시
+        showScreen('screen-dedication-complete');
+
+        // 2초 후 사경 선택 화면으로
+        setTimeout(() => {
+            goBack();
+        }, 2000);
     }, totalDuration + 1200); // 5초 + 마지막 글자 애니메이션 1.2초
 }
 
