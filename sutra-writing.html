@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전자 사경 | Buddha Korea</title>
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/sutra.css">
+</head>
+<body>
+
+    <!-- 헤더 -->
+    <header class="site-header">
+        <div class="header-container">
+            <a href="index.html" class="header-logo">
+                <img src="assets/buddha-line.png" alt="Buddha Korea" class="logo-icon">
+                <span class="logo-text">Buddha Korea</span>
+            </a>
+            <nav class="header-nav">
+                <a href="index.html" class="nav-link">홈</a>
+                <a href="sutra-writing.html" class="nav-link">사경</a>
+            </nav>
+        </div>
+    </header>
+    <div class="header-spacer"></div>
+
+    <!-- 마우스 따라다니는 빛 효과 -->
+    <div class="mouse-light"></div>
+
+    <!-- 메인 컨테이너 -->
+    <div class="sutra-page">
+
+        <!-- 1. 경전 선택 화면 -->
+        <div id="screen-select" class="screen show">
+            <div class="center-box">
+                <h1>전자 사경</h1>
+                <p class="subtitle">한 글자 한 글자 정성스럽게 타이핑하며 마음을 가다듬는 수행</p>
+
+                <div class="sutra-cards">
+                    <div class="card" onclick="selectSutra('metta')">
+                        <h2>자애경</h2>
+                        <p>자애의 마음을 기르는 경전</p>
+                    </div>
+                    <div class="card" onclick="selectSutra('mangala')">
+                        <h2>행복경</h2>
+                        <p>참된 행복으로 가는 길</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 사경 작성 화면 -->
+        <div id="screen-write" class="screen">
+            <div class="write-container">
+                <button class="back-btn" onclick="goBack()">← 돌아가기</button>
+
+                <h2 id="sutra-name" class="sutra-name">자애경</h2>
+
+                <!-- 타이핑 박스 -->
+                <div class="type-box">
+                    <div id="text-bg" class="text-bg"></div>
+                    <textarea id="text-input" class="text-input"></textarea>
+                </div>
+
+                <!-- 회향 버튼들 (완성 후 나타남) -->
+                <div id="dedication-box" class="dedication-box">
+                    <h3>공덕을 회향합니다</h3>
+                    <p>이 작은 수행의 공덕을 모든 중생과 함께 나눕니다</p>
+
+                    <div class="realm-buttons">
+                        <button onclick="dedicate('hell')">지옥 중생</button>
+                        <button onclick="dedicate('animal')">축생</button>
+                        <button onclick="dedicate('hungry-ghost')">아귀</button>
+                        <button onclick="dedicate('asura')">아수라</button>
+                        <button onclick="dedicate('human')">인간</button>
+                        <button onclick="dedicate('deva')">천신</button>
+                        <button class="primary" onclick="dedicate('all')">일체 중생</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 완료 화면 -->
+        <div id="screen-done" class="screen">
+            <div class="center-box">
+                <div class="prayer-icon">
+                    <div class="glow"></div>
+                    <div class="hands">🙏</div>
+                </div>
+                <h2>회향되었습니다</h2>
+                <p id="done-message" class="done-msg">이 사경으로 얻은 공덕을<br>일체 중생에게 회향합니다</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="js/sutra.js"></script>
+</body>
+</html>

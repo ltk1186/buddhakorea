@@ -22,6 +22,34 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+    <!-- 고정 헤더 -->
+    <header class="site-header">
+        <div class="header-container">
+            <!-- 로고 -->
+            <a href="index.html" class="header-logo">
+                <img src="assets/buddha-line.png" alt="Buddha Korea" class="logo-icon">
+                <span class="logo-text">Buddha Korea</span>
+            </a>
+            
+            <!-- 네비게이션 -->
+            <nav class="header-nav">
+                <a href="index.html" class="nav-link">홈</a>
+                <div class="nav-dropdown">
+                    <button class="nav-link dropdown-toggle">AI</button>
+                    <div class="dropdown-menu">
+                        <a href="https://notebooklm.google.com/notebook/1f5450ac-8ba6-4c30-b1ce-f63977dabfc1" target="_blank" class="dropdown-item">아비담마 AI</a>
+                        <a href="https://notebooklm.google.com/notebook/18c4a48e-3225-4ddc-abe8-42515c19cbba" target="_blank" class="dropdown-item">청정도론 AI</a>
+                        <a href="https://notebooklm.google.com/notebook/de2a2db1-e57e-428b-903b-43e75506833f" target="_blank" class="dropdown-item">초기불교 AI</a>
+                    </div>
+                </div>
+                <a href="#" onclick="openEphemeralSentences(); return false;" class="nav-link">체험</a>
+                <a href="sutra-writing.html" class="nav-link">사경</a>
+            </nav>
+        </div>
+    </header>
+
+<!-- 헤더 높이만큼 스페이서 (컨텐츠가 헤더에 가려지지 않도록) -->
+<div class="header-spacer"></div>
 
     <!-- 1. Interactive Background Element -->
     <div class="interactive-light"></div>
@@ -133,7 +161,7 @@
             
             <div class="ephemeral-input-wrapper">
                 <div id="ephemeral-canvas" contenteditable="true" spellcheck="false" 
-                     placeholder="여기에 타이핑하세요..."></div>
+                     placeholder="오늘 가장 중요한 것은..."></div>
             </div>
             
             <div class="ephemeral-footer">
