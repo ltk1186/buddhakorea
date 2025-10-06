@@ -282,23 +282,48 @@ body {
 
 /* 부처님 아이콘 스타일 */
 .buddha-icon {
-    /* 🎨 크기 조절 */
+    /* 크기 조절 */
     width: 310px;
     height: auto;
-    
+
     /* 흰색/회색 배경 제거 */
     mix-blend-mode: multiply;
     background: transparent;
-    
-    /* 🎨 색상 및 빛 효과 */
+
+    /* 빛 효과 */
     filter: drop-shadow(0 0 8px rgba(167, 148, 224, 0.4));
     opacity: 0.85;
-    
+
     /* Welcome to와의 간격 */
     margin-bottom: 30px;
-    
+
+    /* 배경 글로우를 위한 포지셔닝 */
+    position: relative;
+    z-index: 1;
+
     /* 부드러운 등장 */
     animation: fadeInScale 1s ease-out;
+}
+
+/* 황금빛 글로우 배경 */
+.buddha-icon::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 140%;
+    height: 140%;
+    background: radial-gradient(
+        circle,
+        rgba(255, 215, 0, 0.15) 0%,
+        rgba(255, 223, 127, 0.1) 30%,
+        rgba(255, 235, 180, 0.05) 50%,
+        transparent 70%
+    );
+    border-radius: 50%;
+    z-index: -1;
+    animation: goldenPulse 4s ease-in-out infinite;
 }
 
 @keyframes fadeInScale {
@@ -312,10 +337,27 @@ body {
     }
 }
 
+@keyframes goldenPulse {
+    0%, 100% {
+        opacity: 0.6;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: translate(-50%, -50%) scale(1.05);
+    }
+}
+
 /* 호버 효과 */
 .buddha-icon:hover {
     transform: scale(1.05);
     filter: drop-shadow(0 0 15px rgba(167, 148, 224, 0.7));
+    transition: var(--transition-smooth);
+}
+
+.buddha-icon:hover::before {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
     transition: var(--transition-smooth);
 }
 
