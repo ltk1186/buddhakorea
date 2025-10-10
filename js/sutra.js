@@ -2,55 +2,13 @@
 // 전자 사경 - 단순하고 확실한 기능
 // ========================================
 
-const SUTRAS = {
-    metta: {
-        title: '자애경',
-        text: `도닦음에 능숙한 자, 고요한 경지를 체험하면서 이처럼 행할지라.
-유능하고 정직하고 진솔하며 고운 말에 온화하고 겸손하네.
-만족하고 공양하기 쉽고 일 없고 검소하며
-감관은 고요하여 슬기롭고 거만 떨지 않고 신도 집에 집착하지 않네.
-현자가 나무랄 일은 그 어떤 것도 하지 않으니
-원컨대 모든 중생 즐겁고 안녕하여 부디 행복할지라.
-약하거나 강하거나 길거나 크거나 중간치이거나
-짧거나 작거나 통통하거나 살아있는 생명이라면 모두 다
-보이거나 보이지 않거나 멀리 있거나 가까이 있거나
-태어났거나 앞으로 태어날, 그 모든 중생 부디 행복할지라.
-남을 속이지 않고, 어떤 곳에서 어떤 이라도 경멸하지 않으며
-성냄과 적개심으로 남의 불행을 바라지 않네.
-어머니가 하나 밖에 없는 친아들을 목숨으로 보호하듯
-모든 중생들을 향해 한량없는 마음을 개발할지라.
-온 세상 위, 아래, 옆으로 장애와 원한과 증오를 넘어
-한량없는 자애의 마음을 개발할지라.
-섰거나 걷거나 앉았거나 누웠거나 깨어있을 때는 언제나
-이 자애의 마음챙김을 개발할지니, 이를 일러 거룩한 삶이라 하네.
-계행을 지닌 자, 사견을 따르지 않고 바른 견을 구족하여
-감각적 욕망에 집착을 버려 다시는 모태에 들지 않으리라.`
-    },
-    mangala: {
-        title: '행복경',
-        text: `이와 같이 나는 들었다. 한 때 세존께서 사왓티의 제따 숲에 있는 급고독원에 머무셨다.
-그 때 밤이 아주 깊어갈 즈음 어떤 천신이 아름다운 모습으로 제따 숲을 두루 환하게 밝히면서 세존께 다가왔다.
-와서는 세존께 절을 올리고 한 곁에 섰다. 한 곁에 서서 그 천신은 세존께 시로써 이와 같이 말씀드렸다.
-많은 천신들과 사람들은 안녕을 바라면서 행복에 대해 생각합니다.
-무엇이 으뜸가는 행복인지 말씀해주십시오.
-어리석은 사람을 섬기지 않고 현명한 사람을 섬기며 예경할 만한 사람을 예경하는 것, 이것이 으뜸가는 행복이라네.
-그러한 적절한 곳에서 살고 일찍이 공덕을 쌓으며 자신을 바르게 확립하는 것, 이것이 으뜸가는 행복이라네.
-많이 배우고 기술을 익히며 계행을 철저히 지니고 고운 말을 하는 것, 이것이 으뜸가는 행복이라네.
-아버지와 어머니를 봉양하고 아내와 자식을 돌보며 생업에 충실한 것, 이것이 으뜸가는 행복이라네.
-베풀고 여법하게 행하며 친척들을 보호하고 비난받을 일이 없는 행위를 하는 것, 이것이 으뜸가는 행복이라네.
-불선법을 피하고 여의며 술 마시는 것을 절제하고 선법들을 향해 게으르지 않는 것, 이것이 으뜸가는 행복이라네.
-존경하고 겸손하며 만족할 줄 알고 은혜를 알며 시시각각 가르침을 듣는 것, 이것이 으뜸가는 행복이라네.
-인내하고 [도반의 말에] 순응하며 출가자를 만나고 때에 맞춰 법을 담론하는 것, 이것이 으뜸가는 행복이라네.
-감각 기능을 단속하고 청정범행을 닦으며 [네 가지] 성스러운 진리를 보고 열반을 실현하는 것, 이것이 으뜸가는 행복이라네.
-세상사에 부딪쳐 마음이 흔들리지 않고 슬픔 없고 티끌 없이 안온한 것, 이것이 으뜸가는 행복이라네.
-이러한 것을 실천하면 어떤 곳에서건 패배하지 않고 모든 곳에서 안녕하리니, 이것이 그들에게 으뜸가는 행복이라네.`
-    }
-};
+import { SUTRA_DATA as SUTRAS, getSutraById, getAnimationClass } from './sutra-data.js';
 
 let sutraText = '';
 let userTyped = '';
 let bgSpans = []; // Cached DOM references
 let rafId = null; // RequestAnimationFrame ID for debouncing
+let currentSutraId = null; // Track currently selected sutra for animations
 
 // ========================================
 // 마우스 빛 효과
@@ -101,12 +59,17 @@ function showScreen(id) {
 // 경전 선택
 // ========================================
 function selectSutra(id) {
+    currentSutraId = id; // Track for category-specific animations
     const sutra = SUTRAS[id];
     sutraText = sutra.text;
     userTyped = '';
 
-    // 제목 설정
-    document.getElementById('sutra-name').textContent = sutra.title;
+    // 제목 설정 (subtitle도 표시)
+    const sutraNameEl = document.getElementById('sutra-name');
+    sutraNameEl.textContent = sutra.title;
+    if (sutra.subtitle) {
+        sutraNameEl.innerHTML = `${sutra.title}<span style="display:block;font-size:0.7em;margin-top:0.3em;opacity:0.7;">${sutra.subtitle}</span>`;
+    }
 
     // 배경 텍스트 생성
     const textBg = document.getElementById('text-bg');
@@ -314,6 +277,11 @@ function dedicate(realm) {
 
     document.querySelector('.type-box').appendChild(charContainer);
 
+    // Get animation class based on sutra category
+    const currentSutra = getSutraById(currentSutraId);
+    const animationClass = getAnimationClass(currentSutra?.category || 'sutra');
+    console.log(`Using animation: ${animationClass} for category: ${currentSutra?.category}`);
+
     // 마지막 글자부터 순차적으로 애니메이션 (5초 동안)
     const charSpans = charContainer.querySelectorAll('span');
     const totalDuration = 5000; // 5초
@@ -323,9 +291,20 @@ function dedicate(realm) {
 
     charSpans.forEach((span, i) => {
         const reverseIndex = charSpans.length - 1 - i; // 마지막부터
+
+        // For mantra radiation, add random direction vectors
+        if (animationClass === 'char-radiate') {
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 15 + Math.random() * 10; // 15-25px
+            const x = Math.cos(angle) * distance;
+            const y = Math.sin(angle) * distance;
+            span.style.setProperty('--radiate-x', `${x}px`);
+            span.style.setProperty('--radiate-y', `${y}px`);
+        }
+
         setTimeout(() => {
-            span.classList.add('char-fade');
-            console.log('Fading char', i);
+            span.classList.add(animationClass);
+            console.log(`Animating char ${i} with ${animationClass}`);
         }, reverseIndex * delayPerChar);
     });
 
@@ -368,6 +347,10 @@ function goBack() {
         input.disabled = false;
         input.style.opacity = '1';
         input.value = '';
+        input.readOnly = false;
+        // Clear any event listeners by cloning
+        const newInput = input.cloneNode(true);
+        input.parentNode.replaceChild(newInput, input);
     }
 
     // 텍스트 초기화
@@ -377,8 +360,53 @@ function goBack() {
         textBg.style.opacity = '1';
     }
 
+    // 회향 박스 숨기기 및 초기화
+    const dedicationBox = document.getElementById('dedication-box');
+    if (dedicationBox) {
+        dedicationBox.classList.remove('show');
+        dedicationBox.style.display = 'none';
+    }
+
+    // RAF cleanup
+    if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+    }
+
     showScreen('screen-select');
     sutraText = '';
     userTyped = '';
     bgSpans = [];
+    currentSutraId = null;
+
+    console.log('Session cleaned up - ready for new 사경');
 }
+
+// ========================================
+// AI Navigation Button
+// ========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const aiNavButton = document.getElementById('ai-nav-button');
+    if (aiNavButton) {
+        aiNavButton.addEventListener('click', (event) => {
+            // On mobile: redirect to main page AI section and prevent dropdown
+            // On desktop: allow dropdown to open
+            const isMobile = window.innerWidth <= 768;
+
+            if (isMobile) {
+                event.preventDefault();
+                event.stopPropagation();
+                // Redirect to index page AI section
+                window.location.href = 'index.html#ai-tools';
+            }
+            // On desktop, do nothing - let dropdown work normally
+        });
+    }
+});
+
+// ========================================
+// Expose functions globally for HTML onclick handlers
+// ========================================
+window.selectSutra = selectSutra;
+window.goBack = goBack;
+window.dedicate = dedicate;

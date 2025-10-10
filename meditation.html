@@ -30,8 +30,17 @@
             </a>
             <nav class="header-nav">
                 <a href="index.html" class="nav-link">홈</a>
+                <div class="nav-dropdown">
+                    <button class="nav-link dropdown-toggle" id="ai-nav-button">AI</button>
+                    <div class="dropdown-menu">
+                        <a href="https://notebooklm.google.com/notebook/1f5450ac-8ba6-4c30-b1ce-f63977dabfc1" target="_blank" class="dropdown-item">아비담마 AI</a>
+                        <a href="https://notebooklm.google.com/notebook/18c4a48e-3225-4ddc-abe8-42515c19cbba" target="_blank" class="dropdown-item">청정도론 AI</a>
+                        <a href="https://notebooklm.google.com/notebook/de2a2db1-e57e-428b-903b-43e75506833f" target="_blank" class="dropdown-item">초기불교 AI</a>
+                    </div>
+                </div>
                 <a href="sutra-writing.html" class="nav-link">사경</a>
                 <a href="meditation.html" class="nav-link">명상</a>
+                <a href="teaching.html" class="nav-link">교학</a>
             </nav>
         </div>
     </header>
@@ -119,7 +128,13 @@
 
                 <!-- 호흡 원 -->
                 <div class="breathing-circle" role="region" aria-label="명상 진행 표시">
-                    <svg class="progress-ring" width="300" height="300">
+                    <svg class="progress-ring" viewBox="0 0 300 300" width="300" height="300" preserveAspectRatio="xMidYMid meet">
+                        <defs>
+                            <linearGradient id="breathing-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#89b8ff;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#9bebb4;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
                         <circle class="progress-ring-bg" cx="150" cy="150" r="140" />
                         <circle class="progress-ring-circle" cx="150" cy="150" r="140" />
                     </svg>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self';
+                   style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+                   font-src 'self' https://cdn.jsdelivr.net;
+                   script-src 'self';
+                   img-src 'self' data:;
+                   connect-src 'self';">
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <title>교학 - 불교 핵심 교리 | Buddha Korea</title>
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/teaching.css">
+</head>
+<body>
+    <!-- 접근성: 건너뛰기 링크 -->
+    <a href="#teaching-intro" class="skip-link">교학 내용으로 건너뛰기</a>
+
+    <!-- 헤더 -->
+    <header class="site-header">
+        <div class="header-container">
+            <a href="index.html" class="header-logo">
+                <img src="assets/buddha-line.png" alt="Buddha Korea" class="logo-icon">
+                <span class="logo-text">Buddha Korea</span>
+            </a>
+            <nav class="header-nav">
+                <a href="index.html" class="nav-link">홈</a>
+                <div class="nav-dropdown">
+                    <button class="nav-link dropdown-toggle" id="ai-nav-button">AI</button>
+                    <div class="dropdown-menu">
+                        <a href="https://notebooklm.google.com/notebook/1f5450ac-8ba6-4c30-b1ce-f63977dabfc1" target="_blank" class="dropdown-item">아비담마 AI</a>
+                        <a href="https://notebooklm.google.com/notebook/18c4a48e-3225-4ddc-abe8-42515c19cbba" target="_blank" class="dropdown-item">청정도론 AI</a>
+                        <a href="https://notebooklm.google.com/notebook/de2a2db1-e57e-428b-903b-43e75506833f" target="_blank" class="dropdown-item">초기불교 AI</a>
+                    </div>
+                </div>
+                <a href="sutra-writing.html" class="nav-link">사경</a>
+                <a href="meditation.html" class="nav-link">명상</a>
+                <a href="teaching.html" class="nav-link">교학</a>
+            </nav>
+        </div>
+    </header>
+    <div class="header-spacer"></div>
+
+    <!-- 메인 컨테이너 -->
+    <div class="teaching-page">
+
+        <!-- 소개 섹션 -->
+        <section id="teaching-intro" class="section">
+            <div class="container">
+                <h1 class="reveal">교학</h1>
+                <p class="subtitle reveal" style="transition-delay: 100ms;">
+                    부처님의 가르침을 인터랙티브하게 배웁니다
+                </p>
+                <p class="intro-text reveal" style="transition-delay: 200ms;">
+                    복잡한 교리를 시각화하여 이해를 돕고,<br>
+                    직접 상호작용하며 깊이 있게 학습합니다.
+                </p>
+            </div>
+        </section>
+
+        <!-- 사성제 다이어그램 -->
+        <section id="four-truths" class="section diagram-section">
+            <div class="container">
+                <h2 class="section-title reveal">사성제 (四聖諦)</h2>
+                <p class="section-subtitle reveal" style="transition-delay: 100ms;">
+                    Four Noble Truths - 부처님 가르침의 핵심
+                </p>
+
+                <!-- SVG 다이어그램 -->
+                <div class="diagram-container reveal" style="transition-delay: 200ms;">
+                    <svg id="four-truths-svg" viewBox="0 0 800 500" class="teaching-diagram">
+                        <!-- 배경 그라디언트 정의 -->
+                        <defs>
+                            <linearGradient id="truthGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#a794e0;stop-opacity:0.08" />
+                                <stop offset="100%" style="stop-color:#a794e0;stop-opacity:0.15" />
+                            </linearGradient>
+                            <linearGradient id="truthGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#89b8ff;stop-opacity:0.08" />
+                                <stop offset="100%" style="stop-color:#89b8ff;stop-opacity:0.15" />
+                            </linearGradient>
+                            <linearGradient id="truthGradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#9bebb4;stop-opacity:0.08" />
+                                <stop offset="100%" style="stop-color:#9bebb4;stop-opacity:0.15" />
+                            </linearGradient>
+                            <linearGradient id="truthGradient4" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#daa520;stop-opacity:0.08" />
+                                <stop offset="100%" style="stop-color:#daa520;stop-opacity:0.15" />
+                            </linearGradient>
+                        </defs>
+
+                        <!-- 카드 1: 고(苦) - 괴로움 -->
+                        <g class="truth-card" data-truth="dukkha">
+                            <rect x="50" y="40" width="330" height="180" rx="16"
+                                  fill="url(#truthGradient1)" stroke="#a794e0" stroke-width="2.5" />
+                            <text x="215" y="90" text-anchor="middle" class="truth-number">1</text>
+                            <text x="215" y="135" text-anchor="middle" class="truth-title">고제 (苦諦)</text>
+                            <text x="215" y="165" text-anchor="middle" class="truth-subtitle">괴로움</text>
+                            <text x="215" y="195" text-anchor="middle" class="truth-pali">Dukkha</text>
+                        </g>
+
+                        <!-- 카드 2: 집(集) - 원인 -->
+                        <g class="truth-card" data-truth="samudaya">
+                            <rect x="420" y="40" width="330" height="180" rx="16"
+                                  fill="url(#truthGradient2)" stroke="#89b8ff" stroke-width="2.5" />
+                            <text x="585" y="90" text-anchor="middle" class="truth-number">2</text>
+                            <text x="585" y="135" text-anchor="middle" class="truth-title">집제 (集諦)</text>
+                            <text x="585" y="165" text-anchor="middle" class="truth-subtitle">원인</text>
+                            <text x="585" y="195" text-anchor="middle" class="truth-pali">Samudaya</text>
+                        </g>
+
+                        <!-- 카드 3: 멸(滅) - 소멸 -->
+                        <g class="truth-card" data-truth="nirodha">
+                            <rect x="50" y="280" width="330" height="180" rx="16"
+                                  fill="url(#truthGradient3)" stroke="#9bebb4" stroke-width="2.5" />
+                            <text x="215" y="330" text-anchor="middle" class="truth-number">3</text>
+                            <text x="215" y="375" text-anchor="middle" class="truth-title">멸제 (滅諦)</text>
+                            <text x="215" y="405" text-anchor="middle" class="truth-subtitle">소멸</text>
+                            <text x="215" y="435" text-anchor="middle" class="truth-pali">Nirodha</text>
+                        </g>
+
+                        <!-- 카드 4: 도(道) - 길 -->
+                        <g class="truth-card" data-truth="magga">
+                            <rect x="420" y="280" width="330" height="180" rx="16"
+                                  fill="url(#truthGradient4)" stroke="#daa520" stroke-width="2.5" />
+                            <text x="585" y="330" text-anchor="middle" class="truth-number">4</text>
+                            <text x="585" y="375" text-anchor="middle" class="truth-title">도제 (道諦)</text>
+                            <text x="585" y="405" text-anchor="middle" class="truth-subtitle">길</text>
+                            <text x="585" y="435" text-anchor="middle" class="truth-pali">Magga</text>
+                        </g>
+                    </svg>
+                </div>
+
+                <!-- 설명 패널 -->
+                <div id="truth-explanation" class="explanation-panel">
+                    <button class="panel-close" id="close-explanation" aria-label="설명 닫기">✕</button>
+                    <div class="panel-content">
+                        <h3 id="exp-title"></h3>
+                        <p class="exp-pali" id="exp-pali"></p>
+                        <p class="exp-description" id="exp-description"></p>
+                        <div class="exp-source" id="exp-source"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 팔정도 다이어그램 -->
+        <section id="eightfold-path" class="section diagram-section">
+            <div class="container">
+                <h2 class="section-title reveal">팔정도 (八正道)</h2>
+                <p class="section-subtitle reveal" style="transition-delay: 100ms;">
+                    Noble Eightfold Path - 괴로움의 소멸로 가는 길
+                </p>
+
+                <!-- SVG 다이어그램 -->
+                <div class="diagram-container reveal" style="transition-delay: 200ms;">
+                    <svg id="eightfold-path-svg" viewBox="0 0 800 800" class="teaching-diagram">
+                        <!-- 배경 그라디언트 정의 -->
+                        <defs>
+                            <linearGradient id="pathGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#daa520;stop-opacity:0.08" />
+                                <stop offset="100%" style="stop-color:#daa520;stop-opacity:0.15" />
+                            </linearGradient>
+                            <linearGradient id="pathGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#a794e0;stop-opacity:0.08" />
+                                <stop offset="100%" style="stop-color:#a794e0;stop-opacity:0.15" />
+                            </linearGradient>
+                            <linearGradient id="pathGradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#89b8ff;stop-opacity:0.08" />
+                                <stop offset="100%" style="stop-color:#89b8ff;stop-opacity:0.15" />
+                            </linearGradient>
+                            <linearGradient id="pathGradient4" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#9bebb4;stop-opacity:0.08" />
+                                <stop offset="100%" style="stop-color:#9bebb4;stop-opacity:0.15" />
+                            </linearGradient>
+                        </defs>
+
+                        <!-- 중심 원 -->
+                        <circle cx="400" cy="400" r="80" fill="none" stroke="#daa520" stroke-width="2" opacity="0.3" />
+                        <text x="400" y="395" text-anchor="middle" class="center-label">팔정도</text>
+                        <text x="400" y="420" text-anchor="middle" class="center-sublabel">八正道</text>
+
+                        <!-- 1. 정견 (正見) - Top -->
+                        <g class="path-card" data-path="right-view">
+                            <rect x="310" y="50" width="180" height="120" rx="12"
+                                  fill="url(#pathGradient1)" stroke="#daa520" stroke-width="2" />
+                            <text x="400" y="85" text-anchor="middle" class="path-number">1</text>
+                            <text x="400" y="115" text-anchor="middle" class="path-title">정견</text>
+                            <text x="400" y="140" text-anchor="middle" class="path-subtitle">正見</text>
+                            <text x="400" y="160" text-anchor="middle" class="path-pali">Right View</text>
+                        </g>
+
+                        <!-- 2. 정사유 (正思惟) - Top Right -->
+                        <g class="path-card" data-path="right-intention">
+                            <rect x="555" y="135" width="180" height="120" rx="12"
+                                  fill="url(#pathGradient2)" stroke="#a794e0" stroke-width="2" />
+                            <text x="645" y="170" text-anchor="middle" class="path-number">2</text>
+                            <text x="645" y="200" text-anchor="middle" class="path-title">정사유</text>
+                            <text x="645" y="225" text-anchor="middle" class="path-subtitle">正思惟</text>
+                            <text x="645" y="245" text-anchor="middle" class="path-pali">Right Intention</text>
+                        </g>
+
+                        <!-- 3. 정어 (正語) - Right -->
+                        <g class="path-card" data-path="right-speech">
+                            <rect x="555" y="340" width="180" height="120" rx="12"
+                                  fill="url(#pathGradient3)" stroke="#89b8ff" stroke-width="2" />
+                            <text x="645" y="375" text-anchor="middle" class="path-number">3</text>
+                            <text x="645" y="405" text-anchor="middle" class="path-title">정어</text>
+                            <text x="645" y="430" text-anchor="middle" class="path-subtitle">正語</text>
+                            <text x="645" y="450" text-anchor="middle" class="path-pali">Right Speech</text>
+                        </g>
+
+                        <!-- 4. 정업 (正業) - Bottom Right -->
+                        <g class="path-card" data-path="right-action">
+                            <rect x="555" y="545" width="180" height="120" rx="12"
+                                  fill="url(#pathGradient4)" stroke="#9bebb4" stroke-width="2" />
+                            <text x="645" y="580" text-anchor="middle" class="path-number">4</text>
+                            <text x="645" y="610" text-anchor="middle" class="path-title">정업</text>
+                            <text x="645" y="635" text-anchor="middle" class="path-subtitle">正業</text>
+                            <text x="645" y="655" text-anchor="middle" class="path-pali">Right Action</text>
+                        </g>
+
+                        <!-- 5. 정명 (正命) - Bottom -->
+                        <g class="path-card" data-path="right-livelihood">
+                            <rect x="310" y="630" width="180" height="120" rx="12"
+                                  fill="url(#pathGradient1)" stroke="#daa520" stroke-width="2" />
+                            <text x="400" y="665" text-anchor="middle" class="path-number">5</text>
+                            <text x="400" y="695" text-anchor="middle" class="path-title">정명</text>
+                            <text x="400" y="720" text-anchor="middle" class="path-subtitle">正命</text>
+                            <text x="400" y="740" text-anchor="middle" class="path-pali">Right Livelihood</text>
+                        </g>
+
+                        <!-- 6. 정정진 (正精進) - Bottom Left -->
+                        <g class="path-card" data-path="right-effort">
+                            <rect x="65" y="545" width="180" height="120" rx="12"
+                                  fill="url(#pathGradient2)" stroke="#a794e0" stroke-width="2" />
+                            <text x="155" y="580" text-anchor="middle" class="path-number">6</text>
+                            <text x="155" y="610" text-anchor="middle" class="path-title">정정진</text>
+                            <text x="155" y="635" text-anchor="middle" class="path-subtitle">正精進</text>
+                            <text x="155" y="655" text-anchor="middle" class="path-pali">Right Effort</text>
+                        </g>
+
+                        <!-- 7. 정념 (正念) - Left -->
+                        <g class="path-card" data-path="right-mindfulness">
+                            <rect x="65" y="340" width="180" height="120" rx="12"
+                                  fill="url(#pathGradient3)" stroke="#89b8ff" stroke-width="2" />
+                            <text x="155" y="375" text-anchor="middle" class="path-number">7</text>
+                            <text x="155" y="405" text-anchor="middle" class="path-title">정념</text>
+                            <text x="155" y="430" text-anchor="middle" class="path-subtitle">正念</text>
+                            <text x="155" y="450" text-anchor="middle" class="path-pali">Right Mindfulness</text>
+                        </g>
+
+                        <!-- 8. 정정 (正定) - Top Left -->
+                        <g class="path-card" data-path="right-concentration">
+                            <rect x="65" y="135" width="180" height="120" rx="12"
+                                  fill="url(#pathGradient4)" stroke="#9bebb4" stroke-width="2" />
+                            <text x="155" y="170" text-anchor="middle" class="path-number">8</text>
+                            <text x="155" y="200" text-anchor="middle" class="path-title">정정</text>
+                            <text x="155" y="225" text-anchor="middle" class="path-subtitle">正定</text>
+                            <text x="155" y="245" text-anchor="middle" class="path-pali">Right Concentration</text>
+                        </g>
+                    </svg>
+                </div>
+
+                <!-- 설명 패널 -->
+                <div id="path-explanation" class="explanation-panel">
+                    <button class="panel-close" id="close-path-explanation" aria-label="설명 닫기">✕</button>
+                    <div class="panel-content">
+                        <h3 id="path-exp-title"></h3>
+                        <p class="exp-pali" id="path-exp-pali"></p>
+                        <p class="exp-description" id="path-exp-description"></p>
+                        <div class="exp-source" id="path-exp-source"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 안내 텍스트 -->
+        <section class="section">
+            <div class="container">
+                <div class="info-card reveal">
+                    <h3>사용 방법</h3>
+                    <p>각 가르침을 클릭하여 상세한 설명을 확인하세요.</p>
+                </div>
+
+                <div class="info-card reveal" style="transition-delay: 100ms;">
+                    <h3>출처</h3>
+                    <p>이 가르침은 <strong>상윳따 니까야 56.11</strong> (전법륜경, Dhammacakkappavattana Sutta)에서 부처님께서 처음 설하신 내용입니다.</p>
+                    <p class="source-detail">번역: Bhikkhu Bodhi (The Connected Discourses of the Buddha)</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/main.js"></script>
+    <script src="js/teaching.js"></script>
+</body>
+</html>

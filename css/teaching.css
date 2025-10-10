@@ -1,0 +1,474 @@
+/* ========================================
+   교학 페이지 - 불교 핵심 교리 시각화
+   ======================================== */
+
+:root {
+    /* Teaching page colors */
+    --teaching-primary: #a794e0;
+    --teaching-secondary: #89b8ff;
+    --teaching-accent: #9bebb4;
+    --teaching-gold: #daa520;
+}
+
+/* 페이지 배경 */
+.teaching-page {
+    min-height: 100vh;
+    background: var(--color-background);
+}
+
+/* 섹션 */
+.teaching-page .section {
+    padding: 80px 0;
+}
+
+/* 소개 섹션 */
+#teaching-intro {
+    text-align: center;
+    padding: 120px 0 80px;
+}
+
+#teaching-intro h1 {
+    font-size: clamp(2.5rem, 7vw, 4rem);
+    font-weight: 300;
+    margin: 0 0 16px;
+    background: linear-gradient(120deg, var(--teaching-primary), var(--teaching-gold));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+
+.intro-text {
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+    line-height: 1.8;
+    margin: 24px 0;
+}
+
+/* 다이어그램 섹션 */
+.diagram-section {
+    padding: 60px 0;
+}
+
+.section-title {
+    font-size: clamp(2rem, 5vw, 2.5rem);
+    font-weight: 400;
+    text-align: center;
+    margin: 0 0 12px;
+    color: var(--color-text-primary);
+}
+
+.section-subtitle {
+    font-size: 1.1rem;
+    color: var(--color-text-secondary);
+    text-align: center;
+    margin: 0 0 60px;
+    font-style: italic;
+}
+
+/* SVG 다이어그램 컨테이너 */
+.diagram-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.teaching-diagram {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* 사성제 카드 */
+.truth-card {
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.truth-card:hover {
+    transform: scale(1.03);
+}
+
+.truth-card:hover rect {
+    filter: drop-shadow(0 8px 24px rgba(167, 148, 224, 0.2));
+}
+
+.truth-card:active {
+    transform: scale(0.98);
+}
+
+/* 카드 텍스트 */
+.truth-number {
+    font-size: 28px;
+    font-weight: 200;
+    fill: var(--color-text-secondary);
+    opacity: 0.5;
+}
+
+.truth-title {
+    font-size: 24px;
+    font-weight: 600;
+    fill: var(--color-text-primary);
+    letter-spacing: 0.02em;
+}
+
+.truth-subtitle {
+    font-size: 16px;
+    font-weight: 400;
+    fill: var(--color-text-secondary);
+    opacity: 0.8;
+}
+
+.truth-pali {
+    font-size: 14px;
+    font-weight: 400;
+    fill: var(--color-text-secondary);
+    opacity: 0.6;
+    font-style: italic;
+}
+
+/* 설명 패널 */
+.explanation-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.explanation-panel.show {
+    display: flex;
+    opacity: 1;
+}
+
+.panel-content {
+    background: var(--color-background);
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: panelSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes panelSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.panel-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: transparent;
+    border: none;
+    font-size: 28px;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.panel-close:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--color-text-primary);
+}
+
+.panel-content h3 {
+    font-size: 1.8rem;
+    font-weight: 500;
+    margin: 0 0 16px;
+    color: var(--teaching-primary);
+}
+
+.exp-pali {
+    font-size: 1.1rem;
+    font-style: italic;
+    color: var(--color-text-secondary);
+    margin: 0 0 24px;
+}
+
+.exp-description {
+    font-size: 1.05rem;
+    line-height: 2;
+    color: var(--color-text-primary);
+    margin: 0 0 32px;
+    letter-spacing: -0.003em;
+}
+
+.exp-source {
+    background: rgba(137, 184, 255, 0.1);
+    border-left: 3px solid var(--teaching-secondary);
+    padding: 16px 20px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+}
+
+.exp-source strong {
+    color: var(--teaching-secondary);
+    font-weight: 600;
+}
+
+/* 안내 카드 */
+.info-card {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(137, 184, 255, 0.15);
+    border-radius: 20px;
+    padding: 32px;
+    margin-bottom: 24px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.info-card h3 {
+    font-size: 1.4rem;
+    font-weight: 500;
+    margin: 0 0 16px;
+    color: var(--teaching-primary);
+}
+
+.info-card p {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--color-text-primary);
+    margin: 0 0 12px;
+}
+
+.info-card p:last-child {
+    margin-bottom: 0;
+}
+
+.source-detail {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    font-style: italic;
+}
+
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+    .teaching-page .section {
+        padding: 60px 0;
+    }
+
+    #teaching-intro {
+        padding: 100px 0 60px;
+    }
+
+    .section-title {
+        font-size: 2rem;
+    }
+
+    .section-subtitle {
+        font-size: 1rem;
+        margin-bottom: 40px;
+    }
+
+    .diagram-container {
+        padding: 20px 10px;
+    }
+
+    /* SVG 텍스트 크기 조정 */
+    .truth-number {
+        font-size: 20px;
+    }
+
+    .truth-title {
+        font-size: 16px;
+    }
+
+    /* 팔정도 텍스트 크기 조정 */
+    .path-number {
+        font-size: 18px;
+    }
+
+    .path-title {
+        font-size: 16px;
+    }
+
+    .path-subtitle {
+        font-size: 12px;
+    }
+
+    .path-pali {
+        font-size: 10px;
+    }
+
+    .center-label {
+        font-size: 16px;
+    }
+
+    .center-sublabel {
+        font-size: 12px;
+    }
+
+    .panel-content {
+        padding: 32px 24px;
+        max-height: 90vh;
+    }
+
+    .panel-content h3 {
+        font-size: 1.5rem;
+    }
+
+    .exp-description {
+        font-size: 1rem;
+        line-height: 1.9;
+    }
+
+    .info-card {
+        padding: 24px;
+    }
+}
+
+/* 초소형 화면 */
+@media (max-width: 428px) {
+    .truth-number {
+        font-size: 18px;
+    }
+
+    .truth-title {
+        font-size: 14px;
+    }
+
+    .panel-content {
+        padding: 24px 20px;
+    }
+
+    .exp-pali {
+        font-size: 1rem;
+    }
+}
+
+/* 팔정도 카드 */
+.path-card {
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.path-card:hover {
+    transform: scale(1.03);
+}
+
+.path-card:hover rect {
+    filter: drop-shadow(0 8px 24px rgba(167, 148, 224, 0.2));
+}
+
+.path-card:active {
+    transform: scale(0.98);
+}
+
+/* 팔정도 카드 텍스트 */
+.path-number {
+    font-size: 22px;
+    font-weight: 200;
+    fill: var(--color-text-secondary);
+    opacity: 0.5;
+}
+
+.path-title {
+    font-size: 20px;
+    font-weight: 600;
+    fill: var(--color-text-primary);
+    letter-spacing: 0.02em;
+}
+
+.path-subtitle {
+    font-size: 14px;
+    font-weight: 400;
+    fill: var(--color-text-secondary);
+    opacity: 0.8;
+}
+
+.path-pali {
+    font-size: 12px;
+    font-weight: 400;
+    fill: var(--color-text-secondary);
+    opacity: 0.6;
+    font-style: italic;
+}
+
+/* 중심 원 라벨 */
+.center-label {
+    font-size: 20px;
+    font-weight: 500;
+    fill: var(--color-text-primary);
+}
+
+.center-sublabel {
+    font-size: 14px;
+    font-weight: 400;
+    fill: var(--color-text-secondary);
+    opacity: 0.7;
+}
+
+/* 터치 디바이스 최적화 */
+@media (hover: none) and (pointer: coarse) {
+    .truth-card:hover rect {
+        fill-opacity: 0.2;
+        stroke-width: 2;
+    }
+
+    .truth-card:active rect {
+        fill-opacity: 0.4;
+        stroke-width: 3;
+    }
+
+    .path-card:hover rect {
+        fill-opacity: 0.2;
+        stroke-width: 2;
+    }
+
+    .path-card:active rect {
+        fill-opacity: 0.4;
+        stroke-width: 3;
+    }
+}
+
+/* 접근성: 감소된 모션 */
+@media (prefers-reduced-motion: reduce) {
+    .truth-card,
+    .path-card,
+    .connection-line,
+    .panel-content {
+        transition-duration: 0.1s;
+    }
+
+    .connection-cycle {
+        animation: none;
+    }
+
+    @keyframes panelSlideIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+}

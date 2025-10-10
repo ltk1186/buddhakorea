@@ -188,6 +188,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { passive: false });
     }
 
+    // AI 네비게이션 버튼
+    const aiNavButton = document.getElementById('ai-nav-button');
+    if (aiNavButton) {
+        aiNavButton.addEventListener('click', (event) => {
+            // On mobile: redirect to main page AI section and prevent dropdown
+            // On desktop: allow dropdown to open
+            const isMobile = window.innerWidth <= 768;
+
+            if (isMobile) {
+                event.preventDefault();
+                event.stopPropagation();
+                // Redirect to index page AI section
+                window.location.href = 'index.html#ai-tools';
+            }
+            // On desktop, do nothing - let dropdown work normally
+        });
+    }
+
     console.log('All event listeners bound successfully');
 });
 

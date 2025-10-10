@@ -176,6 +176,94 @@ body {
     color: var(--white);
 }
 
+/* Category tabs */
+.category-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 50px;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid rgba(167, 148, 224, 0.2);
+    border-radius: 20px;
+    padding: 12px 28px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    font-family: inherit;
+}
+
+.tab-btn:hover {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(167, 148, 224, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(167, 148, 224, 0.25);
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, var(--gradient-color-1), var(--gradient-color-2));
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 10px 30px rgba(167, 148, 224, 0.35);
+}
+
+.tab-btn:focus {
+    outline: 2px solid var(--gradient-color-2);
+    outline-offset: 2px;
+}
+
+/* Card subtitle (한자) */
+.card-subtitle {
+    display: block;
+    font-size: 0.8em;
+    margin-top: 0.3em;
+    opacity: 0.7;
+    font-weight: 400;
+}
+
+/* Card description */
+.card-description {
+    margin-bottom: 15px !important;
+}
+
+/* Card metadata */
+.card-meta {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(167, 148, 224, 0.15);
+    font-size: 0.9rem;
+    position: relative;
+    z-index: 1;
+}
+
+.card-meta span {
+    color: var(--text-muted);
+    transition: color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sutra-cards .card:hover .card-meta span {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.meta-time::before {
+    content: '⏱ ';
+}
+
+.meta-length::before {
+    content: '📝 ';
+}
+
 /* ========================================
    2. 사경 작성 화면
    ======================================== */
@@ -369,6 +457,7 @@ body {
     transition: var(--transition-quick);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     overflow: hidden;
+    z-index: 1;
 }
 
 .realm-buttons button::before {
@@ -379,7 +468,13 @@ body {
     opacity: 0;
     border-radius: inherit;
     transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    z-index: 0;
+    z-index: -1;
+}
+
+.realm-buttons button span,
+.realm-buttons button * {
+    position: relative;
+    z-index: 1;
 }
 
 .realm-buttons button:hover {
@@ -579,6 +674,108 @@ body {
     }
 }
 
+/* 진언 - 가피의 빛이 사방으로 퍼져나감 */
+#char-container span.char-radiate {
+    animation: charBlessingRadiate var(--char-fade-duration) ease-out forwards;
+    transition: none;
+    will-change: transform, opacity, filter;
+    display: inline-block;
+}
+
+@keyframes charBlessingRadiate {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+        filter: blur(0) brightness(1);
+        -webkit-filter: blur(0) brightness(1);
+        text-shadow:
+            0 0 20px rgba(218, 165, 32, 0.4),
+            0 0 40px rgba(218, 165, 32, 0.2);
+    }
+    25% {
+        opacity: 0.9;
+        transform: translate(var(--radiate-x, 0), var(--radiate-y, 0)) scale(1.15);
+        filter: blur(0.5px) brightness(1.3);
+        -webkit-filter: blur(0.5px) brightness(1.3);
+        text-shadow:
+            0 0 30px rgba(218, 165, 32, 0.6),
+            0 0 60px rgba(218, 165, 32, 0.4);
+    }
+    50% {
+        opacity: 0.65;
+        transform: translate(calc(var(--radiate-x, 0) * 2), calc(var(--radiate-y, 0) * 2)) scale(1.3);
+        filter: blur(2px) brightness(1.4);
+        -webkit-filter: blur(2px) brightness(1.4);
+        text-shadow:
+            0 0 40px rgba(218, 165, 32, 0.5),
+            0 0 80px rgba(218, 165, 32, 0.3);
+    }
+    75% {
+        opacity: 0.35;
+        transform: translate(calc(var(--radiate-x, 0) * 3.5), calc(var(--radiate-y, 0) * 3.5)) scale(1.4);
+        filter: blur(4px) brightness(1.3);
+        -webkit-filter: blur(4px) brightness(1.3);
+        text-shadow:
+            0 0 50px rgba(218, 165, 32, 0.3),
+            0 0 100px rgba(218, 165, 32, 0.2);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(calc(var(--radiate-x, 0) * 5), calc(var(--radiate-y, 0) * 5)) scale(1.5);
+        filter: blur(8px) brightness(1);
+        -webkit-filter: blur(8px) brightness(1);
+        text-shadow:
+            0 0 60px rgba(218, 165, 32, 0.1),
+            0 0 120px rgba(218, 165, 32, 0.05);
+    }
+}
+
+/* 명호 - 정토로 향해 올라감 */
+#char-container span.char-pureland {
+    animation: charPureLandAscend var(--char-fade-duration) ease-out forwards;
+    transition: none;
+    will-change: transform, opacity, filter;
+    display: inline-block;
+}
+
+@keyframes charPureLandAscend {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0) brightness(1);
+        -webkit-filter: blur(0) brightness(1);
+        color: #daa520;
+    }
+    15% {
+        opacity: 1;
+        transform: translateY(-8px) scale(1.05);
+        filter: blur(0) brightness(1.15);
+        -webkit-filter: blur(0) brightness(1.15);
+        color: #f4d03f;
+    }
+    40% {
+        opacity: 0.9;
+        transform: translateY(-50px) scale(1.1);
+        filter: blur(1px) brightness(1.35);
+        -webkit-filter: blur(1px) brightness(1.35);
+        color: #fffacd;
+    }
+    70% {
+        opacity: 0.5;
+        transform: translateY(-110px) scale(1.15);
+        filter: blur(3px) brightness(1.5);
+        -webkit-filter: blur(3px) brightness(1.5);
+        color: #ffffe0;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-180px) scale(1.2);
+        filter: blur(6px) brightness(1.7);
+        -webkit-filter: blur(6px) brightness(1.7);
+        color: #ffffff;
+    }
+}
+
 /* 접근성: 움직임 선호도 감소 설정 지원 */
 @media (prefers-reduced-motion: reduce) {
     /* 타이핑 박스 호흡 애니메이션 비활성화 */
@@ -603,7 +800,9 @@ body {
     }
 
     /* 글자 사라지기 애니메이션 단축 */
-    #char-container span.char-fade {
+    #char-container span.char-fade,
+    #char-container span.char-radiate,
+    #char-container span.char-pureland {
         animation-duration: 0.4s;
     }
 
@@ -617,6 +816,36 @@ body {
         100% {
             opacity: 0;
             transform: translateY(-20px);
+            filter: blur(1px);
+            -webkit-filter: blur(1px);
+        }
+    }
+
+    @keyframes charBlessingRadiate {
+        0% {
+            opacity: 1;
+            transform: translate(0, 0) scale(1);
+            filter: blur(0);
+            -webkit-filter: blur(0);
+        }
+        100% {
+            opacity: 0;
+            transform: translate(calc(var(--radiate-x, 0) * 0.5), calc(var(--radiate-y, 0) * 0.5)) scale(1.2);
+            filter: blur(1px);
+            -webkit-filter: blur(1px);
+        }
+    }
+
+    @keyframes charPureLandAscend {
+        0% {
+            opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
+            -webkit-filter: blur(0);
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(-40px);
             filter: blur(1px);
             -webkit-filter: blur(1px);
         }

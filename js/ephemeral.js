@@ -24,13 +24,14 @@
 
 // 설정 값
 const CONFIG = {
-    FADE_DELAY: 1500,              // 글자 사라지기 시작까지 딜레이 (ms)
-    USE_PARTICLE_EFFECT: true,   // true: 파티클 효과, false: 기본 페이드
+    FADE_DELAY: 3000,              // 글자 사라지기 시작까지 딜레이 (ms)
+    USE_PARTICLE_EFFECT: false,   // true: 파티클 효과, false: 황금빛 연기 효과
     PARTICLE_DISTANCE: 150,       // 파티클이 흩어지는 거리 (px)
 };
 
 let typingTimer;
 let canvas;
+let isComposing = false; // Korean IME composition flag
 
 // 모달 열기
 function openEphemeralSentences() {
@@ -71,13 +72,26 @@ function handleEscapeKey(e) {
 // 이벤트 리스너 설정
 function setupEventListeners() {
     if (!canvas) return;
-    
-    // 타이핑 이벤트 (한글 조합 완료 시에만 처리)
+
+    // 한글 조합 시작
+    canvas.addEventListener('compositionstart', () => {
+        isComposing = true;
+    });
+
+    // 한글 조합 중
+    canvas.addEventListener('compositionupdate', () => {
+        isComposing = true;
+    });
+
+    // 한글 조합 완료
+    canvas.addEventListener('compositionend', () => {
+        isComposing = false;
+        setTimeout(() => handleInput(), 0); // Defer to next tick
+    });
+
+    // 타이핑 이벤트 (한글 조합 중이 아닐 때만 처리)
     canvas.addEventListener('input', handleInput);
-    
-    // 한글 조합 완료 감지
-    canvas.addEventListener('compositionend', handleInput);
-    
+
     // 엔터키 처리 (줄바꿈)
     canvas.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
@@ -88,17 +102,17 @@ function setupEventListeners() {
 }
 
 // 입력 처리
-function handleInput(e) {
-    clearTimeout(typingTimer);
-    
-    // 한글 조합 중인지 확인 (IME composing)
-    if (e && e.isComposing) {
-        return; // 조합 중에는 처리하지 않음
+function handleInput() {
+    // 한글 조합 중에는 처리하지 않음
+    if (isComposing) {
+        return;
     }
-    
+
+    clearTimeout(typingTimer);
+
     // 새로 입력된 글자들을 감지하고 래핑
     wrapNewCharacters();
-    
+
     // 사라지는 타이머 시작
     typingTimer = setTimeout(() => {
         fadeCharacters();
@@ -188,28 +202,92 @@ function wrapNewCharacters() {
     }
 }
 
-// 글자 사라지기 애니메이션
+// 글자 사라지기 애니메이션 - 사경 회향과 완전히 동일하게
 function fadeCharacters() {
-    const chars = canvas.querySelectorAll('.char-wrapper:not(.char-fade)');
-    
-    chars.forEach((char, index) => {
-        // 순차적으로 사라지기 (맨 앞부터)
-        setTimeout(() => {
-            if (CONFIG.USE_PARTICLE_EFFECT) {
-                applyParticleEffect(char);
-            } else {
-                char.classList.add('char-fade');
-            }
-            
-            // 애니메이션 완료 후 DOM에서 제거
-            setTimeout(() => {
-                if (char.parentNode) {
-                    char.remove();
-                }
-            }, 2000); // CSS 애니메이션 duration과 맞춤
-            
-        }, index * 1000); // 각 글자마다 원하는 ms 딜레이
+    // 현재 캔버스의 텍스트 가져오기
+    const text = canvas.textContent || canvas.innerText;
+
+    if (!text || text.trim().length === 0) return;
+
+    // Get computed styles from canvas to match exactly
+    const canvasStyles = window.getComputedStyle(canvas);
+    const canvasPadding = canvasStyles.padding;
+    const canvasFontSize = canvasStyles.fontSize;
+    const canvasFontWeight = canvasStyles.fontWeight;
+    const canvasLineHeight = canvasStyles.lineHeight;
+
+    // 새로운 애니메이션 컨테이너 생성 (캔버스와 완전히 동일한 위치/스타일)
+    const charContainer = document.createElement('div');
+    charContainer.id = 'ephemeral-char-container';
+    charContainer.style.cssText = `
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: ${canvasPadding};
+        font-size: ${canvasFontSize};
+        font-family: inherit;
+        font-weight: ${canvasFontWeight};
+        line-height: ${canvasLineHeight};
+        white-space: pre-wrap;
+        word-break: keep-all;
+        pointer-events: none;
+        z-index: 100;
+        opacity: 1;
+    `;
+
+    // 각 글자를 span으로 감싸기 (사경과 완전히 동일)
+    const chars = text.split('');
+    chars.forEach(char => {
+        const span = document.createElement('span');
+        span.textContent = char;
+        // 사경과 동일한 스타일
+        span.style.cssText = `
+            color: #daa520;
+            font-weight: 400;
+            text-shadow: 0 0 20px rgba(218, 165, 32, 0.4), 0 0 40px rgba(218, 165, 32, 0.2);
+            display: inline;
+        `;
+        charContainer.appendChild(span);
     });
+
+    // 모달 내에 컨테이너 추가
+    const modalContent = document.querySelector('.ephemeral-input-wrapper');
+    if (modalContent) {
+        modalContent.appendChild(charContainer);
+    }
+
+    // 컨테이너가 DOM에 추가된 후 캔버스 숨기기 (레이아웃 shift 방지)
+    requestAnimationFrame(() => {
+        canvas.style.opacity = '0';
+    });
+
+    // 마지막 글자부터 순차적으로 애니메이션 (사경과 완전히 동일)
+    const charSpans = charContainer.querySelectorAll('span');
+    const totalDuration = 5000; // 5초 (사경과 동일)
+    const delayPerChar = totalDuration / charSpans.length;
+
+    charSpans.forEach((span, i) => {
+        const reverseIndex = charSpans.length - 1 - i; // 마지막부터
+
+        setTimeout(() => {
+            span.classList.add('char-fade-ephemeral');
+        }, reverseIndex * delayPerChar);
+    });
+
+    // 모든 애니메이션 완료 후 정리
+    setTimeout(() => {
+        // 컨테이너 제거
+        if (charContainer.parentNode) {
+            charContainer.parentNode.removeChild(charContainer);
+        }
+
+        // 캔버스 초기화
+        canvas.innerHTML = '';
+        canvas.style.opacity = '1';
+        canvas.focus();
+    }, totalDuration + 1200); // 5초 + 마지막 글자 애니메이션 1.2초
 }
 
 // 파티클 효과 적용

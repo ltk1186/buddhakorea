@@ -225,35 +225,40 @@ body {
     .site-header {
         height: 60px;
     }
-    
+
     .header-spacer {
         height: 60px;
     }
-    
+
     .header-container {
         padding: 0 20px;
     }
-    
+
     .logo-text {
         display: none;
     }
-    
+
     .logo-icon {
         width: 30px;
     }
-    
+
     .header-nav {
         gap: 20px;
     }
-    
+
     .nav-link {
         font-size: 0.85rem;
     }
-    
+
+    /* Hide dropdown menu on mobile - AI button redirects to main page instead */
     .dropdown-menu {
-        left: auto;
-        right: 0;
-        transform: none;
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+
+    .nav-dropdown:hover .dropdown-menu {
+        display: none !important;
     }
 }
 
@@ -707,19 +712,20 @@ body {
 }
 
 .ephemeral-input-wrapper {
+    position: relative;
     min-height: 300px;
     margin-bottom: 40px;
 }
 
 #ephemeral-canvas {
-    /* 🎨 글씨 색상 커스터마이징 
-     * 현재: 은은한 보라빛 투명 글씨
+    /* 🎨 글씨 색상 커스터마이징
+     * 현재: 황금빛 글씨 (사경 회향과 동일)
      * 변경하려면:
      * - color: 글자 기본 색상
      * - text-shadow: 빛나는 효과 (첫번째 값: 흐림 정도, 두번째: 색상)
      */
-    color: rgba(167, 148, 224, 0.9); /* 은은한 라벤더 */
-    text-shadow: 0 0 20px rgba(167, 148, 224, 0.4); /* 빛나는 효과 */
+    color: rgba(218, 165, 32, 0.9); /* 황금빛 */
+    text-shadow: 0 0 20px rgba(218, 165, 32, 0.4), 0 0 40px rgba(218, 165, 32, 0.2); /* 이중 황금 빛나는 효과 */
     
     /* 🎨 폰트 커스터마이징
      * 현재: 얇고 우아한 Pretendard
@@ -754,36 +760,49 @@ body {
     pointer-events: none;
 }
 
-/* 🎨 사라지는 글자 애니메이션 커스터마이징 */
-.char-fade {
-    /* 현재: 부드럽게 투명해지며 위로 떠오름 + 흐려짐
-     * 
-     * 변경 옵션:
-     * 1. 파티클처럼 부서지기: particle-break 클래스 사용
-     * 2. 아래로 떨어지기: animation을 charFadeDown으로 변경
-     * 3. 회전하며 사라지기: animation을 charFadeSpin으로 변경
-     * 4. 속도 조절: animation-duration 값 변경 (현재 2초)
-     */
-    display: inline-block;
-    animation: charFadeUp 2s ease-out forwards;
+/* 🎨 찰나의 문장 - 사경 회향과 완전히 동일한 애니메이션 */
+#ephemeral-char-container {
+    position: relative;
 }
 
-/* 기본: 위로 떠오르며 사라지기 */
-@keyframes charFadeUp {
+#ephemeral-char-container span.char-fade-ephemeral {
+    animation: charSmokeAway 1.2s ease-out forwards;
+    transition: none;
+    will-change: transform, opacity, filter;
+    display: inline-block;
+}
+
+/* 사경과 완전히 동일한 keyframes */
+@keyframes charSmokeAway {
     0% {
         opacity: 1;
         transform: translateY(0) scale(1);
-        filter: blur(0px);
+        filter: blur(0);
+        -webkit-filter: blur(0);
+    }
+    25% {
+        opacity: 0.85;
+        transform: translateY(-10px) scale(1.03);
+        filter: blur(0.5px);
+        -webkit-filter: blur(0.5px);
     }
     50% {
-        opacity: 0.5;
-        transform: translateY(-20px) scale(0.95);
-        filter: blur(2px);
+        opacity: 0.6;
+        transform: translateY(-30px) scale(1.08);
+        filter: blur(1.5px);
+        -webkit-filter: blur(1.5px);
+    }
+    75% {
+        opacity: 0.25;
+        transform: translateY(-60px) scale(1.12);
+        filter: blur(3px);
+        -webkit-filter: blur(3px);
     }
     100% {
         opacity: 0;
-        transform: translateY(-40px) scale(0.9);
+        transform: translateY(-100px) scale(1.15);
         filter: blur(5px);
+        -webkit-filter: blur(5px);
     }
 }
 
