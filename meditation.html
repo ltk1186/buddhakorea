@@ -16,6 +16,14 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/meditation.css">
+    <style>
+        /* Force Buddha tab spacing to match Tab 1 - inline to bypass cache */
+        /* Tab 1 has: subtitle (30px) + guidance button padding (40px) + guidance margin (40px) = 110px total when closed */
+        /* Tab 2 needs: subtitle (110px) to match Tab 1's collapsed guidance appearance */
+        #screen-buddha-setup .subtitle {
+            margin-bottom: 110px !important;
+        }
+    </style>
 </head>
 <body>
     <!-- 접근성: 건너뛰기 링크 -->
@@ -52,10 +60,25 @@
     <!-- 메인 컨테이너 -->
     <div class="meditation-page">
 
-        <!-- 1. 명상 설정 화면 -->
-        <div id="screen-setup" class="screen show">
+        <!-- Tab Navigation -->
+        <nav class="meditation-tabs" role="tablist" aria-label="명상 유형 선택">
+            <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-breathing" data-tab="breathing" id="tab-btn-breathing">
+                호흡
+            </button>
+            <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-buddha" data-tab="buddha" id="tab-btn-buddha">
+                불상 관상
+            </button>
+            <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-mandala" data-tab="mandala" id="tab-btn-mandala">
+                만달라
+            </button>
+        </nav>
+
+        <!-- Tab Panel: 호흡 (Breathing) -->
+        <div id="tab-breathing" class="tab-panel active" role="tabpanel" aria-labelledby="tab-btn-breathing">
+            <!-- 1. 명상 설정 화면 -->
+            <div id="screen-setup" class="screen center-content show">
             <div class="center-box">
-                <h1>명상 타이머</h1>
+                <h1>호흡 타이머</h1>
                 <p class="subtitle">고요히 앉아 마음을 관찰하는 수행</p>
 
                 <!-- 수행 안내 섹션 (접이식) -->
@@ -122,7 +145,7 @@
         </div>
 
         <!-- 2. 명상 진행 화면 -->
-        <div id="screen-meditation" class="screen">
+        <div id="screen-meditation" class="screen top-align">
             <div class="meditation-container">
                 <button class="back-btn" id="stop-btn" aria-label="명상 중단하고 설정으로 돌아가기">중단</button>
 
@@ -148,7 +171,7 @@
         </div>
 
         <!-- 3. 명상 완료 화면 -->
-        <div id="screen-complete" class="screen">
+        <div id="screen-complete" class="screen center-content">
             <div class="center-box">
                 <div class="completion-icon">
                     <div class="glow"></div>
@@ -159,6 +182,86 @@
                 <button class="primary-btn" id="return-btn">다시 시작</button>
             </div>
         </div>
+        </div>
+        <!-- End Tab Panel: 호흡 -->
+
+        <!-- Tab Panel: 불상 관상 (Buddha Contemplation) -->
+        <div id="tab-buddha" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-buddha">
+            <!-- 1. Buddha 설정 화면 -->
+            <div id="screen-buddha-setup" class="screen center-content show">
+                <div class="center-box">
+                    <h1>불상 관상</h1>
+                    <p class="subtitle">불상을 바라보며 무상함을 관찰하세요</p>
+
+                    <div class="duration-cards">
+                        <div class="card" data-duration="10" data-type="buddha"
+                             role="button" tabindex="0"
+                             aria-label="10분 불상 관상 시작">
+                            <h2>10분</h2>
+                            <p>짧은 관상</p>
+                        </div>
+                        <div class="card" data-duration="20" data-type="buddha"
+                             role="button" tabindex="0"
+                             aria-label="20분 불상 관상 시작">
+                            <h2>20분</h2>
+                            <p>기본 관상</p>
+                        </div>
+                        <div class="card" data-duration="30" data-type="buddha"
+                             role="button" tabindex="0"
+                             aria-label="30분 불상 관상 시작">
+                            <h2>30분</h2>
+                            <p>깊은 관상</p>
+                        </div>
+                    </div>
+
+                    <div class="custom-duration">
+                        <label for="custom-minutes-buddha">맞춤 시간 (분)</label>
+                        <input type="number" id="custom-minutes-buddha" min="1" max="120" placeholder="" aria-label="맞춤 관상 시간 입력">
+                        <button id="custom-start-btn-buddha" aria-label="맞춤 시간으로 불상 관상 시작">시작</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Buddha 명상 진행 화면 -->
+            <div id="screen-buddha-meditation" class="screen top-align">
+                <div class="meditation-container">
+                    <button class="back-btn" id="stop-btn-buddha" aria-label="관상 중단하고 설정으로 돌아가기">중단</button>
+
+                    <!-- Buddha Image with Dissolution -->
+                    <div class="buddha-container" role="region" aria-label="불상 관상 진행">
+                        <div class="buddha-stack dissolving" id="buddha-stack">
+                            <div class="buddha-layer"></div>
+                            <div class="buddha-layer"></div>
+                            <div class="buddha-layer"></div>
+                        </div>
+                        <div class="buddha-timer-display" aria-live="polite" aria-atomic="true">
+                            <span id="buddha-time-remaining">00:00</span>
+                        </div>
+                    </div>
+
+                    <p class="meditation-instruction">불상의 사라짐을 관찰하세요</p>
+                </div>
+            </div>
+
+            <!-- 3. Buddha 명상 완료 화면 -->
+            <div id="screen-buddha-complete" class="screen center-content">
+                <div class="center-box">
+                    <h2 class="impermanence-text">모든 형성된 것은 무상하다</h2>
+                    <button class="primary-btn" id="return-btn-buddha">다시 시작</button>
+                </div>
+            </div>
+        </div>
+        <!-- End Tab Panel: 불상 관상 -->
+
+        <!-- Tab Panel: 만달라 (Mandala) -->
+        <div id="tab-mandala" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-mandala">
+            <div class="screen show">
+                <div class="center-box">
+                    <h2 class="coming-soon">준비 중입니다</h2>
+                </div>
+            </div>
+        </div>
+        <!-- End Tab Panel: 만달라 -->
 
     </div>
 

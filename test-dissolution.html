@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buddha Dissolution Test - Working Animation</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        body {
+            background: #F5F5F7;
+            padding: 40px 20px;
+            font-family: Pretendard, -apple-system, sans-serif;
+            margin: 0;
+        }
+
+        .test-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #212529;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            font-weight: 300;
+        }
+
+        .instructions {
+            text-align: center;
+            color: #6c757d;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .option-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        }
+
+        .option-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 15px;
+            color: #212529;
+        }
+
+        .option-description {
+            font-size: 0.95rem;
+            color: #6c757d;
+            text-align: center;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .buddha-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 450px;
+        }
+
+        .buddha-stack {
+            position: relative;
+            width: 350px;
+            height: 400px;
+        }
+
+        .buddha-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('assets/buddha-meditation.png');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: drop-shadow(0 0 30px rgba(218, 165, 32, 0.4));
+        }
+
+        /* Option 1: Multiple overlapping layers with staggered opacity */
+        .option1 .buddha-layer {
+            animation: layerFade 30s ease-in-out infinite;
+            -webkit-mask-image: linear-gradient(to top, transparent, black);
+            mask-image: linear-gradient(to top, transparent, black);
+            -webkit-mask-size: 100% 200%;
+            mask-size: 100% 200%;
+            -webkit-mask-position: 0% 100%;
+            mask-position: 0% 100%;
+        }
+
+        .option1 .buddha-layer:nth-child(1) {
+            animation-delay: 0s;
+            animation-name: layerFade1;
+        }
+
+        .option1 .buddha-layer:nth-child(2) {
+            animation-delay: -1s;
+            animation-name: layerFade2;
+        }
+
+        .option1 .buddha-layer:nth-child(3) {
+            animation-delay: -2s;
+            animation-name: layerFade3;
+        }
+
+        /* First layer: stays sharp longest */
+        @keyframes layerFade1 {
+            0% {
+                opacity: 1;
+                filter: drop-shadow(0 0 30px rgba(218, 165, 32, 0.4)) blur(0px);
+                transform: translateY(0) scale(1);
+                -webkit-mask-position: 0% 100%;
+                mask-position: 0% 100%;
+            }
+            60% {
+                opacity: 0.85;
+                filter: drop-shadow(0 0 35px rgba(218, 165, 32, 0.45)) blur(0px);
+                transform: translateY(-8px) scale(1.01);
+                -webkit-mask-position: 0% 60%;
+                mask-position: 0% 60%;
+            }
+            80% {
+                opacity: 0.5;
+                filter: drop-shadow(0 0 40px rgba(218, 165, 32, 0.3)) blur(2px);
+                transform: translateY(-20px) scale(1.03);
+                -webkit-mask-position: 0% 30%;
+                mask-position: 0% 30%;
+            }
+            100% {
+                opacity: 0;
+                filter: drop-shadow(0 0 50px rgba(218, 165, 32, 0.2)) blur(5px);
+                transform: translateY(-35px) scale(1.05);
+                -webkit-mask-position: 0% 0%;
+                mask-position: 0% 0%;
+            }
+        }
+
+        /* Second layer: adds softness */
+        @keyframes layerFade2 {
+            0% {
+                opacity: 0.7;
+                filter: drop-shadow(0 0 35px rgba(218, 165, 32, 0.35)) blur(0px);
+                transform: translateY(0) scale(1);
+                -webkit-mask-position: 0% 100%;
+                mask-position: 0% 100%;
+            }
+            50% {
+                opacity: 0.45;
+                filter: drop-shadow(0 0 40px rgba(218, 165, 32, 0.3)) blur(1px);
+                transform: translateY(-12px) scale(1.02);
+                -webkit-mask-position: 0% 50%;
+                mask-position: 0% 50%;
+            }
+            100% {
+                opacity: 0;
+                filter: drop-shadow(0 0 50px rgba(218, 165, 32, 0.2)) blur(6px);
+                transform: translateY(-38px) scale(1.06);
+                -webkit-mask-position: 0% 0%;
+                mask-position: 0% 0%;
+            }
+        }
+
+        /* Third layer: creates smoke trails */
+        @keyframes layerFade3 {
+            0% {
+                opacity: 0.5;
+                filter: drop-shadow(0 0 40px rgba(218, 165, 32, 0.3)) blur(1px);
+                transform: translateY(0) scale(1);
+                -webkit-mask-position: 0% 100%;
+                mask-position: 0% 100%;
+            }
+            40% {
+                opacity: 0.3;
+                filter: drop-shadow(0 0 50px rgba(218, 165, 32, 0.25)) blur(3px);
+                transform: translateY(-15px) scale(1.03);
+                -webkit-mask-position: 0% 60%;
+                mask-position: 0% 60%;
+            }
+            100% {
+                opacity: 0;
+                filter: drop-shadow(0 0 60px rgba(218, 165, 32, 0.15)) blur(8px);
+                transform: translateY(-45px) scale(1.08);
+                -webkit-mask-position: 0% 0%;
+                mask-position: 0% 0%;
+            }
+        }
+
+        /* Option 2: Sliding gradient overlay */
+        .option2 {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option2 .buddha-layer {
+            filter: drop-shadow(0 0 30px rgba(218, 165, 32, 0.4))
+                    drop-shadow(0 0 60px rgba(218, 165, 32, 0.2));
+        }
+
+        .option2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 150%;
+            background: linear-gradient(to top,
+                #F5F5F7 0%,
+                #F5F5F7 5%,
+                rgba(245,245,247,0.95) 15%,
+                rgba(245,245,247,0.85) 25%,
+                rgba(245,245,247,0.6) 35%,
+                rgba(245,245,247,0.3) 45%,
+                rgba(245,245,247,0.1) 55%,
+                transparent 65%
+            );
+            animation: slideUp 30s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes slideUp {
+            0% {
+                transform: translateY(0%);
+            }
+            100% {
+                transform: translateY(-100%);
+            }
+        }
+
+        .note {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+
+        .note p {
+            color: #6c757d;
+            font-size: 1rem;
+            line-height: 1.8;
+            margin: 0;
+        }
+
+        .note strong {
+            color: #212529;
+        }
+
+        .status {
+            text-align: center;
+            margin: 20px 0;
+            padding: 10px;
+            background: #d1ecf1;
+            border-radius: 8px;
+            color: #0c5460;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Buddha Dissolution Test - Working Animation</h1>
+        <p class="instructions">Both options use different techniques for organic dissolution. Each animation lasts 30 seconds.</p>
+
+        <div class="status" id="status">✓ Animations should be running now</div>
+
+        <div class="options-grid">
+            <!-- Option 1: Layered Blur Fade -->
+            <div class="option-card">
+                <h2 class="option-title">Option 1: Layered Blur Fade</h2>
+                <p class="option-description">Three stacked layers of the Buddha image with progressive blur and staggered fading. Creates soft, smoke-like dissolution with natural depth.</p>
+                <div class="buddha-container">
+                    <div class="buddha-stack option1">
+                        <div class="buddha-layer"></div>
+                        <div class="buddha-layer"></div>
+                        <div class="buddha-layer"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Option 2: Gradient Overlay Sweep -->
+            <div class="option-card">
+                <h2 class="option-title">Option 2: Gradient Overlay Sweep</h2>
+                <p class="option-description">Single Buddha image with moving gradient overlay. Multi-stop gradient creates ultra-soft fog-like effect rising from bottom.</p>
+                <div class="buddha-container">
+                    <div class="buddha-stack option2">
+                        <div class="buddha-layer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="note">
+            <p>
+                <strong>You should see smooth animations!</strong><br>
+                Option 1: Multiple blurred layers fading with depth • Option 2: Gradient sweep overlay<br>
+                Both create soft edges without straight lines.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Verify animations are running
+        setTimeout(() => {
+            const status = document.getElementById('status');
+            status.textContent = '✓ If you see the Buddha images moving/fading, animations are working!';
+            status.style.background = '#d4edda';
+            status.style.color = '#155724';
+        }, 1000);
+    </script>
+</body>
+</html>

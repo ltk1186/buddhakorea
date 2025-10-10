@@ -86,10 +86,234 @@ function toggleGuidance() {
 }
 
 // ========================================
+// Tab Switching System
+// ========================================
+let currentTab = 'breathing';
+
+function switchTab(tabName) {
+    // Hide all tab panels
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.remove('active');
+    });
+
+    // Remove active state from all tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-selected', 'false');
+    });
+
+    // Show selected tab panel
+    const selectedPanel = document.getElementById(`tab-${tabName}`);
+    if (selectedPanel) {
+        selectedPanel.classList.add('active');
+    }
+
+    // Set active state on selected tab button
+    const selectedBtn = document.getElementById(`tab-btn-${tabName}`);
+    if (selectedBtn) {
+        selectedBtn.classList.add('active');
+        selectedBtn.setAttribute('aria-selected', 'true');
+    }
+
+    currentTab = tabName;
+    console.log(`Switched to tab: ${tabName}`);
+}
+
+// ========================================
+// Buddha Contemplation Timer System
+// ========================================
+let buddhaDuration = 0;
+let buddhaStartTime = 0;
+let buddhaTimerInterval = null;
+let cachedBuddhaTimeDisplay = null;
+let cachedBuddhaImage = null;
+
+function showBuddhaScreen(id) {
+    const currentScreen = document.querySelector('#tab-buddha .screen.show');
+
+    if (currentScreen) {
+        currentScreen.classList.add('screen-exit');
+
+        setTimeout(() => {
+            currentScreen.classList.remove('show', 'screen-exit');
+
+            const newScreen = document.getElementById(id);
+            newScreen.classList.add('show', 'screen-enter');
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    newScreen.classList.remove('screen-enter');
+                });
+            });
+        }, 300);
+    } else {
+        const newScreen = document.getElementById(id);
+        newScreen.classList.add('show');
+    }
+}
+
+function startBuddhaContemplation(minutes) {
+    buddhaDuration = minutes * 60;
+    beginBuddhaContemplation();
+}
+
+function startCustomBuddhaContemplation() {
+    const input = document.getElementById('custom-minutes-buddha');
+    const rawValue = input.value.trim();
+
+    if (!/^\d+$/.test(rawValue)) {
+        alert('숫자만 입력해주세요.');
+        input.value = '';
+        return;
+    }
+
+    const minutes = parseInt(rawValue, 10);
+
+    if (isNaN(minutes) || minutes < 1 || minutes > 120) {
+        alert('1분에서 120분 사이의 시간을 입력해주세요.');
+        input.value = '';
+        return;
+    }
+
+    buddhaDuration = minutes * 60;
+    beginBuddhaContemplation();
+}
+
+function beginBuddhaContemplation() {
+    playBell();
+
+    showBuddhaScreen('screen-buddha-meditation');
+
+    setTimeout(() => {
+        // Cache references
+        cachedBuddhaTimeDisplay = document.getElementById('buddha-time-remaining');
+        cachedBuddhaImage = document.getElementById('buddha-stack');
+
+        // Start dissolution animation with dynamic duration
+        if (cachedBuddhaImage) {
+            // Set CSS custom property for animation duration calculation
+            cachedBuddhaImage.style.setProperty('--animation-duration', `${buddhaDuration}s`);
+            // Set animation duration for all layers
+            const layers = cachedBuddhaImage.querySelectorAll('.buddha-layer');
+            layers.forEach(layer => {
+                layer.style.animationDuration = `${buddhaDuration}s`;
+            });
+            cachedBuddhaImage.classList.add('dissolving');
+        }
+
+        // Start timer
+        buddhaStartTime = performance.now();
+        updateBuddhaTimer();
+        buddhaTimerInterval = setInterval(updateBuddhaTimer, updateInterval);
+    }, 300);
+}
+
+function updateBuddhaTimer() {
+    const elapsed = (performance.now() - buddhaStartTime) / 1000;
+    const remaining = Math.max(0, buddhaDuration - elapsed);
+
+    const minutes = Math.floor(remaining / 60);
+    const seconds = Math.floor(remaining % 60);
+
+    requestAnimationFrame(() => {
+        if (cachedBuddhaTimeDisplay) {
+            cachedBuddhaTimeDisplay.textContent =
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+    });
+
+    if (remaining <= 0) {
+        clearInterval(buddhaTimerInterval);
+        buddhaTimerInterval = null;
+        completeBuddhaContemplation();
+    }
+}
+
+function completeBuddhaContemplation() {
+    playBell();
+
+    setTimeout(() => {
+        showBuddhaScreen('screen-buddha-complete');
+
+        // Trigger fade-out animation 1 second before screen transition
+        setTimeout(() => {
+            const impermanenceText = document.querySelector('.impermanence-text');
+            if (impermanenceText) {
+                impermanenceText.classList.add('fading');
+            }
+        }, 5000); // Start fade-out at 5 seconds
+
+        // Auto return after 6 seconds (allows 1s for fade-out animation)
+        setTimeout(() => {
+            returnToBuddhaSetup();
+        }, 6000);
+    }, 500);
+}
+
+function stopBuddhaContemplation() {
+    if (buddhaTimerInterval) {
+        clearInterval(buddhaTimerInterval);
+        buddhaTimerInterval = null;
+    }
+
+    // Remove dissolution animation
+    if (cachedBuddhaImage) {
+        cachedBuddhaImage.classList.remove('dissolving');
+        cachedBuddhaImage.style.removeProperty('--animation-duration');
+        const layers = cachedBuddhaImage.querySelectorAll('.buddha-layer');
+        layers.forEach(layer => {
+            layer.style.animationDuration = '';
+        });
+    }
+
+    // Reset cache
+    cachedBuddhaTimeDisplay = null;
+    cachedBuddhaImage = null;
+
+    showBuddhaScreen('screen-buddha-setup');
+}
+
+function returnToBuddhaSetup() {
+    // Remove dissolution animation
+    const buddhaStack = document.getElementById('buddha-stack');
+    if (buddhaStack) {
+        buddhaStack.classList.remove('dissolving');
+        buddhaStack.style.removeProperty('--animation-duration');
+        const layers = buddhaStack.querySelectorAll('.buddha-layer');
+        layers.forEach(layer => {
+            layer.style.animationDuration = '';
+        });
+    }
+
+    // Reset cache
+    cachedBuddhaTimeDisplay = null;
+    cachedBuddhaImage = null;
+
+    showBuddhaScreen('screen-buddha-setup');
+}
+
+// ========================================
 // DOM 초기화 (Event Listeners)
 // ========================================
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Meditation timer initialized');
+
+    // Tab switching event listeners
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabName = btn.getAttribute('data-tab');
+            switchTab(tabName);
+        });
+
+        // Keyboard navigation
+        btn.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                const tabName = btn.getAttribute('data-tab');
+                switchTab(tabName);
+            }
+        });
+    });
 
     // 수행 안내 토글 이벤트 바인딩
     const guidanceToggle = document.querySelector('.guidance-toggle');
@@ -108,26 +332,42 @@ document.addEventListener('DOMContentLoaded', () => {
     const durationCards = document.querySelectorAll('.duration-cards .card');
     durationCards.forEach(card => {
         const duration = parseInt(card.getAttribute('data-duration'));
+        const type = card.getAttribute('data-type');
 
         // Click event
         card.addEventListener('click', () => {
-            console.log(`Starting ${duration} minute meditation`);
-            startMeditation(duration);
+            if (type === 'buddha') {
+                console.log(`Starting ${duration} minute Buddha contemplation`);
+                startBuddhaContemplation(duration);
+            } else {
+                console.log(`Starting ${duration} minute meditation`);
+                startMeditation(duration);
+            }
         });
 
         // Touch event for mobile (better responsiveness)
         card.addEventListener('touchstart', (e) => {
             e.preventDefault(); // Prevent double-firing
-            console.log(`Touch: Starting ${duration} minute meditation`);
-            startMeditation(duration);
+            if (type === 'buddha') {
+                console.log(`Touch: Starting ${duration} minute Buddha contemplation`);
+                startBuddhaContemplation(duration);
+            } else {
+                console.log(`Touch: Starting ${duration} minute meditation`);
+                startMeditation(duration);
+            }
         }, { passive: false });
 
         // Keyboard accessibility
         card.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                console.log(`Keyboard: Starting ${duration} minute meditation`);
-                startMeditation(duration);
+                if (type === 'buddha') {
+                    console.log(`Keyboard: Starting ${duration} minute Buddha contemplation`);
+                    startBuddhaContemplation(duration);
+                } else {
+                    console.log(`Keyboard: Starting ${duration} minute meditation`);
+                    startMeditation(duration);
+                }
             }
         });
     });
@@ -158,6 +398,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Buddha 맞춤 시간 버튼
+    const customBtnBuddha = document.getElementById('custom-start-btn-buddha');
+    if (customBtnBuddha) {
+        customBtnBuddha.addEventListener('click', () => {
+            console.log('Custom Buddha contemplation start clicked');
+            startCustomBuddhaContemplation();
+        });
+
+        customBtnBuddha.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            console.log('Touch: Custom Buddha contemplation start');
+            startCustomBuddhaContemplation();
+        }, { passive: false });
+    }
+
+    // Buddha 맞춤 시간 입력 Enter 키
+    const customInputBuddha = document.getElementById('custom-minutes-buddha');
+    if (customInputBuddha) {
+        customInputBuddha.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                console.log('Enter pressed on custom Buddha input');
+                startCustomBuddhaContemplation();
+            }
+        });
+    }
+
     // 중단 버튼
     const stopBtn = document.getElementById('stop-btn');
     if (stopBtn) {
@@ -173,6 +439,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { passive: false });
     }
 
+    // Buddha 중단 버튼
+    const stopBtnBuddha = document.getElementById('stop-btn-buddha');
+    if (stopBtnBuddha) {
+        stopBtnBuddha.addEventListener('click', () => {
+            console.log('Stop Buddha contemplation clicked');
+            stopBuddhaContemplation();
+        });
+
+        stopBtnBuddha.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            console.log('Touch: Stop Buddha contemplation');
+            stopBuddhaContemplation();
+        }, { passive: false });
+    }
+
     // 다시 시작 버튼
     const returnBtn = document.getElementById('return-btn');
     if (returnBtn) {
@@ -185,6 +466,21 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             console.log('Touch: Return to setup');
             returnToSetup();
+        }, { passive: false });
+    }
+
+    // Buddha 다시 시작 버튼
+    const returnBtnBuddha = document.getElementById('return-btn-buddha');
+    if (returnBtnBuddha) {
+        returnBtnBuddha.addEventListener('click', () => {
+            console.log('Return to Buddha setup clicked');
+            returnToBuddhaSetup();
+        });
+
+        returnBtnBuddha.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            console.log('Touch: Return to Buddha setup');
+            returnToBuddhaSetup();
         }, { passive: false });
     }
 
