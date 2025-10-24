@@ -143,7 +143,7 @@
     </div>
 
     <script type="module">
-        import { getSutrasByCategory, getCategoryLabel } from './js/sutra-data.js';
+        import { getSutrasByCategory, getCategoryLabel, dataLoadedPromise } from './js/sutra-data.js';
 
         // Render sutra cards based on category filter
         function renderSutraCards(category = 'all') {
@@ -208,16 +208,26 @@
         }
 
         // Initialize on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            // Render initial cards
-            renderSutraCards('all');
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Wait for data to load first
+            try {
+                await dataLoadedPromise;
+                console.log('Sutra data loaded, rendering cards...');
 
-            // Add event listeners to tab buttons
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    filterSutras(btn.dataset.category);
+                // Render initial cards
+                renderSutraCards('all');
+
+                // Add event listeners to tab buttons
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        filterSutras(btn.dataset.category);
+                    });
                 });
-            });
+            } catch (error) {
+                console.error('Failed to load sutra data:', error);
+                const container = document.getElementById('sutra-card-container');
+                container.innerHTML = '<p style="color: red; text-align: center;">경전 데이터를 불러오는데 실패했습니다. 페이지를 새로고침해주세요.</p>';
+            }
         });
     </script>
     <script type="module" src="js/sutra.js"></script>

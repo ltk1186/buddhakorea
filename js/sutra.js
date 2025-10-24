@@ -2,13 +2,23 @@
 // 전자 사경 - 단순하고 확실한 기능
 // ========================================
 
-import { SUTRA_DATA as SUTRAS, getSutraById, getAnimationClass } from './sutra-data.js';
+import { SUTRA_DATA as SUTRAS, getSutraById, getAnimationClass, dataLoadedPromise } from './sutra-data.js';
 
 let sutraText = '';
 let userTyped = '';
 let bgSpans = []; // Cached DOM references
 let rafId = null; // RequestAnimationFrame ID for debouncing
 let currentSutraId = null; // Track currently selected sutra for animations
+let dataLoaded = false;
+
+// Wait for data to load
+dataLoadedPromise.then(() => {
+    dataLoaded = true;
+    console.log('Sutra data ready for use');
+}).catch(error => {
+    console.error('Failed to load sutra data:', error);
+    alert('경전 데이터를 불러오는데 실패했습니다. 페이지를 새로고침해주세요.');
+});
 
 // ========================================
 // 마우스 빛 효과
@@ -59,6 +69,11 @@ function showScreen(id) {
 // 경전 선택
 // ========================================
 function selectSutra(id) {
+    if (!dataLoaded) {
+        console.warn('Data not loaded yet, waiting...');
+        return;
+    }
+
     currentSutraId = id; // Track for category-specific animations
     const sutra = SUTRAS[id];
     sutraText = sutra.text;
