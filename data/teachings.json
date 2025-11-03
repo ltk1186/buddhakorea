@@ -2,28 +2,28 @@
   "fourTruths": {
     "dukkha": {
       "title": "고제 (苦諦)",
-      "pali": "Dukkha-ariyasacca",
+      "pali": "Dukkha ariya-sacca",
       "korean": "괴로움의 진리",
       "description": "삶에는 괴로움이 있습니다. 태어남, 늙음, 병듦, 죽음, 사랑하는 것과 헤어짐, 싫은 것과 만남, 원하는 것을 얻지 못함 - 이 모든 것이 괴로움입니다. 요약하면, 집착하는 오온(五蘊)이 괴로움입니다.",
-      "source": "<strong>출처:</strong> 상윳따 니까야 56.11 (전법륜경, Dhammacakkappavattana Sutta)<br><strong>번역:</strong> Bhikkhu Bodhi, The Connected Discourses of the Buddha<br><strong>해설:</strong> 각묵 스님, 초기불교 강의"
+      "source": "<strong>출처:</strong> 상윳따 니까야 56.11 (전법륜경, Dhammacakkappavattana Sutta)<br><strong>번역:</strong> Bhikkhu Bodhi, The Connected Discourses of the Buddha"
     },
     "samudaya": {
       "title": "집제 (集諦)",
-      "pali": "Dukkha-samudaya-ariyasacca",
+      "pali": "Dukkha-samudaya ariya-sacca",
       "korean": "괴로움의 원인에 대한 진리",
       "description": "괴로움의 원인은 갈애(渴愛, taṇhā)입니다. 감각적 쾌락에 대한 갈애, 존재에 대한 갈애, 비존재에 대한 갈애 - 이러한 갈애가 재생(再生)을 일으키며, 기쁨과 욕망을 동반하여 여기저기서 즐거움을 찾습니다.",
       "source": "<strong>출처:</strong> 상윳따 니까야 56.11 (전법륜경)<br><strong>핵심 개념:</strong> 탐(貪), 진(瞋), 치(癡) 삼독(三毒)이 갈애의 근본<br><strong>관련 경전:</strong> 아비담마 - 마음의 작용 분석"
     },
     "nirodha": {
       "title": "멸제 (滅諦)",
-      "pali": "Dukkha-nirodha-ariyasacca",
+      "pali": "Dukkha-nirodha ariya-sacca",
       "korean": "괴로움의 소멸에 대한 진리",
       "description": "괴로움의 소멸은 갈애의 완전한 소멸입니다. 갈애를 여의고, 버리고, 놓아주고, 집착하지 않는 것 - 이것이 괴로움의 소멸(열반, Nibbāna)입니다. 갈애가 남김없이 사라지면 괴로움도 완전히 소멸합니다.",
       "source": "<strong>출처:</strong> 상윳따 니까야 56.11 (전법륜경)<br><strong>실현:</strong> 아라한과(阿羅漢果) - 번뇌가 완전히 소멸된 상태<br><strong>체험:</strong> 위빠사나 명상을 통한 무상·고·무아의 직관"
     },
     "magga": {
       "title": "도제 (道諦)",
-      "pali": "Dukkha-nirodha-gāminī-paṭipadā-ariyasacca",
+      "pali": "Dukkha-nirodha-gāminī paṭipadā ariya-sacca",
       "korean": "괴로움의 소멸로 가는 길에 대한 진리",
       "description": "괴로움의 소멸로 가는 길은 팔정도(八正道)입니다. 정견(正見), 정사유(正思惟), 정어(正語), 정업(正業), 정명(正命), 정정진(正精進), 정념(正念), 정정(正定) - 이 여덟 가지 바른 길을 실천하면 괴로움의 소멸에 이릅니다.",
       "source": "<strong>출처:</strong> 상윳따 니까야 56.11 (전법륜경)<br><strong>실천:</strong> 계(戒)·정(定)·혜(慧) 삼학(三學)으로 분류<br><strong>연계:</strong> Buddha Korea의 사경, 명상, AI 학습이 모두 팔정도 실천"
@@ -86,5 +86,669 @@
       "description": "선정(禪定), 즉 마음의 고요한 집중 상태입니다. 초선(初禪), 이선(二禪), 삼선(三禪), 사선(四禪)의 사선정(四禪定)을 통해 마음을 하나의 대상에 안정되게 집중시킵니다.",
       "source": "<strong>출처:</strong> 상윳따 니까야 56.11 (전법륜경)<br><strong>분류:</strong> 정(定)에 속함<br><strong>실천:</strong> 명상 타이머를 통한 지속적 수행"
     }
+  },
+  "thirtySevenBPF": {
+    "meta": {
+      "title": "37보리분법 (三十七菩提分法)",
+      "pali": "Sattatiṃsa bodhipakkhiyā dhammā",
+      "korean": "깨달음에 이르는 37가지 수행법",
+      "description": "붓다께서 설하신 깨달음으로 가는 길의 완전한 체계입니다. 사념처부터 팔정도까지 7개 그룹, 총 37가지 법으로 구성되어 있습니다.",
+      "teaching": "37보리분법은 계정혜 삼학의 구체적 실천법입니다. 균형있게 닦아야 하며, 특히 오근오력에서 신근과 혜근, 정근과 념근의 균형이 중요합니다."
+    },
+    "satipatthana": {
+      "id": "satipatthana",
+      "title": "사념처 (四念處)",
+      "pali": "Cattāro satipaṭṭhāna",
+      "korean": "네 가지 마음챙김의 확립",
+      "count": 4,
+      "category": "정(定)",
+      "order": 1,
+      "description": "37보리분법의 시작점입니다. 몸, 느낌, 마음, 법의 네 영역에 마음챙김을 확립하여 실상을 있는 그대로 관찰합니다.",
+      "teaching": "사념처는 위빠사나 수행의 핵심입니다. 몸을 몸으로, 느낌을 느낌으로, 마음을 마음으로, 법을 법으로 관찰하며, 무상·고·무아를 직접 체험합니다.",
+      "elements": [
+        {
+          "name": "신념처 (身念處)",
+          "pali": "Kāyānupassanā",
+          "korean": "몸에 대한 마음챙김",
+          "description": "호흡, 자세, 동작, 신체 부위, 사대(四大), 무덤 관찰 등을 통해 몸의 실상을 관찰합니다.",
+          "practice": "호흡 명상, 걷기 명상, 신체 스캔"
+        },
+        {
+          "name": "수념처 (受念處)",
+          "pali": "Vedanānupassanā",
+          "korean": "느낌에 대한 마음챙김",
+          "description": "즐거운 느낌, 괴로운 느낌, 즐겁지도 괴롭지도 않은 느낌을 있는 그대로 관찰합니다.",
+          "practice": "감각 경험의 알아차림, 느낌과 욕망의 분리"
+        },
+        {
+          "name": "심념처 (心念處)",
+          "pali": "Cittānupassanā",
+          "korean": "마음에 대한 마음챙김",
+          "description": "탐욕 있는 마음, 성냄 있는 마음, 어리석은 마음 등 마음의 상태를 관찰합니다.",
+          "practice": "마음 상태의 알아차림, 번뇌의 관찰"
+        },
+        {
+          "name": "법념처 (法念處)",
+          "pali": "Dhammānupassanā",
+          "korean": "법에 대한 마음챙김",
+          "description": "오개(五蓋), 오온(五蘊), 육입(六入), 칠각지(七覺支), 사성제(四聖諦) 등을 관찰합니다.",
+          "practice": "법의 구조 이해, 조건 발생의 관찰"
+        }
+      ]
+    },
+    "sammappadhana": {
+      "id": "sammappadhana",
+      "title": "사정근 (四正勤)",
+      "pali": "Cattāro sammappadhāna",
+      "korean": "네 가지 바른 노력",
+      "count": 4,
+      "category": "정(定)",
+      "order": 2,
+      "description": "선법과 불선법에 대한 네 가지 노력입니다. 악을 막고 선을 증장시키는 적극적 수행입니다.",
+      "teaching": "정정진의 구체적 실천법입니다. 아직 일어나지 않은 불선법은 일어나지 않게 하고, 이미 일어난 불선법은 버리며, 아직 일어나지 않은 선법은 일으키고, 이미 일어난 선법은 증장시킵니다.",
+      "elements": [
+        {
+          "name": "미생악영부생 (未生惡令不生)",
+          "pali": "Saṃvara-padhāna",
+          "korean": "아직 일어나지 않은 악을 일어나지 않게 하는 노력",
+          "description": "육근문(六根門)을 지켜 불선법이 일어나지 않도록 노력합니다. 감각의 문을 지키는 것입니다.",
+          "practice": "감각 문지기, 계율 지키기, 육근율의"
+        },
+        {
+          "name": "이생악영단 (已生惡令斷)",
+          "pali": "Pahāna-padhāna",
+          "korean": "이미 일어난 악을 끊는 노력",
+          "description": "탐욕, 성냄, 어리석음 등 이미 일어난 불선법을 제거합니다. 오개(五蓋)를 버리는 것입니다.",
+          "practice": "번뇌의 알아차림과 놓아버림, 오개 제거"
+        },
+        {
+          "name": "미생선영생 (未生善令生)",
+          "pali": "Bhāvanā-padhāna",
+          "korean": "아직 일어나지 않은 선을 일으키는 노력",
+          "description": "칠각지 등 아직 일어나지 않은 선법을 일으킵니다. 선정과 지혜를 개발합니다.",
+          "practice": "선정 수행, 지혜 개발, 칠각지 일으킴"
+        },
+        {
+          "name": "이생선영증장 (已生善令增長)",
+          "pali": "Anurakkhana-padhāna",
+          "korean": "이미 일어난 선을 증장시키는 노력",
+          "description": "이미 일어난 선법을 보호하고 더욱 발전시킵니다. 수행을 지속하고 성장시킵니다.",
+          "practice": "수행의 지속, 선법의 강화, 닦은 것 보호"
+        }
+      ]
+    },
+    "iddhipada": {
+      "id": "iddhipada",
+      "title": "사여의족 (四如意足)",
+      "pali": "Cattāro iddhipāda",
+      "korean": "네 가지 성취의 기반",
+      "count": 4,
+      "category": "정(定)",
+      "order": 3,
+      "description": "선정과 신통력을 얻기 위한 네 가지 기반입니다. 의욕, 정진, 마음, 사유가 조화를 이룹니다.",
+      "teaching": "선정 성취의 네 가지 기반입니다. 욕정근여의족(欲定勤如意足)처럼 각 요소가 정(定)과 정근(正勤)을 동반해야 합니다.",
+      "elements": [
+        {
+          "name": "욕여의족 (欲如意足)",
+          "pali": "Chanda-iddhipāda",
+          "korean": "의욕을 기반으로 한 성취",
+          "description": "수행에 대한 강한 의욕과 열망을 바탕으로 정진과 정을 개발합니다.",
+          "practice": "수행 동기 점검, 열의 유지"
+        },
+        {
+          "name": "정진여의족 (精進如意足)",
+          "pali": "Viriya-iddhipāda",
+          "korean": "정진을 기반으로 한 성취",
+          "description": "꾸준한 노력과 에너지를 바탕으로 정진과 정을 개발합니다.",
+          "practice": "지속적 수행, 용맹정진"
+        },
+        {
+          "name": "심여의족 (心如意足)",
+          "pali": "Citta-iddhipāda",
+          "korean": "마음을 기반으로 한 성취",
+          "description": "마음의 집중과 통일을 바탕으로 정진과 정을 개발합니다.",
+          "practice": "마음 다스리기, 집중력 개발"
+        },
+        {
+          "name": "사유여의족 (思惟如意足)",
+          "pali": "Vīmaṃsā-iddhipāda",
+          "korean": "사유를 기반으로 한 성취",
+          "description": "지혜로운 사유와 관찰을 바탕으로 정진과 정을 개발합니다.",
+          "practice": "법에 대한 고찰, 지혜로운 선택"
+        }
+      ]
+    },
+    "indriya": {
+      "id": "indriya",
+      "title": "오근 (五根)",
+      "pali": "Pañca indriyāni",
+      "korean": "다섯 가지 능력",
+      "count": 5,
+      "category": "혜(慧)",
+      "order": 4,
+      "description": "수행자의 다섯 가지 능력입니다. 신·정진·염·정·혜가 균형을 이루어야 합니다.",
+      "teaching": "오근의 균형이 핵심입니다. 신근(信根)과 혜근(慧根)이 균형을 이루고, 정근(定根)과 념근(念根)이 균형을 이루며, 정진근(精進根)은 항상 필요합니다. 균형이 무너지면 수행이 흔들립니다.",
+      "balance": {
+        "pairs": [
+          {"left": "신근 (信根)", "right": "혜근 (慧根)", "principle": "믿음과 지혜의 균형"},
+          {"left": "정근 (定根)", "right": "념근 (念根)", "principle": "집중과 마음챙김의 균형"}
+        ],
+        "always": "정진근 (精進根)",
+        "description": "신근과 혜근이 균형을 이루지 않으면 맹신이나 회의에 빠지고, 정근과 념근이 균형을 이루지 않으면 혼침이나 들뜸에 빠집니다. 정진근은 언제나 필요합니다."
+      },
+      "elements": [
+        {
+          "name": "신근 (信根)",
+          "pali": "Saddhindriya",
+          "korean": "믿음의 능력",
+          "description": "붓다, 법, 승가에 대한 확신입니다. 사성제와 깨달음의 가능성을 믿는 능력입니다.",
+          "practice": "불법승 삼보에 대한 신심, 수행의 확신",
+          "balance": "혜근과 균형 - 믿음만 강하면 맹신, 지혜만 강하면 회의"
+        },
+        {
+          "name": "정진근 (精進根)",
+          "pali": "Vīriyindriya",
+          "korean": "정진의 능력",
+          "description": "사정근을 실천하는 에너지입니다. 악을 버리고 선을 증장시키는 노력의 능력입니다.",
+          "practice": "꾸준한 수행, 용맹정진",
+          "balance": "항상 필요 - 다른 네 근을 움직이는 동력"
+        },
+        {
+          "name": "념근 (念根)",
+          "pali": "Satindriya",
+          "korean": "마음챙김의 능력",
+          "description": "사념처를 확립하는 능력입니다. 현재 순간에 깨어 있는 알아차림의 능력입니다.",
+          "practice": "사념처 수행, 알아차림 유지",
+          "balance": "정근과 균형 - 마음챙김만 강하면 들뜨고, 집중만 강하면 혼침"
+        },
+        {
+          "name": "정근 (定根)",
+          "pali": "Samādhindriya",
+          "korean": "집중의 능력",
+          "description": "마음을 한 곳에 집중시키는 능력입니다. 선정을 개발하는 능력입니다.",
+          "practice": "호흡 명상, 선정 수행",
+          "balance": "념근과 균형 - 집중만 강하면 혼침, 마음챙김만 강하면 들뜸"
+        },
+        {
+          "name": "혜근 (慧根)",
+          "pali": "Paññindriya",
+          "korean": "지혜의 능력",
+          "description": "무상·고·무아를 꿰뚫어 보는 능력입니다. 사성제를 이해하는 능력입니다.",
+          "practice": "위빠사나, 법의 고찰",
+          "balance": "신근과 균형 - 지혜만 강하면 회의, 믿음만 강하면 맹신"
+        }
+      ]
+    },
+    "bala": {
+      "id": "bala",
+      "title": "오력 (五力)",
+      "pali": "Pañca balāni",
+      "korean": "다섯 가지 힘",
+      "count": 5,
+      "category": "혜(慧)",
+      "order": 5,
+      "description": "오근이 강화되어 흔들리지 않는 힘이 된 것입니다. 신·정진·염·정·혜의 다섯 가지 힘입니다.",
+      "teaching": "오근이 성숙하면 오력이 됩니다. 오근은 능력이고 오력은 힘입니다. 오력이 개발되면 외부의 장애에 흔들리지 않습니다. 오근과 같은 다섯 요소이지만 더 강력합니다.",
+      "elements": [
+        {
+          "name": "신력 (信力)",
+          "pali": "Saddhā-bala",
+          "korean": "믿음의 힘",
+          "description": "신근이 성숙하여 의심이나 회의에 흔들리지 않는 확고한 믿음의 힘입니다.",
+          "practice": "삼보에 대한 흔들림 없는 확신",
+          "power": "의심을 극복하는 힘"
+        },
+        {
+          "name": "정진력 (精進力)",
+          "pali": "Vīriya-bala",
+          "korean": "정진의 힘",
+          "description": "정진근이 성숙하여 게으름이나 나태에 흔들리지 않는 꾸준한 노력의 힘입니다.",
+          "practice": "지속적이고 흔들림 없는 수행",
+          "power": "게으름을 극복하는 힘"
+        },
+        {
+          "name": "념력 (念力)",
+          "pali": "Sati-bala",
+          "korean": "마음챙김의 힘",
+          "description": "념근이 성숙하여 망념이나 방일에 흔들리지 않는 깨어있음의 힘입니다.",
+          "practice": "흔들림 없는 사념처",
+          "power": "방일을 극복하는 힘"
+        },
+        {
+          "name": "정력 (定力)",
+          "pali": "Samādhi-bala",
+          "korean": "집중의 힘",
+          "description": "정근이 성숙하여 산란함이나 혼침에 흔들리지 않는 확고한 집중의 힘입니다.",
+          "practice": "흔들림 없는 선정",
+          "power": "산란을 극복하는 힘"
+        },
+        {
+          "name": "혜력 (慧力)",
+          "pali": "Paññā-bala",
+          "korean": "지혜의 힘",
+          "description": "혜근이 성숙하여 무명이나 어리석음에 흔들리지 않는 통찰의 힘입니다.",
+          "practice": "흔들림 없는 위빠사나",
+          "power": "무명을 극복하는 힘"
+        }
+      ]
+    },
+    "bojjhanga": {
+      "id": "bojjhanga",
+      "title": "칠각지 (七覺支)",
+      "pali": "Satta bojjhaṅgā",
+      "korean": "일곱 가지 깨달음의 요소",
+      "count": 7,
+      "category": "혜(慧)",
+      "order": 6,
+      "description": "깨달음으로 가는 일곱 가지 핵심 요소입니다. 염·택법·정진·희·경안·정·사의 조화입니다.",
+      "teaching": "칠각지의 조화가 핵심입니다. 혼침할 때는 택법각지·정진각지·희각지를 일으키고, 들뜰 때는 경안각지·정각지·사각지를 일으킵니다. 염각지는 언제나 필요합니다. 이것이 깨달음의 균형입니다.",
+      "harmony": {
+        "groups": [
+          {
+            "name": "혼침 대치 그룹",
+            "elements": ["택법각지", "정진각지", "희각지"],
+            "when": "마음이 가라앉고 혼침할 때",
+            "effect": "마음을 일깨우고 활성화"
+          },
+          {
+            "name": "들뜸 대치 그룹",
+            "elements": ["경안각지", "정각지", "사각지"],
+            "when": "마음이 들뜨고 산란할 때",
+            "effect": "마음을 고요하고 평온하게"
+          },
+          {
+            "name": "항상 필요",
+            "elements": ["염각지"],
+            "when": "모든 상황",
+            "effect": "마음 상태를 알아차려 필요한 각지를 적용"
+          }
+        ],
+        "principle": "칠각지는 서로 대립하지 않고 조화를 이룹니다. 염각지로 마음 상태를 알아차리고, 혼침할 때는 3개, 들뜰 때는 3개의 각지를 일으켜 균형을 맞춥니다."
+      },
+      "elements": [
+        {
+          "name": "염각지 (念覺支)",
+          "pali": "Sati-sambojjhaṅga",
+          "korean": "마음챙김의 깨달음 요소",
+          "description": "사념처를 확립하여 현재 순간을 알아차리는 것입니다. 모든 각지의 기초입니다.",
+          "practice": "사념처 수행, 지속적 알아차림",
+          "group": "항상 필요",
+          "order": 1
+        },
+        {
+          "name": "택법각지 (擇法覺支)",
+          "pali": "Dhammavicaya-sambojjhaṅga",
+          "korean": "법을 택하는 깨달음 요소",
+          "description": "선법과 불선법을 분별하고 진리를 탐구하는 것입니다.",
+          "practice": "법의 고찰, 지혜로운 분별",
+          "group": "혼침 대치",
+          "order": 2
+        },
+        {
+          "name": "정진각지 (精進覺支)",
+          "pali": "Vīriya-sambojjhaṅga",
+          "korean": "정진의 깨달음 요소",
+          "description": "사정근을 실천하며 꾸준히 노력하는 것입니다.",
+          "practice": "지속적 수행, 용맹정진",
+          "group": "혼침 대치",
+          "order": 3
+        },
+        {
+          "name": "희각지 (喜覺支)",
+          "pali": "Pīti-sambojjhaṅga",
+          "korean": "기쁨의 깨달음 요소",
+          "description": "법에 대한 기쁨과 선정의 희열을 경험하는 것입니다.",
+          "practice": "수행의 기쁨, 법희",
+          "group": "혼침 대치",
+          "order": 4
+        },
+        {
+          "name": "경안각지 (輕安覺支)",
+          "pali": "Passaddhi-sambojjhaṅga",
+          "korean": "가벼움과 편안함의 깨달음 요소",
+          "description": "몸과 마음이 가볍고 편안한 상태입니다.",
+          "practice": "이완, 평온",
+          "group": "들뜸 대치",
+          "order": 5
+        },
+        {
+          "name": "정각지 (定覺支)",
+          "pali": "Samādhi-sambojjhaṅga",
+          "korean": "집중의 깨달음 요소",
+          "description": "마음이 한 곳에 고요히 집중된 상태입니다.",
+          "practice": "선정 수행, 삼매",
+          "group": "들뜸 대치",
+          "order": 6
+        },
+        {
+          "name": "사각지 (捨覺支)",
+          "pali": "Upekkhā-sambojjhaṅga",
+          "korean": "평온의 깨달음 요소",
+          "description": "좋아함과 싫어함을 떠난 평등한 마음입니다.",
+          "practice": "평등심, 중도",
+          "group": "들뜸 대치",
+          "order": 7
+        }
+      ]
+    },
+    "magga": {
+      "id": "magga",
+      "title": "팔정도 (八正道)",
+      "pali": "Ariyo aṭṭhaṅgiko maggo",
+      "korean": "여덟 가지 바른 길",
+      "count": 8,
+      "category": "계정혜",
+      "order": 7,
+      "description": "사성제의 도제(道諦)이자 37보리분법의 완성입니다. 계·정·혜 삼학으로 분류됩니다.",
+      "teaching": "팔정도는 37보리분법의 결론입니다. 정견과 정사유는 혜학, 정어·정업·정명은 계학, 정정진·정념·정정은 정학입니다. 이 셋이 조화를 이루어야 깨달음에 이릅니다.",
+      "tripleTraining": {
+        "sila": ["정어", "정업", "정명"],
+        "samadhi": ["정정진", "정념", "정정"],
+        "panna": ["정견", "정사유"]
+      },
+      "elements": [
+        {
+          "name": "정견 (正見)",
+          "pali": "Sammā-diṭṭhi",
+          "korean": "바른 견해",
+          "description": "사성제를 올바르게 이해하는 것입니다.",
+          "practice": "교학 공부, 사성제 이해",
+          "training": "혜(慧)",
+          "order": 1
+        },
+        {
+          "name": "정사유 (正思惟)",
+          "pali": "Sammā-saṅkappa",
+          "korean": "바른 사유",
+          "description": "출리·무에·무해의 사유입니다.",
+          "practice": "자비로운 마음, 해치지 않음",
+          "training": "혜(慧)",
+          "order": 2
+        },
+        {
+          "name": "정어 (正語)",
+          "pali": "Sammā-vācā",
+          "korean": "바른 말",
+          "description": "거짓말·이간질·욕설·잡담을 하지 않는 것입니다.",
+          "practice": "진실한 말, 화합의 말",
+          "training": "계(戒)",
+          "order": 3
+        },
+        {
+          "name": "정업 (正業)",
+          "pali": "Sammā-kammanta",
+          "korean": "바른 행위",
+          "description": "살생·투도·사음을 하지 않는 것입니다.",
+          "practice": "오계 지키기, 자비로운 행동",
+          "training": "계(戒)",
+          "order": 4
+        },
+        {
+          "name": "정명 (正命)",
+          "pali": "Sammā-ājīva",
+          "korean": "바른 생계",
+          "description": "해롭지 않은 방법으로 생계를 유지하는 것입니다.",
+          "practice": "정직한 직업, 윤리적 생활",
+          "training": "계(戒)",
+          "order": 5
+        },
+        {
+          "name": "정정진 (正精進)",
+          "pali": "Sammā-vāyāma",
+          "korean": "바른 노력",
+          "description": "사정근을 실천하는 것입니다.",
+          "practice": "악 버리기, 선 증장",
+          "training": "정(定)",
+          "order": 6
+        },
+        {
+          "name": "정념 (正念)",
+          "pali": "Sammā-sati",
+          "korean": "바른 마음챙김",
+          "description": "사념처를 확립하는 것입니다.",
+          "practice": "사념처 수행, 알아차림",
+          "training": "정(定)",
+          "order": 7
+        },
+        {
+          "name": "정정 (正定)",
+          "pali": "Sammā-samādhi",
+          "korean": "바른 집중",
+          "description": "사선정을 개발하는 것입니다.",
+          "practice": "선정 수행, 삼매",
+          "training": "정(定)",
+          "order": 8
+        }
+      ]
+    }
+  },
+  "dependentOrigination": {
+    "meta": {
+      "title": "12연기 (十二緣起)",
+      "pali": "Paṭiccasamuppāda",
+      "korean": "조건에 따라 함께 일어남",
+      "description": "괴로움이 어떻게 일어나고 소멸하는지를 보여주는 붓다의 핵심 가르침입니다. 무명에서 시작하여 노사에 이르는 12단계의 순환과 그 역순의 소멸 과정을 설명합니다.",
+      "teaching": "12연기는 붓다께서 깨달으신 핵심 내용입니다. '이것이 있으면 저것이 있고, 이것이 일어나면 저것이 일어난다'는 조건 발생의 법칙입니다. 순관(順觀)으로 괴로움의 발생을 보고, 역관(逆觀)으로 괴로움의 소멸을 봅니다."
+    },
+    "forward": [
+      {
+        "number": 1,
+        "name": "무명 (無明)",
+        "pali": "Avijjā",
+        "korean": "알지 못함",
+        "description": "사성제를 모르는 근본적 무지입니다. 무상·고·무아를 모르는 어리석음입니다.",
+        "condition": "무명을 조건으로 행이 일어납니다.",
+        "teaching": "무명은 12연기의 시작이자 모든 괴로움의 뿌리입니다. 사성제를 모르기 때문에 번뇌가 일어나고 업을 짓습니다."
+      },
+      {
+        "number": 2,
+        "name": "행 (行)",
+        "pali": "Saṅkhārā",
+        "korean": "의도적 행위, 업을 짓는 것",
+        "description": "무명에 의해 만들어지는 몸·말·마음의 업(業)입니다. 선업, 불선업, 부동업이 있습니다.",
+        "condition": "행을 조건으로 식이 일어납니다.",
+        "teaching": "무명 때문에 탐·진·치로 업을 짓습니다. 이 업이 다음 생의 식을 낳는 씨앗이 됩니다."
+      },
+      {
+        "number": 3,
+        "name": "식 (識)",
+        "pali": "Viññāṇa",
+        "korean": "의식, 알아차림",
+        "description": "업에 의해 재생하는 의식입니다. 눈·귀·코·혀·몸·마음의 여섯 가지 식입니다.",
+        "condition": "식을 조건으로 명색이 일어납니다.",
+        "teaching": "과거의 업이 씨앗이 되어 새로운 생에 의식이 일어납니다. 재생연결식(結生識)이라고도 합니다."
+      },
+      {
+        "number": 4,
+        "name": "명색 (名色)",
+        "pali": "Nāma-rūpa",
+        "korean": "정신과 물질",
+        "description": "정신적 요소(명)와 물질적 요소(색)입니다. 느낌·지각·의도·접촉·주의와 사대(四大)입니다.",
+        "condition": "명색을 조건으로 육입이 일어납니다.",
+        "teaching": "식이 태어나면 정신·물질의 오온(五蘊)이 형성됩니다. 태아가 자라는 과정입니다."
+      },
+      {
+        "number": 5,
+        "name": "육입 (六入)",
+        "pali": "Saḷāyatana",
+        "korean": "여섯 감각 기관",
+        "description": "눈·귀·코·혀·몸·마음의 여섯 가지 감각 기관입니다.",
+        "condition": "육입을 조건으로 촉이 일어납니다.",
+        "teaching": "명색이 발달하여 여섯 감각 기관이 완성됩니다. 태아의 감각 기관이 성숙하는 단계입니다."
+      },
+      {
+        "number": 6,
+        "name": "촉 (觸)",
+        "pali": "Phassa",
+        "korean": "접촉",
+        "description": "감각 기관·대상·의식의 만남입니다. 여섯 가지 접촉(눈·귀·코·혀·몸·마음의 접촉)이 있습니다.",
+        "condition": "촉을 조건으로 수가 일어납니다.",
+        "teaching": "감각 기관이 대상과 만나면 접촉이 일어납니다. 출생 후 세상과의 첫 만남입니다."
+      },
+      {
+        "number": 7,
+        "name": "수 (受)",
+        "pali": "Vedanā",
+        "korean": "느낌",
+        "description": "즐거운 느낌, 괴로운 느낌, 즐겁지도 괴롭지도 않은 느낌입니다.",
+        "condition": "수를 조건으로 애가 일어납니다.",
+        "teaching": "접촉하면 느낌이 일어납니다. 즐거운·괴로운·중립적 느낌이 생깁니다."
+      },
+      {
+        "number": 8,
+        "name": "애 (愛)",
+        "pali": "Taṇhā",
+        "korean": "갈애, 욕망",
+        "description": "색·성·향·미·촉·법에 대한 갈애입니다. 욕애·유애·무유애가 있습니다.",
+        "condition": "애를 조건으로 취가 일어납니다.",
+        "teaching": "즐거운 느낌에 탐욕이 일어나고, 괴로운 느낌에 성냄이 일어납니다. 느낌이 갈애로 이어지는 것이 핵심입니다."
+      },
+      {
+        "number": 9,
+        "name": "취 (取)",
+        "pali": "Upādāna",
+        "korean": "집착",
+        "description": "네 가지 집착입니다: 욕취(欲取, 감각적 쾌락에 대한 집착), 견취(見取, 잘못된 견해에 대한 집착), 계금취(戒禁取, 의식과 계율에 대한 집착), 아어취(我語取, 자아에 대한 집착). 갈애가 강해진 것입니다.",
+        "condition": "취를 조건으로 유가 일어납니다.",
+        "teaching": "갈애가 강해지면 집착이 됩니다. 네 가지 집착은 감각, 견해, 의식·계율, 자아에 대한 것입니다. 이것이 존재를 만듭니다."
+      },
+      {
+        "number": 10,
+        "name": "유 (有)",
+        "pali": "Bhava",
+        "korean": "존재, 생성",
+        "description": "세 가지 존재의 영역입니다: 욕유(欲有, 감각적 존재), 색유(色有, 형태적 존재), 무색유(無色有, 무형의 존재). 업유(業有, 업의 존재)와 생유(生有, 태어남의 존재)로도 분류됩니다.",
+        "condition": "유를 조건으로 생이 일어납니다.",
+        "teaching": "집착으로 새로운 업을 짓고, 그 업이 다음 생의 씨앗이 됩니다. 재생의 힘이 형성됩니다. 삼계(三界)의 존재가 만들어집니다."
+      },
+      {
+        "number": 11,
+        "name": "생 (生)",
+        "pali": "Jāti",
+        "korean": "태어남",
+        "description": "여러 존재 중 하나로 태어나는 것입니다. 오온의 나타남, 육입의 획득입니다.",
+        "condition": "생을 조건으로 노사가 일어납니다.",
+        "teaching": "업의 힘으로 다시 태어납니다. 새로운 생의 오온이 나타납니다."
+      },
+      {
+        "number": 12,
+        "name": "노사 (老死)",
+        "pali": "Jarā-maraṇa",
+        "korean": "늙음과 죽음",
+        "description": "늙음과 죽음, 슬픔, 비탄, 고통, 근심, 절망입니다. 모든 괴로움의 다발입니다.",
+        "condition": "이렇게 괴로움의 온갖 다발이 일어납니다.",
+        "teaching": "태어나면 반드시 늙고 죽습니다. 이것이 괴로움의 진리입니다. 생이 있기에 노사가 있습니다."
+      }
+    ],
+    "reverse": [
+      {
+        "number": 1,
+        "name": "무명의 소멸",
+        "pali": "Avijjā-nirodha",
+        "korean": "알지 못함의 소멸",
+        "description": "사성제를 깨달아 무명이 완전히 소멸합니다.",
+        "condition": "무명이 소멸하면 행이 소멸합니다.",
+        "teaching": "위빠사나로 무상·고·무아를 꿰뚫어 보면 무명이 소멸합니다."
+      },
+      {
+        "number": 2,
+        "name": "행의 소멸",
+        "pali": "Saṅkhārā-nirodha",
+        "korean": "의도적 행위의 소멸",
+        "description": "무명이 소멸하면 업을 짓는 행위가 소멸합니다.",
+        "condition": "행이 소멸하면 식이 소멸합니다.",
+        "teaching": "무명이 없으면 탐·진·치로 업을 짓지 않습니다."
+      },
+      {
+        "number": 3,
+        "name": "식의 소멸",
+        "pali": "Viññāṇa-nirodha",
+        "korean": "의식의 소멸",
+        "description": "업이 소멸하면 재생하는 의식이 소멸합니다.",
+        "condition": "식이 소멸하면 명색이 소멸합니다.",
+        "teaching": "업의 씨앗이 없으면 재생하는 의식이 일어나지 않습니다."
+      },
+      {
+        "number": 4,
+        "name": "명색의 소멸",
+        "pali": "Nāma-rūpa-nirodha",
+        "korean": "정신과 물질의 소멸",
+        "description": "의식이 소멸하면 정신과 물질이 소멸합니다.",
+        "condition": "명색이 소멸하면 육입이 소멸합니다.",
+        "teaching": "재생하는 의식이 없으면 오온이 형성되지 않습니다."
+      },
+      {
+        "number": 5,
+        "name": "육입의 소멸",
+        "pali": "Saḷāyatana-nirodha",
+        "korean": "여섯 감각 기관의 소멸",
+        "description": "명색이 소멸하면 여섯 감각 기관이 소멸합니다.",
+        "condition": "육입이 소멸하면 촉이 소멸합니다.",
+        "teaching": "오온이 없으면 감각 기관이 발달하지 않습니다."
+      },
+      {
+        "number": 6,
+        "name": "촉의 소멸",
+        "pali": "Phassa-nirodha",
+        "korean": "접촉의 소멸",
+        "description": "감각 기관이 소멸하면 접촉이 소멸합니다.",
+        "condition": "촉이 소멸하면 수가 소멸합니다.",
+        "teaching": "감각 기관이 없으면 대상과의 접촉이 일어나지 않습니다."
+      },
+      {
+        "number": 7,
+        "name": "수의 소멸",
+        "pali": "Vedanā-nirodha",
+        "korean": "느낌의 소멸",
+        "description": "접촉이 소멸하면 느낌이 소멸합니다.",
+        "condition": "수가 소멸하면 애가 소멸합니다.",
+        "teaching": "접촉이 없으면 느낌이 일어나지 않습니다."
+      },
+      {
+        "number": 8,
+        "name": "애의 소멸",
+        "pali": "Taṇhā-nirodha",
+        "korean": "갈애의 소멸",
+        "description": "느낌이 소멸하면 갈애가 소멸합니다. 이것이 열반입니다.",
+        "condition": "애가 소멸하면 취가 소멸합니다.",
+        "teaching": "느낌에 반응하지 않으면 갈애가 일어나지 않습니다. 이것이 핵심입니다."
+      },
+      {
+        "number": 9,
+        "name": "취의 소멸",
+        "pali": "Upādāna-nirodha",
+        "korean": "집착의 소멸",
+        "description": "갈애가 소멸하면 네 가지 집착(욕취·견취·계금취·아어취)이 모두 소멸합니다.",
+        "condition": "취가 소멸하면 유가 소멸합니다.",
+        "teaching": "갈애가 없으면 집착이 일어나지 않습니다. 감각, 견해, 의식·계율, 자아에 대한 집착이 모두 사라집니다."
+      },
+      {
+        "number": 10,
+        "name": "유의 소멸",
+        "pali": "Bhava-nirodha",
+        "korean": "존재의 소멸",
+        "description": "집착이 소멸하면 삼계(三界)의 존재가 소멸합니다. 업유와 생유가 사라집니다.",
+        "condition": "유가 소멸하면 생이 소멸합니다.",
+        "teaching": "집착이 없으면 재생의 업을 짓지 않습니다. 존재를 만드는 힘이 사라집니다."
+      },
+      {
+        "number": 11,
+        "name": "생의 소멸",
+        "pali": "Jāti-nirodha",
+        "korean": "태어남의 소멸",
+        "description": "존재가 소멸하면 태어남이 소멸합니다.",
+        "condition": "생이 소멸하면 노사가 소멸합니다.",
+        "teaching": "재생의 업이 없으면 다시 태어나지 않습니다."
+      },
+      {
+        "number": 12,
+        "name": "노사의 소멸",
+        "pali": "Jarā-maraṇa-nirodha",
+        "korean": "늙음과 죽음의 소멸",
+        "description": "태어남이 소멸하면 늙음과 죽음이 소멸합니다. 모든 괴로움이 완전히 소멸합니다.",
+        "condition": "이렇게 괴로움의 온갖 다발이 소멸합니다.",
+        "teaching": "태어남이 없으면 늙음과 죽음이 없습니다. 이것이 열반, 완전한 괴로움의 소멸입니다."
+      }
+    ]
   }
 }

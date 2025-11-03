@@ -280,17 +280,199 @@
             </div>
         </section>
 
+        <!-- 37보리분법 섹션 -->
+        <section id="thirty-seven-bpf" class="section diagram-section">
+            <div class="container">
+                <h2 class="section-title reveal">37보리분법 (三十七菩提分法)</h2>
+                <p class="section-subtitle reveal" style="transition-delay: 100ms;">
+                    Sattatiṃsa bodhipakkhiyā dhammā - 깨달음으로 가는 완전한 체계
+                </p>
+                <p class="section-description reveal" style="transition-delay: 200ms;">
+                    사념처부터 팔정도까지 7개 그룹, 총 37가지 법으로 구성된 수행의 체계입니다.
+                </p>
+
+                <!-- 7개 그룹 카드 그리드 -->
+                <div class="bpf-grid reveal" style="transition-delay: 300ms;">
+                    <!-- 1. 사념처 -->
+                    <div class="bpf-category-card" data-category="satipatthana" tabindex="0" role="button" aria-label="사념처 (四念處) 설명 보기">
+                        <div class="bpf-card-header">
+                            <span class="bpf-number">1</span>
+                            <span class="bpf-count">4법</span>
+                        </div>
+                        <h3 class="bpf-title">사념처</h3>
+                        <p class="bpf-subtitle">四念處</p>
+                        <p class="bpf-pali">Satipaṭṭhāna</p>
+                        <span class="bpf-category-badge">정(定)</span>
+                    </div>
+
+                    <!-- 2. 사정근 -->
+                    <div class="bpf-category-card" data-category="sammappadhana" tabindex="0" role="button" aria-label="사정근 (四正勤) 설명 보기">
+                        <div class="bpf-card-header">
+                            <span class="bpf-number">2</span>
+                            <span class="bpf-count">4법</span>
+                        </div>
+                        <h3 class="bpf-title">사정근</h3>
+                        <p class="bpf-subtitle">四正勤</p>
+                        <p class="bpf-pali">Sammappadhāna</p>
+                        <span class="bpf-category-badge">정(定)</span>
+                    </div>
+
+                    <!-- 3. 사여의족 -->
+                    <div class="bpf-category-card" data-category="iddhipada" tabindex="0" role="button" aria-label="사여의족 (四如意足) 설명 보기">
+                        <div class="bpf-card-header">
+                            <span class="bpf-number">3</span>
+                            <span class="bpf-count">4법</span>
+                        </div>
+                        <h3 class="bpf-title">사여의족</h3>
+                        <p class="bpf-subtitle">四如意足</p>
+                        <p class="bpf-pali">Iddhipāda</p>
+                        <span class="bpf-category-badge">정(定)</span>
+                    </div>
+
+                    <!-- 4. 오근 -->
+                    <div class="bpf-category-card" data-category="indriya" tabindex="0" role="button" aria-label="오근 (五根) 설명 보기">
+                        <div class="bpf-card-header">
+                            <span class="bpf-number">4</span>
+                            <span class="bpf-count">5법</span>
+                        </div>
+                        <h3 class="bpf-title">오근</h3>
+                        <p class="bpf-subtitle">五根</p>
+                        <p class="bpf-pali">Indriya</p>
+                        <span class="bpf-category-badge balance">혜(慧)</span>
+                    </div>
+
+                    <!-- 5. 오력 -->
+                    <div class="bpf-category-card" data-category="bala" tabindex="0" role="button" aria-label="오력 (五力) 설명 보기">
+                        <div class="bpf-card-header">
+                            <span class="bpf-number">5</span>
+                            <span class="bpf-count">5법</span>
+                        </div>
+                        <h3 class="bpf-title">오력</h3>
+                        <p class="bpf-subtitle">五力</p>
+                        <p class="bpf-pali">Bala</p>
+                        <span class="bpf-category-badge balance">혜(慧)</span>
+                    </div>
+
+                    <!-- 6. 칠각지 -->
+                    <div class="bpf-category-card" data-category="bojjhanga" tabindex="0" role="button" aria-label="칠각지 (七覺支) 설명 보기">
+                        <div class="bpf-card-header">
+                            <span class="bpf-number">6</span>
+                            <span class="bpf-count">7법</span>
+                        </div>
+                        <h3 class="bpf-title">칠각지</h3>
+                        <p class="bpf-subtitle">七覺支</p>
+                        <p class="bpf-pali">Bojjhaṅga</p>
+                        <span class="bpf-category-badge harmony">혜(慧)</span>
+                    </div>
+
+                    <!-- 7. 팔정도 -->
+                    <div class="bpf-category-card" data-category="magga" tabindex="0" role="button" aria-label="팔정도 (八正道) 설명 보기">
+                        <div class="bpf-card-header">
+                            <span class="bpf-number">7</span>
+                            <span class="bpf-count">8법</span>
+                        </div>
+                        <h3 class="bpf-title">팔정도</h3>
+                        <p class="bpf-subtitle">八正道</p>
+                        <p class="bpf-pali">Magga</p>
+                        <span class="bpf-category-badge complete">계정혜</span>
+                    </div>
+                </div>
+
+                <!-- 37BPF 상세 패널 -->
+                <div id="bpf-detail-panel" class="explanation-panel">
+                    <button class="panel-close" id="close-bpf-panel" aria-label="설명 닫기">✕</button>
+                    <div class="panel-content">
+                        <h3 id="bpf-panel-title"></h3>
+                        <p class="exp-pali" id="bpf-panel-pali"></p>
+                        <p class="exp-description" id="bpf-panel-description"></p>
+                        <div class="exp-teaching" id="bpf-panel-teaching"></div>
+
+                        <!-- 균형 다이어그램 (오근오력용) -->
+                        <div id="bpf-balance-diagram" class="balance-diagram" style="display: none;">
+                            <h4>균형의 원리</h4>
+                            <div class="balance-visualization"></div>
+                        </div>
+
+                        <!-- 조화 다이어그램 (칠각지용) -->
+                        <div id="bpf-harmony-diagram" class="harmony-diagram" style="display: none;">
+                            <h4>조화의 원리</h4>
+                            <div class="harmony-visualization"></div>
+                        </div>
+
+                        <!-- 삼학 분류 (팔정도용) -->
+                        <div id="bpf-triple-training" class="triple-training" style="display: none;">
+                            <h4>계정혜 삼학 분류</h4>
+                            <div class="triple-training-visualization"></div>
+                        </div>
+
+                        <!-- 요소 목록 -->
+                        <div id="bpf-elements-list" class="elements-list"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 12연기 섹션 -->
+        <section id="dependent-origination" class="section diagram-section">
+            <div class="container">
+                <h2 class="section-title reveal">12연기 (十二緣起)</h2>
+                <p class="section-subtitle reveal" style="transition-delay: 100ms;">
+                    Paṭiccasamuppāda - 조건에 따라 함께 일어남
+                </p>
+                <p class="section-description reveal" style="transition-delay: 200ms;">
+                    괴로움이 어떻게 일어나고 소멸하는지를 보여주는 붓다의 핵심 가르침입니다.<br>
+                    순관(順觀)으로 괴로움의 발생을 보고, 역관(逆觀)으로 괴로움의 소멸을 봅니다.
+                </p>
+
+                <!-- 방향 토글 -->
+                <div class="do-controls reveal" style="transition-delay: 300ms;">
+                    <button id="do-toggle-forward" class="do-toggle-btn active" aria-label="순관 (順觀) - 괴로움의 발생">
+                        순관 (順觀) - 괴로움의 발생
+                    </button>
+                    <button id="do-toggle-reverse" class="do-toggle-btn" aria-label="역관 (逆觀) - 괴로움의 소멸">
+                        역관 (逆觀) - 괴로움의 소멸
+                    </button>
+                </div>
+
+                <!-- SVG 원형 다이어그램 -->
+                <div class="diagram-container reveal" style="transition-delay: 400ms;">
+                    <svg id="dependent-origination-svg" viewBox="0 0 800 800" class="teaching-diagram circular">
+                        <!-- 원형 다이어그램은 JavaScript로 동적 생성 -->
+                    </svg>
+                </div>
+
+                <!-- 재생 컨트롤 -->
+                <div class="do-playback-controls reveal" style="transition-delay: 500ms;">
+                    <button id="do-play" class="control-btn" aria-label="자동 재생">▶ 자동 재생</button>
+                    <button id="do-pause" class="control-btn" aria-label="일시 정지" disabled>⏸ 일시 정지</button>
+                    <button id="do-reset" class="control-btn" aria-label="처음으로">⏮ 처음으로</button>
+                    <label for="do-speed">속도:</label>
+                    <input type="range" id="do-speed" min="1000" max="8000" value="3000" step="500" aria-label="애니메이션 속도">
+                    <span id="do-speed-label">3초</span>
+                </div>
+
+                <!-- 현재 단계 설명 패널 -->
+                <div id="do-step-panel" class="do-step-panel reveal" style="transition-delay: 600ms;">
+                    <h3 id="do-step-title">12연기를 클릭하여 시작하세요</h3>
+                    <p class="do-step-pali" id="do-step-pali"></p>
+                    <p class="do-step-description" id="do-step-description"></p>
+                    <p class="do-step-condition" id="do-step-condition"></p>
+                    <div class="do-step-teaching" id="do-step-teaching"></div>
+                </div>
+            </div>
+        </section>
+
         <!-- 안내 텍스트 -->
         <section class="section">
             <div class="container">
                 <div class="info-card reveal">
                     <h3>사용 방법</h3>
-                    <p>각 가르침을 클릭하여 상세한 설명을 확인하세요.</p>
+                    <p>각 가르침을 클릭하여 상세한 설명을 확인하세요. 37보리분법의 7개 그룹과 12연기의 순환을 인터랙티브하게 탐색할 수 있습니다.</p>
                 </div>
 
                 <div class="info-card reveal" style="transition-delay: 100ms;">
                     <h3>출처</h3>
-                    <p>이 가르침은 <strong>상윳따 니까야 56.11</strong> (전법륜경, Dhammacakkappavattana Sutta)에서 부처님께서 처음 설하신 내용입니다.</p>
+                    <p>이 가르침은 <strong>상윳따 니까야 56.11</strong> (전법륜경)과 초기불교 경전에서 부처님께서 설하신 내용입니다.</p>
                     <p class="source-detail">번역: Bhikkhu Bodhi (The Connected Discourses of the Buddha)</p>
                 </div>
             </div>
