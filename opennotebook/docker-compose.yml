@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  opennotebook-api:
+    build: .
+    container_name: buddhist-ai-chatbot
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/data
+      - ./chroma_db:/app/chroma_db
+      - ./models:/app/models
+      - .:/app
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - CHROMA_DB_PATH=/app/chroma_db
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-sentence-transformers/paraphrase-multilingual-mpnet-base-v2}
+      - LLM_MODEL=${LLM_MODEL:-claude-3-5-sonnet-20241022}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - buddhist-ai-network
+
+  # Optional: Standalone ChromaDB server (if needed for scaling)
+  # chromadb:
+  #   image: chromadb/chroma:latest
+  #   container_name: chromadb-server
+  #   ports:
+  #     - "8001:8000"
+  #   volumes:
+  #     - ./chroma_data:/chroma/chroma
+  #   environment:
+  #     - ANONYMIZED_TELEMETRY=False
+  #   networks:
+  #     - buddhist-ai-network
+
+networks:
+  buddhist-ai-network:
+    driver: bridge
+
+volumes:
+  chroma_data:

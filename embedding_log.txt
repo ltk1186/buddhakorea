@@ -1,0 +1,228 @@
+
+Starting embedding process...
+Input: data/cbeta-t
+Collection: taisho_canon
+Backend: local
+
+Initializing components...
+Found 98 XML files
+
+  T01n0006.xml: 154 chunks
+  T01n0012.xml: 130 chunks
+  T01n0013.xml: 260 chunks
+  T01n0007.xml: 155 chunks
+  T01n0011.xml: 70 chunks
+  T01n0005.xml: 158 chunks
+  T01n0039.xml: 13 chunks
+  T01n0038.xml: 11 chunks
+  T01n0004.xml: 16 chunks
+  T01n0010.xml: 58 chunks
+  T01n0028.xml: 9 chunks
+  T01n0014.xml: 98 chunks
+  T01n0001.xml: 2148 chunks
+  T01n0015.xml: 60 chunks
+  T01n0029.xml: 12 chunks
+  T01n0003.xml: 46 chunks
+  T01n0017.xml: 30 chunks
+  T01n0016.xml: 16 chunks
+  T01n0002.xml: 55 chunks
+  T01n0065.xml: 16 chunks
+  T01n0071.xml: 46 chunks
+  T01n0059.xml: 5 chunks
+  T01n0058.xml: 30 chunks
+  T01n0070.xml: 18 chunks
+  T01n0064.xml: 7 chunks
+  T01n0072.xml: 4 chunks
+  T01n0066.xml: 17 chunks
+  T01n0067.xml: 15 chunks
+  T01n0073.xml: 8 chunks
+  T01n0098.xml: 25 chunks
+  T01n0088.xml: 18 chunks
+  T01n0077.xml: 16 chunks
+  T01n0063.xml: 13 chunks
+  T01n0062.xml: 18 chunks
+  T01n0076.xml: 26 chunks
+  T01n0089.xml: 6 chunks
+  T01n0048.xml: 25 chunks
+  T01n0060.xml: 22 chunks
+  T01n0074.xml: 25 chunks
+  T01n0075.xml: 13 chunks
+  T01n0061.xml: 19 chunks
+  T01n0049.xml: 35 chunks
+  T01n0087.xml: 23 chunks
+  T01n0093.xml: 11 chunks
+  T01n0044.xml: 17 chunks
+  T01n0050.xml: 10 chunks
+  T01n0078.xml: 21 chunks
+  T01n0079.xml: 34 chunks
+  T01n0051.xml: 9 chunks
+  T01n0045.xml: 41 chunks
+  T01n0092.xml: 10 chunks
+  T01n0086.xml: 56 chunks
+  T01n0090.xml: 28 chunks
+  T01n0084.xml: 15 chunks
+  T01n0053.xml: 30 chunks
+  T01n0047.xml: 8 chunks
+  T01n0046.xml: 16 chunks
+  T01n0052.xml: 28 chunks
+  T01n0085.xml: 27 chunks
+  T01n0091.xml: 25 chunks
+  T01n0095.xml: 6 chunks
+  T01n0081.xml: 97 chunks
+  T01n0056.xml: 3 chunks
+  T01n0042.xml: 10 chunks
+  T01n0043.xml: 8 chunks
+  T01n0057.xml: 50 chunks
+  T01n0080.xml: 91 chunks
+  T01n0094.xml: 16 chunks
+  T01n0082.xml: 20 chunks
+  T01n0096.xml: 2 chunks
+  T01n0069.xml: 52 chunks
+  T01n0041.xml: 20 chunks
+  T01n0055.xml: 14 chunks
+  T01n0054.xml: 18 chunks
+  T01n0040.xml: 8 chunks
+  T01n0068.xml: 54 chunks
+  T01n0097.xml: 36 chunks
+  T01n0083.xml: 10 chunks
+  T01n0027.xml: 12 chunks
+  T01n0033.xml: 12 chunks
+  T01n0032.xml: 24 chunks
+  Error processing T01n0026.xml: Failed to add documents: ValueError: Batch size
+of 6187 is greater than max batch size of 5461
+  T01n0030.xml: 18 chunks
+  T01n0024.xml: 417 chunks
+  T01n0018.xml: 54 chunks
+  T01n0019.xml: 27 chunks
+  T01n0025.xml: 436 chunks
+  T01n0031.xml: 15 chunks
+  T01n0009.xml: 23 chunks
+  T01n0035.xml: 11 chunks
+  T01n0021.xml: 76 chunks
+  T01n0020.xml: 95 chunks
+  T01n0034.xml: 10 chunks
+  T01n0008.xml: 71 chunks
+  T01n0022.xml: 54 chunks
+  T01n0036.xml: 22 chunks
+  T01n0037.xml: 21 chunks
+  T01n0023.xml: 311 chunks
+  Processing files...
+
+✓ Embedding complete!
+Total chunks stored: 6559
+Collection: taisho_canon
+
+
+Starting embedding process...
+Input: data/cbeta-t
+Collection: taisho_canon
+Backend: local
+
+Initializing components...
+Found 98 XML files
+
+  T01n0006.xml: 154 chunks
+  T01n0012.xml: 130 chunks
+  T01n0013.xml: 260 chunks
+  T01n0007.xml: 155 chunks
+  T01n0011.xml: 70 chunks
+  T01n0005.xml: 158 chunks
+  T01n0039.xml: 13 chunks
+  T01n0038.xml: 11 chunks
+  T01n0004.xml: 16 chunks
+  T01n0010.xml: 58 chunks
+  T01n0028.xml: 9 chunks
+  T01n0014.xml: 98 chunks
+  T01n0001.xml: 2148 chunks
+  T01n0015.xml: 60 chunks
+  T01n0029.xml: 12 chunks
+  T01n0003.xml: 46 chunks
+  T01n0017.xml: 30 chunks
+  T01n0016.xml: 16 chunks
+  T01n0002.xml: 55 chunks
+  T01n0065.xml: 16 chunks
+  T01n0071.xml: 46 chunks
+  T01n0059.xml: 5 chunks
+  T01n0058.xml: 30 chunks
+  T01n0070.xml: 18 chunks
+  T01n0064.xml: 7 chunks
+  T01n0072.xml: 4 chunks
+  T01n0066.xml: 17 chunks
+  T01n0067.xml: 15 chunks
+  T01n0073.xml: 8 chunks
+  T01n0098.xml: 25 chunks
+  T01n0088.xml: 18 chunks
+  T01n0077.xml: 16 chunks
+  T01n0063.xml: 13 chunks
+  T01n0062.xml: 18 chunks
+  T01n0076.xml: 26 chunks
+  T01n0089.xml: 6 chunks
+  T01n0048.xml: 25 chunks
+  T01n0060.xml: 22 chunks
+  T01n0074.xml: 25 chunks
+  T01n0075.xml: 13 chunks
+  T01n0061.xml: 19 chunks
+  T01n0049.xml: 35 chunks
+  T01n0087.xml: 23 chunks
+  T01n0093.xml: 11 chunks
+  T01n0044.xml: 17 chunks
+  T01n0050.xml: 10 chunks
+  T01n0078.xml: 21 chunks
+  T01n0079.xml: 34 chunks
+  T01n0051.xml: 9 chunks
+  T01n0045.xml: 41 chunks
+  T01n0092.xml: 10 chunks
+  T01n0086.xml: 56 chunks
+  T01n0090.xml: 28 chunks
+  T01n0084.xml: 15 chunks
+  T01n0053.xml: 30 chunks
+  T01n0047.xml: 8 chunks
+  T01n0046.xml: 16 chunks
+  T01n0052.xml: 28 chunks
+  T01n0085.xml: 27 chunks
+  T01n0091.xml: 25 chunks
+  T01n0095.xml: 6 chunks
+  T01n0081.xml: 97 chunks
+  T01n0056.xml: 3 chunks
+  T01n0042.xml: 10 chunks
+  T01n0043.xml: 8 chunks
+  T01n0057.xml: 50 chunks
+  T01n0080.xml: 91 chunks
+  T01n0094.xml: 16 chunks
+  T01n0082.xml: 20 chunks
+  T01n0096.xml: 2 chunks
+  T01n0069.xml: 52 chunks
+  T01n0041.xml: 20 chunks
+  T01n0055.xml: 14 chunks
+  T01n0054.xml: 18 chunks
+  T01n0040.xml: 8 chunks
+  T01n0068.xml: 54 chunks
+  T01n0097.xml: 36 chunks
+  T01n0083.xml: 10 chunks
+  T01n0027.xml: 12 chunks
+  T01n0033.xml: 12 chunks
+  T01n0032.xml: 24 chunks
+  Error processing T01n0026.xml: Failed to add documents: ValueError: Batch size
+of 6187 is greater than max batch size of 5461
+  T01n0030.xml: 18 chunks
+  T01n0024.xml: 417 chunks
+  T01n0018.xml: 54 chunks
+  T01n0019.xml: 27 chunks
+  T01n0025.xml: 436 chunks
+  T01n0031.xml: 15 chunks
+  T01n0009.xml: 23 chunks
+  T01n0035.xml: 11 chunks
+  T01n0021.xml: 76 chunks
+  T01n0020.xml: 95 chunks
+  T01n0034.xml: 10 chunks
+  T01n0008.xml: 71 chunks
+  T01n0022.xml: 54 chunks
+  T01n0036.xml: 22 chunks
+  T01n0037.xml: 21 chunks
+  T01n0023.xml: 311 chunks
+  Processing files...
+
+✓ Embedding complete!
+Total chunks stored: 6559
+Collection: taisho_canon
+

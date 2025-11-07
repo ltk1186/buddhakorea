@@ -1,0 +1,689 @@
+"""
+Buddhist AI Chatbot - FastAPI Application
+OpenNotebook experiment for buddhakorea.com
+
+Provides RAG-powered chat interface for Taishō Tripiṭaka and Pali Canon texts.
+"""
+
+import os
+import json
+import time
+from typing import List, Optional, Dict, Any
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, HTTPException, Request, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
+from pydantic_settings import BaseSettings
+from loguru import logger
+import chromadb
+from chromadb.config import Settings as ChromaSettings
+from langchain_anthropic import ChatAnthropic
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_google_vertexai import ChatVertexAI
+from langchain_community.vectorstores import Chroma
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_classic.chains import RetrievalQA
+from langchain_core.prompts import PromptTemplate
+
+
+# ============================================================================
+# Configuration
+# ============================================================================
+
+class AppConfig(BaseSettings):
+    """Application configuration from environment variables."""
+
+    # API Keys
+    openai_api_key: Optional[str] = None
+    anthropic_api_key: Optional[str] = None
+
+    # Model Configuration
+    llm_model: str = "claude-3-5-sonnet-20241022"
+    embedding_model: str = "BAAI/bge-m3"  # Better for Classical Chinese (75-80% vs 60-70%)
+
+    # Vector Database
+    chroma_db_path: str = "./chroma_db"
+    chroma_collection_name: str = "buddhist_texts"
+
+    # Google Cloud Configuration (for Gemini embeddings)
+    gcp_project_id: Optional[str] = None
+    gcp_location: str = "us-central1"
+    use_gemini_for_queries: bool = False
+
+    # HyDE Configuration
+    use_hyde: bool = False
+    hyde_weight: float = 0.5
+    hyde_model: str = "gemini-1.5-flash-002"
+
+    # API Settings
+    api_host: str = "0.0.0.0"
+    api_port: int = 8000
+    allowed_origins: str = "http://localhost:8000,https://buddhakorea.com,https://www.buddhakorea.com"
+
+    # Rate Limiting
+    rate_limit_per_hour: int = 100
+
+    # Logging
+    log_level: str = "info"
+
+    # Retrieval Configuration
+    top_k_retrieval: int = 10
+    max_context_tokens: int = 8000
+
+    # Chunking Configuration
+    chunk_size: int = 1024
+    chunk_overlap: int = 200
+
+    # Performance
+    max_workers: int = 4
+    batch_size: int = 32
+
+    class Config:
+        env_file = ".env"
+        case_sensitive = False
+
+
+config = AppConfig()
+
+# Configure logging
+logger.remove()
+logger.add(
+    "logs/app.log",
+    rotation="500 MB",
+    retention="10 days",
+    level=config.log_level.upper(),
+    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}"
+)
+logger.add(lambda msg: print(msg, end=""), level=config.log_level.upper())
+
+
+# ============================================================================
+# Pydantic Models
+# ============================================================================
+
+class ChatRequest(BaseModel):
+    """Request model for chat endpoint."""
+    query: str = Field(..., min_length=1, max_length=2000, description="User question")
+    language: Optional[str] = Field(default="auto", description="Interface language (ko/en/auto)")
+    collection: Optional[str] = Field(default="all", description="Text collection to search (all/chinese/english/korean)")
+    max_sources: int = Field(default=5, ge=1, le=20, description="Maximum number of source citations")
+
+
+class SourceDocument(BaseModel):
+    """Source document citation."""
+    title: str
+    text_id: str
+    excerpt: str
+    score: Optional[float] = None
+    metadata: Dict[str, Any] = {}
+
+
+class ChatResponse(BaseModel):
+    """Response model for chat endpoint."""
+    response: str
+    sources: List[SourceDocument]
+    model: str
+    latency_ms: int
+    collection: str
+
+
+class CollectionInfo(BaseModel):
+    """Information about a text collection."""
+    name: str
+    document_count: int
+    language: str
+    description: str
+
+
+class HealthResponse(BaseModel):
+    """Health check response."""
+    status: str
+    version: str
+    chroma_connected: bool
+    llm_configured: bool
+
+
+# ============================================================================
+# Global State & Dependencies
+# ============================================================================
+
+class AppState:
+    """Global application state."""
+    def __init__(self):
+        self.chroma_client: Optional[chromadb.Client] = None
+        self.vectorstore: Optional[Chroma] = None
+        self.llm: Optional[Any] = None
+        self.qa_chain: Optional[RetrievalQA] = None
+        self.embeddings: Optional[Any] = None
+        self.hyde_expander: Optional[Any] = None
+
+
+app_state = AppState()
+
+
+# ============================================================================
+# Startup & Shutdown
+# ============================================================================
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initialize and cleanup application resources."""
+
+    logger.info("Starting Buddhist AI Chatbot...")
+
+    # Initialize embeddings
+    if config.use_gemini_for_queries:
+        logger.info("🚀 Using Gemini API for query embeddings")
+        from gemini_query_embedder import GeminiQueryEmbedder
+
+        app_state.embeddings = GeminiQueryEmbedder(
+            project_id=config.gcp_project_id,
+            location=config.gcp_location
+        )
+    else:
+        logger.info(f"Loading embedding model: {config.embedding_model}")
+        if "text-embedding" in config.embedding_model:
+            # OpenAI embeddings
+            if not config.openai_api_key:
+                logger.error("OpenAI API key not found for embedding model")
+                raise ValueError("OPENAI_API_KEY required for OpenAI embeddings")
+            app_state.embeddings = OpenAIEmbeddings(
+                model=config.embedding_model,
+                openai_api_key=config.openai_api_key
+            )
+        else:
+            # Sentence Transformers (local)
+            app_state.embeddings = HuggingFaceEmbeddings(
+                model_name=config.embedding_model,
+                model_kwargs={'device': 'cpu'},
+                encode_kwargs={'normalize_embeddings': True}
+            )
+    logger.info("✓ Embeddings loaded")
+
+    # Initialize ChromaDB
+    logger.info(f"Connecting to ChromaDB at {config.chroma_db_path}")
+    try:
+        app_state.chroma_client = chromadb.PersistentClient(
+            path=config.chroma_db_path,
+            settings=ChromaSettings(
+                anonymized_telemetry=False,
+                allow_reset=False
+            )
+        )
+
+        # Check if collection exists
+        try:
+            collection = app_state.chroma_client.get_collection(config.chroma_collection_name)
+            logger.info(f"✓ Connected to ChromaDB")
+            logger.info(f"   Collection: {config.chroma_collection_name}")
+            logger.info(f"   Documents: {collection.count():,}")
+        except Exception:
+            logger.warning(f"No '{config.chroma_collection_name}' collection found - run embedding script first")
+            collection = None
+
+        if collection:
+            app_state.vectorstore = Chroma(
+                client=app_state.chroma_client,
+                collection_name=config.chroma_collection_name,
+                embedding_function=app_state.embeddings
+            )
+    except Exception as e:
+        logger.error(f"Failed to connect to ChromaDB: {e}")
+        app_state.chroma_client = None
+
+    # Initialize LLM
+    logger.info(f"Initializing LLM: {config.llm_model}")
+    if "claude" in config.llm_model:
+        if not config.anthropic_api_key:
+            logger.error("Anthropic API key not found")
+            raise ValueError("ANTHROPIC_API_KEY required for Claude models")
+        app_state.llm = ChatAnthropic(
+            model=config.llm_model,
+            anthropic_api_key=config.anthropic_api_key,
+            temperature=0.3,
+            max_tokens=2000
+        )
+    elif "gemini" in config.llm_model:
+        # Gemini models via Vertex AI
+        logger.info(f"Using Vertex AI for Gemini model")
+        app_state.llm = ChatVertexAI(
+            model=config.llm_model,
+            project=config.gcp_project_id,
+            location=config.gcp_location,
+            temperature=0.3,
+            max_tokens=2048
+        )
+    else:
+        if not config.openai_api_key:
+            logger.error("OpenAI API key not found")
+            raise ValueError("OPENAI_API_KEY required for GPT models")
+        app_state.llm = ChatOpenAI(
+            model=config.llm_model,
+            openai_api_key=config.openai_api_key,
+            temperature=0.3,
+            max_tokens=2000
+        )
+    logger.info("✓ LLM initialized")
+
+    # Initialize HyDE if enabled
+    if config.use_hyde:
+        logger.info(f"Initializing HyDE with {config.hyde_model}")
+        from hyde import HyDEQueryExpander
+
+        if not config.openai_api_key:
+            logger.warning("HyDE requires OpenAI API key - disabling")
+            app_state.hyde_expander = None
+        else:
+            app_state.hyde_expander = HyDEQueryExpander(
+                api_key=config.openai_api_key,
+                model=config.hyde_model
+            )
+            logger.info(f"✓ HyDE initialized (weight: {config.hyde_weight})")
+
+    # Create RAG chain if vectorstore exists
+    if app_state.vectorstore:
+        prompt_template = """당신은 불교 경전과 가르침을 연구하는 전문가입니다. 다음 맥락(Context)을 참고하여 질문에 정확하고 상세하게 답변하세요.
+
+답변 시 반드시 출처를 명시하고, 여러 전통(초기불교, 대승불교 등)의 관점이 다를 수 있음을 언급하세요.
+경전의 원문을 직접 인용할 때는 인용 표시를 하세요.
+
+Context:
+{context}
+
+Question: {question}
+
+Answer (Korean or English, matching the question language):"""
+
+        PROMPT = PromptTemplate(
+            template=prompt_template,
+            input_variables=["context", "question"]
+        )
+
+        app_state.qa_chain = RetrievalQA.from_chain_type(
+            llm=app_state.llm,
+            chain_type="stuff",
+            retriever=app_state.vectorstore.as_retriever(
+                search_kwargs={"k": config.top_k_retrieval}
+            ),
+            return_source_documents=True,
+            chain_type_kwargs={"prompt": PROMPT}
+        )
+        logger.info("✓ RAG chain created")
+
+    logger.info("🚀 Buddhist AI Chatbot ready!")
+
+    yield
+
+    # Cleanup
+    logger.info("Shutting down...")
+
+
+# ============================================================================
+# FastAPI App
+# ============================================================================
+
+app = FastAPI(
+    title="Buddhist AI Chatbot",
+    description="RAG-powered chatbot for Buddhist texts (CBETA + Pali Canon)",
+    version="0.1.0",
+    lifespan=lifespan
+)
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=config.allowed_origins.split(","),
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# ============================================================================
+# Rate Limiting (Simple in-memory)
+# ============================================================================
+
+from collections import defaultdict, deque
+
+rate_limiter = defaultdict(deque)
+
+def check_rate_limit(client_ip: str) -> bool:
+    """Check if client has exceeded rate limit."""
+    now = time.time()
+    hour_ago = now - 3600
+
+    # Remove old requests
+    while rate_limiter[client_ip] and rate_limiter[client_ip][0] < hour_ago:
+        rate_limiter[client_ip].popleft()
+
+    # Check limit
+    if len(rate_limiter[client_ip]) >= config.rate_limit_per_hour:
+        return False
+
+    rate_limiter[client_ip].append(now)
+    return True
+
+
+# ============================================================================
+# API Endpoints
+# ============================================================================
+
+@app.get("/api/health", response_model=HealthResponse)
+async def health_check():
+    """Health check endpoint."""
+    return HealthResponse(
+        status="healthy",
+        version="0.1.0",
+        chroma_connected=app_state.chroma_client is not None,
+        llm_configured=app_state.llm is not None
+    )
+
+
+@app.get("/api/collections", response_model=List[CollectionInfo])
+async def list_collections():
+    """List available text collections."""
+    if not app_state.chroma_client:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="ChromaDB not connected. Run embedding script first."
+        )
+
+    collections = []
+    try:
+        all_collections = app_state.chroma_client.list_collections()
+
+        for coll in all_collections:
+            collections.append(CollectionInfo(
+                name=coll.name,
+                document_count=coll.count(),
+                language="multilingual",
+                description=f"Buddhist texts collection: {coll.name}"
+            ))
+    except Exception as e:
+        logger.error(f"Error listing collections: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+    return collections
+
+
+@app.post("/api/chat", response_model=ChatResponse)
+async def chat(request: ChatRequest, http_request: Request):
+    """
+    Main chat endpoint - send a question and receive AI response with citations.
+    """
+    start_time = time.time()
+
+    # Rate limiting
+    client_ip = http_request.client.host
+    if not check_rate_limit(client_ip):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Rate limit exceeded. Maximum {config.rate_limit_per_hour} requests per hour."
+        )
+
+    # Check if RAG chain is ready
+    if not app_state.qa_chain:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="RAG system not initialized. Ensure ChromaDB has embedded documents."
+        )
+
+    logger.info(f"Query from {client_ip}: {request.query[:100]}...")
+
+    try:
+        # Apply HyDE query expansion if enabled
+        query = request.query
+        if app_state.hyde_expander:
+            expanded_query = app_state.hyde_expander.expand_query(
+                query,
+                weight_original=config.hyde_weight
+            )
+            logger.debug(f"HyDE expansion: {query[:50]}... -> {expanded_query[:100]}...")
+            query = expanded_query
+
+        # Run RAG query
+        result = app_state.qa_chain({"query": query})
+
+        # Format response
+        response_text = result["result"]
+        source_docs = result.get("source_documents", [])
+
+        # Extract top sources
+        sources = []
+        for doc in source_docs[:request.max_sources]:
+            metadata = doc.metadata
+            sources.append(SourceDocument(
+                title=metadata.get("title", "Unknown"),
+                text_id=metadata.get("text_id", "N/A"),
+                excerpt=doc.page_content[:300] + "..." if len(doc.page_content) > 300 else doc.page_content,
+                metadata=metadata
+            ))
+
+        latency_ms = int((time.time() - start_time) * 1000)
+
+        logger.info(f"Response generated in {latency_ms}ms with {len(sources)} sources")
+
+        return ChatResponse(
+            response=response_text,
+            sources=sources,
+            model=config.llm_model,
+            latency_ms=latency_ms,
+            collection=request.collection
+        )
+
+    except Exception as e:
+        logger.error(f"Error processing chat request: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating response: {str(e)}"
+        )
+
+
+@app.get("/")
+async def root():
+    """Root endpoint - redirect to test frontend."""
+    return HTMLResponse(content=open("test_frontend.html", encoding="utf-8").read())
+
+
+@app.get("/api/sources")
+async def list_sources(
+    search: Optional[str] = None,
+    tradition: Optional[str] = None,
+    period: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0
+):
+    """
+    List Buddhist source texts with Korean summaries.
+
+    Query parameters:
+    - search: Search in titles and summaries (Korean or Chinese)
+    - tradition: Filter by Buddhist tradition (초기불교, 대승불교, 선종, etc.)
+    - period: Filter by historical period
+    - limit: Number of results (default 50, max 200)
+    - offset: Pagination offset
+    """
+    try:
+        # Load source summaries
+        summaries_path = "source_explorer/source_data/source_summaries_ko.json"
+
+        if not os.path.exists(summaries_path):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Source summaries not yet generated. Please run generate_summaries.py first."
+            )
+
+        with open(summaries_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+        summaries = data.get('summaries', {})
+
+        # Filter sources
+        filtered = []
+        for sutra_id, source in summaries.items():
+            # Search filter
+            if search:
+                search_lower = search.lower()
+                title_ko = source.get('title_ko', '').lower()
+                original_title = source.get('original_title', '').lower()
+                brief = source.get('brief_summary', '').lower()
+
+                if not (search_lower in title_ko or search_lower in original_title or search_lower in brief):
+                    continue
+
+            # Tradition filter
+            if tradition and source.get('tradition', '').lower() != tradition.lower():
+                continue
+
+            # Period filter
+            if period and source.get('period', '').lower() != period.lower():
+                continue
+
+            filtered.append({
+                'sutra_id': sutra_id,
+                'title_ko': source.get('title_ko', ''),
+                'original_title': source.get('original_title', ''),
+                'author': source.get('author', ''),
+                'brief_summary': source.get('brief_summary', ''),
+                'tradition': source.get('tradition', ''),
+                'period': source.get('period', ''),
+                'volume': source.get('volume', ''),
+                'juan': source.get('juan', '')
+            })
+
+        # Sort by sutra_id
+        filtered.sort(key=lambda x: x['sutra_id'])
+
+        # Pagination
+        limit = min(limit, 200)
+        paginated = filtered[offset:offset + limit]
+
+        return {
+            'total': len(filtered),
+            'limit': limit,
+            'offset': offset,
+            'sources': paginated
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error listing sources: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@app.get("/api/sources/{sutra_id}")
+async def get_source_detail(sutra_id: str):
+    """
+    Get detailed information about a specific Buddhist text.
+
+    Returns:
+    - Full Korean translation and detailed summary
+    - Key themes and historical context
+    - Original metadata
+    """
+    try:
+        # Load source summaries
+        summaries_path = "source_explorer/source_data/source_summaries_ko.json"
+
+        if not os.path.exists(summaries_path):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Source summaries not yet generated."
+            )
+
+        with open(summaries_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+        summaries = data.get('summaries', {})
+
+        if sutra_id not in summaries:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Source {sutra_id} not found"
+            )
+
+        source = summaries[sutra_id]
+
+        return {
+            'sutra_id': sutra_id,
+            'title_ko': source.get('title_ko', ''),
+            'original_title': source.get('original_title', ''),
+            'author': source.get('author', ''),
+            'volume': source.get('volume', ''),
+            'juan': source.get('juan', ''),
+            'brief_summary': source.get('brief_summary', ''),
+            'detailed_summary': source.get('detailed_summary', ''),
+            'key_themes': source.get('key_themes', []),
+            'period': source.get('period', ''),
+            'tradition': source.get('tradition', '')
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting source detail: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@app.get("/api")
+async def api_info():
+    """API information endpoint."""
+    return {
+        "message": "Buddhist AI Chatbot API",
+        "version": "0.1.0",
+        "endpoints": {
+            "health": "/api/health",
+            "chat": "/api/chat (POST)",
+            "collections": "/api/collections",
+            "sources": "/api/sources (GET) - List Buddhist texts",
+            "source_detail": "/api/sources/{sutra_id} (GET) - Get text details",
+            "docs": "/docs",
+            "test_ui": "/"
+        }
+    }
+
+
+# ============================================================================
+# Error Handlers
+# ============================================================================
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Global exception handler."""
+    logger.error(f"Unhandled exception: {exc}")
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"detail": "Internal server error occurred"}
+    )
+
+
+# ============================================================================
+# Main Entry Point
+# ============================================================================
+
+if __name__ == "__main__":
+    import uvicorn
+
+    # Create logs directory
+    os.makedirs("logs", exist_ok=True)
+
+    uvicorn.run(
+        "main:app",
+        host=config.api_host,
+        port=config.api_port,
+        reload=True,
+        log_level=config.log_level.lower()
+    )

@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>불교 AI 챗봇 테스트 | Buddhist AI Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .sidebar {
+            width: 350px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-370px);
+        }
+
+        .sidebar-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .sidebar-header h2 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .sidebar-search {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .sidebar-search input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .sidebar-search input:focus {
+            border-color: #667eea;
+        }
+
+        .sidebar-filters {
+            padding: 10px 15px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-tag {
+            padding: 5px 12px;
+            background: #edf2f7;
+            border-radius: 15px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-tag.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .source-card {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid #667eea;
+        }
+
+        .source-card:hover {
+            background: #edf2f7;
+            transform: translateX(3px);
+        }
+
+        .source-card-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .source-card-summary {
+            font-size: 11px;
+            color: #718096;
+            line-height: 1.5;
+            margin-bottom: 5px;
+        }
+
+        .source-card-meta {
+            display: flex;
+            gap: 5px;
+            font-size: 10px;
+        }
+
+        .source-tag {
+            padding: 2px 8px;
+            background: white;
+            border-radius: 10px;
+            color: #667eea;
+        }
+
+        .sidebar-toggle {
+            position: absolute;
+            left: 370px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .sidebar-toggle:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .sidebar.collapsed + .sidebar-toggle {
+            left: 20px;
+        }
+
+        .container {
+            flex: 1;
+            max-width: 900px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        /* Source Detail Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .modal-header p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-section {
+            margin-bottom: 20px;
+        }
+
+        .modal-section h4 {
+            font-size: 14px;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .modal-section p {
+            font-size: 13px;
+            color: #4a5568;
+            line-height: 1.8;
+        }
+
+        .modal-themes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .theme-tag {
+            padding: 5px 12px;
+            background: #edf2f7;
+            border-radius: 15px;
+            font-size: 11px;
+            color: #667eea;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .modal-close:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        @media (max-width: 1200px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                max-height: 300px;
+            }
+
+            .sidebar.collapsed {
+                transform: translateY(-320px);
+            }
+
+            .sidebar-toggle {
+                left: 50%;
+                transform: translateX(-50%);
+                top: auto;
+                bottom: -20px;
+            }
+
+            .sidebar.collapsed + .sidebar-toggle {
+                left: 50%;
+                transform: translateX(-50%);
+                top: -20px;
+                bottom: auto;
+            }
+
+            .container {
+                max-width: 100%;
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .status {
+            background: #f7fafc;
+            padding: 15px 30px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #48bb78;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chat-container {
+            height: 500px;
+            overflow-y: auto;
+            padding: 30px;
+            background: #f7fafc;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message-content {
+            display: inline-block;
+            max-width: 75%;
+            padding: 15px 20px;
+            border-radius: 18px;
+            line-height: 1.6;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.assistant .message-content {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: left;
+        }
+
+        .sources {
+            margin-top: 15px;
+            padding: 15px;
+            background: #edf2f7;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .sources h4 {
+            margin-bottom: 10px;
+            color: #2d3748;
+            font-size: 13px;
+        }
+
+        .source-item {
+            margin-bottom: 8px;
+            padding: 8px;
+            background: white;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+        }
+
+        .source-item strong {
+            color: #667eea;
+        }
+
+        .loading {
+            display: inline-flex;
+            gap: 4px;
+            padding: 15px 20px;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: bounce 1.4s ease-in-out infinite;
+        }
+
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        .input-container {
+            padding: 20px 30px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        #queryInput {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        #queryInput:focus {
+            border-color: #667eea;
+        }
+
+        #sendButton {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        #sendButton:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        #sendButton:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .example-queries {
+            margin-top: 15px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .example-query {
+            padding: 8px 15px;
+            background: #edf2f7;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .example-query:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .latency {
+            margin-top: 5px;
+            font-size: 11px;
+            color: #718096;
+        }
+    </style>
+</head>
+<body>
+    <!-- Source Explorer Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>📖 경전 라이브러리</h2>
+            <p id="sourceCount">경전 목록을 불러오는 중...</p>
+        </div>
+        <div class="sidebar-search">
+            <input
+                type="text"
+                id="sourceSearch"
+                placeholder="경전 검색..."
+                oninput="filterSources()"
+            />
+        </div>
+        <div class="sidebar-filters" id="filterContainer">
+            <!-- Filters will be populated dynamically -->
+        </div>
+        <div class="sidebar-content" id="sourceList">
+            <!-- Source cards will be populated dynamically -->
+        </div>
+    </div>
+
+    <!-- Sidebar Toggle Button -->
+    <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+        ◀
+    </button>
+
+    <!-- Main Container -->
+    <div class="container">
+        <div class="header">
+            <h1>🙏 불교 AI 챗봇</h1>
+            <p>Fine-tuned BERT 임베딩 + Gemini 2.0 Flash | CBETA 대장경 99,723 문서</p>
+        </div>
+
+        <div class="status">
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>서버 연결됨</span>
+            </div>
+            <div style="color: #718096;">
+                <span id="modelInfo">Model: Gemini 2.0 Flash Exp | Embeddings: Fine-tuned BERT 768-dim</span>
+            </div>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="message assistant">
+                <div class="message-content">
+                    안녕하세요! 저는 CBETA 대장경을 기반으로 한 불교 AI 챗봇입니다.<br><br>
+                    궁금하신 불교 교리나 경전 내용을 질문해 주세요. 정확한 출처와 함께 답변드리겠습니다.
+                </div>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <div class="input-wrapper">
+                <input
+                    type="text"
+                    id="queryInput"
+                    placeholder="불교 교리에 대해 질문해 주세요... (예: 사성제란 무엇인가요?)"
+                    onkeypress="if(event.key === 'Enter') sendQuery()"
+                />
+                <button id="sendButton" onclick="sendQuery()">전송</button>
+            </div>
+            <div class="example-queries">
+                <div class="example-query" onclick="setQuery('사성제란 무엇인가요?')">사성제란?</div>
+                <div class="example-query" onclick="setQuery('팔정도에 대해 설명해주세요')">팔정도</div>
+                <div class="example-query" onclick="setQuery('무상(無常)의 의미는?')">무상(無常)</div>
+                <div class="example-query" onclick="setQuery('연기법이란 무엇인가요?')">연기법</div>
+                <div class="example-query" onclick="setQuery('자비와 지혜의 관계')">자비와 지혜</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Source Detail Modal -->
+    <div class="modal" id="sourceModal" onclick="if(event.target === this) closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <button class="modal-close" onclick="closeModal()">×</button>
+                <h3 id="modalTitle">경전 제목</h3>
+                <p id="modalMeta">저자 | 시대 | 전통</p>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <h4>📜 간략 요약</h4>
+                    <p id="modalBriefSummary"></p>
+                </div>
+                <div class="modal-section">
+                    <h4>📖 상세 요약</h4>
+                    <p id="modalDetailedSummary"></p>
+                </div>
+                <div class="modal-section">
+                    <h4>🔑 핵심 주제</h4>
+                    <div class="modal-themes" id="modalThemes"></div>
+                </div>
+                <div class="modal-section">
+                    <h4>📚 원문 정보</h4>
+                    <p id="modalOriginalInfo"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== Source Explorer =====
+        let allSources = [];
+        let filteredSources = [];
+        let activeFilters = {
+            tradition: null,
+            period: null
+        };
+
+        // Load sources on page load
+        async function loadSources() {
+            try {
+                const response = await fetch('http://localhost:8000/api/sources?limit=200');
+                if (!response.ok) throw new Error('Failed to load sources');
+
+                const data = await response.json();
+                allSources = data.sources;
+                filteredSources = [...allSources];
+
+                document.getElementById('sourceCount').textContent =
+                    `총 ${data.total.toLocaleString()}개 경전 (${data.sources.length}개 표시)`;
+
+                renderSources();
+                setupFilters();
+            } catch (error) {
+                console.error('Error loading sources:', error);
+                document.getElementById('sourceCount').textContent = '경전 로딩 실패';
+            }
+        }
+
+        // Render source cards
+        function renderSources() {
+            const sourceList = document.getElementById('sourceList');
+
+            if (filteredSources.length === 0) {
+                sourceList.innerHTML = '<div style="padding:20px;text-align:center;color:#718096;">검색 결과가 없습니다</div>';
+                return;
+            }
+
+            sourceList.innerHTML = filteredSources.map(source => `
+                <div class="source-card" onclick="showSourceDetail('${source.sutra_id}')">
+                    <div class="source-card-title">${source.title_ko || source.original_title}</div>
+                    <div class="source-card-summary">${source.brief_summary || '요약 정보 없음'}</div>
+                    <div class="source-card-meta">
+                        ${source.tradition ? `<span class="source-tag">${source.tradition}</span>` : ''}
+                        ${source.period ? `<span class="source-tag">${source.period}</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Setup filter tags
+        function setupFilters() {
+            const traditions = [...new Set(allSources.map(s => s.tradition).filter(Boolean))];
+            const filterContainer = document.getElementById('filterContainer');
+
+            filterContainer.innerHTML = traditions.slice(0, 4).map(tradition => `
+                <div class="filter-tag" onclick="toggleFilter('tradition', '${tradition}')">
+                    ${tradition}
+                </div>
+            `).join('');
+        }
+
+        // Toggle filter
+        function toggleFilter(type, value) {
+            if (activeFilters[type] === value) {
+                activeFilters[type] = null;
+            } else {
+                activeFilters[type] = value;
+            }
+
+            // Update active state
+            document.querySelectorAll('.filter-tag').forEach(tag => {
+                tag.classList.toggle('active', tag.textContent.trim() === activeFilters[type]);
+            });
+
+            filterSources();
+        }
+
+        // Filter sources
+        function filterSources() {
+            const searchTerm = document.getElementById('sourceSearch').value.toLowerCase();
+
+            filteredSources = allSources.filter(source => {
+                // Search filter
+                const matchesSearch = !searchTerm ||
+                    source.title_ko?.toLowerCase().includes(searchTerm) ||
+                    source.original_title?.toLowerCase().includes(searchTerm) ||
+                    source.brief_summary?.toLowerCase().includes(searchTerm);
+
+                // Tradition filter
+                const matchesTradition = !activeFilters.tradition ||
+                    source.tradition === activeFilters.tradition;
+
+                // Period filter
+                const matchesPeriod = !activeFilters.period ||
+                    source.period === activeFilters.period;
+
+                return matchesSearch && matchesTradition && matchesPeriod;
+            });
+
+            renderSources();
+        }
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.getElementById('sidebarToggle');
+
+            sidebar.classList.toggle('collapsed');
+            toggle.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
+        }
+
+        // Show source detail modal
+        async function showSourceDetail(sutraId) {
+            try {
+                const response = await fetch(`http://localhost:8000/api/sources/${sutraId}`);
+                if (!response.ok) throw new Error('Failed to load source detail');
+
+                const source = await response.json();
+
+                // Populate modal
+                document.getElementById('modalTitle').textContent = source.title_ko || source.original_title;
+                document.getElementById('modalMeta').textContent =
+                    `${source.author || '작자 미상'} | ${source.period || '시대 미상'} | ${source.tradition || '전통 미상'}`;
+                document.getElementById('modalBriefSummary').textContent = source.brief_summary || '요약 정보 없음';
+                document.getElementById('modalDetailedSummary').textContent = source.detailed_summary || '상세 요약 정보 없음';
+
+                // Themes
+                const themesContainer = document.getElementById('modalThemes');
+                if (source.key_themes && source.key_themes.length > 0) {
+                    themesContainer.innerHTML = source.key_themes.map(theme =>
+                        `<span class="theme-tag">${theme}</span>`
+                    ).join('');
+                } else {
+                    themesContainer.innerHTML = '<span style="color:#718096;font-size:12px;">주제 정보 없음</span>';
+                }
+
+                // Original info
+                document.getElementById('modalOriginalInfo').innerHTML = `
+                    <strong>원제목:</strong> ${source.original_title}<br>
+                    <strong>저자:</strong> ${source.author || '미상'}<br>
+                    <strong>대장경 번호:</strong> ${sutraId}<br>
+                    <strong>권수:</strong> 제${source.volume}권 제${source.juan}
+                `;
+
+                // Show modal
+                document.getElementById('sourceModal').classList.add('active');
+            } catch (error) {
+                console.error('Error loading source detail:', error);
+                alert('경전 상세 정보를 불러올 수 없습니다.');
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('sourceModal').classList.remove('active');
+        }
+
+        // ===== Chat Functionality =====
+        const API_URL = 'http://localhost:8000/api/chat';
+        const chatContainer = document.getElementById('chatContainer');
+        const queryInput = document.getElementById('queryInput');
+        const sendButton = document.getElementById('sendButton');
+
+        function setQuery(text) {
+            queryInput.value = text;
+            queryInput.focus();
+        }
+
+        async function sendQuery() {
+            const query = queryInput.value.trim();
+            if (!query) return;
+
+            // Add user message
+            addMessage(query, 'user');
+            queryInput.value = '';
+            sendButton.disabled = true;
+
+            // Show loading
+            const loadingId = showLoading();
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Remove loading
+                removeLoading(loadingId);
+
+                // Add assistant response
+                addMessage(data.response, 'assistant', data.sources, data.latency_ms);
+
+            } catch (error) {
+                removeLoading(loadingId);
+                addMessage(`오류가 발생했습니다: ${error.message}`, 'assistant');
+            } finally {
+                sendButton.disabled = false;
+                queryInput.focus();
+            }
+        }
+
+        function parseMarkdown(text) {
+            // Split into paragraphs
+            let html = text.split('\n\n').map(paragraph => {
+                // Check if it's a numbered list
+                if (/^\d+\.\s/.test(paragraph)) {
+                    const items = paragraph.split('\n').filter(line => /^\d+\.\s/.test(line));
+                    const listItems = items.map(item => {
+                        const content = item.replace(/^\d+\.\s+/, '');
+                        return `<li>${formatInlineMarkdown(content)}</li>`;
+                    }).join('');
+                    return `<ol>${listItems}</ol>`;
+                }
+
+                // Check if it's a bullet list
+                if (/^[-*•]\s/.test(paragraph)) {
+                    const items = paragraph.split('\n').filter(line => /^[-*•]\s/.test(line));
+                    const listItems = items.map(item => {
+                        const content = item.replace(/^[-*•]\s+/, '');
+                        return `<li>${formatInlineMarkdown(content)}</li>`;
+                    }).join('');
+                    return `<ul>${listItems}</ul>`;
+                }
+
+                // Check if it's a heading
+                if (paragraph.startsWith('### ')) {
+                    return `<h4>${formatInlineMarkdown(paragraph.substring(4))}</h4>`;
+                }
+                if (paragraph.startsWith('## ')) {
+                    return `<h3>${formatInlineMarkdown(paragraph.substring(3))}</h3>`;
+                }
+
+                // Regular paragraph
+                return `<p>${formatInlineMarkdown(paragraph)}</p>`;
+            }).join('');
+
+            return html;
+        }
+
+        function formatInlineMarkdown(text) {
+            // Bold: **text** or __text__
+            text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            text = text.replace(/__(.+?)__/g, '<strong>$1</strong>');
+
+            // Code or inline formatting with backticks
+            text = text.replace(/`(.+?)`/g, '<code style="background:#f1f5f9;padding:2px 6px;border-radius:3px;font-size:0.9em;">$1</code>');
+
+            // Single line breaks
+            text = text.replace(/\n/g, '<br>');
+
+            return text;
+        }
+
+        function addMessage(content, role, sources = null, latency = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+
+            // Parse markdown for assistant messages
+            if (role === 'assistant') {
+                contentDiv.innerHTML = parseMarkdown(content);
+            } else {
+                contentDiv.textContent = content;
+            }
+
+            if (sources && sources.length > 0) {
+                const sourcesDiv = document.createElement('div');
+                sourcesDiv.className = 'sources';
+                sourcesDiv.innerHTML = '<h4>📚 출처 (Sources):</h4>';
+
+                sources.forEach((source, idx) => {
+                    const sourceItem = document.createElement('div');
+                    sourceItem.className = 'source-item';
+                    sourceItem.innerHTML = `<strong>${idx + 1}. ${source.title}</strong> (${source.text_id})<br>${source.excerpt.substring(0, 100)}...`;
+                    sourcesDiv.appendChild(sourceItem);
+                });
+
+                if (latency) {
+                    const latencyDiv = document.createElement('div');
+                    latencyDiv.className = 'latency';
+                    latencyDiv.textContent = `⚡ 응답 시간: ${latency}ms`;
+                    sourcesDiv.appendChild(latencyDiv);
+                }
+
+                contentDiv.appendChild(sourcesDiv);
+            }
+
+            messageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(messageDiv);
+
+            // Scroll to show the top of the message (not the bottom)
+            messageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function showLoading() {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message assistant';
+            loadingDiv.id = 'loading-' + Date.now();
+
+            loadingDiv.innerHTML = `
+                <div class="loading">
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                </div>
+            `;
+
+            chatContainer.appendChild(loadingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return loadingDiv.id;
+        }
+
+        function removeLoading(id) {
+            const loadingDiv = document.getElementById(id);
+            if (loadingDiv) {
+                loadingDiv.remove();
+            }
+        }
+
+        // ===== Initialize on Page Load =====
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSources();
+        });
+    </script>
+</body>
+</html>
