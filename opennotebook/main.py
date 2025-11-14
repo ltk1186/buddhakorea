@@ -61,7 +61,7 @@ class AppConfig(BaseSettings):
     # API Settings
     api_host: str = "0.0.0.0"
     api_port: int = 8000
-    allowed_origins: str = "http://localhost:8000,https://buddhakorea.com,https://www.buddhakorea.com"
+    allowed_origins: str = "http://localhost:8000,https://buddhakorea.com,https://www.buddhakorea.com,null,file://"
 
     # Rate Limiting
     rate_limit_per_hour: int = 100
@@ -110,6 +110,8 @@ class ChatRequest(BaseModel):
     language: Optional[str] = Field(default="auto", description="Interface language (ko/en/auto)")
     collection: Optional[str] = Field(default="all", description="Text collection to search (all/chinese/english/korean)")
     max_sources: int = Field(default=5, ge=1, le=20, description="Maximum number of source citations")
+    sutra_filter: Optional[str] = Field(default=None, description="Filter by specific sutra ID (e.g., 'T01n0001' for 장아함경)")
+    detailed_mode: bool = Field(default=False, description="Enable detailed mode for comprehensive answers (activated by /자세히 prefix)")
 
 
 class SourceDocument(BaseModel):
@@ -287,8 +289,8 @@ async def lifespan(app: FastAPI):
     if app_state.vectorstore:
         prompt_template = """당신은 불교 경전과 가르침을 연구하는 전문가입니다. 다음 맥락(Context)을 참고하여 질문에 정확하고 상세하게 답변하세요.
 
-답변 시 반드시 출처를 명시하고, 여러 전통(초기불교, 대승불교 등)의 관점이 다를 수 있음을 언급하세요.
-경전의 원문을 직접 인용할 때는 인용 표시를 하세요.
+여러 전통(초기불교, 대승불교 등)의 관점이 다를 수 있음을 언급하세요.
+Context에서 경전의 내용을 인용할 때는 인용 표시를 하세요.
 
 Context:
 {context}
@@ -332,11 +334,11 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS middleware
+# CORS middleware - Allow all origins for local development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=config.allowed_origins.split(","),
-    allow_credentials=True,
+    allow_origins=["*"],  # Allow all origins for local testing
+    allow_credentials=False,  # Must be False when allow_origins is ["*"]
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -447,8 +449,150 @@ async def chat(request: ChatRequest, http_request: Request):
             logger.debug(f"HyDE expansion: {query[:50]}... -> {expanded_query[:100]}...")
             query = expanded_query
 
-        # Run RAG query
-        result = app_state.qa_chain({"query": query})
+        # Prepare detailed mode configuration if requested
+        detailed_llm = None
+        detailed_k = 12  # More chunks for detailed mode
+        if request.detailed_mode:
+            logger.info("Detailed mode activated - using extended configuration")
+            # Create LLM with higher max_tokens for detailed responses
+            if "gemini" in config.llm_model:
+                from langchain_google_vertexai import ChatVertexAI
+                detailed_llm = ChatVertexAI(
+                    model=config.llm_model,
+                    project=config.gcp_project_id,
+                    location=config.gcp_location,
+                    temperature=0.3,
+                    max_tokens=8192  # 4x normal for comprehensive answers
+                )
+            elif "claude" in config.llm_model:
+                from langchain_anthropic import ChatAnthropic
+                detailed_llm = ChatAnthropic(
+                    model=config.llm_model,
+                    anthropic_api_key=config.anthropic_api_key,
+                    temperature=0.3,
+                    max_tokens=8000  # 4x normal
+                )
+            else:
+                from langchain_openai import ChatOpenAI
+                detailed_llm = ChatOpenAI(
+                    model=config.llm_model,
+                    openai_api_key=config.openai_api_key,
+                    temperature=0.3,
+                    max_tokens=8000  # 4x normal
+                )
+
+        # Run RAG query with optional sutra filtering and detailed mode
+        if request.sutra_filter:
+            # User specified a sutra filter (e.g., "/장아함경" -> "T01n0001")
+            logger.info(f"Applying sutra filter: {request.sutra_filter}")
+
+            # Determine retrieval k based on detailed mode
+            retrieval_k = (detailed_k * 2) if request.detailed_mode else (config.top_k_retrieval * 2)
+
+            # Create filtered retriever
+            filtered_retriever = app_state.vectorstore.as_retriever(
+                search_kwargs={
+                    "k": retrieval_k,
+                    "filter": {"sutra_id": request.sutra_filter}
+                }
+            )
+
+            # Select prompt template based on detailed mode
+            if request.detailed_mode:
+                prompt_template = """당신은 불교 경전 전문가입니다. 사용자가 특정 경전을 지정했으므로, 아래 제공된 Context(문맥)의 내용을 바탕으로 **가능한 한 상세하고 포괄적으로** 답변하세요.
+
+**중요 지침:**
+1. Context에 제공된 모든 관련 내용을 최대한 활용하여 **깊이 있게** 답변하세요
+2. 여러 관점과 해석이 있다면 모두 소개하세요
+3. Context에서 경전의 원문을 인용할 때는 인용 표시를 하고, 그 의미를 자세히 풀어서 설명하세요
+4. 역사적 배경, 맥락, 다른 가르침과의 연결고리 등을 포함하여 종합적으로 설명하세요
+5. 다른 경전이나 일반적인 불교 지식은 언급하지 마세요 (오직 이 경전의 내용만)
+6. Context에 전혀 관련이 없는 질문이라면, "이 경전에서는 해당 주제를 다루지 않습니다"라고 답변하세요
+
+Context (이 경전의 내용):
+{context}
+
+Question: {question}
+
+Answer (Context를 바탕으로 한국어 또는 영어로 매우 상세하고 포괄적으로 답변):"""
+            else:
+                prompt_template = """당신은 불교 경전 전문가입니다. 사용자가 특정 경전을 지정했으므로, 아래 제공된 Context(문맥)의 내용을 바탕으로 답변해야 합니다.
+
+**중요 지침:**
+1. Context에 제공된 내용을 최대한 활용하여 답변하세요
+2. 직접적인 언급이 없더라도 Context에 관련된 내용이 있다면 그것을 바탕으로 설명하세요
+3. Context에서 경전의 내용을 인용할 때는 인용 표시를 하세요
+4. 다른 경전이나 일반적인 불교 지식은 언급하지 마세요 (오직 이 경전의 내용만)
+5. Context에 전혀 관련이 없는 질문이라면, "이 경전에서는 해당 주제를 다루지 않습니다"라고 답변하세요
+
+Context (이 경전의 내용):
+{context}
+
+Question: {question}
+
+Answer (Context를 바탕으로 한국어 또는 영어로 상세히 답변):"""
+
+            PROMPT = PromptTemplate(
+                template=prompt_template,
+                input_variables=["context", "question"]
+            )
+
+            # Create temporary QA chain with filtered retriever
+            filtered_qa_chain = RetrievalQA.from_chain_type(
+                llm=detailed_llm if detailed_llm else app_state.llm,
+                chain_type="stuff",
+                retriever=filtered_retriever,
+                return_source_documents=True,
+                chain_type_kwargs={"prompt": PROMPT}
+            )
+
+            result = filtered_qa_chain({"query": query})
+            logger.info(f"Filtered query completed for sutra: {request.sutra_filter}")
+        elif request.detailed_mode:
+            # Detailed mode without sutra filter
+            logger.info("Running detailed mode query without sutra filter")
+
+            # Create detailed retriever
+            detailed_retriever = app_state.vectorstore.as_retriever(
+                search_kwargs={"k": detailed_k}
+            )
+
+            # Create detailed prompt
+            prompt_template = """당신은 불교 경전과 가르침을 연구하는 전문가입니다. 아래 제공된 Context(문맥)을 참고하여 **가능한 한 상세하고 포괄적으로** 답변하세요.
+
+**중요 지침:**
+1. Context에 제공된 모든 관련 내용을 최대한 활용하여 **깊이 있게** 답변하세요
+2. 여러 전통(초기불교, 대승불교 등)의 관점이 다를 수 있음을 언급하고, 각 관점을 자세히 설명하세요
+3. Context에서 경전의 원문을 인용할 때는 인용 표시를 하고, 그 의미를 자세히 풀어서 설명하세요
+4. 역사적 배경, 맥락, 다른 가르침과의 연결고리 등을 포함하여 종합적으로 설명하세요
+5. 가능한 한 구체적인 예시와 비유를 들어 설명하세요
+
+Context:
+{context}
+
+Question: {question}
+
+Answer (한국어 또는 영어로 매우 상세하고 포괄적으로 답변):"""
+
+            PROMPT = PromptTemplate(
+                template=prompt_template,
+                input_variables=["context", "question"]
+            )
+
+            # Create detailed QA chain
+            detailed_qa_chain = RetrievalQA.from_chain_type(
+                llm=detailed_llm,
+                chain_type="stuff",
+                retriever=detailed_retriever,
+                return_source_documents=True,
+                chain_type_kwargs={"prompt": PROMPT}
+            )
+
+            result = detailed_qa_chain({"query": query})
+            logger.info("Detailed query completed")
+        else:
+            # Use default QA chain (no filtering, no detailed mode)
+            result = app_state.qa_chain({"query": query})
 
         # Format response
         response_text = result["result"]
@@ -460,7 +604,7 @@ async def chat(request: ChatRequest, http_request: Request):
             metadata = doc.metadata
             sources.append(SourceDocument(
                 title=metadata.get("title", "Unknown"),
-                text_id=metadata.get("text_id", "N/A"),
+                text_id=metadata.get("sutra_id", "N/A"),
                 excerpt=doc.page_content[:300] + "..." if len(doc.page_content) > 300 else doc.page_content,
                 metadata=metadata
             ))
@@ -506,7 +650,7 @@ async def list_sources(
     - search: Search in titles and summaries (Korean or Chinese)
     - tradition: Filter by Buddhist tradition (초기불교, 대승불교, 선종, etc.)
     - period: Filter by historical period
-    - limit: Number of results (default 50, max 200)
+    - limit: Number of results (default 50, max 3000)
     - offset: Pagination offset
     """
     try:
@@ -561,7 +705,7 @@ async def list_sources(
         filtered.sort(key=lambda x: x['sutra_id'])
 
         # Pagination
-        limit = min(limit, 200)
+        limit = min(limit, 3000)
         paginated = filtered[offset:offset + limit]
 
         return {

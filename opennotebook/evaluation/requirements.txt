@@ -1,0 +1,15 @@
+# Evaluation Framework Requirements
+# Install with: pip install -r requirements.txt
+
+# Core evaluation libraries
+ragas>=0.1.0
+trulens-eval>=0.19.0
+
+# Dataset handling
+datasets>=2.14.0
+
+# API interaction
+requests>=2.31.0
+
+# Utilities
+loguru>=0.7.0

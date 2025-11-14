@@ -22,6 +22,7 @@
 
         .sidebar {
             width: 350px;
+            height: calc(100vh - 40px);
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
@@ -69,27 +70,6 @@
 
         .sidebar-search input:focus {
             border-color: #667eea;
-        }
-
-        .sidebar-filters {
-            padding: 10px 15px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            gap: 8px;
-        }
-
-        .filter-tag {
-            padding: 5px 12px;
-            background: #edf2f7;
-            border-radius: 15px;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .filter-tag.active {
-            background: #667eea;
-            color: white;
         }
 
         .sidebar-content {
@@ -420,6 +400,14 @@
             background: white;
             border-radius: 6px;
             border-left: 3px solid #667eea;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .source-item:hover {
+            background: #f7fafc;
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
         }
 
         .source-item strong {
@@ -499,6 +487,89 @@
             cursor: not-allowed;
         }
 
+        .filter-badge-container {
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-radius: 10px;
+            border-left: 3px solid #667eea;
+        }
+
+        .filter-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: white;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #667eea;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+        }
+
+        .filter-badge-close {
+            background: none;
+            border: none;
+            color: #667eea;
+            font-size: 20px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .filter-badge-close:hover {
+            background: #667eea15;
+        }
+
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 80px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            margin-top: 5px;
+        }
+
+        .autocomplete-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f7fafc;
+            transition: background 0.2s;
+        }
+
+        .autocomplete-item:hover {
+            background: #f7fafc;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 3px;
+        }
+
+        .autocomplete-id {
+            font-size: 12px;
+            color: #718096;
+        }
+
         .example-queries {
             margin-top: 15px;
             display: flex;
@@ -542,9 +613,6 @@
                 oninput="filterSources()"
             />
         </div>
-        <div class="sidebar-filters" id="filterContainer">
-            <!-- Filters will be populated dynamically -->
-        </div>
         <div class="sidebar-content" id="sourceList">
             <!-- Source cards will be populated dynamically -->
         </div>
@@ -582,14 +650,29 @@
         </div>
 
         <div class="input-container">
-            <div class="input-wrapper">
+            <!-- Separate badges for detailed mode and sutra filter -->
+            <div id="detailedModeBadge" class="filter-badge-container" style="display: none;">
+                <div class="filter-badge">
+                    <span>🔍 자세히 모드</span>
+                    <button class="filter-badge-close" onclick="clearDetailedMode()">×</button>
+                </div>
+            </div>
+            <div id="sutraFilterBadge" class="filter-badge-container" style="display: none;">
+                <div class="filter-badge">
+                    <span id="sutraFilterText"></span>
+                    <button class="filter-badge-close" onclick="clearSutraFilter()">×</button>
+                </div>
+            </div>
+            <div class="input-wrapper" style="position: relative;">
                 <input
                     type="text"
                     id="queryInput"
-                    placeholder="불교 교리에 대해 질문해 주세요... (예: 사성제란 무엇인가요?)"
-                    onkeypress="if(event.key === 'Enter') sendQuery()"
+                    placeholder="불교 교리에 대해 질문해 주세요... (예: 사성제란 무엇인가요? 또는 /장아함경)"
+                    onkeypress="if(event.key === 'Enter' && !autocompleteVisible) sendQuery()"
+                    oninput="handleSlashCommand()"
                 />
                 <button id="sendButton" onclick="sendQuery()">전송</button>
+                <div id="autocompleteDropdown" class="autocomplete-dropdown" style="display: none;"></div>
             </div>
             <div class="example-queries">
                 <div class="example-query" onclick="setQuery('사성제란 무엇인가요?')">사성제란?</div>
@@ -642,7 +725,7 @@
         // Load sources on page load
         async function loadSources() {
             try {
-                const response = await fetch('http://localhost:8000/api/sources?limit=200');
+                const response = await fetch('http://localhost:8000/api/sources?limit=2500');
                 if (!response.ok) throw new Error('Failed to load sources');
 
                 const data = await response.json();
@@ -653,7 +736,6 @@
                     `총 ${data.total.toLocaleString()}개 경전 (${data.sources.length}개 표시)`;
 
                 renderSources();
-                setupFilters();
             } catch (error) {
                 console.error('Error loading sources:', error);
                 document.getElementById('sourceCount').textContent = '경전 로딩 실패';
@@ -681,54 +763,15 @@
             `).join('');
         }
 
-        // Setup filter tags
-        function setupFilters() {
-            const traditions = [...new Set(allSources.map(s => s.tradition).filter(Boolean))];
-            const filterContainer = document.getElementById('filterContainer');
-
-            filterContainer.innerHTML = traditions.slice(0, 4).map(tradition => `
-                <div class="filter-tag" onclick="toggleFilter('tradition', '${tradition}')">
-                    ${tradition}
-                </div>
-            `).join('');
-        }
-
-        // Toggle filter
-        function toggleFilter(type, value) {
-            if (activeFilters[type] === value) {
-                activeFilters[type] = null;
-            } else {
-                activeFilters[type] = value;
-            }
-
-            // Update active state
-            document.querySelectorAll('.filter-tag').forEach(tag => {
-                tag.classList.toggle('active', tag.textContent.trim() === activeFilters[type]);
-            });
-
-            filterSources();
-        }
-
-        // Filter sources
+        // Filter sources by search term
         function filterSources() {
             const searchTerm = document.getElementById('sourceSearch').value.toLowerCase();
 
             filteredSources = allSources.filter(source => {
-                // Search filter
-                const matchesSearch = !searchTerm ||
+                return !searchTerm ||
                     source.title_ko?.toLowerCase().includes(searchTerm) ||
                     source.original_title?.toLowerCase().includes(searchTerm) ||
                     source.brief_summary?.toLowerCase().includes(searchTerm);
-
-                // Tradition filter
-                const matchesTradition = !activeFilters.tradition ||
-                    source.tradition === activeFilters.tradition;
-
-                // Period filter
-                const matchesPeriod = !activeFilters.period ||
-                    source.period === activeFilters.period;
-
-                return matchesSearch && matchesTradition && matchesPeriod;
             });
 
             renderSources();
@@ -795,30 +838,196 @@
         const queryInput = document.getElementById('queryInput');
         const sendButton = document.getElementById('sendButton');
 
+        // Slash command state
+        let currentSutraFilter = null;
+        let detailedModeActive = false;
+        let autocompleteVisible = false;
+
         function setQuery(text) {
             queryInput.value = text;
             queryInput.focus();
         }
 
+        // Handle slash command input
+        function handleSlashCommand() {
+            const value = queryInput.value;
+            const dropdown = document.getElementById('autocompleteDropdown');
+
+            // Check if input starts with /
+            if (value.startsWith('/')) {
+                const searchTerm = value.substring(1).toLowerCase();
+
+                // Special commands (자세히 detailed mode)
+                const specialCommands = [
+                    { command: '자세히', description: '상세하고 포괄적인 답변', color: '#9b59b6' }
+                ];
+
+                // Filter special commands
+                const matchingCommands = specialCommands.filter(cmd =>
+                    cmd.command.toLowerCase().includes(searchTerm)
+                );
+
+                // Filter sources matching the search term
+                const matchingSources = allSources.filter(source => {
+                    return source.title_ko.toLowerCase().includes(searchTerm) ||
+                           source.original_title.toLowerCase().includes(searchTerm) ||
+                           source.sutra_id.toLowerCase().includes(searchTerm);
+                }).slice(0, 8); // Limit to 8 results
+
+                const matches = [...matchingCommands.map(cmd => ({ type: 'command', data: cmd })),
+                                 ...matchingSources.map(src => ({ type: 'source', data: src }))];
+
+                if (matches.length > 0) {
+                    // Show dropdown with matches
+                    dropdown.innerHTML = matches.map(match => {
+                        if (match.type === 'command') {
+                            return `
+                                <div class="autocomplete-item" onclick="selectDetailedMode()" style="border-left: 3px solid ${match.data.color};">
+                                    <div class="autocomplete-title" style="color: ${match.data.color};">/${match.data.command}</div>
+                                    <div class="autocomplete-id">${match.data.description}</div>
+                                </div>
+                            `;
+                        } else {
+                            return `
+                                <div class="autocomplete-item" onclick="selectSutra('${match.data.sutra_id}', '${match.data.title_ko.replace(/'/g, "\\'")}')">
+                                    <div class="autocomplete-title">${match.data.title_ko}</div>
+                                    <div class="autocomplete-id">${match.data.sutra_id} • ${match.data.volume}</div>
+                                </div>
+                            `;
+                        }
+                    }).join('');
+                    dropdown.style.display = 'block';
+                    autocompleteVisible = true;
+                } else {
+                    dropdown.style.display = 'none';
+                    autocompleteVisible = false;
+                }
+            } else {
+                // Hide dropdown if not a slash command
+                dropdown.style.display = 'none';
+                autocompleteVisible = false;
+            }
+        }
+
+        // Select detailed mode
+        function selectDetailedMode() {
+            detailedModeActive = true;
+
+            // Clear input and hide dropdown
+            queryInput.value = '';
+            document.getElementById('autocompleteDropdown').style.display = 'none';
+            autocompleteVisible = false;
+
+            // Show detailed mode badge
+            const detailedBadge = document.getElementById('detailedModeBadge');
+            detailedBadge.style.display = 'block';
+            detailedBadge.style.background = 'linear-gradient(135deg, #9b59b615 0%, #9b59b615 100%)';
+            detailedBadge.style.borderLeft = '3px solid #9b59b6';
+
+            // Update input styling based on active modes
+            updateInputStyling();
+
+            // Focus input
+            queryInput.focus();
+        }
+
+        // Clear detailed mode
+        function clearDetailedMode() {
+            detailedModeActive = false;
+            document.getElementById('detailedModeBadge').style.display = 'none';
+            updateInputStyling();
+        }
+
+        // Select a sutra from autocomplete
+        function selectSutra(sutraId, sutraTitle) {
+            currentSutraFilter = sutraId;
+
+            // Clear input and hide dropdown
+            queryInput.value = '';
+            document.getElementById('autocompleteDropdown').style.display = 'none';
+            autocompleteVisible = false;
+
+            // Show sutra filter badge
+            const sutraBadge = document.getElementById('sutraFilterBadge');
+            const sutraText = document.getElementById('sutraFilterText');
+            sutraText.textContent = `필터: ${sutraTitle}`;
+            sutraBadge.style.display = 'block';
+            sutraBadge.style.background = 'linear-gradient(135deg, #667eea15 0%, #764ba215 100%)';
+            sutraBadge.style.borderLeft = '3px solid #667eea';
+
+            // Update input styling based on active modes
+            updateInputStyling();
+
+            // Focus input
+            queryInput.focus();
+        }
+
+        // Clear sutra filter
+        function clearSutraFilter() {
+            currentSutraFilter = null;
+            document.getElementById('sutraFilterBadge').style.display = 'none';
+            updateInputStyling();
+        }
+
+        // Update input border styling based on active modes
+        function updateInputStyling() {
+            if (detailedModeActive && currentSutraFilter) {
+                // Both modes active - use a gradient border
+                queryInput.style.borderColor = '#667eea';
+                queryInput.style.boxShadow = '0 0 0 3px rgba(155, 89, 182, 0.1)';
+            } else if (detailedModeActive) {
+                // Only detailed mode
+                queryInput.style.borderColor = '#9b59b6';
+                queryInput.style.boxShadow = '0 0 0 3px rgba(155, 89, 182, 0.1)';
+            } else if (currentSutraFilter) {
+                // Only sutra filter
+                queryInput.style.borderColor = '#667eea';
+                queryInput.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+            } else {
+                // No modes active
+                queryInput.style.borderColor = '';
+                queryInput.style.boxShadow = '';
+            }
+        }
+
         async function sendQuery() {
-            const query = queryInput.value.trim();
+            let query = queryInput.value.trim();
             if (!query) return;
 
-            // Add user message
-            addMessage(query, 'user');
+            // Detect /자세히 prefix for detailed mode OR check if detailed mode is active
+            let detailedMode = detailedModeActive;
+            if (query.startsWith('/자세히 ')) {
+                detailedMode = true;
+                query = query.substring(5).trim(); // Remove "/자세히 " prefix
+            }
+
+            // Add user message (show original query with prefix if used)
+            addMessage(queryInput.value.trim(), 'user');
             queryInput.value = '';
             sendButton.disabled = true;
+
+            // Note: Do NOT clear detailed mode after sending
+            // It should persist until user manually closes the badge
 
             // Show loading
             const loadingId = showLoading();
 
             try {
+                // Build request body with optional sutra filter and detailed mode
+                const requestBody = { query };
+                if (currentSutraFilter) {
+                    requestBody.sutra_filter = currentSutraFilter;
+                }
+                if (detailedMode) {
+                    requestBody.detailed_mode = true;
+                }
+
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ query })
+                    body: JSON.stringify(requestBody)
                 });
 
                 if (!response.ok) {
@@ -916,7 +1125,9 @@
                 sources.forEach((source, idx) => {
                     const sourceItem = document.createElement('div');
                     sourceItem.className = 'source-item';
+                    sourceItem.style.cursor = 'pointer';
                     sourceItem.innerHTML = `<strong>${idx + 1}. ${source.title}</strong> (${source.text_id})<br>${source.excerpt.substring(0, 100)}...`;
+                    sourceItem.onclick = () => showSourceDetail(source.text_id);
                     sourcesDiv.appendChild(sourceItem);
                 });
 
