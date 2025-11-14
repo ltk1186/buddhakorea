@@ -1255,3 +1255,19 @@ body {
     outline-offset: 3px;
     box-shadow: 0 0 0 6px rgba(244, 208, 63, 0.4);
 }
+
+/* ========================================
+   피드백 버튼 - 선택 화면에서만 표시
+   ======================================== */
+.fab-sutra {
+    display: block;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* 작성 화면이나 회향 화면에서는 숨기기 */
+#screen-write.show ~ .fab-sutra,
+#screen-dedication-complete.show ~ .fab-sutra {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.8);
+}

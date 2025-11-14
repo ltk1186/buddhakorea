@@ -193,6 +193,12 @@
 
     </div>
 
+    <!-- Floating Feedback Button (only visible on selection screen) -->
+    <button class="fab fab-sutra" onclick="openFeedbackModal()" aria-label="피드백 남기기">
+        <span class="fab-icon">💬</span>
+        <span class="fab-text">피드백</span>
+    </button>
+
     <script type="module">
         import { getSutrasByCategory, getCategoryLabel, dataLoadedPromise } from './js/sutra-data.js';
 
@@ -282,5 +288,6 @@
         });
     </script>
     <script type="module" src="js/sutra.js"></script>
+    <script src="js/feedback.js"></script>
 </body>
 </html>
