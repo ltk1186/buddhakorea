@@ -8,10 +8,12 @@ Provides RAG-powered chat interface for Taishō Tripiṭaka and Pali Canon texts
 import os
 import json
 import time
+import uuid
+from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, HTTPException, Request, status, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -101,6 +103,25 @@ logger.add(lambda msg: print(msg, end=""), level=config.log_level.upper())
 
 
 # ============================================================================
+# Session Management for Follow-up Questions
+# ============================================================================
+
+# In-memory session storage (for production, consider Redis)
+CONVERSATION_SESSIONS: Dict[str, Dict[str, Any]] = {}
+SESSION_TTL_SECONDS = 3600  # 1 hour
+MAX_MESSAGES_PER_SESSION = 20
+MAX_CONVERSATION_HISTORY_TURNS = 5  # Keep last 5 turns in context
+
+
+# ============================================================================
+# Response Caching for High-Quality Answers
+# ============================================================================
+
+CACHE_FILE_PATH = "cached_responses.json"
+RESPONSE_CACHE: Dict[str, Dict[str, Any]] = {}
+
+
+# ============================================================================
 # Pydantic Models
 # ============================================================================
 
@@ -112,6 +133,9 @@ class ChatRequest(BaseModel):
     max_sources: int = Field(default=5, ge=1, le=20, description="Maximum number of source citations")
     sutra_filter: Optional[str] = Field(default=None, description="Filter by specific sutra ID (e.g., 'T01n0001' for 장아함경)")
     detailed_mode: bool = Field(default=False, description="Enable detailed mode for comprehensive answers (activated by /자세히 prefix)")
+    # Follow-up question support
+    session_id: Optional[str] = Field(default=None, description="Session ID for follow-up questions (optional, created automatically if not provided)")
+    is_followup: bool = Field(default=False, description="Whether this is a follow-up question in an existing conversation")
 
 
 class SourceDocument(BaseModel):
@@ -130,6 +154,12 @@ class ChatResponse(BaseModel):
     model: str
     latency_ms: int
     collection: str
+    # Follow-up question support
+    session_id: str = Field(..., description="Session ID for this conversation (use this for follow-up questions)")
+    can_followup: bool = Field(default=True, description="Whether follow-up questions are supported for this response")
+    conversation_depth: int = Field(default=1, description="Number of exchanges in this conversation (1 = first question)")
+    # Cache support
+    from_cache: bool = Field(default=False, description="Whether this response was served from cache")
 
 
 class CollectionInfo(BaseModel):
@@ -146,6 +176,27 @@ class HealthResponse(BaseModel):
     version: str
     chroma_connected: bool
     llm_configured: bool
+
+
+class CacheRequest(BaseModel):
+    """Request model for adding to cache."""
+    cache_key: str = Field(..., description="Unique identifier for this cached response")
+    keywords: List[str] = Field(..., description="Keywords that trigger this cached response")
+    response: str = Field(..., description="The response text to cache")
+    sources: List[SourceDocument] = Field(..., description="Source documents for this response")
+    model: str = Field(..., description="Model name used to generate the response")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+
+
+class CachedResponseInfo(BaseModel):
+    """Information about a cached response."""
+    cache_key: str
+    keywords: List[str]
+    response_preview: str  # First 200 chars
+    model: str
+    created_at: str
+    hit_count: int
+    last_hit: Optional[str]
 
 
 # ============================================================================
@@ -167,6 +218,269 @@ app_state = AppState()
 
 
 # ============================================================================
+# Session Management Helper Functions
+# ============================================================================
+
+def create_or_get_session(session_id: Optional[str] = None) -> str:
+    """
+    Create a new session or retrieve existing one.
+
+    Args:
+        session_id: Optional existing session ID
+
+    Returns:
+        Session ID (new or existing)
+    """
+    # If session_id provided, check if it exists and is not expired
+    if session_id and session_id in CONVERSATION_SESSIONS:
+        session = CONVERSATION_SESSIONS[session_id]
+        # Check if session expired
+        if datetime.now() - session['last_accessed'] > timedelta(seconds=SESSION_TTL_SECONDS):
+            logger.info(f"Session {session_id[:8]}... expired, creating new session")
+            del CONVERSATION_SESSIONS[session_id]
+            session_id = None
+        else:
+            # Update last accessed time
+            session['last_accessed'] = datetime.now()
+            logger.info(f"Reusing session {session_id[:8]}... (depth: {len(session['messages'])//2})")
+            return session_id
+
+    # Create new session
+    new_session_id = str(uuid.uuid4())
+    CONVERSATION_SESSIONS[new_session_id] = {
+        'session_id': new_session_id,
+        'created_at': datetime.now(),
+        'last_accessed': datetime.now(),
+        'messages': [],  # List of {'role': 'user'|'assistant', 'content': str}
+        'context_chunks': [],  # Retrieved document chunks
+        'metadata': {}  # Store query parameters (detailed_mode, sutra_filter, etc.)
+    }
+    logger.info(f"Created new session {new_session_id[:8]}...")
+    return new_session_id
+
+
+def update_session(
+    session_id: str,
+    user_message: str,
+    assistant_message: str,
+    context_chunks: List[Any],
+    metadata: Dict[str, Any]
+):
+    """
+    Update session with new message exchange and context.
+
+    Args:
+        session_id: Session ID
+        user_message: User's question
+        assistant_message: Assistant's response
+        context_chunks: Retrieved context chunks
+        metadata: Query metadata (detailed_mode, sutra_filter, etc.)
+    """
+    if session_id not in CONVERSATION_SESSIONS:
+        logger.warning(f"Session {session_id[:8]}... not found, cannot update")
+        return
+
+    session = CONVERSATION_SESSIONS[session_id]
+
+    # Add messages
+    session['messages'].append({'role': 'user', 'content': user_message})
+    session['messages'].append({'role': 'assistant', 'content': assistant_message})
+
+    # Store context chunks (only if this is the first query or context changed significantly)
+    if not session['context_chunks'] or not metadata.get('is_followup', False):
+        session['context_chunks'] = context_chunks
+
+    # Update metadata
+    session['metadata'].update(metadata)
+
+    # Enforce max messages limit
+    if len(session['messages']) > MAX_MESSAGES_PER_SESSION * 2:  # *2 because user+assistant pair
+        # Remove oldest pair
+        session['messages'] = session['messages'][2:]
+        logger.info(f"Session {session_id[:8]}... trimmed to {len(session['messages'])//2} exchanges")
+
+    session['last_accessed'] = datetime.now()
+
+
+def get_session_context(session_id: str) -> Dict[str, Any]:
+    """
+    Get session conversation history and context.
+
+    Args:
+        session_id: Session ID
+
+    Returns:
+        Dict with 'messages', 'context_chunks', 'metadata'
+    """
+    if session_id not in CONVERSATION_SESSIONS:
+        return {'messages': [], 'context_chunks': [], 'metadata': {}}
+
+    session = CONVERSATION_SESSIONS[session_id]
+
+    # Get last N turns for context (to avoid overwhelming LLM)
+    recent_messages = session['messages'][-MAX_CONVERSATION_HISTORY_TURNS * 2:]
+
+    return {
+        'messages': recent_messages,
+        'context_chunks': session['context_chunks'],
+        'metadata': session['metadata'],
+        'conversation_depth': len(session['messages']) // 2
+    }
+
+
+def cleanup_expired_sessions():
+    """Remove sessions that have exceeded TTL."""
+    now = datetime.now()
+    expired = [
+        sid for sid, session in CONVERSATION_SESSIONS.items()
+        if now - session['last_accessed'] > timedelta(seconds=SESSION_TTL_SECONDS)
+    ]
+
+    for sid in expired:
+        del CONVERSATION_SESSIONS[sid]
+
+    if expired:
+        logger.info(f"Cleaned up {len(expired)} expired sessions")
+
+
+def format_conversation_history(messages: List[Dict[str, str]]) -> str:
+    """
+    Format conversation history for prompt inclusion.
+
+    Args:
+        messages: List of message dicts with 'role' and 'content'
+
+    Returns:
+        Formatted string for prompt
+    """
+    if not messages:
+        return ""
+
+    formatted = "\n\n이전 대화:\n"
+    for msg in messages:
+        role_label = "질문" if msg['role'] == 'user' else "답변"
+        formatted += f"- {role_label}: {msg['content'][:200]}{'...' if len(msg['content']) > 200 else ''}\n"
+
+    return formatted + "\n"
+
+
+# ============================================================================
+# Response Cache Helper Functions
+# ============================================================================
+
+def load_response_cache():
+    """Load cached responses from JSON file."""
+    global RESPONSE_CACHE
+
+    try:
+        if os.path.exists(CACHE_FILE_PATH):
+            with open(CACHE_FILE_PATH, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                RESPONSE_CACHE = data.get('cached_responses', {})
+            logger.info(f"Loaded {len(RESPONSE_CACHE)} cached responses")
+        else:
+            RESPONSE_CACHE = {}
+            logger.info("No cache file found, starting with empty cache")
+    except Exception as e:
+        logger.error(f"Error loading cache: {e}")
+        RESPONSE_CACHE = {}
+
+
+def save_response_cache():
+    """Save cached responses to JSON file."""
+    try:
+        data = {
+            'version': '1.0',
+            'cached_responses': RESPONSE_CACHE
+        }
+        with open(CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        logger.info(f"Saved {len(RESPONSE_CACHE)} cached responses")
+    except Exception as e:
+        logger.error(f"Error saving cache: {e}")
+
+
+def check_cached_response(query: str) -> Optional[Dict[str, Any]]:
+    """
+    Check if query matches any cached response keywords.
+
+    Args:
+        query: User's question
+
+    Returns:
+        Cached response dict if match found, None otherwise
+    """
+    query_lower = query.lower().strip()
+
+    for cache_key, cache_data in RESPONSE_CACHE.items():
+        keywords = cache_data.get('keywords', [])
+
+        # Check if any keyword matches the query
+        for keyword in keywords:
+            if keyword.lower() in query_lower:
+                # Increment hit count
+                cache_data['hit_count'] = cache_data.get('hit_count', 0) + 1
+                cache_data['last_hit'] = datetime.now().isoformat()
+                save_response_cache()
+
+                logger.info(f"✓ Cache hit for '{cache_key}' (keyword: '{keyword}', hits: {cache_data['hit_count']})")
+                return cache_data
+
+    return None
+
+
+def add_to_cache(
+    cache_key: str,
+    keywords: List[str],
+    response: str,
+    sources: List[Dict[str, Any]],
+    model: str,
+    metadata: Dict[str, Any] = None
+):
+    """
+    Add a response to the cache.
+
+    Args:
+        cache_key: Unique identifier for this cached response
+        keywords: List of keywords that should trigger this cached response
+        response: The response text
+        sources: List of source documents
+        model: Model name used to generate the response
+        metadata: Additional metadata
+    """
+    RESPONSE_CACHE[cache_key] = {
+        'keywords': keywords,
+        'response': response,
+        'sources': sources,
+        'model': model,
+        'created_at': datetime.now().isoformat(),
+        'hit_count': 0,
+        'last_hit': None,
+        'metadata': metadata or {}
+    }
+    save_response_cache()
+    logger.info(f"Added '{cache_key}' to cache with {len(keywords)} keywords")
+
+
+def remove_from_cache(cache_key: str) -> bool:
+    """
+    Remove a response from the cache.
+
+    Args:
+        cache_key: Key to remove
+
+    Returns:
+        True if removed, False if not found
+    """
+    if cache_key in RESPONSE_CACHE:
+        del RESPONSE_CACHE[cache_key]
+        save_response_cache()
+        logger.info(f"Removed '{cache_key}' from cache")
+        return True
+    return False
+
+
+# ============================================================================
 # Startup & Shutdown
 # ============================================================================
 
@@ -175,6 +489,9 @@ async def lifespan(app: FastAPI):
     """Initialize and cleanup application resources."""
 
     logger.info("Starting Buddhist AI Chatbot...")
+
+    # Load response cache
+    load_response_cache()
 
     # Initialize embeddings
     if config.use_gemini_for_queries:
@@ -442,6 +759,42 @@ async def chat(request: ChatRequest, http_request: Request):
 
     logger.info(f"Query from {client_ip}: {request.query[:100]}...")
 
+    # Check cache for this query (only for non-follow-up questions)
+    if not request.is_followup:
+        cached_response = check_cached_response(request.query)
+        if cached_response:
+            # Return cached response immediately
+            latency_ms = int((time.time() - start_time) * 1000)
+
+            # Convert cached sources to SourceDocument objects
+            cached_sources = [
+                SourceDocument(**source) if isinstance(source, dict) else source
+                for source in cached_response.get('sources', [])
+            ]
+
+            # Create new session for cached response
+            session_id = create_or_get_session(request.session_id)
+
+            return ChatResponse(
+                response=cached_response['response'],
+                sources=cached_sources[:request.max_sources],
+                model=cached_response.get('model', config.llm_model),
+                latency_ms=latency_ms,
+                collection=request.collection,
+                session_id=session_id,
+                can_followup=True,
+                conversation_depth=1,
+                from_cache=True
+            )
+
+    # Session management for follow-up questions
+    session_id = create_or_get_session(request.session_id)
+    session_context = get_session_context(session_id)
+    is_followup = request.is_followup and len(session_context['messages']) > 0
+
+    if is_followup:
+        logger.info(f"Follow-up question (depth: {session_context['conversation_depth'] + 1})")
+
     try:
         # Apply HyDE query expansion if enabled
         query = request.query
@@ -623,12 +976,32 @@ Answer:"""
 
         logger.info(f"Response generated in {latency_ms}ms with {len(sources)} sources")
 
+        # Update session with this exchange
+        update_session(
+            session_id=session_id,
+            user_message=request.query,
+            assistant_message=response_text,
+            context_chunks=source_docs,
+            metadata={
+                'detailed_mode': request.detailed_mode,
+                'sutra_filter': request.sutra_filter,
+                'is_followup': is_followup
+            }
+        )
+
+        # Get updated conversation depth
+        updated_context = get_session_context(session_id)
+        conversation_depth = updated_context['conversation_depth']
+
         return ChatResponse(
             response=response_text,
             sources=sources,
             model=config.llm_model,
             latency_ms=latency_ms,
-            collection=request.collection
+            collection=request.collection,
+            session_id=session_id,
+            can_followup=True,
+            conversation_depth=conversation_depth
         )
 
     except Exception as e:
@@ -786,6 +1159,122 @@ async def get_source_detail(sutra_id: str):
         raise
     except Exception as e:
         logger.error(f"Error getting source detail: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@app.post("/api/cache")
+async def add_cache(request: CacheRequest):
+    """
+    Add a response to the cache.
+
+    This allows you to save high-quality responses for frequently asked questions.
+    """
+    try:
+        # Convert SourceDocument objects to dicts for JSON serialization
+        sources_dict = [
+            source.model_dump() if hasattr(source, 'model_dump') else source
+            for source in request.sources
+        ]
+
+        add_to_cache(
+            cache_key=request.cache_key,
+            keywords=request.keywords,
+            response=request.response,
+            sources=sources_dict,
+            model=request.model,
+            metadata=request.metadata
+        )
+
+        return {
+            "status": "success",
+            "message": f"Response cached with key '{request.cache_key}'",
+            "keywords": request.keywords
+        }
+    except Exception as e:
+        logger.error(f"Error adding to cache: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@app.get("/api/cache", response_model=List[CachedResponseInfo])
+async def list_cache():
+    """
+    List all cached responses.
+
+    Returns summary information about each cached response.
+    """
+    try:
+        cached_list = []
+        for cache_key, cache_data in RESPONSE_CACHE.items():
+            cached_list.append(CachedResponseInfo(
+                cache_key=cache_key,
+                keywords=cache_data.get('keywords', []),
+                response_preview=cache_data.get('response', '')[:200],
+                model=cache_data.get('model', ''),
+                created_at=cache_data.get('created_at', ''),
+                hit_count=cache_data.get('hit_count', 0),
+                last_hit=cache_data.get('last_hit')
+            ))
+
+        return cached_list
+    except Exception as e:
+        logger.error(f"Error listing cache: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@app.get("/api/cache/{cache_key}")
+async def get_cache(cache_key: str):
+    """
+    Get a specific cached response by key.
+
+    Returns the full cached response including all sources.
+    """
+    try:
+        if cache_key not in RESPONSE_CACHE:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Cache key '{cache_key}' not found"
+            )
+
+        return RESPONSE_CACHE[cache_key]
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting cache: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@app.delete("/api/cache/{cache_key}")
+async def delete_cache(cache_key: str):
+    """
+    Delete a cached response by key.
+    """
+    try:
+        if remove_from_cache(cache_key):
+            return {
+                "status": "success",
+                "message": f"Cache key '{cache_key}' deleted"
+            }
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Cache key '{cache_key}' not found"
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting cache: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)

@@ -363,15 +363,19 @@
 
         .message-content {
             display: inline-block;
-            max-width: 75%;
+            max-width: 70%;
             padding: 15px 20px;
             border-radius: 18px;
             line-height: 1.6;
+            word-wrap: break-word;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         .message.user .message-content {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            margin-left: auto;
         }
 
         .message.assistant .message-content {
@@ -596,6 +600,52 @@
             font-size: 11px;
             color: #718096;
         }
+
+        .followup-button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .followup-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .followup-button.active {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        }
+
+        .followup-indicator {
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #48bb7820 0%, #38a16920 100%);
+            border-left: 3px solid #48bb78;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #2d3748;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        .followup-indicator.active {
+            display: block;
+        }
+
+        .conversation-depth {
+            font-size: 11px;
+            color: #718096;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -650,6 +700,12 @@
         </div>
 
         <div class="input-container">
+            <!-- Follow-up indicator -->
+            <div id="followupIndicator" class="followup-indicator">
+                <span>↩️ 후속 질문 모드 활성화</span>
+                <button class="filter-badge-close" onclick="deactivateFollowup()">×</button>
+            </div>
+
             <!-- Separate badges for detailed mode and sutra filter -->
             <div id="detailedModeBadge" class="filter-badge-container" style="display: none;">
                 <div class="filter-badge">
@@ -843,6 +899,10 @@
         let detailedModeActive = false;
         let autocompleteVisible = false;
 
+        // Follow-up state
+        let activeSessionId = null;
+        let activeConversationDepth = 0;
+
         function setQuery(text) {
             queryInput.value = text;
             queryInput.focus();
@@ -1013,13 +1073,17 @@
             const loadingId = showLoading();
 
             try {
-                // Build request body with optional sutra filter and detailed mode
+                // Build request body with optional sutra filter, detailed mode, and follow-up
                 const requestBody = { query };
                 if (currentSutraFilter) {
                     requestBody.sutra_filter = currentSutraFilter;
                 }
                 if (detailedMode) {
                     requestBody.detailed_mode = true;
+                }
+                if (activeSessionId) {
+                    requestBody.session_id = activeSessionId;
+                    requestBody.is_followup = true;
                 }
 
                 const response = await fetch(API_URL, {
@@ -1039,8 +1103,8 @@
                 // Remove loading
                 removeLoading(loadingId);
 
-                // Add assistant response
-                addMessage(data.response, 'assistant', data.sources, data.latency_ms);
+                // Add assistant response with session info and cache status
+                addMessage(data.response, 'assistant', data.sources, data.latency_ms, data.session_id, data.conversation_depth, data.from_cache);
 
             } catch (error) {
                 removeLoading(loadingId);
@@ -1103,16 +1167,26 @@
             return text;
         }
 
-        function addMessage(content, role, sources = null, latency = null) {
+        function addMessage(content, role, sources = null, latency = null, sessionId = null, conversationDepth = null, fromCache = false) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${role}`;
 
             const contentDiv = document.createElement('div');
             contentDiv.className = 'message-content';
 
+            // Add cache badge if this is a cached response
+            if (role === 'assistant' && fromCache) {
+                const cacheBadge = document.createElement('div');
+                cacheBadge.style.cssText = 'display: inline-block; background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-bottom: 12px;';
+                cacheBadge.innerHTML = '💾 캐시된 답변 (저장된 고품질 답변)';
+                contentDiv.appendChild(cacheBadge);
+            }
+
             // Parse markdown for assistant messages
             if (role === 'assistant') {
-                contentDiv.innerHTML = parseMarkdown(content);
+                const textDiv = document.createElement('div');
+                textDiv.innerHTML = parseMarkdown(content);
+                contentDiv.appendChild(textDiv);
             } else {
                 contentDiv.textContent = content;
             }
@@ -1139,6 +1213,24 @@
                 }
 
                 contentDiv.appendChild(sourcesDiv);
+            }
+
+            // Add follow-up button for assistant messages
+            if (role === 'assistant' && sessionId) {
+                const followupBtn = document.createElement('button');
+                followupBtn.className = 'followup-button';
+                followupBtn.innerHTML = '↩️ 이 답변에 대해 더 질문하기';
+                followupBtn.onclick = () => activateFollowup(sessionId, conversationDepth);
+
+                // Show conversation depth
+                if (conversationDepth) {
+                    const depthDiv = document.createElement('div');
+                    depthDiv.className = 'conversation-depth';
+                    depthDiv.textContent = `대화 깊이: ${conversationDepth}`;
+                    contentDiv.appendChild(depthDiv);
+                }
+
+                contentDiv.appendChild(followupBtn);
             }
 
             messageDiv.appendChild(contentDiv);
@@ -1171,6 +1263,46 @@
             if (loadingDiv) {
                 loadingDiv.remove();
             }
+        }
+
+        // Follow-up functions
+        function activateFollowup(sessionId, depth) {
+            // Deactivate any previous follow-up buttons
+            document.querySelectorAll('.followup-button.active').forEach(btn => {
+                btn.classList.remove('active');
+                btn.innerHTML = '↩️ 이 답변에 대해 더 질문하기';
+            });
+
+            // Activate the clicked button
+            event.target.classList.add('active');
+            event.target.innerHTML = '✓ 후속 질문 모드 활성화됨';
+
+            // Set active session
+            activeSessionId = sessionId;
+            activeConversationDepth = depth;
+
+            // Show indicator
+            const indicator = document.getElementById('followupIndicator');
+            indicator.classList.add('active');
+            indicator.querySelector('span').textContent = `↩️ 후속 질문 모드 (대화 깊이: ${depth})`;
+
+            // Focus input
+            queryInput.focus();
+        }
+
+        function deactivateFollowup() {
+            // Clear active session
+            activeSessionId = null;
+            activeConversationDepth = 0;
+
+            // Hide indicator
+            document.getElementById('followupIndicator').classList.remove('active');
+
+            // Deactivate all buttons
+            document.querySelectorAll('.followup-button.active').forEach(btn => {
+                btn.classList.remove('active');
+                btn.innerHTML = '↩️ 이 답변에 대해 더 질문하기';
+            });
         }
 
         // ===== Initialize on Page Load =====
