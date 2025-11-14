@@ -107,18 +107,69 @@
 
                 <h2 id="sutra-name" class="sutra-name">자애경</h2>
 
+                <!-- 모드 선택 -->
+                <div class="mode-selector" role="radiogroup" aria-label="사경 모드 선택">
+                    <button class="mode-btn active"
+                            role="radio"
+                            aria-checked="true"
+                            data-mode="traditional"
+                            aria-label="전통 모드: 엄격한 검증으로 한 글자씩 정확히 타이핑">
+                        <span class="mode-icon">📿</span>
+                        <span class="mode-label">전통 모드</span>
+                        <span class="mode-desc">정확한 타이핑</span>
+                    </button>
+                    <button class="mode-btn"
+                            role="radio"
+                            aria-checked="false"
+                            data-mode="easy"
+                            aria-label="편안한 모드: 클릭으로 이동, 더블스페이스로 줄 완성">
+                        <span class="mode-icon">🌸</span>
+                        <span class="mode-label">편안한 모드</span>
+                        <span class="mode-desc">클릭 이동 & 자동 완성</span>
+                    </button>
+                </div>
+
+                <!-- 모드 힌트 (Easy Mode에서만 표시) -->
+                <div id="mode-hint" class="mode-hint" style="display: none;">
+                    <span class="hint-icon">💡</span>
+                    <span class="hint-text">
+                        원하는 글자를 <strong>클릭</strong>하여 이동하거나,
+                        <strong>스페이스바를 두 번</strong> 눌러 줄을 완성할 수 있습니다
+                    </span>
+                </div>
+
                 <!-- 타이핑 박스 -->
                 <div class="type-box" role="region" aria-label="사경 작성 영역">
                     <div id="text-bg" class="text-bg" aria-live="polite" aria-atomic="false"></div>
+                    <!-- Traditional Mode: Textarea -->
                     <textarea id="text-input" class="text-input"
                               aria-label="경전 타이핑 입력창"
                               aria-describedby="sutra-name"></textarea>
+                    <!-- Easy Mode: Contenteditable -->
+                    <div id="text-input-easy" class="text-input-easy"
+                         contenteditable="true"
+                         spellcheck="false"
+                         aria-label="경전 타이핑 입력창 (편안한 모드)"
+                         aria-describedby="sutra-name"
+                         style="display: none;"></div>
                 </div>
 
                 <!-- 회향 버튼들 (완성 후 나타남) -->
                 <div id="dedication-box" class="dedication-box" role="region" aria-labelledby="dedication-heading">
                     <h3 id="dedication-heading">공덕을 회향합니다</h3>
                     <p>이 작은 수행의 공덕을 모든 중생과 함께 나눕니다</p>
+
+                    <!-- Typing statistics (shown in Easy Mode) -->
+                    <div id="typing-stats" class="typing-stats" style="display: none;">
+                        <div class="stat-item">
+                            <span class="stat-label">직접 타이핑</span>
+                            <span class="stat-value" id="typed-count">0자 (0%)</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">자동 완성</span>
+                            <span class="stat-value" id="skipped-count">0자 (0%)</span>
+                        </div>
+                    </div>
 
                     <div class="realm-buttons">
                         <button onclick="dedicate('hell')" aria-label="지옥 중생에게 공덕 회향">지옥 중생</button>
