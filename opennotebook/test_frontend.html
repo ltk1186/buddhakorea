@@ -1628,7 +1628,7 @@
                 <span>서버 연결됨</span>
             </div>
             <div style="color: #718096;">
-                <span id="modelInfo">Model: Gemini 2.5 Pro | Embeddings: Fine-tuned BERT 768-dim</span>
+                <span id="modelInfo">Model: Gemini 2.5 Pro | Embeddings: Gemini 3072-dim</span>
             </div>
         </div>
 
@@ -2425,32 +2425,22 @@
                 <h3>📚 CBETA 대정신수대장경 (T)</h3>
                 <p>전자불전문화재단(CBETA)의 <strong>대정신수대장경(Taishō Tripiṭaka)</strong> 컬렉션을 사용합니다.</p>
                 <p>CBETA 전체가 아닌, <strong>T 폴더의 경전만</strong> 선별하여 높은 품질의 데이터를 확보했습니다.</p>
-                <div class="feature-badge" title="대정신수대장경 T 폴더">99,723개 문서 · 6.0GB</div>
+                <div class="feature-badge" title="대정신수대장경 T 폴더">99,723개 청크</div>
             </section>
 
-            <section class="method-section">
-                <h3>🔬 BERT 모델 파인튜닝</h3>
-                <p><strong>1단계: 베이스 모델 선택</strong><br>
-                Jihuai/bert-ancient-chinese 모델을 시작점으로 사용합니다.<br>
-                (고전 한문에 특화된 BERT 모델)</p>
-
-                <p><strong>2단계: GPL (Generative Pseudo Labeling)</strong><br>
-                GPT-4o-mini를 사용해 CBETA 경전에서 가상의 질문-답변 쌍 30,000개를 자동 생성합니다.</p>
-
-                <p><strong>3단계: 대조 학습 (Contrastive Learning)</strong><br>
-                생성된 데이터로 한국어 질문과 고전 한문 경전 간 의미 매칭을 학습시킵니다.</p>
-
-                <p><strong>결과: 불교 경전 특화 임베딩 모델</strong><br>
-                768차원 벡터로 한문과 한국어의 의미를 정확히 연결합니다.</p>
-                <div class="feature-badge" title="벡터 차원 수">768-dim 벡터</div>
-            </section>
 
             <section class="method-section">
-                <h3>💾 ChromaDB 벡터 저장</h3>
-                <p>Google Vertex AI의 <strong>text-embedding-005</strong>로 모든 경전을 임베딩하여 ChromaDB에 저장합니다.<br>
-                (문서는 Vertex AI로 1회 임베딩, 질문은 Fine-tuned BERT로 실시간 임베딩)</p>
+                <h3>💾 2가지 임베딩 모델로 문서 임베딩</h3>
+                <p><strong>📚 BAAI/bge-m3 (1024 차원)</strong><br>
+                고전 한문 특화 모델로 CBETA 대장경 전체를 임베딩했습니다.</p>
+
+                <p><strong>🔍 Google Gemini (3072 차원) - 현재 사용 중</strong><br>
+                gemini-embedding-001 모델로 CBETA 대장경 전체(99,723개 청크)를 재임베딩하여 ChromaDB에 저장했습니다.<br>
+                사용자 질문도 동일한 Gemini 모델로 실시간 임베딩하여 의미 기반 검색을 수행합니다.</p>
+
                 <p>벡터 공간에서 질문과 <strong>의미가 유사한 경전</strong>을 밀리초 단위로 검색합니다.</p>
-                <div class="feature-badge" title="현재 검색 가능한 경전 수">🔍 99,723개 경전 검색 가능</div>
+                <div class="feature-badge" title="현재 검색 가능한 청크 수">🔍 99,723개 청크 검색 가능</div>
+                <div class="feature-badge" title="현재 사용 중인 임베딩">3072-dim (Gemini)</div>
             </section>
 
             <section class="method-section">
@@ -2458,9 +2448,9 @@
                 <p><strong>Retrieval-Augmented Generation</strong> 방식으로 정확한 출처를 제공합니다.</p>
 
                 <p><strong>작동 원리:</strong></p>
-                <p>① 질문을 768차원 벡터로 변환<br>
+                <p>① 질문을 Gemini로 3072차원 벡터로 변환<br>
                 ② ChromaDB에서 유사도 상위 10개 경전 추출 (자세히 모드: 20개)<br>
-                ③ 추출된 경전을 Gemini에 함께 제공</p>
+                ③ 추출된 경전을 Gemini 2.5 Pro에 함께 제공</p>
 
                 <p>단순 키워드 매칭이 아닌, <strong>의미 기반 검색</strong>으로 관련 경전을 찾습니다.</p>
             </section>
@@ -2481,11 +2471,11 @@
                 <h3>📊 전체 파이프라인</h3>
                 <div class="pipeline-visual">① 질문 입력 (한국어)
    ↓
-② Fine-tuned BERT 임베딩
-   → 768차원 벡터 변환
+② Gemini 임베딩
+   → 3072차원 벡터 변환
    ↓
 ③ ChromaDB 벡터 검색
-   → 유사도 계산
+   → 유사도 계산 (문서도 Gemini 3072-dim)
    ↓
 ④ 상위 10개 경전 추출 (자세히: 20개)
    → 관련도 높은 구절 선별
@@ -2500,9 +2490,9 @@
                 <h3>💡 기술 용어 설명</h3>
                 <p><strong>임베딩 (Embedding)</strong>: 텍스트를 숫자 벡터로 변환하는 기술. 의미가 비슷한 문장은 벡터 공간에서 가까운 위치에 배치됩니다.</p>
 
-                <p><strong>벡터 (Vector)</strong>: 768개의 숫자로 이루어진 좌표. 각 경전과 질문이 768차원 공간의 한 점으로 표현됩니다.</p>
+                <p><strong>벡터 (Vector)</strong>: 다차원 숫자 좌표. 현재 시스템은 경전과 질문 모두 Gemini로 3072차원 공간의 한 점으로 표현합니다.</p>
 
-                <p><strong>파인튜닝 (Fine-tuning)</strong>: 일반 모델을 특정 분야(불교 경전)에 맞게 추가 학습시키는 과정입니다.</p>
+                <p><strong>2가지 임베딩 모델 실험</strong>: 처음에 BAAI/bge-m3 (1024-dim)로 임베딩했고, 이후 Gemini (3072-dim)로 재임베딩했습니다. 현재는 Gemini 임베딩을 사용합니다.</p>
             </section>
         </div>
     </div>

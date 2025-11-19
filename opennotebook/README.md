@@ -5,7 +5,9 @@ A NotebookLM-level AI chatbot for Taishō Tripiṭaka (大正新脩大藏經) us
 **Data Source**: CBETA Taishō Tripiṭaka XML from [cbeta-git/xml-p5a](https://github.com/cbeta-git/xml-p5a) (T0001-T2920, 2,471 texts)
 **Selected Texts**: ~2,400 texts (T01-T55 fully + T85 selectively filtered)
 **Hardware**: Optimized for MacBook Pro M4 Pro (16 cores, 32GB RAM)
-**Embedding Model**: BAAI/bge-m3 (75-80% accuracy for Classical Chinese)
+**Embedding Models**:
+  - BAAI/bge-m3 (1024 dimensions) - 75-80% accuracy for Classical Chinese
+  - Google Gemini (gemini-embedding-001, 3072 dimensions) - Currently in use
 **Chunk Size**: 1024 tokens (72-75% retrieval accuracy)
 
 ## Quick Start
@@ -136,10 +138,12 @@ opennotebook/
 ## Technology Stack
 
 - **Web Framework**: FastAPI
-- **LLM**: Claude 3.5 Sonnet (excellent for Classical Chinese translation)
-- **Vector DB**: ChromaDB with HNSW indexing
+- **LLM**: Gemini 2.5 Pro (via Google Vertex AI)
+- **Vector DB**: ChromaDB with HNSW indexing (99,723 documents)
 - **RAG Framework**: LangChain
-- **Embeddings**: BAAI/bge-m3 (1024-dim, optimized for Classical Chinese)
+- **Embedding Models**:
+  - **BAAI/bge-m3** (1024 dimensions) - optimized for Classical Chinese
+  - **Google Gemini** (gemini-embedding-001, 3072 dimensions) - currently deployed for query embeddings
 - **XML Parser**: lxml (TEI P5 format)
 - **Document Processing**: RecursiveCharacterTextSplitter with Chinese-specific separators
 
