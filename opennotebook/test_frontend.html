@@ -1319,6 +1319,275 @@
             margin-top: 6px;
             font-weight: 500;
         }
+
+        /* ===== METHODOLOGY PANEL ===== */
+        .methodology-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 380px;
+            height: 100vh;
+            background: linear-gradient(135deg,
+                rgba(26, 30, 63, 0.85) 0%,
+                rgba(36, 41, 82, 0.8) 100%);
+            backdrop-filter: blur(16px);
+            border-left: 1.5px solid var(--glass-border);
+            box-shadow: -20px 0 60px rgba(0, 0, 0, 0.5);
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .methodology-panel.open {
+            transform: translateX(0);
+        }
+
+        .methodology-toggle {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            writing-mode: vertical-rl;
+            padding: 16px 10px;
+            background: linear-gradient(135deg,
+                rgba(26, 30, 63, 0.75) 0%,
+                rgba(36, 41, 82, 0.7) 100%);
+            border: 1.5px solid rgba(167, 148, 224, 0.35);
+            border-right: none;
+            border-radius: 12px 0 0 12px;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            z-index: 1001;
+        }
+
+        .methodology-toggle:hover {
+            background: linear-gradient(135deg,
+                var(--gradient-purple) 0%,
+                var(--gradient-blue) 100%);
+            transform: translateY(-50%) translateX(-2px);
+            border-color: rgba(167, 148, 224, 0.6);
+        }
+
+        .methodology-toggle:active {
+            transform: translateY(-50%) translateX(-1px) scale(0.98);
+        }
+
+        .methodology-panel.open ~ .methodology-toggle {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .methodology-header {
+            padding: 24px 24px 20px 24px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .methodology-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--gradient-purple), var(--gradient-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .methodology-header p {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.5;
+        }
+
+        .methodology-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+        }
+
+        .methodology-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .methodology-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        .methodology-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--gradient-purple), var(--gradient-blue));
+            border-radius: 3px;
+        }
+
+        .method-section {
+            margin-bottom: 28px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid rgba(167, 148, 224, 0.15);
+        }
+
+        .method-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .method-section h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: rgba(255, 255, 255, 0.95);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .method-section p {
+            font-size: 15px;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 8px;
+        }
+
+        .method-section strong {
+            color: var(--gradient-blue);
+            font-weight: 700;
+        }
+
+        .feature-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: linear-gradient(135deg,
+                rgba(167, 148, 224, 0.2) 0%,
+                rgba(137, 184, 255, 0.2) 100%);
+            border: 1px solid rgba(167, 148, 224, 0.4);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gradient-blue);
+            margin-top: 8px;
+        }
+
+        .pipeline-visual {
+            margin: 16px 0;
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid rgba(167, 148, 224, 0.2);
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.9);
+            overflow-x: auto;
+            white-space: pre-line;
+        }
+
+        .methodology-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 20px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .methodology-close:hover {
+            background: rgba(255, 100, 100, 0.2);
+            border-color: rgba(255, 100, 100, 0.5);
+            color: #ff6b6b;
+        }
+
+        /* Left Edge Close Button */
+        .methodology-edge-close {
+            position: fixed;
+            top: 50%;
+            left: calc(100vw - 380px);
+            transform: translateY(-50%);
+            z-index: 1001;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .methodology-panel.open ~ .methodology-edge-close {
+            opacity: 1;
+            pointer-events: auto;
+            left: calc(100vw - 380px - 20px);
+        }
+
+        .edge-close-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 8px;
+            background: linear-gradient(135deg,
+                rgba(167, 148, 224, 0.25) 0%,
+                rgba(137, 184, 255, 0.25) 100%);
+            border: 1.5px solid rgba(167, 148, 224, 0.6);
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 18px;
+            cursor: pointer;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: -2px 0 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .edge-close-btn:hover {
+            background: linear-gradient(135deg,
+                rgba(167, 148, 224, 0.4) 0%,
+                rgba(137, 184, 255, 0.4) 100%);
+            border-color: rgba(167, 148, 224, 0.9);
+            transform: translateX(-3px);
+            box-shadow: -4px 0 16px rgba(167, 148, 224, 0.3);
+        }
+
+        .close-icon {
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .edge-close-btn:hover .close-icon {
+            transform: translateX(-2px);
+        }
+
+        .edge-close-btn:active {
+            transform: translateX(-2px) scale(0.98);
+        }
+
+        .close-arrow {
+            font-size: 18px;
+            writing-mode: horizontal-tb;
+            transition: transform 0.3s ease;
+        }
+
+        .edge-close-btn:hover .close-arrow {
+            transform: translateX(3px);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .methodology-panel {
+                width: 100%;
+                z-index: 2000;
+            }
+
+            .methodology-toggle {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1350,7 +1619,7 @@
     <div class="container">
         <div class="header">
             <h1>🙏 불교 AI 챗봇</h1>
-            <p>Fine-tuned BERT 임베딩 + Gemini 2.0 Flash | CBETA 대장경 99,723 문서</p>
+            <p>Fine-tuned BERT 임베딩 + Gemini 2.5 Pro | CBETA 대장경 99,723 문서</p>
         </div>
 
         <div class="status">
@@ -1359,7 +1628,7 @@
                 <span>서버 연결됨</span>
             </div>
             <div style="color: #718096;">
-                <span id="modelInfo">Model: Gemini 2.0 Flash Exp | Embeddings: Fine-tuned BERT 768-dim</span>
+                <span id="modelInfo">Model: Gemini 2.5 Pro | Embeddings: Fine-tuned BERT 768-dim</span>
             </div>
         </div>
 
@@ -1403,11 +1672,12 @@
                 <div id="autocompleteDropdown" class="autocomplete-dropdown" style="display: none;"></div>
             </div>
             <div class="example-queries">
-                <div class="example-query" onclick="setQuery('사성제란 무엇인가요?')">사성제란?</div>
+                <div class="example-query" onclick="setQuery('사성제란 무엇인가요?')">사성제</div>
                 <div class="example-query" onclick="setQuery('팔정도에 대해 설명해주세요')">팔정도</div>
                 <div class="example-query" onclick="setQuery('무상(無常)의 의미는?')">무상(無常)</div>
                 <div class="example-query" onclick="setQuery('연기법이란 무엇인가요?')">연기법</div>
                 <div class="example-query" onclick="setQuery('자비와 지혜의 관계')">자비와 지혜</div>
+                <div class="example-query" onclick="setQuery('우주론과 삼계에 대해 설명해줘')">우주론과 삼계</div>
             </div>
         </div>
     </div>
@@ -2114,7 +2384,139 @@
         // ===== Initialize on Page Load =====
         window.addEventListener('DOMContentLoaded', () => {
             loadSources();
+
+            // Load methodology panel state from localStorage
+            const methodologyOpen = localStorage.getItem('methodologyPanelOpen') === 'true';
+            if (methodologyOpen) {
+                document.getElementById('methodologyPanel').classList.add('open');
+            }
+        });
+
+        // ===== Methodology Panel Toggle =====
+        function toggleMethodologyPanel() {
+            const panel = document.getElementById('methodologyPanel');
+            panel.classList.toggle('open');
+
+            // Save state to localStorage
+            const isOpen = panel.classList.contains('open');
+            localStorage.setItem('methodologyPanelOpen', isOpen);
+        }
+
+        // Keyboard shortcut: Shift+M
+        document.addEventListener('keydown', (e) => {
+            if (e.shiftKey && e.key === 'M') {
+                toggleMethodologyPanel();
+                e.preventDefault();
+            }
         });
     </script>
+
+    <!-- Methodology Panel -->
+    <div class="methodology-panel" id="methodologyPanel">
+        <button class="methodology-close" onclick="toggleMethodologyPanel()" aria-label="패널 닫기">×</button>
+
+        <div class="methodology-header">
+            <h2>🤖 우리의 방법론</h2>
+            <p>CBETA 대장경부터 AI 답변까지, 전체 프로세스를 투명하게 공개합니다</p>
+        </div>
+
+        <div class="methodology-content">
+            <section class="method-section">
+                <h3>📚 CBETA 대정신수대장경 (T)</h3>
+                <p>전자불전문화재단(CBETA)의 <strong>대정신수대장경(Taishō Tripiṭaka)</strong> 컬렉션을 사용합니다.</p>
+                <p>CBETA 전체가 아닌, <strong>T 폴더의 경전만</strong> 선별하여 높은 품질의 데이터를 확보했습니다.</p>
+                <div class="feature-badge" title="대정신수대장경 T 폴더">99,723개 문서 · 6.0GB</div>
+            </section>
+
+            <section class="method-section">
+                <h3>🔬 BERT 모델 파인튜닝</h3>
+                <p><strong>1단계: 베이스 모델 선택</strong><br>
+                Jihuai/bert-ancient-chinese 모델을 시작점으로 사용합니다.<br>
+                (고전 한문에 특화된 BERT 모델)</p>
+
+                <p><strong>2단계: GPL (Generative Pseudo Labeling)</strong><br>
+                GPT-4o-mini를 사용해 CBETA 경전에서 가상의 질문-답변 쌍 30,000개를 자동 생성합니다.</p>
+
+                <p><strong>3단계: 대조 학습 (Contrastive Learning)</strong><br>
+                생성된 데이터로 한국어 질문과 고전 한문 경전 간 의미 매칭을 학습시킵니다.</p>
+
+                <p><strong>결과: 불교 경전 특화 임베딩 모델</strong><br>
+                768차원 벡터로 한문과 한국어의 의미를 정확히 연결합니다.</p>
+                <div class="feature-badge" title="벡터 차원 수">768-dim 벡터</div>
+            </section>
+
+            <section class="method-section">
+                <h3>💾 ChromaDB 벡터 저장</h3>
+                <p>Google Vertex AI의 <strong>text-embedding-005</strong>로 모든 경전을 임베딩하여 ChromaDB에 저장합니다.<br>
+                (문서는 Vertex AI로 1회 임베딩, 질문은 Fine-tuned BERT로 실시간 임베딩)</p>
+                <p>벡터 공간에서 질문과 <strong>의미가 유사한 경전</strong>을 밀리초 단위로 검색합니다.</p>
+                <div class="feature-badge" title="현재 검색 가능한 경전 수">🔍 99,723개 경전 검색 가능</div>
+            </section>
+
+            <section class="method-section">
+                <h3>🔍 RAG (검색 증강 생성)</h3>
+                <p><strong>Retrieval-Augmented Generation</strong> 방식으로 정확한 출처를 제공합니다.</p>
+
+                <p><strong>작동 원리:</strong></p>
+                <p>① 질문을 768차원 벡터로 변환<br>
+                ② ChromaDB에서 유사도 상위 10개 경전 추출 (자세히 모드: 20개)<br>
+                ③ 추출된 경전을 Gemini에 함께 제공</p>
+
+                <p>단순 키워드 매칭이 아닌, <strong>의미 기반 검색</strong>으로 관련 경전을 찾습니다.</p>
+            </section>
+
+            <section class="method-section">
+                <h3>🤖 Gemini 2.5 Pro 답변 생성</h3>
+                <p><strong>Google Gemini 2.5 Pro</strong> (Vertex AI)가 검색된 경전을 분석하여 답변을 작성합니다.</p>
+
+                <p><strong>왜 Gemini 2.5 Pro인가?</strong></p>
+                <p>✨ <strong>2M 토큰 컨텍스트</strong> - 일반 모델 대비 15배 이상!<br>
+                📚 약 1,500페이지 분량을 동시 분석 가능<br>
+                🎯 여러 경전을 종합하여 깊이 있는 답변 생성</p>
+
+                <div class="feature-badge" title="컨텍스트 윈도우 크기">2M 토큰 = 1,500페이지</div>
+            </section>
+
+            <section class="method-section">
+                <h3>📊 전체 파이프라인</h3>
+                <div class="pipeline-visual">① 질문 입력 (한국어)
+   ↓
+② Fine-tuned BERT 임베딩
+   → 768차원 벡터 변환
+   ↓
+③ ChromaDB 벡터 검색
+   → 유사도 계산
+   ↓
+④ 상위 10개 경전 추출 (자세히: 20개)
+   → 관련도 높은 구절 선별
+   ↓
+⑤ Gemini 2.5 Pro 분석
+   → 2M 토큰 종합 분석
+   ↓
+⑥ 불교 교리 기반 답변 생성 ✓</div>
+            </section>
+
+            <section class="method-section" style="border: none; padding-bottom: 0;">
+                <h3>💡 기술 용어 설명</h3>
+                <p><strong>임베딩 (Embedding)</strong>: 텍스트를 숫자 벡터로 변환하는 기술. 의미가 비슷한 문장은 벡터 공간에서 가까운 위치에 배치됩니다.</p>
+
+                <p><strong>벡터 (Vector)</strong>: 768개의 숫자로 이루어진 좌표. 각 경전과 질문이 768차원 공간의 한 점으로 표현됩니다.</p>
+
+                <p><strong>파인튜닝 (Fine-tuning)</strong>: 일반 모델을 특정 분야(불교 경전)에 맞게 추가 학습시키는 과정입니다.</p>
+            </section>
+        </div>
+    </div>
+
+    <!-- Left Edge Close Button -->
+    <div class="methodology-edge-close">
+        <button onclick="toggleMethodologyPanel()" class="edge-close-btn" aria-label="방법론 숨기기">
+            <span class="close-icon">▶</span>
+        </button>
+    </div>
+
+    <!-- Methodology Toggle Button -->
+    <button class="methodology-toggle" onclick="toggleMethodologyPanel()" title="방법론 보기 (Shift+M)">
+        방법론
+    </button>
 </body>
 </html>

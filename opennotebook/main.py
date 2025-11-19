@@ -30,6 +30,10 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_classic.chains import RetrievalQA
 from langchain_core.prompts import PromptTemplate
 
+# Usage tracking
+from usage_tracker import log_token_usage, analyze_usage_logs, get_recent_queries, export_usage_csv
+from qa_logger import log_qa_pair, get_qa_pairs, export_to_json, analyze_popular_queries
+
 
 # ============================================================================
 # Configuration
@@ -480,6 +484,63 @@ def remove_from_cache(cache_key: str) -> bool:
     return False
 
 
+def estimate_tokens(text: str) -> int:
+    """
+    Estimate token count for a text.
+    Rough estimation: ~4 characters per token for English, ~2-3 for Korean/Chinese.
+
+    Args:
+        text: Text to estimate tokens for
+
+    Returns:
+        Estimated token count
+    """
+    # Average estimate: 2.5 chars per token for multilingual content
+    return int(len(text) / 2.5)
+
+
+def extract_token_usage(result: Dict[str, Any], query: str, model: str) -> Dict[str, int]:
+    """
+    Extract token usage from LangChain result or estimate if not available.
+
+    Args:
+        result: LangChain result dictionary
+        query: Original query text
+        model: Model name
+
+    Returns:
+        Dictionary with input_tokens and output_tokens
+    """
+    # Try to extract from llm_output (if available)
+    if isinstance(result, dict) and "llm_output" in result:
+        llm_output = result["llm_output"]
+        if llm_output and isinstance(llm_output, dict):
+            token_usage = llm_output.get("token_usage", {})
+            if token_usage:
+                return {
+                    "input_tokens": token_usage.get("prompt_tokens", 0),
+                    "output_tokens": token_usage.get("completion_tokens", 0)
+                }
+
+    # Fallback: estimate tokens from text
+    response_text = result.get("result", "") if isinstance(result, dict) else ""
+
+    # Estimate input tokens (query + context)
+    # Context estimation: assume average of 10 chunks × 800 tokens
+    estimated_context_tokens = 8000
+    estimated_query_tokens = estimate_tokens(query)
+
+    # Estimate output tokens from response
+    estimated_output_tokens = estimate_tokens(response_text)
+
+    logger.debug(f"Token estimation (fallback): {estimated_query_tokens + estimated_context_tokens}in + {estimated_output_tokens}out")
+
+    return {
+        "input_tokens": estimated_query_tokens + estimated_context_tokens,
+        "output_tokens": estimated_output_tokens
+    }
+
+
 # ============================================================================
 # Startup & Shutdown
 # ============================================================================
@@ -573,7 +634,7 @@ async def lifespan(app: FastAPI):
             project=config.gcp_project_id,
             location=config.gcp_location,
             temperature=0.3,
-            max_tokens=6144  # Increased from 2048 to 6144 for longer responses (3x increase)
+            max_tokens=8192  # Increased to 8192 for comprehensive answers (same as detailed mode)
         )
     else:
         if not config.openai_api_key:
@@ -774,6 +835,19 @@ async def chat(request: ChatRequest, http_request: Request):
 
             # Create new session for cached response
             session_id = create_or_get_session(request.session_id)
+
+            # Log cached query (no tokens used)
+            log_token_usage(
+                query=request.query,
+                response=cached_response['response'],
+                input_tokens=0,
+                output_tokens=0,
+                model=cached_response.get('model', config.llm_model),
+                mode="cached",
+                session_id=session_id,
+                latency_ms=latency_ms,
+                from_cache=True
+            )
 
             return ChatResponse(
                 response=cached_response['response'],
@@ -993,6 +1067,47 @@ Answer:"""
         updated_context = get_session_context(session_id)
         conversation_depth = updated_context['conversation_depth']
 
+        # Track token usage
+        token_usage = extract_token_usage(result, request.query, config.llm_model)
+
+        # Log token usage to file
+        log_token_usage(
+            query=request.query,
+            response=response_text,
+            input_tokens=token_usage["input_tokens"],
+            output_tokens=token_usage["output_tokens"],
+            model=config.llm_model,
+            mode="detailed" if request.detailed_mode else "normal",
+            session_id=session_id,
+            latency_ms=latency_ms,
+            from_cache=False
+        )
+
+        # Log complete Q&A pair
+        # Extract source IDs from SourceDocument objects
+        source_ids = []
+        for s in sources:
+            if isinstance(s, SourceDocument):
+                source_ids.append(s.text_id)
+            elif isinstance(s, dict):
+                source_ids.append(s.get('source_id', s.get('text_id', '')))
+            else:
+                source_ids.append(str(s))
+
+        log_qa_pair(
+            query=request.query,
+            response=response_text,
+            detailed_mode=request.detailed_mode,
+            sutra_filter=request.sutra_filter,
+            session_id=session_id,
+            model=config.llm_model,
+            sources=source_ids,
+            input_tokens=token_usage["input_tokens"],
+            output_tokens=token_usage["output_tokens"],
+            latency_ms=latency_ms,
+            from_cache=False
+        )
+
         return ChatResponse(
             response=response_text,
             sources=sources,
@@ -1009,6 +1124,138 @@ Answer:"""
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error generating response: {str(e)}"
+        )
+
+
+@app.get("/api/qa-pairs")
+async def get_qa_pairs_endpoint(
+    days: int = 7,
+    limit: Optional[int] = None,
+    detailed_mode_only: bool = False,
+    sutra_filter_only: bool = False,
+    sutra_filter: Optional[str] = None
+):
+    """
+    Retrieve logged Q&A pairs with optional filtering.
+
+    Query parameters:
+    - days: Number of days to retrieve (default 7)
+    - limit: Maximum number of pairs to return (most recent first)
+    - detailed_mode_only: Only return pairs with detailed_mode=True
+    - sutra_filter_only: Only return pairs with sutra_filter set
+    - sutra_filter: Only return pairs with specific T-number (e.g., "T0262")
+
+    Returns:
+    - List of Q&A pairs with full metadata
+    """
+    try:
+        pairs = get_qa_pairs(
+            days=days,
+            limit=limit,
+            detailed_mode_only=detailed_mode_only,
+            sutra_filter_only=sutra_filter_only,
+            sutra_filter=sutra_filter
+        )
+
+        return {
+            "count": len(pairs),
+            "days": days,
+            "qa_pairs": pairs
+        }
+
+    except Exception as e:
+        logger.error(f"Error retrieving Q&A pairs: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving Q&A pairs: {str(e)}"
+        )
+
+
+@app.get("/api/qa-pairs/export")
+async def export_qa_pairs_endpoint(
+    days: int = 30,
+    detailed_mode_only: bool = False,
+    sutra_filter_only: bool = False,
+    format: str = "json"
+):
+    """
+    Export Q&A pairs to JSON file.
+
+    Query parameters:
+    - days: Number of days to export (default 30)
+    - detailed_mode_only: Only export pairs with detailed_mode=True
+    - sutra_filter_only: Only export pairs with sutra_filter set
+    - format: Export format (currently only "json" is supported)
+
+    Returns:
+    - Success/failure message with file path
+    """
+    try:
+        if format != "json":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Only 'json' format is currently supported"
+            )
+
+        output_file = "logs/qa_pairs_export.json"
+        success = export_to_json(
+            output_file=output_file,
+            days=days,
+            detailed_mode_only=detailed_mode_only,
+            sutra_filter_only=sutra_filter_only
+        )
+
+        if success:
+            return {
+                "status": "success",
+                "output_file": output_file,
+                "days": days,
+                "filters": {
+                    "detailed_mode_only": detailed_mode_only,
+                    "sutra_filter_only": sutra_filter_only
+                }
+            }
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Export failed"
+            )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error exporting Q&A pairs: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error exporting Q&A pairs: {str(e)}"
+        )
+
+
+@app.get("/api/qa-pairs/analytics")
+async def get_qa_analytics(days: int = 7, top_n: int = 10):
+    """
+    Get analytics on Q&A patterns.
+
+    Query parameters:
+    - days: Number of days to analyze (default 7)
+    - top_n: Number of top queries to return (default 10)
+
+    Returns:
+    - Statistics on query patterns, detailed mode usage, sutra filters, and models
+    """
+    try:
+        stats = analyze_popular_queries(days=days, top_n=top_n)
+
+        return {
+            "days": days,
+            "statistics": stats
+        }
+
+    except Exception as e:
+        logger.error(f"Error analyzing Q&A pairs: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error analyzing Q&A pairs: {str(e)}"
         )
 
 
@@ -1249,6 +1496,127 @@ async def get_cache(cache_key: str):
         raise
     except Exception as e:
         logger.error(f"Error getting cache: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@app.get("/api/usage-stats")
+async def get_usage_stats(
+    days: int = 7,
+    format: str = "json"
+):
+    """
+    Get token usage statistics for the specified period.
+
+    Args:
+        days: Number of days to analyze (default: 7, max: 90)
+        format: Output format ("json" or "csv")
+
+    Returns:
+        Usage statistics including total queries, costs, and breakdowns by mode/model/day
+    """
+    try:
+        # Validate days parameter
+        days = min(max(1, days), 90)
+
+        # Get usage statistics
+        stats = analyze_usage_logs(days=days)
+
+        if format == "csv":
+            # Export to CSV and return file
+            import tempfile
+            csv_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv')
+            csv_path = csv_file.name
+            csv_file.close()
+
+            success = export_usage_csv(output_file=csv_path, days=days)
+
+            if success:
+                from fastapi.responses import FileResponse
+                return FileResponse(
+                    csv_path,
+                    media_type='text/csv',
+                    filename=f'usage_stats_{days}days.csv'
+                )
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to export CSV"
+                )
+
+        # Return JSON stats
+        return {
+            "period_days": days,
+            "total_queries": stats['total_queries'],
+            "cached_queries": stats.get('cached_queries', 0),
+            "api_queries": stats['total_queries'] - stats.get('cached_queries', 0),
+            "total_cost_usd": round(stats['total_cost'], 4),
+            "tokens": {
+                "input": stats['input_tokens'],
+                "output": stats['output_tokens'],
+                "total": stats['total_tokens']
+            },
+            "by_mode": {
+                mode: {
+                    "queries": data['queries'],
+                    "cost_usd": round(data['cost'], 4),
+                    "tokens": data['tokens'],
+                    "avg_cost_per_query": round(data['cost'] / data['queries'], 6) if data['queries'] > 0 else 0
+                }
+                for mode, data in stats.get('by_mode', {}).items()
+            },
+            "by_model": {
+                model: {
+                    "queries": data['queries'],
+                    "cost_usd": round(data['cost'], 4),
+                    "tokens": data['tokens']
+                }
+                for model, data in stats.get('by_model', {}).items()
+            },
+            "by_day": {
+                day: {
+                    "queries": data['queries'],
+                    "cost_usd": round(data['cost'], 4),
+                    "tokens": data['tokens']
+                }
+                for day, data in sorted(stats.get('by_day', {}).items())
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting usage stats: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@app.get("/api/recent-queries")
+async def get_recent_queries_endpoint(limit: int = 10):
+    """
+    Get recent queries from usage logs.
+
+    Args:
+        limit: Maximum number of queries to return (default: 10, max: 100)
+
+    Returns:
+        List of recent query entries with token usage and cost
+    """
+    try:
+        limit = min(max(1, limit), 100)
+        queries = get_recent_queries(limit=limit)
+
+        return {
+            "count": len(queries),
+            "queries": queries
+        }
+
+    except Exception as e:
+        logger.error(f"Error getting recent queries: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)

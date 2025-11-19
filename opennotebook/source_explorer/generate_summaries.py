@@ -175,7 +175,7 @@ def generate_all_summaries(
 
     # Load existing summaries if resuming
     summaries = {}
-    if os.path.exists(output_path) and start_from > 0:
+    if os.path.exists(output_path):
         logger.info(f"Loading existing summaries from {output_path}")
         with open(output_path, 'r', encoding='utf-8') as f:
             existing_data = json.load(f)
