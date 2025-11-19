@@ -248,6 +248,129 @@
       "text": "원왕생안락국 상유대각존\n환아익법성 불감권능시\n\n원컨대 안락국에 왕생하여 저 위없는 대각세존 계신 곳에서\n저희가 돌아와 다시 중생을 제도하오리니 부디 신력으로 섭수하소서",
       "estimatedTime": "3-5분",
       "order": 23
+    },
+    "jisimGuimyeong": {
+      "id": "jisimGuimyeong",
+      "category": "verse",
+      "title": "지심귀명례",
+      "subtitle": "至心歸命禮",
+      "description": "삼보와 보살님들께 지극한 마음으로 귀의 예배하는 한국불교 예불의 기본",
+      "text": "지심으로 삼보께 귀의하옵고 예를 올리나이다.\n\n지심귀명례 시방상주 상주삼보\n지심귀명례 본사아미타불\n지심귀명례 석가모니불\n지심귀명례 비로자나불\n지심귀명례 약사유리광여래\n지심귀명례 당래하생 미륵존불\n지심귀명례 대자대비 관세음보살\n지심귀명례 대원지 대세지보살\n지심귀명례 지장왕보살\n지심귀명례 천수천안 관세음보살\n지심귀명례 청정대해중 대성문수사리보살\n지심귀명례 대행보현보살\n지심귀명례 도량제보살\n지심귀명례 호법제천보살\n지심귀명례 가람성중보살",
+      "estimatedTime": "3-5분",
+      "order": 24
+    },
+    "kwanumChan": {
+      "id": "kwanumChan",
+      "category": "verse",
+      "title": "관음찬",
+      "subtitle": "觀音讚",
+      "description": "관세음보살의 자비와 공덕을 찬탄하는 게송",
+      "text": "관음보살 묘난사 청정연해작자량\n천수천안도중생 심지급난즉천응\n\n관세음보살님은 생각하기 어려우시고\n청정한 연꽃 바다는 그 자량을 이루셨네\n천 손 천 눈으로 중생 제도하시니\n마음으로 급한 재난을 부르면 곧 감응하시네",
+      "estimatedTime": "2-3분",
+      "order": 25
+    },
+    "hyangGongyang": {
+      "id": "hyangGongyang",
+      "category": "verse",
+      "title": "향공양",
+      "subtitle": "香供養",
+      "description": "향을 올리며 삼보께 공양하는 게송",
+      "text": "원차향화운 변만시방계\n공양제불찰 무량향장엄\n구족계정혜 보살육바라\n향연광명대 시방삼보전\n증명감로법 보탑급성승\n법계제중생 소문개해탈\n\n원컨대 이 향화 구름이 시방세계에 두루 가득하여\n모든 불국토에 공양하고 한량없는 향으로 장엄하며\n계정혜를 갖추고 보살의 육바라밀을 행하여\n향기로운 연기와 광명이 크게 시방삼보 전에 이르러\n증명하는 감로법과 보탑과 성스러운 승가에 미치며\n법계의 모든 중생들이 듣고 함께 해탈하기를 원하나이다",
+      "estimatedTime": "2-3분",
+      "order": 26
+    },
+    "pureLandVerse": {
+      "id": "pureLandVerse",
+      "category": "verse",
+      "title": "극락가",
+      "subtitle": "極樂歌",
+      "description": "극락정토의 아름다움과 왕생을 노래하는 정토게",
+      "text": "서방정토 극락세계 아미타부처님\n무량광명 무량수명 나무아미타불\n청청유리 칠보연못 팔공덕수요\n금은유리 진주마노 연화장세계라\n구품연화 이중에 나고지고 원왕생\n상품상생 원하오면 육도윤회 벗어나서\n일생불퇴 아미타불 도량안에 왕생하세\n\n나무서방극락세계 대자대비 아미타불\n나무관세음보살 나무대세지보살",
+      "estimatedTime": "3-4분",
+      "order": 27
+    },
+    "tenGoodDeeds": {
+      "id": "tenGoodDeeds",
+      "category": "verse",
+      "title": "십선업도",
+      "subtitle": "十善業道",
+      "description": "몸과 입과 뜻으로 짓는 열 가지 선한 업",
+      "text": "불살생 자비하며 살생하지 않고\n불투도 보시하며 도둑질하지 않으며\n불사음 정결하며 사음하지 않으며\n불망어 진실하며 거짓말하지 않고\n불기어 화합하며 이간질하지 않으며\n불악구 애어하며 악담하지 않고\n불양설 질직하며 꾸민 말 하지 않으며\n불탐욕 희사하며 탐욕내지 않고\n불진에 자애하며 성내지 않으며\n불사견 정견하며 삼보를 비방하지 않는다\n\n이것이 십선업도요 복락의 근원이니라",
+      "estimatedTime": "3-4분",
+      "order": 28
+    },
+    "practiceChant": {
+      "id": "practiceChant",
+      "category": "verse",
+      "title": "수행가",
+      "subtitle": "修行歌",
+      "description": "정근 수행을 위한 게송",
+      "text": "관세음보살 관세음보살 관세음보살\n나무아미타불 나무아미타불 나무아미타불\n천수천안 관세음보살 광대원만 무애대비심 대다라니\n\n관음보살님 자비하시어\n저희들의 간절한 기도를 들어주시옵소서\n온갖 재난과 고통에서 벗어나게 하시고\n모든 소원을 성취하게 하옵소서\n\n나무아미타불 나무아미타불\n관세음보살 관세음보살",
+      "estimatedTime": "4-6분",
+      "order": 29
+    },
+    "ksitigarbhaKarmaMantra": {
+      "id": "ksitigarbhaKarmaMantra",
+      "category": "mantra",
+      "title": "지장보살 멸정업진언",
+      "subtitle": "地藏菩薩 滅定業眞言",
+      "description": "업장을 소멸하는 지장보살의 신성한 진언",
+      "text": "옴 발라마니 나예 사바하",
+      "estimatedTime": "1분",
+      "order": 30
+    },
+    "mahasthamaMantra": {
+      "id": "mahasthamaMantra",
+      "category": "mantra",
+      "title": "대세지보살 진언",
+      "subtitle": "大勢至菩薩 眞言",
+      "description": "지혜의 빛으로 어둠을 밝히는 대세지보살의 진언",
+      "text": "옴 발자라 다루 사바하",
+      "estimatedTime": "1분",
+      "order": 31
+    },
+    "akasagarbhaMantra": {
+      "id": "akasagarbhaMantra",
+      "category": "mantra",
+      "title": "허공장보살 진언",
+      "subtitle": "虛空藏菩薩 眞言",
+      "description": "무한한 복덕과 지혜를 얻는 허공장보살의 진언",
+      "text": "옴 아까사 가르바 사바하",
+      "estimatedTime": "1분",
+      "order": 32
+    },
+    "namuMahasthama": {
+      "id": "namuMahasthama",
+      "category": "name",
+      "title": "나무대세지보살",
+      "subtitle": "南無大勢至菩薩",
+      "description": "지혜의 빛을 상징하는 대세지보살께 108번 귀의",
+      "pattern": "나무대세지보살",
+      "repeat": 108,
+      "estimatedTime": "5-7분",
+      "order": 33
+    },
+    "namuManjushri": {
+      "id": "namuManjushri",
+      "category": "name",
+      "title": "나무문수사리보살",
+      "subtitle": "南無文殊師利菩薩",
+      "description": "지혜의 보살 문수사리께 108번 귀의",
+      "pattern": "나무문수사리보살",
+      "repeat": 108,
+      "estimatedTime": "6-8분",
+      "order": 34
+    },
+    "namuSamantabhadra": {
+      "id": "namuSamantabhadra",
+      "category": "name",
+      "title": "나무보현보살",
+      "subtitle": "南無普賢菩薩",
+      "description": "행원의 보살 보현보살께 108번 귀의",
+      "pattern": "나무보현보살",
+      "repeat": 108,
+      "estimatedTime": "5-7분",
+      "order": 35
     }
   }
 }
