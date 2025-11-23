@@ -103,8 +103,8 @@
       ],
       "model": "gemini-2.5-pro",
       "created_at": "2025-11-14T21:05:48.628864",
-      "hit_count": 6,
-      "last_hit": "2025-11-17T22:07:51.461087",
+      "hit_count": 7,
+      "last_hit": "2025-11-21T01:44:06.919204",
       "metadata": {
         "quality_rating": "high",
         "manually_curated": true,

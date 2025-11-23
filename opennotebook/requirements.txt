@@ -14,8 +14,10 @@ anthropic==0.39.0
 langchain==0.3.7
 langchain-openai==0.2.8
 langchain-anthropic==0.2.4
+langchain-google-vertexai==2.0.7
 langchain-community==0.3.7
-chromadb==0.5.18
+# Match the format used by the bundled cbeta_sutras_gemini database
+chromadb==1.3.0
 sentence-transformers==3.3.1
 
 # Document Processing

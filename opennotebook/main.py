@@ -96,13 +96,14 @@ config = AppConfig()
 
 # Configure logging
 logger.remove()
-logger.add(
-    "logs/app.log",
-    rotation="500 MB",
-    retention="10 days",
-    level=config.log_level.upper(),
-    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}"
-)
+# Commented out file logging for production - use stdout/stderr instead
+# logger.add(
+#     "logs/app.log",
+#     rotation="500 MB",
+#     retention="10 days",
+#     level=config.log_level.upper(),
+#     format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}"
+# )
 logger.add(lambda msg: print(msg, end=""), level=config.log_level.upper())
 
 
@@ -1261,7 +1262,13 @@ async def get_qa_analytics(days: int = 7, top_n: int = 10):
 
 @app.get("/")
 async def root():
-    """Root endpoint - redirect to test frontend."""
+    """Root endpoint - password page."""
+    return HTMLResponse(content=open("password.html", encoding="utf-8").read())
+
+
+@app.get("/chat")
+async def chat_page():
+    """Chat interface - requires password authentication."""
     return HTMLResponse(content=open("test_frontend.html", encoding="utf-8").read())
 
 

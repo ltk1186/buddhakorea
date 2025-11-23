@@ -4,12 +4,18 @@ __pycache__/
 *$py.class
 *.so
 .Python
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
 venv/
 env/
 ENV/
-*.egg-info/
-dist/
-build/
+.venv
 
 # IDE
 .vscode/
@@ -17,54 +23,54 @@ build/
 *.swp
 *.swo
 *~
-
-# OS
 .DS_Store
-Thumbs.db
 
 # Git
 .git/
 .gitignore
-
-# Logs
-logs/*.log
-*.log
-
-# Environment
-.env
-.env.local
-
-# ChromaDB (will be mounted as volume)
-chroma_db/
-
-# Docker
-Dockerfile
-docker-compose.yml
-.dockerignore
+.gitattributes
 
 # Documentation
-README*.md
+README.md
+*.md
 docs/
 
+# Logs
+*.log
+logs/
+.logs/
+
+# Environment files
+.env
+.env.*
+
 # Testing
+test_*.py
+*_test.py
 tests/
-pytest.ini
-.pytest_cache/
-
-# Jupyter
-*.ipynb
-.ipynb_checkpoints/
-
-# Large files
-*.tar.gz
-*.zip
-*.pdf
-*.bin
-*.pt
-*.pth
-models/
+test_results/
 
 # Temporary files
 tmp/
 temp/
 *.tmp
+*.bak
+
+# Docker files
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# ChromaDB (mounted as volume)
+chroma_db/
+
+# Deployment scripts
+deploy.sh
+*.sh
+
+# Evaluation
+evaluation/
+benchmark/
+
+# Data
+data/
