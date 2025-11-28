@@ -1,0 +1,46 @@
+# Logrotate configuration for Buddha Korea FastAPI application logs
+# Install to: /etc/logrotate.d/buddhakorea-app
+
+/opt/buddha-korea/logs/*.log /opt/buddha-korea/logs/*.jsonl {
+    # Rotate daily
+    daily
+
+    # Keep 30 days of logs
+    rotate 30
+
+    # Don't error if log file is missing
+    missingok
+
+    # Don't rotate empty logs
+    notifempty
+
+    # Compress rotated logs
+    compress
+
+    # Delay compression until next rotation (ensures current log is readable)
+    delaycompress
+
+    # Use copytruncate instead of signal handling
+    # This copies the log file and truncates the original in place
+    # More reliable than signal-based rotation for Python apps
+    copytruncate
+
+    # Create new log files with specific permissions
+    create 0640 appuser appuser
+
+    # Use date extension for rotated files (e.g., app.log-20250601)
+    dateext
+    dateformat -%Y%m%d
+
+    # If log file size exceeds 100MB, rotate immediately (regardless of daily schedule)
+    maxsize 100M
+
+    # Run analytics processing after rotation
+    postrotate
+        # Process newly rotated logs into Redis analytics
+        if [ -f /opt/buddha-korea/analytics_processor.py ]; then
+            cd /opt/buddha-korea && \
+            /usr/bin/python3 analytics_processor.py >> /opt/buddha-korea/logs/analytics_processor.log 2>&1 || true
+        fi
+    endscript
+}

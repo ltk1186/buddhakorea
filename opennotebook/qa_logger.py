@@ -3,6 +3,7 @@ Q&A Logger for Buddha Korea RAG System
 
 Logs all question-answer pairs with metadata for analysis and caching.
 Stores full queries and responses (no truncation) in JSONL format.
+PII is automatically masked before logging.
 """
 
 import json
@@ -11,6 +12,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional
 import logging
+
+from privacy import mask_pii
 
 logger = logging.getLogger(__name__)
 
@@ -50,11 +53,15 @@ def log_qa_pair(
         latency_ms: Response latency in milliseconds
         from_cache: Whether response was from cache
     """
+    # Mask PII before logging
+    masked_query = mask_pii(query)
+    masked_response = mask_pii(response)
+
     # Create Q&A entry
     qa_entry = {
         "timestamp": datetime.now().isoformat(),
-        "query": query,  # Full query, no truncation
-        "response": response,  # Full response, no truncation
+        "query": masked_query,  # Full query, PII masked
+        "response": masked_response,  # Full response, PII masked
         "detailed_mode": detailed_mode,
         "sutra_filter": sutra_filter,
         "session_id": session_id,

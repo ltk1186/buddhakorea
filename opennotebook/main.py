@@ -9,6 +9,8 @@ import os
 import json
 import time
 import uuid
+import asyncio
+from pathlib import Path
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
 from contextlib import asynccontextmanager
@@ -27,7 +29,7 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_google_vertexai import ChatVertexAI
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_classic.chains import RetrievalQA
+from langchain.chains import RetrievalQA
 from langchain_core.prompts import PromptTemplate
 
 # Usage tracking
@@ -202,6 +204,80 @@ class CachedResponseInfo(BaseModel):
     created_at: str
     hit_count: int
     last_hit: Optional[str]
+
+
+# ============================================================================
+# Sutra Library Cache
+# ============================================================================
+
+class SutraCache:
+    """Simple async cache for sutra library data."""
+    def __init__(self):
+        self._data: Optional[Dict] = None
+        self._metadata: Optional[Dict] = None
+        self._lock = asyncio.Lock()
+
+    async def load(self) -> bool:
+        """Load sutra data and compute metadata."""
+        try:
+            path = Path(__file__).parent / "source_explorer/source_data/source_summaries_ko.json"
+            # Read file in thread to avoid blocking
+            content = await asyncio.to_thread(path.read_text, encoding='utf-8')
+            data = json.loads(content)
+
+            # Compute metadata
+            summaries = data.get('summaries', {})
+            traditions = set()
+            themes = set()
+            periods = set()
+
+            for source in summaries.values():
+                if t := source.get('tradition'):
+                    traditions.add(t.strip())
+                if p := source.get('period'):
+                    periods.add(p.strip())
+                # Handle key_themes as string or list
+                kt = source.get('key_themes', [])
+                if isinstance(kt, str):
+                    kt = [kt]
+                for theme in kt:
+                    if theme.strip():
+                        themes.add(theme.strip())
+
+            metadata = {
+                'total': len(summaries),
+                'traditions': sorted(traditions),
+                'themes': sorted(themes),
+                'periods': sorted(periods)
+            }
+
+            async with self._lock:
+                self._data = data
+                self._metadata = metadata
+                logger.info(f"Sutra cache loaded: {metadata['total']} sutras")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to load sutra cache: {e}")
+            return False
+
+    async def get_data(self) -> Dict:
+        """Get cached data, load if needed."""
+        if self._data is None:
+            await self.load()
+        if self._data is None:
+            raise HTTPException(503, "Sutra data unavailable")
+        return self._data
+
+    async def get_metadata(self) -> Dict:
+        """Get precomputed metadata."""
+        if self._metadata is None:
+            await self.load()
+        if self._metadata is None:
+            raise HTTPException(503, "Sutra metadata unavailable")
+        return self._metadata
+
+# Initialize global sutra cache
+sutra_cache = SutraCache()
 
 
 # ============================================================================
@@ -555,6 +631,10 @@ async def lifespan(app: FastAPI):
     # Load response cache
     load_response_cache()
 
+    # Load sutra library cache
+    logger.info("Loading sutra library cache...")
+    await sutra_cache.load()
+
     # Initialize embeddings
     if config.use_gemini_for_queries:
         logger.info("🚀 Using Gemini API for query embeddings")
@@ -725,6 +805,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount static files for library CSS and JS
+app.mount("/css", StaticFiles(directory="css"), name="css")
+app.mount("/js", StaticFiles(directory="js"), name="js")
 
 
 # ============================================================================
@@ -1272,6 +1356,27 @@ async def chat_page():
     return HTMLResponse(content=open("test_frontend.html", encoding="utf-8").read())
 
 
+@app.get("/api/sutras/meta")
+async def get_sutra_metadata():
+    """
+    Get precomputed metadata for scripture library filters.
+
+    Returns:
+    - total: Total sutra count
+    - traditions: List of unique Buddhist traditions
+    - themes: List of unique key themes
+    - periods: List of unique historical periods
+    """
+    try:
+        metadata = await sutra_cache.get_metadata()
+        return metadata
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting sutra metadata: {e}")
+        raise HTTPException(500, str(e))
+
+
 @app.get("/api/sources")
 async def list_sources(
     search: Optional[str] = None,
@@ -1291,18 +1396,8 @@ async def list_sources(
     - offset: Pagination offset
     """
     try:
-        # Load source summaries
-        summaries_path = "source_explorer/source_data/source_summaries_ko.json"
-
-        if not os.path.exists(summaries_path):
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="Source summaries not yet generated. Please run generate_summaries.py first."
-            )
-
-        with open(summaries_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-
+        # Use cached data
+        data = await sutra_cache.get_data()
         summaries = data.get('summaries', {})
 
         # Filter sources

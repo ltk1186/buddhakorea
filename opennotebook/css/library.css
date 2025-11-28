@@ -1,0 +1,605 @@
+/* ========================================
+   FULL-SCREEN SCRIPTURE LIBRARY
+   Buddha Korea - AI Chatbot
+   ======================================== */
+
+/* ===== OVERLAY CONTAINER ===== */
+
+.library-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.library-overlay.active {
+    display: flex;
+    flex-direction: column;
+    opacity: 1;
+}
+
+/* Backdrop */
+.library-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    cursor: pointer;
+    z-index: 1;
+}
+
+/* Main Container */
+.library-container {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+}
+
+.library-container > * {
+    pointer-events: auto;
+}
+
+/* ===== HEADER SECTION ===== */
+
+.library-header {
+    background: linear-gradient(180deg,
+        rgba(26, 30, 63, 0.98) 0%,
+        rgba(36, 41, 82, 0.95) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(167, 148, 224, 0.2);
+    padding: 24px 32px;
+    animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.library-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.library-header h2 {
+    font-size: 24px;
+    font-weight: 600;
+    background: linear-gradient(90deg, #a794e0, #89b8ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+}
+
+.library-close {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.library-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+}
+
+.library-close:active {
+    transform: rotate(90deg) scale(0.95);
+}
+
+/* ===== SEARCH BAR ===== */
+
+.library-search-bar {
+    margin-bottom: 16px;
+}
+
+.library-search-bar input {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(167, 148, 224, 0.2);
+    border-radius: 24px;
+    color: white;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.library-search-bar input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.library-search-bar input:focus {
+    border-color: #a794e0;
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 0 0 4px rgba(167, 148, 224, 0.15);
+}
+
+/* ===== FILTERS ROW ===== */
+
+.library-filters {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.library-filters select {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(167, 148, 224, 0.2);
+    border-radius: 16px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.library-filters select option {
+    background: #1A1E3F;
+    color: white;
+}
+
+.library-filters select:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: #a794e0;
+}
+
+.library-filters select:focus {
+    border-color: #a794e0;
+    box-shadow: 0 0 0 3px rgba(167, 148, 224, 0.15);
+}
+
+.filter-reset-btn {
+    padding: 10px 20px;
+    background: rgba(218, 165, 32, 0.15);
+    border: 1px solid rgba(218, 165, 32, 0.3);
+    border-radius: 16px;
+    color: #DAA520;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.filter-reset-btn:hover {
+    background: rgba(218, 165, 32, 0.25);
+    transform: translateY(-2px);
+}
+
+.filter-reset-btn:active {
+    transform: translateY(0);
+}
+
+/* ===== FILTER BADGES ===== */
+
+.library-filter-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-height: 0;
+    margin-bottom: 12px;
+}
+
+.library-filter-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(167, 148, 224, 0.2);
+    border: 1px solid rgba(167, 148, 224, 0.4);
+    border-radius: 16px;
+    color: #a794e0;
+    font-size: 12px;
+    font-weight: 500;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.library-filter-badge button {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s ease;
+}
+
+.library-filter-badge button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ===== RESULTS COUNT ===== */
+
+.library-results-count {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center;
+}
+
+.library-results-count span {
+    font-weight: 600;
+    color: #a794e0;
+}
+
+/* ===== LOADING STATE ===== */
+
+.library-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(167, 148, 224, 0.2);
+    border-top-color: #a794e0;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ===== EMPTY STATE ===== */
+
+.library-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center;
+}
+
+.empty-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    opacity: 0.3;
+}
+
+.library-empty h3 {
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.library-empty p {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* ===== SCRIPTURE CARDS GRID ===== */
+
+.library-grid {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+    align-content: start;
+    animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Custom scrollbar for grid */
+.library-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+.library-grid::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.library-grid::-webkit-scrollbar-thumb {
+    background: rgba(167, 148, 224, 0.3);
+    border-radius: 4px;
+}
+
+.library-grid::-webkit-scrollbar-thumb:hover {
+    background: rgba(167, 148, 224, 0.5);
+}
+
+/* ===== SCRIPTURE CARD ===== */
+
+.library-card {
+    background: linear-gradient(180deg,
+        rgba(26, 30, 63, 0.9) 0%,
+        rgba(36, 41, 82, 0.85) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(167, 148, 224, 0.2);
+    border-radius: 20px;
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.library-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(167, 148, 224, 0.1),
+        transparent
+    );
+    transition: left 0.5s ease;
+}
+
+.library-card:hover {
+    transform: translateY(-8px);
+    border-color: #DAA520;
+    box-shadow: 0 12px 48px rgba(218, 165, 32, 0.2);
+}
+
+.library-card:hover::before {
+    left: 100%;
+}
+
+.library-card:active {
+    transform: translateY(-4px);
+}
+
+/* Card Content */
+.library-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.library-card-summary {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.6;
+    margin-bottom: 16px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.library-card-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.library-card-tag {
+    padding: 4px 10px;
+    background: rgba(167, 148, 224, 0.15);
+    border: 1px solid rgba(167, 148, 224, 0.3);
+    border-radius: 12px;
+    font-size: 11px;
+    color: #a794e0;
+    font-weight: 500;
+}
+
+/* Scroll sentinel for infinite scroll */
+#scrollSentinel {
+    height: 1px;
+    width: 100%;
+}
+
+/* Memory warning banner */
+.library-memory-warning {
+    background: rgba(218, 165, 32, 0.15);
+    border: 1px solid rgba(218, 165, 32, 0.3);
+    border-radius: 12px;
+    padding: 12px 20px;
+    margin: 0 32px 16px;
+    color: #DAA520;
+    font-size: 13px;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+}
+
+/* ===== HEADER TRIGGER BUTTON ===== */
+
+.library-header-btn {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #a794e0, #89b8ff);
+    border: none;
+    border-radius: 24px;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(167, 148, 224, 0.3);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.library-header-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(167, 148, 224, 0.4);
+}
+
+.library-header-btn:active {
+    transform: translateY(0);
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+@media (max-width: 768px) {
+    .library-header {
+        padding: 20px 16px;
+    }
+
+    .library-header h2 {
+        font-size: 20px;
+    }
+
+    .library-filters {
+        flex-direction: column;
+    }
+
+    .library-filters select,
+    .filter-reset-btn {
+        min-width: 100%;
+    }
+
+    .library-grid {
+        padding: 20px 16px;
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .library-card {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .library-header {
+        padding: 16px 12px;
+    }
+
+    .library-header h2 {
+        font-size: 18px;
+    }
+
+    .library-search-bar input {
+        font-size: 14px;
+        padding: 12px 16px;
+    }
+
+    .library-grid {
+        padding: 16px 12px;
+    }
+}
+
+/* ===== ACCESSIBILITY ===== */
+
+/* Focus styles for keyboard navigation */
+.library-close:focus-visible,
+.library-search-bar input:focus-visible,
+.library-filters select:focus-visible,
+.filter-reset-btn:focus-visible,
+.library-card:focus-visible,
+.library-header-btn:focus-visible {
+    outline: 3px solid rgba(167, 148, 224, 0.6);
+    outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .library-overlay,
+    .library-card,
+    .library-close,
+    .library-search-bar input,
+    .filter-reset-btn,
+    .library-header-btn {
+        transition-duration: 0.1s;
+    }
+
+    @keyframes slideDown,
+    @keyframes fadeInUp,
+    @keyframes fadeIn {
+        from { opacity: 0.5; }
+        to { opacity: 1; }
+    }
+
+    .loading-spinner {
+        animation-duration: 2s;
+    }
+
+    .library-card:hover {
+        transform: none;
+    }
+
+    .library-card::before {
+        display: none;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .library-overlay {
+        background: rgba(0, 0, 0, 0.95);
+    }
+
+    .library-card {
+        border-width: 2px;
+    }
+}

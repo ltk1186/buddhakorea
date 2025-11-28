@@ -6,12 +6,44 @@ version: '3.8'
 # Simplified version using file-based ChromaDB
 
 services:
+  # Redis for Analytics
+  redis:
+    image: redis:7-alpine
+    container_name: buddhakorea-redis
+    command: redis-server /usr/local/etc/redis/redis.conf
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - ./redis-data:/data
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-changeme}
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-changeme}", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - buddhist-ai-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
   # FastAPI Backend with file-based ChromaDB
   fastapi:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: buddhakorea-fastapi
+    depends_on:
+      redis:
+        condition: service_healthy
     volumes:
       - ./chroma_db:/app/chroma_db:ro  # Mount ChromaDB as read-only
       - ./logs:/app/logs
@@ -32,6 +64,12 @@ services:
       # ChromaDB file-based path
       - CHROMA_DB_PATH=./chroma_db
       - CHROMA_COLLECTION_NAME=${CHROMA_COLLECTION_NAME:-cbeta_sutras_gemini}
+
+      # Redis Analytics
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-changeme}
+      - REDIS_DB=0
 
       # API Settings
       - API_HOST=0.0.0.0

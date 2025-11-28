@@ -3,6 +3,7 @@ Token Usage Tracker for Buddha Korea RAG System
 
 Tracks and logs token usage and costs for LLM API calls.
 Supports Gemini, Claude, and OpenAI models.
+PII is automatically masked before logging.
 """
 
 import json
@@ -11,6 +12,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional
 import logging
+
+from privacy import mask_pii
 
 logger = logging.getLogger(__name__)
 
@@ -103,11 +106,15 @@ def log_token_usage(
     # Calculate cost
     cost = calculate_cost(input_tokens, output_tokens, model)
 
+    # Mask PII before logging
+    masked_query = mask_pii(query[:100])  # First 100 chars, then mask
+    masked_response = mask_pii(response[:100])  # First 100 chars, then mask
+
     # Create usage entry
     usage_entry = {
         "timestamp": datetime.now().isoformat(),
-        "query": query[:100],  # First 100 chars only
-        "response_preview": response[:100],  # First 100 chars only
+        "query": masked_query,
+        "response_preview": masked_response,
         "mode": mode,
         "model": model,
         "tokens": {
@@ -192,12 +199,17 @@ def analyze_usage_logs(days: int = 7) -> Dict:
                     # Update totals
                     stats["total_queries"] += 1
                     stats["total_cost"] += entry["cost_usd"]
-                    stats["input_tokens"] += entry["tokens"]["input"]
-                    stats["output_tokens"] += entry["tokens"]["output"]
-                    stats["total_tokens"] += entry["tokens"]["total"]
+                    tokens = entry["tokens"]
+                    stats["input_tokens"] += tokens.get("input", 0)
+                    stats["output_tokens"] += tokens.get("output", 0)
+                    # Handle old format without 'total' field
+                    stats["total_tokens"] += tokens.get("total", tokens.get("input", 0) + tokens.get("output", 0))
 
                     if entry.get("from_cache", False):
                         stats["cached_queries"] += 1
+
+                    # Calculate total tokens once for reuse
+                    total_tokens = tokens.get("total", tokens.get("input", 0) + tokens.get("output", 0))
 
                     # By mode
                     mode = entry["mode"]
@@ -209,7 +221,7 @@ def analyze_usage_logs(days: int = 7) -> Dict:
                         }
                     stats["by_mode"][mode]["queries"] += 1
                     stats["by_mode"][mode]["cost"] += entry["cost_usd"]
-                    stats["by_mode"][mode]["tokens"] += entry["tokens"]["total"]
+                    stats["by_mode"][mode]["tokens"] += total_tokens
 
                     # By model
                     model = entry["model"]
@@ -221,7 +233,7 @@ def analyze_usage_logs(days: int = 7) -> Dict:
                         }
                     stats["by_model"][model]["queries"] += 1
                     stats["by_model"][model]["cost"] += entry["cost_usd"]
-                    stats["by_model"][model]["tokens"] += entry["tokens"]["total"]
+                    stats["by_model"][model]["tokens"] += total_tokens
 
                     # By day
                     day = timestamp.date().isoformat()
@@ -233,7 +245,7 @@ def analyze_usage_logs(days: int = 7) -> Dict:
                         }
                     stats["by_day"][day]["queries"] += 1
                     stats["by_day"][day]["cost"] += entry["cost_usd"]
-                    stats["by_day"][day]["tokens"] += entry["tokens"]["total"]
+                    stats["by_day"][day]["tokens"] += total_tokens
 
                 except json.JSONDecodeError:
                     continue

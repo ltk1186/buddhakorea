@@ -1589,6 +1589,9 @@
             }
         }
     </style>
+
+    <!-- Full-Screen Library Styles -->
+    <link rel="stylesheet" href="/css/library.css">
 </head>
 <body>
     <!-- Source Explorer Sidebar -->
@@ -1604,6 +1607,12 @@
                 placeholder="경전 검색..."
                 oninput="filterSources()"
             />
+            <select id="themeFilter" onchange="filterSources()" style="margin-top: 10px; width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px;">
+                <option value="">모든 주제</option>
+            </select>
+            <select id="traditionFilter" onchange="filterSources()" style="margin-top: 10px; width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px;">
+                <option value="">모든 전통</option>
+            </select>
         </div>
         <div class="sidebar-content" id="sourceList">
             <!-- Source cards will be populated dynamically -->
@@ -1617,9 +1626,14 @@
 
     <!-- Main Container -->
     <div class="container">
-        <div class="header">
-            <h1>🙏 불교 AI 챗봇</h1>
-            <p>Fine-tuned BERT 임베딩 + Gemini 2.5 Pro | CBETA 대장경 99,723 문서</p>
+        <div class="header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1 style="margin-bottom: 8px;">🙏 불교 AI 챗봇</h1>
+                <p style="margin: 0;">Fine-tuned BERT 임베딩 + Gemini 2.5 Pro | CBETA 대장경 99,723 문서</p>
+            </div>
+            <button class="library-header-btn" onclick="openLibrary()" aria-label="경전 라이브러리 열기">
+                📚 경전 라이브러리
+            </button>
         </div>
 
         <div class="status">
@@ -1730,6 +1744,45 @@
         };
 
         // Load sources on page load
+        // Load metadata for filters
+        async function loadMetadata() {
+            try {
+                // Use relative URL for production compatibility
+                const response = await fetch('/api/sutras/meta');
+                if (!response.ok) throw new Error('Failed to load metadata');
+
+                const metadata = await response.json();
+
+                // Store globally for library.js
+                window.libraryMetadata = metadata;
+
+                // Populate theme dropdown (sidebar)
+                const themeSelect = document.getElementById('themeFilter');
+                metadata.themes.slice(0, 100).forEach(theme => {
+                    const option = document.createElement('option');
+                    option.value = theme;
+                    option.textContent = theme;
+                    themeSelect.appendChild(option);
+                });
+
+                // Populate tradition dropdown (sidebar)
+                const traditionSelect = document.getElementById('traditionFilter');
+                metadata.traditions.forEach(tradition => {
+                    const option = document.createElement('option');
+                    option.value = tradition;
+                    option.textContent = tradition;
+                    traditionSelect.appendChild(option);
+                });
+
+                // Notify library.js that metadata is loaded
+                if (window.onLibraryMetadataLoaded) {
+                    window.onLibraryMetadataLoaded(metadata);
+                }
+            } catch (error) {
+                console.error('Error loading metadata:', error);
+            }
+        }
+
         async function loadSources() {
             try {
                 const response = await fetch('http://localhost:8000/api/sources?limit=2500');
@@ -1770,16 +1823,35 @@
             `).join('');
         }
 
-        // Filter sources by search term
+        // Filter sources by search term, theme, and tradition
         function filterSources() {
             const searchTerm = document.getElementById('sourceSearch').value.toLowerCase();
+            const selectedTheme = document.getElementById('themeFilter').value;
+            const selectedTradition = document.getElementById('traditionFilter').value;
 
             filteredSources = allSources.filter(source => {
-                return !searchTerm ||
+                // Search filter
+                const matchesSearch = !searchTerm ||
                     source.title_ko?.toLowerCase().includes(searchTerm) ||
                     source.original_title?.toLowerCase().includes(searchTerm) ||
                     source.brief_summary?.toLowerCase().includes(searchTerm);
+
+                // Theme filter
+                const matchesTheme = !selectedTheme ||
+                    (source.key_themes && (
+                        (Array.isArray(source.key_themes) && source.key_themes.includes(selectedTheme)) ||
+                        source.key_themes === selectedTheme
+                    ));
+
+                // Tradition filter
+                const matchesTradition = !selectedTradition ||
+                    source.tradition === selectedTradition;
+
+                return matchesSearch && matchesTheme && matchesTradition;
             });
+
+            document.getElementById('sourceCount').textContent =
+                `총 ${allSources.length.toLocaleString()}개 경전 (${filteredSources.length}개 표시)`;
 
             renderSources();
         }
@@ -1796,10 +1868,15 @@
         // Show source detail modal
         async function showSourceDetail(sutraId) {
             try {
-                // Find current index in filteredSources
+                // Find current index in filteredSources (for navigation)
+                // Try sidebar sources first, then library sources
                 currentModalIndex = filteredSources.findIndex(s => s.sutra_id === sutraId);
+                if (currentModalIndex === -1 && window.libraryState) {
+                    // If not in sidebar, use library sources for navigation
+                    currentModalIndex = window.libraryState.filteredCards.findIndex(s => s.sutra_id === sutraId);
+                }
 
-                const response = await fetch(`http://localhost:8000/api/sources/${sutraId}`);
+                const response = await fetch(`/api/sources/${sutraId}`);
                 if (!response.ok) throw new Error('Failed to load source detail');
 
                 const source = await response.json();
@@ -2382,7 +2459,8 @@
         }
 
         // ===== Initialize on Page Load =====
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadMetadata();
             loadSources();
 
             // Load methodology panel state from localStorage
@@ -2508,5 +2586,79 @@
     <button class="methodology-toggle" onclick="toggleMethodologyPanel()" title="방법론 보기 (Shift+M)">
         방법론
     </button>
+
+    <!-- Full-Screen Library Overlay -->
+    <div id="libraryOverlay" class="library-overlay" role="dialog" aria-modal="true" aria-labelledby="libraryTitle">
+        <!-- Backdrop -->
+        <div class="library-backdrop" onclick="closeLibrary()"></div>
+
+        <!-- Library Container -->
+        <div class="library-container" id="libraryContainer">
+            <!-- Header -->
+            <div class="library-header">
+                <div class="library-header-top">
+                    <h2 id="libraryTitle">📚 경전 라이브러리</h2>
+                    <button class="library-close" onclick="closeLibrary()" aria-label="라이브러리 닫기">
+                        ✕
+                    </button>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="library-search-bar">
+                    <input
+                        type="text"
+                        id="librarySearch"
+                        placeholder="경전 제목, 내용 검색..."
+                        aria-label="경전 검색"
+                        oninput="filterLibraryCards()"
+                    />
+                </div>
+
+                <!-- Filters -->
+                <div class="library-filters">
+                    <select id="libraryThemeFilter" onchange="filterLibraryCards()" aria-label="주제 필터">
+                        <option value="">모든 주제</option>
+                    </select>
+
+                    <select id="libraryTraditionFilter" onchange="filterLibraryCards()" aria-label="전통 필터">
+                        <option value="">모든 전통</option>
+                    </select>
+
+                    <button class="filter-reset-btn" onclick="resetAllFilters()" aria-label="필터 초기화">
+                        초기화
+                    </button>
+                </div>
+
+                <!-- Filter Badges -->
+                <div id="libraryFilterBadges" class="library-filter-badges"></div>
+
+                <!-- Results Count -->
+                <div class="library-results-count" id="libraryResultsCount">
+                    전체 <span>0</span>개 경전
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="libraryLoading" class="library-loading" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p>경전을 불러오는 중...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div id="libraryEmpty" class="library-empty" style="display: none;">
+                <div class="empty-icon">📚</div>
+                <h3>검색 결과가 없습니다</h3>
+                <p>다른 검색어나 필터를 시도해보세요</p>
+            </div>
+
+            <!-- Scripture Cards Grid -->
+            <div class="library-grid" id="libraryGrid">
+                <!-- Cards rendered by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Full-Screen Library Script -->
+    <script src="/js/library.js" defer></script>
 </body>
 </html>
