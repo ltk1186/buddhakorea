@@ -229,28 +229,11 @@ rollback() {
 post_deployment() {
     log "Running post-deployment tasks..."
 
-    # Setup logrotate if not already configured
-    if [ -f "${PROJECT_DIR}/logrotate.d/buddhakorea-app" ]; then
-        if [ ! -f "/etc/logrotate.d/buddhakorea-app" ]; then
-            log "Installing logrotate configurations..."
-            cp "${PROJECT_DIR}/logrotate.d/buddhakorea-app" /etc/logrotate.d/
-            cp "${PROJECT_DIR}/logrotate.d/buddhakorea-nginx" /etc/logrotate.d/
-            log "Logrotate configured ✓"
-        fi
-    fi
-
     # Setup Redis backup cron if not already configured
     if ! crontab -l 2>/dev/null | grep -q "backup_redis.sh"; then
         log "Setting up Redis backup cron job..."
         (crontab -l 2>/dev/null; echo "0 2 * * * ${PROJECT_DIR}/backup_redis.sh") | crontab -
         log "Redis backup cron configured ✓"
-    fi
-
-    # Setup analytics processor cron if not already configured
-    if ! crontab -l 2>/dev/null | grep -q "analytics_processor.py"; then
-        log "Setting up analytics processor cron job..."
-        (crontab -l 2>/dev/null; echo "*/30 * * * * cd ${PROJECT_DIR} && /usr/bin/python3 analytics_processor.py >> ${LOG_DIR}/analytics_processor.log 2>&1") | crontab -
-        log "Analytics processor cron configured ✓"
     fi
 
     # Cleanup old Docker images
@@ -281,9 +264,8 @@ main() {
     log ""
     log "Next steps:"
     log "1. Monitor logs: tail -f ${LOG_DIR}/app.log"
-    log "2. Check analytics: docker exec buddhakorea-fastapi python3 -c 'from analytics_processor import AnalyticsProcessor; print(AnalyticsProcessor().get_analytics(7))'"
-    log "3. Test PII masking: docker exec buddhakorea-fastapi python3 privacy.py"
-    log "4. View Redis data: docker exec buddhakorea-redis redis-cli -a \${REDIS_PASSWORD} INFO"
+    log "2. Test PII masking: docker exec buddhakorea-fastapi python3 privacy.py"
+    log "3. View Redis data: docker exec buddhakorea-redis redis-cli -a \${REDIS_PASSWORD} INFO"
 }
 
 # Trap errors and run rollback

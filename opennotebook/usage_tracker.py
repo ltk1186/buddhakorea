@@ -11,13 +11,12 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional
-import logging
+from loguru import logger
 
 from privacy import mask_pii
 
-logger = logging.getLogger(__name__)
-
-# Usage log file path
+# Usage log file path (DEPRECATED: Cloud Logging을 통해 BigQuery로 분석 예정)
+# 로컬 개발/테스트용으로만 유지
 USAGE_LOG_FILE = Path("logs/usage.jsonl")
 
 # Pricing per 1M tokens (USD)
@@ -128,21 +127,9 @@ def log_token_usage(
         "latency_ms": latency_ms
     }
 
-    # Ensure logs directory exists
-    USAGE_LOG_FILE.parent.mkdir(exist_ok=True)
-
-    # Append to JSONL file
-    try:
-        with open(USAGE_LOG_FILE, "a", encoding="utf-8") as f:
-            f.write(json.dumps(usage_entry, ensure_ascii=False) + "\n")
-
-        logger.info(
-            f"💰 Query cost: ${cost:.6f} | "
-            f"Tokens: {input_tokens}in + {output_tokens}out = {input_tokens + output_tokens}total | "
-            f"Mode: {mode} | Model: {model}"
-        )
-    except Exception as e:
-        logger.error(f"Failed to log token usage: {e}")
+    # Log the structured data using loguru (this will go to stdout as JSON)
+    # Using logger.bind() to attach structured data that serialize=True will include
+    logger.bind(usage=usage_entry).info("Token usage logged")
 
 
 def analyze_usage_logs(days: int = 7) -> Dict:

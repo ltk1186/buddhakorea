@@ -11,17 +11,13 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional
-import logging
+from loguru import logger
 
 from privacy import mask_pii
 
-logger = logging.getLogger(__name__)
-
-# Q&A log file path
+# Q&A log file path (DEPRECATED: Cloud Logging을 통해 BigQuery로 분석 예정)
+# 로컬 개발/테스트용으로만 유지
 QA_LOG_FILE = Path("logs/qa_pairs.jsonl")
-
-# Maximum file size before rotation (50MB)
-MAX_LOG_SIZE = 50 * 1024 * 1024
 
 
 def log_qa_pair(
@@ -76,63 +72,9 @@ def log_qa_pair(
         "from_cache": from_cache
     }
 
-    # Ensure logs directory exists
-    QA_LOG_FILE.parent.mkdir(exist_ok=True)
-
-    # Check file size for rotation
-    _rotate_if_needed()
-
-    # Atomic write: write to temp file, then rename
-    temp_file = QA_LOG_FILE.with_suffix('.tmp')
-    try:
-        # Append to temp file
-        with open(temp_file, "a", encoding="utf-8") as f:
-            f.write(json.dumps(qa_entry, ensure_ascii=False) + "\n")
-
-        # Atomic append: read both, write combined
-        if QA_LOG_FILE.exists():
-            with open(QA_LOG_FILE, "r", encoding="utf-8") as f_old:
-                old_content = f_old.read()
-            with open(temp_file, "r", encoding="utf-8") as f_new:
-                new_line = f_new.read()
-            with open(QA_LOG_FILE, "w", encoding="utf-8") as f_out:
-                f_out.write(old_content + new_line)
-        else:
-            # First write
-            temp_file.rename(QA_LOG_FILE)
-
-        # Remove temp file if it still exists
-        if temp_file.exists():
-            temp_file.unlink()
-
-        logger.info(
-            f"📝 Q&A logged | "
-            f"Detailed: {detailed_mode} | "
-            f"Sutra: {sutra_filter or 'None'} | "
-            f"Query: {query[:50]}..."
-        )
-    except Exception as e:
-        logger.error(f"Failed to log Q&A pair: {e}")
-        if temp_file.exists():
-            temp_file.unlink()
-
-
-def _rotate_if_needed() -> None:
-    """Rotate log file if it exceeds MAX_LOG_SIZE."""
-    if not QA_LOG_FILE.exists():
-        return
-
-    file_size = QA_LOG_FILE.stat().st_size
-    if file_size > MAX_LOG_SIZE:
-        # Create archive file with timestamp
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        archive_path = QA_LOG_FILE.with_name(f"qa_pairs_{timestamp}.jsonl")
-
-        try:
-            QA_LOG_FILE.rename(archive_path)
-            logger.info(f"Rotated Q&A log to {archive_path}")
-        except Exception as e:
-            logger.error(f"Failed to rotate Q&A log: {e}")
+    # Log the structured data using loguru (this will go to stdout as JSON)
+    # Using logger.bind() to attach structured data that serialize=True will include
+    logger.bind(qa=qa_entry).info("Q&A pair logged")
 
 
 def get_qa_pairs(

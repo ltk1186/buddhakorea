@@ -45,7 +45,7 @@ services:
       redis:
         condition: service_healthy
     volumes:
-      - ./chroma_db:/app/chroma_db:ro  # Mount ChromaDB as read-only
+      - ./chroma_db:/app/chroma_db  # Mount ChromaDB (needs write for sqlite WAL)
       - ./logs:/app/logs
       - ./source_explorer:/app/source_explorer
     environment:

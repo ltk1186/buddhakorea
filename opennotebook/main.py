@@ -10,6 +10,7 @@ import json
 import time
 import uuid
 import asyncio
+import sys # ADDED
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
@@ -106,7 +107,7 @@ logger.remove()
 #     level=config.log_level.upper(),
 #     format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}"
 # )
-logger.add(lambda msg: print(msg, end=""), level=config.log_level.upper())
+logger.add(sys.stdout, level=config.log_level.upper(), serialize=True, enqueue=True)
 
 
 # ============================================================================

@@ -43,11 +43,17 @@ WORKDIR /app
 # Copy application code
 COPY --chown=buddha:buddha main.py .
 COPY --chown=buddha:buddha usage_tracker.py .
+COPY --chown=buddha:buddha qa_logger.py .
+COPY --chown=buddha:buddha privacy.py .
 COPY --chown=buddha:buddha gemini_query_embedder.py .
 COPY --chown=buddha:buddha hyde.py .
 COPY --chown=buddha:buddha reranker.py .
+COPY --chown=buddha:buddha cache_cosmology.py .
 COPY --chown=buddha:buddha test_frontend.html .
+COPY --chown=buddha:buddha password.html .
 COPY --chown=buddha:buddha source_explorer ./source_explorer/
+COPY --chown=buddha:buddha css ./css/
+COPY --chown=buddha:buddha js ./js/
 
 # Set environment variables
 ENV PATH="/opt/venv/bin:$PATH" \
@@ -65,11 +71,12 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8000/api/health || exit 1
 
 # Run with Gunicorn (production WSGI server)
+# Use stdout/stderr for logs (Docker will capture them)
 CMD ["gunicorn", "main:app", \
-     "--workers", "4", \
+     "--workers", "2", \
      "--worker-class", "uvicorn.workers.UvicornWorker", \
      "--bind", "0.0.0.0:8000", \
-     "--timeout", "120", \
-     "--access-logfile", "/app/logs/access.log", \
-     "--error-logfile", "/app/logs/error.log", \
+     "--timeout", "300", \
+     "--access-logfile", "-", \
+     "--error-logfile", "-", \
      "--log-level", "info"]

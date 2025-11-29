@@ -1,0 +1,61 @@
+# opennotebook/cloudbuild.yaml
+steps:
+  # Step 1: Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: Build
+    args:
+      - 'build'
+      - '-t'
+      - 'asia.gcr.io/${PROJECT_ID}/buddha-korea-chatbot:${_TAG}' # Use asia.gcr.io for multi-regional support
+      - '.' # Build context is the current directory (opennotebook)
+    dir: 'opennotebook'
+
+  # Step 2: Push the Docker image to Google Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: Push
+    args:
+      - 'push'
+      - 'asia.gcr.io/${PROJECT_ID}/buddha-korea-chatbot:${_TAG}'
+
+  # Step 3: Deploy to Google Cloud Run (assuming the project is configured for Cloud Run)
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: Deploy
+    args:
+      - 'run'
+      - 'deploy'
+      - 'buddha-korea-chatbot' # Cloud Run service name
+      - '--image'
+      - 'asia.gcr.io/${PROJECT_ID}/buddha-korea-chatbot:${_TAG}'
+      - '--region'
+      - '${_GCP_LOCATION}' # Using _GCP_LOCATION from substitutions
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated' # Adjust based on your authentication needs
+      - '--set-env-vars=GCP_PROJECT_ID=${PROJECT_ID},GCP_LOCATION=${_GCP_LOCATION}' # Inject other environment variables as needed
+      # Example of injecting secrets from Secret Manager (requires Cloud Run service account to have Secret Manager Secret Accessor role)
+      # - '--set-secrets=OPENAI_API_KEY=OPENAI_API_KEY:latest,ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest'
+      # This example above shows how to set secrets from Secret Manager. The actual values (OPENAI_API_KEY, ANTHROPIC_API_KEY)
+      # will need to be configured by the user in GCP Secret Manager and the Cloud Run service account needs permissions.
+      # For now, we'll just include the structure as a comment.
+    # The --set-secrets parameter is critical for secret management.
+    # User needs to ensure the service account used by Cloud Run has 'Secret Manager Secret Accessor' role.
+    # The secrets (e.g., OPENAI_API_KEY, ANTHROPIC_API_KEY) must exist in Secret Manager
+    # under the specified names (e.g., OPENAI_API_KEY, ANTHROPIC_API_KEY).
+    # Replace 'latest' with specific version if needed.
+
+images:
+  - 'asia.gcr.io/${PROJECT_ID}/buddha-korea-chatbot:${_TAG}'
+
+substitutions:
+  _TAG: 'latest' # Default tag, can be overridden by Cloud Build triggers
+  _GCP_LOCATION: 'us-central1' # Default GCP region, can be overridden
+
+# Example trigger setup:
+# In GCP Console -> Cloud Build -> Triggers:
+# - Create a new trigger
+# - Connect to your repository (e.g., GitHub)
+# - Set event to 'Push to a branch' (e.g., 'main' or 'master')
+# - Configuration: Cloud Build configuration file (cloudbuild.yaml)
+# - Substitutions:
+#   - _TAG: $COMMIT_SHA (to use commit SHA as image tag)
+#   - _GCP_LOCATION: us-central1 (or your desired region)
