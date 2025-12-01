@@ -1599,9 +1599,8 @@ async def chat_page():
 
 @app.get("/methodology", response_class=HTMLResponse)
 async def methodology_page():
-    """Methodology page."""
-    with open("methodology.html", encoding="utf-8") as f:
-        return HTMLResponse(content=f.read())
+    """Methodology page - shows same page with methodology section."""
+    return HTMLResponse(content=open("index.html", encoding="utf-8").read())
 
 
 @app.get("/api/sutras/meta")

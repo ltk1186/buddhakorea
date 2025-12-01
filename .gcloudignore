@@ -1,0 +1,62 @@
+# .gcloudignore - Files to exclude from Cloud Build uploads
+
+# Git
+.git/
+.gitignore
+
+# Python virtual environments
+venv/
+.venv/
+env/
+.env.local
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Data directories (large files)
+opennotebook/data/
+opennotebook/chroma_db/
+data/
+chroma_db/
+
+# Logs
+logs/
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Mac
+.DS_Store
+
+# Node modules (if any)
+node_modules/
+
+# Test files
+test_*.py
+*_test.py
+
+# Documentation
+*.md
+!README.md
+
+# Backup files
+*.bak
+*.backup
+backups/
+
+# Local configs
+.env.development
+.env.test
+
+# Other large files
+*.sqlite
+*.db
+*.zip
+*.tar.gz
