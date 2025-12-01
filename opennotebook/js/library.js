@@ -3,7 +3,7 @@
  * Buddha Korea - AI Chatbot
  *
  * Features:
- * - Hybrid filtering (server: search/tradition, client: theme)
+ * - Server-side filtering (search, tradition, theme)
  * - Infinite scroll with IntersectionObserver
  * - Focus trap and scroll lock
  * - Memory management (1000 card limit)
@@ -292,7 +292,8 @@ async function loadMoreCards() {
             limit: CARDS_PER_PAGE,
             offset: libraryState.currentOffset,
             ...(libraryState.filters.search && { search: libraryState.filters.search }),
-            ...(libraryState.filters.tradition && { tradition: libraryState.filters.tradition })
+            ...(libraryState.filters.tradition && { tradition: libraryState.filters.tradition }),
+            ...(libraryState.filters.theme && { theme: libraryState.filters.theme })
         });
 
         const response = await fetch(`/api/sources?${params}`);
@@ -366,9 +367,12 @@ function filterLibraryCards() {
     const themeSelect = document.getElementById('libraryThemeFilter');
     const traditionSelect = document.getElementById('libraryTraditionFilter');
 
+    // Store old values BEFORE updating
     const oldSearch = libraryState.filters.search;
     const oldTradition = libraryState.filters.tradition;
+    const oldTheme = libraryState.filters.theme;
 
+    // Update current filter values
     libraryState.filters.search = searchInput ? searchInput.value.trim() : '';
     libraryState.filters.theme = themeSelect ? themeSelect.value : '';
     libraryState.filters.tradition = traditionSelect ? traditionSelect.value : '';
@@ -381,11 +385,13 @@ function filterLibraryCards() {
         return;
     }
 
-    // If search or tradition changed → re-fetch from server
-    if (libraryState.filters.search !== oldSearch || libraryState.filters.tradition !== oldTradition) {
+    // If any filter changed → re-fetch from server
+    if (libraryState.filters.search !== oldSearch ||
+        libraryState.filters.tradition !== oldTradition ||
+        libraryState.filters.theme !== oldTheme) {
         refetchCards();
     } else {
-        // Theme changed → filter client-side
+        // No filter changed
         displayFilteredCards();
     }
 
@@ -402,7 +408,8 @@ async function refetchCards() {
             limit: CARDS_PER_PAGE,
             offset: 0,
             ...(libraryState.filters.search && { search: libraryState.filters.search }),
-            ...(libraryState.filters.tradition && { tradition: libraryState.filters.tradition })
+            ...(libraryState.filters.tradition && { tradition: libraryState.filters.tradition }),
+            ...(libraryState.filters.theme && { theme: libraryState.filters.theme })
         });
 
         const cacheKey = getCacheKey(params);
@@ -432,19 +439,9 @@ async function refetchCards() {
 }
 
 function displayFilteredCards() {
-    let filtered = [...libraryState.cards];
-
-    // Apply client-side theme filter
-    if (libraryState.filters.theme) {
-        filtered = filtered.filter(card => {
-            const themes = Array.isArray(card.key_themes)
-                ? card.key_themes
-                : (card.key_themes ? [card.key_themes] : []);
-            return themes.includes(libraryState.filters.theme);
-        });
-    }
-
-    libraryState.filteredCards = filtered;
+    // Server-side filtering is now applied for all filters (search, tradition, theme)
+    // Cards returned from API are already filtered
+    libraryState.filteredCards = [...libraryState.cards];
     renderCards();
     updateResultCount();
 }
@@ -480,14 +477,25 @@ function renderCards() {
         return `
         <div class="library-card"
              data-sutra-id="${escapeHtml(sutraId)}"
+             data-sutra-title="${escapeHtml(title)}"
              tabindex="0"
              role="button"
              aria-label="${escapeHtml(title)} 상세 보기">
             <h3 class="library-card-title">${escapeHtml(title)}</h3>
             <p class="library-card-summary">${escapeHtml(summary)}</p>
-            <div class="library-card-meta">
-                ${tradition ? `<span class="library-card-tag tradition">${escapeHtml(tradition)}</span>` : ''}
-                ${period ? `<span class="library-card-tag period">${escapeHtml(period)}</span>` : ''}
+            <div class="library-card-footer">
+                <div class="library-card-meta">
+                    ${tradition ? `<span class="library-card-tag tradition">${escapeHtml(tradition)}</span>` : ''}
+                    ${period ? `<span class="library-card-tag period">${escapeHtml(period)}</span>` : ''}
+                </div>
+                <button class="library-card-ask-btn"
+                        onclick="event.stopPropagation(); askAboutSutraFromCard('${escapeHtml(sutraId)}', '${escapeHtml(title.replace(/'/g, "\\'"))}')"
+                        aria-label="${escapeHtml(title)}에 대해 질문하기">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    질문
+                </button>
             </div>
         </div>
     `;
@@ -870,6 +878,12 @@ function createSourceModal() {
                     <button class="modal-close-btn" onclick="closeSourceModal()" aria-label="닫기">×</button>
                     <h3 id="modalTitle">경전 제목</h3>
                     <p id="modalMeta" class="modal-meta">저자 | 시대 | 전통</p>
+                    <button class="modal-ask-btn" id="modalAskBtn" onclick="askAboutCurrentSutra()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        이 경전에 대해 질문하기
+                    </button>
                 </div>
                 <div class="modal-body">
                     <div class="modal-section">
@@ -1084,3 +1098,40 @@ window.navigateModal = navigateModal;
 window.openMobileFilters = openMobileFilters;
 window.closeMobileFilters = closeMobileFilters;
 window.syncMobileFilter = syncMobileFilter;
+window.askAboutCurrentSutra = askAboutCurrentSutra;
+window.askAboutSutraFromCard = askAboutSutraFromCard;
+
+/**
+ * Ask about a sutra directly from the card
+ */
+function askAboutSutraFromCard(sutraId, title) {
+    if (typeof window.askAboutSutra === 'function') {
+        window.askAboutSutra(sutraId, title);
+    } else {
+        console.error('askAboutSutra function not found');
+    }
+}
+
+/**
+ * Ask about the currently displayed sutra in the modal
+ */
+function askAboutCurrentSutra() {
+    if (!modalState.currentSutraId) {
+        console.error('No sutra currently selected');
+        return;
+    }
+
+    // Get the title from the modal
+    const titleEl = document.getElementById('modalTitle');
+    const title = titleEl ? titleEl.textContent : modalState.currentSutraId;
+
+    // Close the modal
+    closeSourceModal();
+
+    // Call the global askAboutSutra function from index.html
+    if (typeof window.askAboutSutra === 'function') {
+        window.askAboutSutra(modalState.currentSutraId, title);
+    } else {
+        console.error('askAboutSutra function not found');
+    }
+}

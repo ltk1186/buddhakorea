@@ -18,7 +18,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request, status, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.responses import JSONResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
@@ -53,7 +53,8 @@ class AppConfig(BaseSettings):
     anthropic_api_key: Optional[str] = None
 
     # Model Configuration
-    llm_model: str = "claude-3-5-sonnet-20241022"
+    llm_model: str = "claude-3-5-sonnet-20241022"  # For detailed/academic modes
+    llm_model_fast: str = "gemini-2.5-flash"  # For normal mode (faster responses)
     embedding_model: str = "BAAI/bge-m3"  # Better for Classical Chinese (75-80% vs 60-70%)
 
     # Vector Database
@@ -83,6 +84,7 @@ class AppConfig(BaseSettings):
 
     # Retrieval Configuration
     top_k_retrieval: int = 10
+    top_k_retrieval_fast: int = 5  # For normal mode (faster responses)
     max_context_tokens: int = 8000
 
     # Chunking Configuration
@@ -293,7 +295,8 @@ class AppState:
     def __init__(self):
         self.chroma_client: Optional[chromadb.Client] = None
         self.vectorstore: Optional[Chroma] = None
-        self.llm: Optional[Any] = None
+        self.llm: Optional[Any] = None  # For detailed/academic modes
+        self.llm_fast: Optional[Any] = None  # For normal mode (faster)
         self.qa_chain: Optional[RetrievalQA] = None
         self.embeddings: Optional[Any] = None
         self.hyde_expander: Optional[Any] = None
@@ -733,6 +736,35 @@ async def lifespan(app: FastAPI):
         )
     logger.info("✓ LLM initialized")
 
+    # Initialize Fast LLM for normal mode (streaming + speed)
+    logger.info(f"Initializing Fast LLM: {config.llm_model_fast}")
+    if "gemini" in config.llm_model_fast:
+        app_state.llm_fast = ChatVertexAI(
+            model=config.llm_model_fast,
+            project=config.gcp_project_id,
+            location=config.gcp_location,
+            temperature=0.3,
+            max_tokens=8192,
+            streaming=True  # Enable streaming for fast responses
+        )
+    elif "claude" in config.llm_model_fast:
+        app_state.llm_fast = ChatAnthropic(
+            model=config.llm_model_fast,
+            anthropic_api_key=config.anthropic_api_key,
+            temperature=0.3,
+            max_tokens=8192,
+            streaming=True
+        )
+    else:
+        app_state.llm_fast = ChatOpenAI(
+            model=config.llm_model_fast,
+            openai_api_key=config.openai_api_key,
+            temperature=0.3,
+            max_tokens=8192,
+            streaming=True
+        )
+    logger.info("✓ Fast LLM initialized")
+
     # Initialize HyDE if enabled
     if config.use_hyde:
         logger.info(f"Initializing HyDE with {config.hyde_model}")
@@ -1124,13 +1156,32 @@ Answer:"""
         response_text = result["result"]
         source_docs = result.get("source_documents", [])
 
-        # Extract top sources
+        # Get title lookup from cache
+        try:
+            cache_data = await sutra_cache.get_data()
+            summaries = cache_data.get('summaries', {})
+        except:
+            summaries = {}
+
+        # Extract top sources with proper titles
         sources = []
+        seen_sutras = set()  # Deduplicate
         for doc in source_docs[:request.max_sources]:
             metadata = doc.metadata
+            sutra_id = metadata.get("sutra_id", "N/A")
+
+            # Skip duplicates
+            if sutra_id in seen_sutras:
+                continue
+            seen_sutras.add(sutra_id)
+
+            # Look up proper title from cache
+            cached_info = summaries.get(sutra_id, {})
+            title = cached_info.get("title_ko") or metadata.get("title_ko") or metadata.get("title", sutra_id)
+
             sources.append(SourceDocument(
-                title=metadata.get("title", "Unknown"),
-                text_id=metadata.get("sutra_id", "N/A"),
+                title=title,
+                text_id=sutra_id,
                 excerpt=doc.page_content[:300] + "..." if len(doc.page_content) > 300 else doc.page_content,
                 metadata=metadata
             ))
@@ -1214,6 +1265,192 @@ Answer:"""
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error generating response: {str(e)}"
         )
+
+
+# ============================================================================
+# Streaming Chat Endpoint
+# ============================================================================
+
+@app.post("/api/chat/stream")
+async def chat_stream(request: ChatRequest, http_request: Request):
+    """
+    Streaming chat endpoint - sends responses as Server-Sent Events (SSE).
+    Provides real-time progress updates and token-by-token response streaming.
+
+    SSE Event Types:
+    - stage: Progress updates (searching, analyzing, generating)
+    - content: Streaming response content
+    - sources: Source documents (sent at end)
+    - done: Stream completion signal
+    - error: Error message
+    """
+    start_time = time.time()
+
+    # Rate limiting
+    client_ip = http_request.client.host
+    if not check_rate_limit(client_ip):
+        async def rate_limit_error():
+            yield f"data: {json.dumps({'type': 'error', 'message': 'Rate limit exceeded'})}\n\n"
+        return StreamingResponse(rate_limit_error(), media_type="text/event-stream")
+
+    # Check if RAG system is ready
+    if not app_state.vectorstore:
+        async def system_error():
+            yield f"data: {json.dumps({'type': 'error', 'message': 'RAG system not initialized'})}\n\n"
+        return StreamingResponse(system_error(), media_type="text/event-stream")
+
+    logger.info(f"[Stream] Query from {client_ip}: {request.query[:100]}...")
+
+    async def generate():
+        try:
+            # Stage 1: Searching
+            yield f"data: {json.dumps({'type': 'stage', 'stage': 'searching', 'message': '경전 검색 중...'})}\n\n"
+            await asyncio.sleep(0.1)  # Small delay for UI update
+
+            # Determine retrieval k based on detailed mode
+            is_detailed = request.detailed_mode
+            retrieval_k = config.top_k_retrieval if is_detailed else config.top_k_retrieval_fast
+
+            # Select LLM based on mode
+            llm = app_state.llm if is_detailed else app_state.llm_fast
+            model_name = config.llm_model if is_detailed else config.llm_model_fast
+
+            logger.info(f"[Stream] Mode: {'detailed' if is_detailed else 'normal'}, k={retrieval_k}, model={model_name}")
+
+            # Apply HyDE if enabled
+            query = request.query
+            if app_state.hyde_expander and not is_detailed:
+                query = app_state.hyde_expander.expand_query(query, weight_original=config.hyde_weight)
+
+            # Vector search with optional sutra filter
+            search_kwargs = {"k": retrieval_k}
+            if request.sutra_filter:
+                search_kwargs["filter"] = {"sutra_id": request.sutra_filter}
+
+            docs = app_state.vectorstore.similarity_search(query, **search_kwargs)
+
+            # Stage 2: Analyzing
+            yield f"data: {json.dumps({'type': 'stage', 'stage': 'analyzing', 'message': '관련 구절 분석 중...'})}\n\n"
+            await asyncio.sleep(0.1)
+
+            # Prepare context from retrieved documents
+            context = "\n\n---\n\n".join([doc.page_content for doc in docs])
+
+            # Prepare sources with proper titles from cache
+            sources = []
+            seen_sutras = set()  # Deduplicate sources by sutra_id
+
+            # Get title lookup from cache
+            try:
+                cache_data = await sutra_cache.get_data()
+                summaries = cache_data.get('summaries', {})
+            except:
+                summaries = {}
+
+            for doc in docs:
+                meta = doc.metadata
+                sutra_id = meta.get("sutra_id", meta.get("text_id", "unknown"))
+
+                # Skip duplicates
+                if sutra_id in seen_sutras:
+                    continue
+                seen_sutras.add(sutra_id)
+
+                # Look up proper title from cache
+                cached_info = summaries.get(sutra_id, {})
+                title = cached_info.get("title_ko") or meta.get("title_ko") or meta.get("title", sutra_id)
+
+                sources.append({
+                    "text_id": sutra_id,
+                    "title": title,
+                    "chunk_index": meta.get("chunk_index", 0),
+                    "relevance_score": meta.get("relevance_score", 0.0)
+                })
+
+            # Stage 3: Generating
+            yield f"data: {json.dumps({'type': 'stage', 'stage': 'generating', 'message': '답변 작성 중...'})}\n\n"
+            await asyncio.sleep(0.1)
+
+            # Build prompt
+            if is_detailed:
+                prompt_template = """아래 경전 내용을 바탕으로 **가능한 한 상세하고 포괄적으로** 답변하세요.
+
+**답변 지침:**
+1. 경전에 제공된 모든 관련 내용을 최대한 활용하여 **깊이 있게** 설명하세요
+2. 여러 관점과 해석이 있다면 모두 소개하세요
+3. 경전 원문을 인용할 때는 인용 표시를 하고, 그 의미를 자세히 풀어 설명하세요
+4. **마크다운 헤더(#, ##, ###)를 절대 사용하지 마세요**
+5. **자기소개나 서두 없이 바로 본론으로 시작하세요**
+
+참고 경전:
+{context}
+
+Question: {question}
+
+Answer:"""
+            else:
+                prompt_template = """아래 제공된 불교 경전 내용을 참고하여 질문에 답변하세요.
+
+**답변 지침:**
+- 경전의 내용을 기반으로 정확하고 명확하게 설명하세요
+- 경전 내용을 인용할 때는 인용 표시를 하세요
+- 마크다운 헤더(#, ##, ###)를 사용하지 말고 일반 텍스트로 작성하세요
+- 자기소개나 서두 없이 바로 본론으로 시작하세요
+
+참고 경전:
+{context}
+
+Question: {question}
+
+Answer:"""
+
+            prompt = prompt_template.format(context=context, question=request.query)
+
+            # Stream response from LLM
+            full_response = ""
+            async for chunk in llm.astream(prompt):
+                if hasattr(chunk, 'content') and chunk.content:
+                    content = chunk.content
+                    full_response += content
+                    yield f"data: {json.dumps({'type': 'content', 'content': content})}\n\n"
+
+            # Send sources
+            yield f"data: {json.dumps({'type': 'sources', 'sources': sources})}\n\n"
+
+            # Calculate latency
+            latency_ms = int((time.time() - start_time) * 1000)
+
+            # Log usage (async, don't wait)
+            log_token_usage(
+                query=request.query,
+                response=full_response[:500],  # Truncate for logging
+                input_tokens=0,  # Streaming doesn't provide token counts easily
+                output_tokens=0,
+                model=model_name,
+                mode="stream_detailed" if is_detailed else "stream_normal",
+                session_id=None,
+                latency_ms=latency_ms,
+                from_cache=False
+            )
+
+            # Send completion signal
+            yield f"data: {json.dumps({'type': 'done', 'latency_ms': latency_ms, 'model': model_name})}\n\n"
+
+            logger.info(f"[Stream] Completed in {latency_ms}ms, model={model_name}")
+
+        except Exception as e:
+            logger.error(f"[Stream] Error: {e}")
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"  # Disable nginx buffering
+        }
+    )
 
 
 @app.get("/api/qa-pairs")
@@ -1358,6 +1595,13 @@ async def home_page():
 async def chat_page():
     """Chat interface (legacy) - redirects to home."""
     return HTMLResponse(content=open("index.html", encoding="utf-8").read())
+
+
+@app.get("/methodology", response_class=HTMLResponse)
+async def methodology_page():
+    """Methodology page."""
+    with open("methodology.html", encoding="utf-8") as f:
+        return HTMLResponse(content=f.read())
 
 
 @app.get("/api/sutras/meta")

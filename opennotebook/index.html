@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>불교 AI | CBETA 대장경 탐색기</title>
-    <meta name="description" content="99,723개 CBETA 대장경을 AI와 함께 탐험하세요. Gemini 2.5 Pro 기반 RAG 시스템.">
+    <meta name="description" content="2,459개 CBETA 대장경을 AI와 함께 탐험하세요. Gemini 2.5 Pro 기반 RAG 시스템.">
 
     <!-- Preload Fonts -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
@@ -584,6 +584,60 @@
             margin: 0 var(--space-sm);
         }
 
+        /* Selected sutra chip */
+        .sutra-select-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 100px;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition-fast);
+            max-width: 200px;
+        }
+
+        .sutra-select-chip:hover {
+            background: rgba(167, 148, 224, 0.1);
+            border-color: var(--primary);
+        }
+
+        .sutra-select-chip.has-selection {
+            background: rgba(218, 165, 32, 0.15);
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        .sutra-select-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+        }
+
+        .sutra-select-clear {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            line-height: 1;
+            padding: 0;
+        }
+
+        .sutra-select-clear:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
         /* ===== Chat Input ===== */
         .chat-input-container {
             position: fixed;
@@ -731,35 +785,120 @@
             color: var(--text-primary);
         }
 
-        /* ===== Typing Indicator ===== */
-        .typing-indicator {
+        /* ===== Progress Indicator (Apple Watch Style) ===== */
+        .progress-indicator {
             display: none;
-            gap: var(--space-xs);
-            padding: var(--space-md);
-            background: var(--bg-card);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            width: fit-content;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            padding: 24px 32px;
+            animation: fadeIn 0.3s ease;
         }
 
-        .typing-indicator.active {
+        .progress-indicator.active {
             display: flex;
         }
 
-        .typing-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--text-muted);
-            border-radius: 50%;
-            animation: typingBounce 1.4s ease-in-out infinite;
+        .progress-ring-container {
+            position: relative;
+            width: 56px;
+            height: 56px;
         }
 
-        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        .progress-ring {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--primary) calc(var(--progress, 0) * 1%),
+                rgba(255, 255, 255, 0.1) calc(var(--progress, 0) * 1%)
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: ringPulse 2s ease-in-out infinite;
+            transition: --progress 0.5s ease;
+        }
 
-        @keyframes typingBounce {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-6px); }
+        .progress-ring-inner {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .progress-dharma {
+            font-size: 28px;
+            animation: dharmaRotate 3s linear infinite;
+            opacity: 0.95;
+        }
+
+        @keyframes dharmaRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes ringPulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(167, 148, 224, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 8px rgba(167, 148, 224, 0);
+            }
+        }
+
+        .progress-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-align: center;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Register custom property for conic-gradient animation */
+        @property --progress {
+            syntax: '<number>';
+            initial-value: 0;
+            inherits: false;
+        }
+
+        /* ===== Streaming Message Styles ===== */
+        .message-text.streaming {
+            position: relative;
+        }
+
+        .message-text.streaming::after {
+            content: '▌';
+            animation: cursorBlink 0.8s infinite;
+            color: var(--primary);
+            margin-left: 2px;
+        }
+
+        @keyframes cursorBlink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Typing animation for each character */
+        .typed-char {
+            display: inline;
+            animation: typeIn 0.03s ease forwards;
+        }
+
+        @keyframes typeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* ===== Tab Bar (Mobile) ===== */
@@ -821,13 +960,15 @@
             display: flex;
         }
 
-        /* ===== Methodology Section ===== */
+        /* ===== Methodology Section (Apple Style) ===== */
         .methodology-section {
             display: none;
             flex-direction: column;
             min-height: 100vh;
-            padding: var(--space-lg);
-            padding-bottom: calc(var(--tab-bar-height) + var(--space-lg));
+            padding: var(--space-xl) var(--space-lg);
+            padding-bottom: calc(var(--tab-bar-height) + var(--space-xl));
+            align-items: center;
+            justify-content: center;
         }
 
         .methodology-section.active {
@@ -840,62 +981,135 @@
         }
 
         .methodology-title {
-            font-size: 1.75rem;
+            font-size: 2rem;
             font-weight: 700;
-            margin-bottom: var(--space-sm);
+            margin-bottom: var(--space-xs);
+            letter-spacing: -0.02em;
         }
 
         .methodology-subtitle {
             color: var(--text-secondary);
+            font-size: 1rem;
         }
 
-        .methodology-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        /* Pipeline Container */
+        .methodology-pipeline {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        /* Step Item */
+        .pipeline-step {
+            display: flex;
+            align-items: flex-start;
             gap: var(--space-lg);
-            max-width: 1000px;
-            margin: 0 auto;
+            position: relative;
         }
 
-        .method-card {
-            background: var(--bg-card);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: var(--space-lg);
-            transition: var(--transition-fast);
+        /* Step Number Column */
+        .step-number-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-shrink: 0;
         }
 
-        .method-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
+        .step-number {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--gradient-color-2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--bg-primary);
+            flex-shrink: 0;
         }
 
-        .method-card-icon {
-            font-size: 2rem;
-            margin-bottom: var(--space-md);
+        .step-line {
+            width: 2px;
+            height: 40px;
+            background: linear-gradient(to bottom, var(--primary), transparent);
+            opacity: 0.3;
         }
 
-        .method-card-title {
+        .pipeline-step:last-child .step-line {
+            display: none;
+        }
+
+        /* Step Content */
+        .step-content {
+            flex: 1;
+            padding-bottom: var(--space-lg);
+        }
+
+        .step-title {
             font-size: 1.125rem;
             font-weight: 600;
-            margin-bottom: var(--space-sm);
+            margin-bottom: 4px;
+            color: var(--text-primary);
         }
 
-        .method-card-desc {
-            color: var(--text-secondary);
-            line-height: 1.6;
+        .step-desc {
             font-size: 0.9375rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
         }
 
-        .method-badge {
-            display: inline-block;
-            margin-top: var(--space-md);
-            padding: var(--space-xs) var(--space-sm);
-            background: rgba(218, 165, 32, 0.1);
-            border: 1px solid rgba(218, 165, 32, 0.3);
+        .step-metric {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: var(--space-sm);
+            padding: 6px 12px;
+            background: rgba(167, 148, 224, 0.1);
             border-radius: 100px;
-            font-size: 0.75rem;
+            font-size: 0.8125rem;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .step-metric-value {
+            font-weight: 700;
             color: var(--gold);
+        }
+
+        /* Footer Note */
+        .methodology-footer {
+            margin-top: var(--space-2xl);
+            text-align: center;
+            color: var(--text-tertiary);
+            font-size: 0.875rem;
+            max-width: 500px;
+        }
+
+        .methodology-footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .methodology-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .methodology-title {
+                font-size: 1.5rem;
+            }
+            .step-number {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            .step-line {
+                height: 32px;
+            }
         }
 
         /* ===== Desktop Navigation ===== */
@@ -1073,7 +1287,7 @@
                 <div class="hero-icon">&#x2638;</div>
                 <h1 class="hero-title">불교 AI 대장경 탐색기</h1>
                 <p class="hero-subtitle">
-                    99,723개 CBETA 대장경을<br>
+                    2,459개 CBETA 대장경을<br>
                     AI와 함께 탐험하세요
                 </p>
 
@@ -1147,7 +1361,7 @@
                         <div class="chat-welcome-icon">&#x2638;</div>
                         <h2 class="chat-welcome-title">불교 AI에 오신 것을 환영합니다</h2>
                         <p class="chat-welcome-desc">
-                            99,723개의 CBETA 대장경을 기반으로<br>
+                            2,459개 CBETA 대장경을 기반으로<br>
                             불교에 대한 질문에 답변해 드립니다.
                         </p>
                         <div class="chat-welcome-suggestions">
@@ -1159,10 +1373,16 @@
                     </div>
                 </div>
 
-                <div class="typing-indicator" id="typingIndicator">
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
+                <!-- Progress Indicator (Apple Watch Style) -->
+                <div class="progress-indicator" id="progressIndicator">
+                    <div class="progress-ring-container">
+                        <div class="progress-ring" id="progressRing">
+                            <div class="progress-ring-inner">
+                                <span class="progress-dharma">☸</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress-text" id="progressText">경전 검색 중...</div>
                 </div>
             </div>
 
@@ -1178,11 +1398,18 @@
                         </div>
                         <div class="chat-option-divider"></div>
                         <div class="chat-option-group">
-                            <span class="chat-option-label">경전</span>
+                            <span class="chat-option-label">전통</span>
                             <button class="chat-chip active" data-tradition="all" onclick="setTraditionFilter('all')">전체</button>
                             <button class="chat-chip" data-tradition="초기불교" onclick="setTraditionFilter('초기불교')">초기불교</button>
                             <button class="chat-chip" data-tradition="대승불교" onclick="setTraditionFilter('대승불교')">대승불교</button>
                             <button class="chat-chip" data-tradition="선불교" onclick="setTraditionFilter('선불교')">선불교</button>
+                        </div>
+                        <div class="chat-option-divider"></div>
+                        <div class="chat-option-group">
+                            <span class="chat-option-label">경전</span>
+                            <div class="sutra-select-chip" id="sutraSelectChip" onclick="openSutraSelector()">
+                                <span class="sutra-select-name" id="sutraSelectName">전체 경전</span>
+                            </div>
                         </div>
                     </div>
                     <div class="chat-input-row">
@@ -1252,39 +1479,63 @@
         <!-- Methodology Section -->
         <section class="methodology-section" id="methodologySection">
             <div class="methodology-header">
-                <h2 class="methodology-title">우리의 방법론</h2>
-                <p class="methodology-subtitle">CBETA 대장경부터 AI 답변까지, 전체 프로세스</p>
+                <h2 class="methodology-title">작동 방식</h2>
+                <p class="methodology-subtitle">질문에서 답변까지</p>
             </div>
 
-            <div class="methodology-grid">
-                <div class="method-card">
-                    <div class="method-card-icon">&#128218;</div>
-                    <h3 class="method-card-title">CBETA 대정신수대장경</h3>
-                    <p class="method-card-desc">전자불전문화재단(CBETA)의 대정신수대장경(T) 컬렉션을 사용합니다.</p>
-                    <div class="method-badge">99,723개 청크</div>
+            <div class="methodology-pipeline">
+                <div class="pipeline-step">
+                    <div class="step-number-col">
+                        <div class="step-number">1</div>
+                        <div class="step-line"></div>
+                    </div>
+                    <div class="step-content">
+                        <h3 class="step-title">CBETA 대장경</h3>
+                        <p class="step-desc">대정신수대장경(T) 2,459개 경전을 1024 토큰 단위로 분할</p>
+                        <div class="step-metric"><span class="step-metric-value">99,723</span>개 청크</div>
+                    </div>
                 </div>
 
-                <div class="method-card">
-                    <div class="method-card-icon">&#128203;</div>
-                    <h3 class="method-card-title">Gemini 임베딩</h3>
-                    <p class="method-card-desc">Google Gemini embedding-001로 모든 경전을 3072차원 벡터로 변환했습니다.</p>
-                    <div class="method-badge">3072-dim</div>
+                <div class="pipeline-step">
+                    <div class="step-number-col">
+                        <div class="step-number">2</div>
+                        <div class="step-line"></div>
+                    </div>
+                    <div class="step-content">
+                        <h3 class="step-title">벡터 임베딩</h3>
+                        <p class="step-desc">Gemini embedding-001로 의미 벡터 변환</p>
+                        <div class="step-metric"><span class="step-metric-value">3,072</span>차원</div>
+                    </div>
                 </div>
 
-                <div class="method-card">
-                    <div class="method-card-icon">&#128269;</div>
-                    <h3 class="method-card-title">RAG 검색</h3>
-                    <p class="method-card-desc">질문과 의미가 유사한 경전 구절을 밀리초 단위로 검색합니다.</p>
-                    <div class="method-badge">Top 10-20 검색</div>
+                <div class="pipeline-step">
+                    <div class="step-number-col">
+                        <div class="step-number">3</div>
+                        <div class="step-line"></div>
+                    </div>
+                    <div class="step-content">
+                        <h3 class="step-title">의미 검색</h3>
+                        <p class="step-desc">질문과 가장 유사한 경전 구절을 코사인 유사도로 검색</p>
+                        <div class="step-metric">Top <span class="step-metric-value">10~20</span> 검색</div>
+                    </div>
                 </div>
 
-                <div class="method-card">
-                    <div class="method-card-icon">&#129302;</div>
-                    <h3 class="method-card-title">Gemini 2.5 Pro</h3>
-                    <p class="method-card-desc">2M 토큰 컨텍스트로 여러 경전을 종합 분석하여 답변합니다.</p>
-                    <div class="method-badge">2M 토큰</div>
+                <div class="pipeline-step">
+                    <div class="step-number-col">
+                        <div class="step-number">4</div>
+                        <div class="step-line"></div>
+                    </div>
+                    <div class="step-content">
+                        <h3 class="step-title">AI 답변 생성</h3>
+                        <p class="step-desc">Gemini 2.5 Pro가 검색된 경전을 기반으로 답변 작성</p>
+                        <div class="step-metric"><span class="step-metric-value">2M</span> 토큰 컨텍스트</div>
+                    </div>
                 </div>
             </div>
+
+            <p class="methodology-footer">
+                데이터 출처: <a href="https://cbeta.org" target="_blank" rel="noopener">CBETA 전자불전협회</a>
+            </p>
         </section>
     </div>
 
@@ -1355,7 +1606,8 @@
         // Chat options state
         let chatOptions = {
             responseMode: 'normal',  // normal, detailed, academic
-            traditionFilter: 'all'   // all, 초기불교, 대승불교, 선불교
+            traditionFilter: 'all',  // all, 초기불교, 대승불교, 선불교
+            selectedSutra: null      // { text_id, title } or null
         };
 
         // ===== Chat Options Functions =====
@@ -1373,6 +1625,47 @@
             document.querySelectorAll('.chat-chip[data-tradition]').forEach(chip => {
                 chip.classList.toggle('active', chip.dataset.tradition === tradition);
             });
+            // Clear specific sutra if tradition filter changes
+            if (tradition !== 'all' && chatOptions.selectedSutra) {
+                clearSelectedSutra();
+            }
+        }
+
+        function selectSutraForChat(textId, title) {
+            chatOptions.selectedSutra = { text_id: textId, title: title };
+            updateSutraSelectUI();
+            // Clear tradition filter when specific sutra selected
+            setTraditionFilter('all');
+        }
+
+        function clearSelectedSutra() {
+            chatOptions.selectedSutra = null;
+            updateSutraSelectUI();
+        }
+
+        function updateSutraSelectUI() {
+            const chip = document.getElementById('sutraSelectChip');
+            const nameEl = document.getElementById('sutraSelectName');
+
+            if (chatOptions.selectedSutra) {
+                chip.classList.add('has-selection');
+                nameEl.innerHTML = `${chatOptions.selectedSutra.title} <button class="sutra-select-clear" onclick="event.stopPropagation(); clearSelectedSutra();">×</button>`;
+            } else {
+                chip.classList.remove('has-selection');
+                nameEl.textContent = '전체 경전';
+            }
+        }
+
+        function openSutraSelector() {
+            // Navigate to library tab to select a sutra
+            switchTab('library');
+        }
+
+        // Function to be called from library detail page
+        function askAboutSutra(textId, title) {
+            selectSutraForChat(textId, title);
+            switchTab('chat');
+            document.getElementById('chatInput').focus();
         }
 
         // ===== Tab Navigation =====
@@ -1466,29 +1759,36 @@
             addMessage('user', message);
             input.value = '';
 
-            // Show typing indicator
-            document.getElementById('typingIndicator').classList.add('active');
+            // Show progress indicator
+            const progressIndicator = document.getElementById('progressIndicator');
+            progressIndicator.classList.add('active');
+            resetProgressStages();
+            scrollToBottom();
 
             try {
                 // Build request based on chat options
                 const requestBody = {
                     query: message,
-                    detailed: chatOptions.responseMode === 'detailed' || chatOptions.responseMode === 'academic'
+                    detailed_mode: chatOptions.responseMode === 'detailed' || chatOptions.responseMode === 'academic'
                 };
 
-                // Add tradition filter if not 'all'
-                if (chatOptions.traditionFilter !== 'all') {
+                // Add tradition filter if not 'all' and no specific sutra selected
+                if (chatOptions.traditionFilter !== 'all' && !chatOptions.selectedSutra) {
                     requestBody.tradition_filter = chatOptions.traditionFilter;
                 }
 
-                // Add academic mode hint to query if selected
-                let enhancedQuery = message;
-                if (chatOptions.responseMode === 'academic') {
-                    enhancedQuery = `[학술적 관점에서 상세히 설명해주세요] ${message}`;
-                    requestBody.query = enhancedQuery;
+                // Add specific sutra filter if selected
+                if (chatOptions.selectedSutra) {
+                    requestBody.sutra_filter = chatOptions.selectedSutra.text_id;
                 }
 
-                const response = await fetch('/api/chat', {
+                // Add academic mode hint to query if selected
+                if (chatOptions.responseMode === 'academic') {
+                    requestBody.query = `[학술적 관점에서 상세히 설명해주세요] ${message}`;
+                }
+
+                // Use streaming endpoint
+                const response = await fetch('/api/chat/stream', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(requestBody)
@@ -1496,19 +1796,173 @@
 
                 if (!response.ok) throw new Error('Chat request failed');
 
-                const data = await response.json();
+                // Create message container for streaming
+                const messageContainer = createStreamingMessage();
+                const messageText = messageContainer.querySelector('.message-text');
+                messageText.classList.add('streaming');
 
-                // Hide typing indicator
-                document.getElementById('typingIndicator').classList.remove('active');
+                // Process SSE stream
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let fullContent = '';
+                let sources = [];
 
-                // Add assistant message (API returns 'response' not 'answer')
-                addMessage('assistant', data.response, data.sources);
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+
+                                switch (data.type) {
+                                    case 'stage':
+                                        updateProgressStage(data.stage);
+                                        break;
+
+                                    case 'content':
+                                        // Hide progress indicator when content starts
+                                        progressIndicator.classList.remove('active');
+                                        // Append content with typing effect
+                                        fullContent += data.content;
+                                        appendStreamingContent(messageText, data.content);
+                                        scrollToBottom();
+                                        break;
+
+                                    case 'sources':
+                                        sources = data.sources || [];
+                                        break;
+
+                                    case 'done':
+                                        // Remove streaming cursor
+                                        messageText.classList.remove('streaming');
+                                        // Add sources
+                                        if (sources.length > 0) {
+                                            addSourcesToMessage(messageContainer, sources);
+                                        }
+                                        console.log(`Response completed in ${data.latency_ms}ms using ${data.model}`);
+                                        break;
+
+                                    case 'error':
+                                        progressIndicator.classList.remove('active');
+                                        messageText.classList.remove('streaming');
+                                        messageText.innerHTML = formatMessage('죄송합니다. 오류가 발생했습니다: ' + data.message);
+                                        break;
+                                }
+                            } catch (e) {
+                                console.warn('Failed to parse SSE data:', line);
+                            }
+                        }
+                    }
+                }
 
             } catch (error) {
                 console.error('Chat error:', error);
-                document.getElementById('typingIndicator').classList.remove('active');
+                progressIndicator.classList.remove('active');
                 addMessage('assistant', '죄송합니다. 오류가 발생했습니다. 다시 시도해주세요.');
             }
+        }
+
+        // Helper functions for streaming (Apple Watch Style)
+        const stageMessages = {
+            'searching': '경전 검색 중...',
+            'analyzing': '관련 구절 분석 중...',
+            'generating': '답변 작성 중...'
+        };
+
+        function resetProgressStages() {
+            const ring = document.getElementById('progressRing');
+            const text = document.getElementById('progressText');
+            if (ring) ring.style.setProperty('--progress', '0');
+            if (text) text.textContent = stageMessages['searching'];
+        }
+
+        function updateProgressStage(stageName) {
+            const stages = ['searching', 'analyzing', 'generating'];
+            const stageIndex = stages.indexOf(stageName);
+            const progress = ((stageIndex + 1) / stages.length) * 100;
+
+            const ring = document.getElementById('progressRing');
+            const text = document.getElementById('progressText');
+
+            if (ring) ring.style.setProperty('--progress', progress);
+            if (text) text.textContent = stageMessages[stageName] || stageName;
+
+            // Auto scroll to show progress
+            scrollToBottom();
+        }
+
+        function createStreamingMessage() {
+            const messages = document.getElementById('chatMessages');
+            const time = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+
+            // Hide welcome message
+            const welcome = document.getElementById('chatWelcome');
+            if (welcome) {
+                welcome.style.display = 'none';
+            }
+
+            const html = `
+                <div class="message assistant" id="streamingMessage">
+                    <div class="message-avatar">&#x2638;</div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-sender">불교 AI</span>
+                            <span class="message-time">${time}</span>
+                        </div>
+                        <div class="message-text"></div>
+                    </div>
+                </div>
+            `;
+
+            messages.insertAdjacentHTML('beforeend', html);
+            scrollToBottom();
+            return messages.lastElementChild;
+        }
+
+        function appendStreamingContent(messageText, content) {
+            // Simply append the text - the CSS cursor handles the typing feel
+            const currentHtml = messageText.innerHTML;
+            messageText.innerHTML = formatMessage(currentHtml.replace(/▌$/, '') + content);
+            // Auto scroll as content streams in
+            scrollToBottom();
+        }
+
+        function addSourcesToMessage(messageContainer, sources) {
+            const messageContent = messageContainer.querySelector('.message-content');
+            const sourceHtml = `
+                <div class="message-sources">
+                    <div class="message-sources-title">참고 경전</div>
+                    <div class="message-source-tags">
+                        ${sources.map(s => `<span class="source-tag" onclick="showSourceDetail('${s.text_id}')">${s.title || s.text_id}</span>`).join('')}
+                    </div>
+                </div>
+            `;
+            const messageText = messageContainer.querySelector('.message-text');
+            messageText.insertAdjacentHTML('afterend', sourceHtml);
+            scrollToBottom();
+        }
+
+        // Throttled scroll to prevent jitter during streaming
+        let scrollTimeout = null;
+        function scrollToBottom() {
+            if (scrollTimeout) return;
+            scrollTimeout = setTimeout(() => {
+                scrollTimeout = null;
+                const chatMessages = document.getElementById('chatMessages');
+                if (chatMessages) {
+                    requestAnimationFrame(() => {
+                        chatMessages.scrollTo({
+                            top: chatMessages.scrollHeight,
+                            behavior: 'smooth'
+                        });
+                    });
+                }
+            }, 50); // Throttle to max 20 scrolls per second
         }
 
         function addMessage(role, text, sources = []) {
@@ -1544,10 +1998,7 @@
             `;
 
             messages.insertAdjacentHTML('beforeend', html);
-
-            // Scroll to bottom
-            const container = document.getElementById('chatContainer');
-            container.scrollTop = container.scrollHeight;
+            scrollToBottom();
         }
 
         function formatMessage(text) {
@@ -1609,6 +2060,10 @@
                 console.error('Error loading metadata:', error);
             }
         }
+
+        // ===== Expose globals for library.js =====
+        window.askAboutSutra = askAboutSutra;
+        window.selectSutraForChat = selectSutraForChat;
 
         // ===== Initialize =====
         document.addEventListener('DOMContentLoaded', () => {
