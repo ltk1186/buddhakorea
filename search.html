@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>경전 검색 (Tripitaka Search) - Buddha Korea</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/search.css">
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+    <script src="js/main.js" defer></script>
+    <script src="js/search.js" defer></script>
+</head>
+<body>
+    <!-- Interactive Background -->
+    <div class="interactive-light"></div>
+
+    <!-- Header -->
+    <header class="site-header">
+        <div class="header-container">
+            <a href="index.html" class="header-logo">
+                <img src="assets/buddha-line.png" alt="Buddha Logo" class="logo-icon">
+                <span class="logo-text">Buddha Korea</span>
+            </a>
+            <nav class="header-nav">
+                <a href="index.html" class="nav-link">홈</a>
+                <a href="meditation.html" class="nav-link">명상</a>
+                <a href="sutra-writing.html" class="nav-link">사경</a>
+                <div class="nav-dropdown">
+                    <button class="nav-link dropdown-toggle" id="ai-nav-button">AI 도구</button>
+                    <div class="dropdown-menu">
+                        <a href="teaching.html" class="dropdown-item">맞춤형 법문</a>
+                        <a href="search.html" class="dropdown-item">경전 검색</a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+    <div class="header-spacer"></div>
+
+    <!-- Search Section -->
+    <section class="section search-section">
+        <div class="container">
+            <h1 class="section-title">신수대장경 검색</h1>
+            <p class="section-subtitle">방대한 불교 경전의 바다를 탐험하세요.</p>
+
+            <!-- Search Controls -->
+            <div class="search-controls">
+                <div class="search-bar-wrapper">
+                    <input type="text" id="search-input" placeholder="경전 제목, 내용 또는 키워드를 입력하세요..." autocomplete="off">
+                    <button id="search-btn" class="icon-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="filters-wrapper">
+                    <select id="tradition-filter" class="filter-select">
+                        <option value="">모든 전통</option>
+                        <!-- Options populated by JS -->
+                    </select>
+                    <select id="period-filter" class="filter-select">
+                        <option value="">모든 시기</option>
+                        <!-- Options populated by JS -->
+                    </select>
+                    <button id="fullscreen-btn" class="filter-btn" title="전체 화면">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                        </svg>
+                        <span>몰입 모드</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Info -->
+            <div class="results-info">
+                <span id="result-count">0개의 경전이 발견되었습니다.</span>
+                <div class="loader" id="search-loader" style="display: none;"></div>
+            </div>
+
+            <!-- Results Grid -->
+            <div id="results-grid" class="sutra-grid">
+                <!-- Cards populated by JS -->
+            </div>
+
+            <!-- Pagination -->
+            <div id="pagination" class="pagination">
+                <!-- Pagination buttons populated by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Detail Modal -->
+    <div id="sutra-modal" class="modal">
+        <button class="modal-close" id="modal-close-btn">&times;</button>
+        <div class="modal-content sutra-detail-content">
+            <div class="modal-header">
+                <div class="badges" id="modal-badges"></div>
+                <h2 id="modal-title-ko"></h2>
+                <h3 id="modal-title-orig"></h3>
+                <p id="modal-author"></p>
+            </div>
+            <div class="modal-body">
+                <div class="detail-section">
+                    <h4>개요</h4>
+                    <p id="modal-brief"></p>
+                </div>
+                <div class="detail-section">
+                    <h4>상세 내용</h4>
+                    <p id="modal-detailed"></p>
+                </div>
+                <div class="detail-section">
+                    <h4>핵심 주제</h4>
+                    <div class="tags" id="modal-themes"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="action-btn" id="modal-chat-btn">이 경전에 대해 AI에게 질문하기</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Buddha Korea. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

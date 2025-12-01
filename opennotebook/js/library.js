@@ -14,6 +14,8 @@
 
 const MAX_CACHED_CARDS = 1000;
 const CARDS_PER_PAGE = 100;
+const DEBOUNCE_DELAY = 300; // ms for search debouncing
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache TTL
 
 let libraryState = {
     cards: [],
@@ -28,6 +30,12 @@ let libraryState = {
         theme: ''
     }
 };
+
+// API response cache
+const apiCache = new Map();
+
+// Debounce timer
+let searchDebounceTimer = null;
 
 let focusTrap = {
     active: false,
@@ -331,6 +339,27 @@ function setupInfiniteScroll() {
 
 // ===== FILTERING =====
 
+/**
+ * Debounced search handler - waits for user to stop typing
+ */
+function handleSearchInput() {
+    // Clear existing timer
+    if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+    }
+
+    // Show skeleton immediately for feedback
+    const searchInput = document.getElementById('librarySearch');
+    if (searchInput && searchInput.value.trim() !== libraryState.filters.search) {
+        showSkeletonLoading();
+    }
+
+    // Debounce the actual search
+    searchDebounceTimer = setTimeout(() => {
+        filterLibraryCards();
+    }, DEBOUNCE_DELAY);
+}
+
 function filterLibraryCards() {
     // Update filter state from UI
     const searchInput = document.getElementById('librarySearch');
@@ -366,7 +395,7 @@ function filterLibraryCards() {
 async function refetchCards() {
     libraryState.isLoading = true;
     libraryState.currentOffset = 0;
-    showLoading();
+    showSkeletonLoading();
 
     try {
         const params = new URLSearchParams({
@@ -376,10 +405,16 @@ async function refetchCards() {
             ...(libraryState.filters.tradition && { tradition: libraryState.filters.tradition })
         });
 
-        const response = await fetch(`/api/sources?${params}`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const cacheKey = getCacheKey(params);
+        let data = getCachedResponse(cacheKey);
 
-        const data = await response.json();
+        if (!data) {
+            const response = await fetch(`/api/sources?${params}`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            data = await response.json();
+            setCachedResponse(cacheKey, data);
+        }
+
         libraryState.cards = data.sources || [];
         libraryState.totalCount = data.total || 0;
         libraryState.currentOffset = CARDS_PER_PAGE;
@@ -434,21 +469,36 @@ function renderCards() {
     empty.style.display = 'none';
     grid.style.display = 'grid';
 
-    grid.innerHTML = libraryState.filteredCards.map(card => `
+    grid.innerHTML = libraryState.filteredCards.map(card => {
+        const sutraId = card.sutra_id || '';
+        const title = card.title_ko || card.original_title || '제목 없음';
+        const summary = card.brief_summary || '요약 정보가 없습니다.';
+        const tradition = card.tradition_normalized || card.tradition || '';
+        const period = card.period || '';
+
+        // Use data attribute for cleaner event handling
+        return `
         <div class="library-card"
-             onclick="showSourceDetail('${escapeHtml(card.sutra_id)}')"
+             data-sutra-id="${escapeHtml(sutraId)}"
              tabindex="0"
              role="button"
-             aria-label="${escapeHtml(card.title_ko || card.original_title)} 상세 보기"
-             onkeypress="if(event.key==='Enter'||event.key===' '){event.preventDefault();showSourceDetail('${escapeHtml(card.sutra_id)}');}">
-            <h3 class="library-card-title">${escapeHtml(card.title_ko || card.original_title || '제목 없음')}</h3>
-            <p class="library-card-summary">${escapeHtml(card.brief_summary || '요약 정보가 없습니다.')}</p>
+             aria-label="${escapeHtml(title)} 상세 보기">
+            <h3 class="library-card-title">${escapeHtml(title)}</h3>
+            <p class="library-card-summary">${escapeHtml(summary)}</p>
             <div class="library-card-meta">
-                ${card.tradition ? `<span class="library-card-tag">${escapeHtml(card.tradition)}</span>` : ''}
-                ${card.period ? `<span class="library-card-tag">${escapeHtml(card.period)}</span>` : ''}
+                ${tradition ? `<span class="library-card-tag tradition">${escapeHtml(tradition)}</span>` : ''}
+                ${period ? `<span class="library-card-tag period">${escapeHtml(period)}</span>` : ''}
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
+
+    // Attach event listeners using event delegation (only once)
+    if (!grid.dataset.listenersAttached) {
+        grid.addEventListener('click', handleCardClick);
+        grid.addEventListener('keypress', handleCardKeypress);
+        grid.dataset.listenersAttached = 'true';
+    }
 
     // Add scroll sentinel for infinite scroll
     const sentinel = document.createElement('div');
@@ -520,6 +570,35 @@ function showLoading() {
     if (loading) loading.style.display = 'flex';
 }
 
+/**
+ * Show skeleton loading cards for better perceived performance
+ */
+function showSkeletonLoading() {
+    const grid = document.getElementById('libraryGrid');
+    const loading = document.getElementById('libraryLoading');
+    const empty = document.getElementById('libraryEmpty');
+
+    if (!grid) return;
+
+    if (loading) loading.style.display = 'none';
+    if (empty) empty.style.display = 'none';
+    grid.style.display = 'grid';
+
+    // Generate skeleton cards
+    const skeletonCount = 12;
+    grid.innerHTML = Array(skeletonCount).fill(0).map(() => `
+        <div class="library-card skeleton">
+            <div class="skeleton-title"></div>
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text short"></div>
+            <div class="skeleton-tags">
+                <div class="skeleton-tag"></div>
+                <div class="skeleton-tag"></div>
+            </div>
+        </div>
+    `).join('');
+}
+
 function showError(message) {
     const empty = document.getElementById('libraryEmpty');
     if (!empty) return;
@@ -581,12 +660,409 @@ function resetAllFilters() {
     filterLibraryCards();
 }
 
+// ===== CARD EVENT HANDLERS =====
+
+/**
+ * Handle click events on library cards using event delegation
+ */
+function handleCardClick(event) {
+    const card = event.target.closest('.library-card');
+    if (!card) return;
+
+    const sutraId = card.dataset.sutraId;
+    console.log('Card clicked, sutraId:', sutraId);
+
+    if (sutraId) {
+        showSourceDetail(sutraId);
+    }
+}
+
+/**
+ * Handle keypress events on library cards (Enter/Space)
+ */
+function handleCardKeypress(event) {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+
+    const card = event.target.closest('.library-card');
+    if (!card) return;
+
+    event.preventDefault();
+    const sutraId = card.dataset.sutraId;
+
+    if (sutraId) {
+        showSourceDetail(sutraId);
+    }
+}
+
 // ===== UTILITY FUNCTIONS =====
 
 function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
     const div = document.createElement('div');
-    div.textContent = text;
+    div.textContent = String(text);
     return div.innerHTML;
+}
+
+/**
+ * Debounce function - delays execution until after wait ms have elapsed
+ */
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// ===== API CACHING =====
+
+/**
+ * Generate cache key from URL params
+ */
+function getCacheKey(params) {
+    return Array.from(params.entries()).sort().map(([k, v]) => `${k}=${v}`).join('&');
+}
+
+/**
+ * Get cached response if valid
+ */
+function getCachedResponse(cacheKey) {
+    const cached = apiCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+        console.log('Cache hit:', cacheKey);
+        return cached.data;
+    }
+    if (cached) {
+        apiCache.delete(cacheKey); // Expired
+    }
+    return null;
+}
+
+/**
+ * Store response in cache
+ */
+function setCachedResponse(cacheKey, data) {
+    // Limit cache size to prevent memory issues
+    if (apiCache.size > 50) {
+        const oldestKey = apiCache.keys().next().value;
+        apiCache.delete(oldestKey);
+    }
+    apiCache.set(cacheKey, { data, timestamp: Date.now() });
+}
+
+/**
+ * Clear all cached responses
+ */
+function clearApiCache() {
+    apiCache.clear();
+    console.log('API cache cleared');
+}
+
+// ===== SOURCE DETAIL MODAL =====
+
+let modalState = {
+    isOpen: false,
+    currentIndex: -1,
+    currentSutraId: null
+};
+
+/**
+ * Show source detail in a modal
+ * @param {string} sutraId - The sutra ID (e.g., 'T01n0001')
+ */
+async function showSourceDetail(sutraId) {
+    console.log('showSourceDetail called with:', sutraId);
+
+    if (!sutraId) {
+        console.error('showSourceDetail: No sutraId provided');
+        return;
+    }
+
+    try {
+        // Find current index in filtered cards for navigation
+        modalState.currentIndex = libraryState.filteredCards.findIndex(s => s.sutra_id === sutraId);
+        modalState.currentSutraId = sutraId;
+        console.log('Current index:', modalState.currentIndex);
+
+        const response = await fetch(`/api/sources/${sutraId}`);
+        if (!response.ok) throw new Error('Failed to load source detail');
+
+        const source = await response.json();
+
+        // Ensure modal exists, create if not
+        let modal = document.getElementById('sourceModal');
+        if (!modal) {
+            createSourceModal();
+            modal = document.getElementById('sourceModal');
+        }
+
+        // Populate modal content
+        document.getElementById('modalTitle').textContent = source.title_ko || source.original_title || '제목 없음';
+        document.getElementById('modalMeta').textContent =
+            `${source.author || '작자 미상'} | ${source.period || '시대 미상'} | ${source.tradition || '전통 미상'}`;
+        document.getElementById('modalBriefSummary').textContent = source.brief_summary || '요약 정보 없음';
+        document.getElementById('modalDetailedSummary').textContent = source.detailed_summary || '상세 요약 정보 없음';
+
+        // Key themes
+        const themesContainer = document.getElementById('modalThemes');
+        if (source.key_themes && source.key_themes.length > 0) {
+            themesContainer.innerHTML = source.key_themes.map(theme =>
+                `<span class="modal-theme-tag">${escapeHtml(theme)}</span>`
+            ).join('');
+        } else {
+            themesContainer.innerHTML = '<span class="modal-no-themes">주제 정보 없음</span>';
+        }
+
+        // Original info
+        document.getElementById('modalOriginalInfo').innerHTML = `
+            <strong>원제목:</strong> ${escapeHtml(source.original_title || '미상')}<br>
+            <strong>저자:</strong> ${escapeHtml(source.author || '미상')}<br>
+            <strong>대장경 번호:</strong> ${sutraId}<br>
+            <strong>권수:</strong> 제${source.volume || '?'}권 ${source.juan || ''}
+        `;
+
+        // Show modal
+        console.log('Showing modal for:', sutraId);
+        modal.classList.add('active');
+        modalState.isOpen = true;
+
+        // Update navigation button states
+        updateModalNavButtons();
+        console.log('Modal displayed successfully');
+
+        // Add keyboard listener if not already added
+        if (!modal.dataset.keyboardListenerAdded) {
+            document.addEventListener('keydown', handleModalKeyboard);
+            modal.dataset.keyboardListenerAdded = 'true';
+        }
+
+    } catch (error) {
+        console.error('Error loading source detail:', error);
+        alert('경전 상세 정보를 불러올 수 없습니다.');
+    }
+}
+
+/**
+ * Create the source modal HTML structure
+ */
+function createSourceModal() {
+    const modalHtml = `
+    <div class="source-modal" id="sourceModal" onclick="if(event.target === this) closeSourceModal()">
+        <div class="source-modal-content" onclick="event.stopPropagation()">
+            <!-- Navigation Buttons -->
+            <button class="modal-nav-btn prev" id="modalPrevBtn" onclick="navigateModal(-1)" title="이전 경전 (←)" aria-label="이전 경전">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 18l-6-6 6-6"/>
+                </svg>
+            </button>
+            <button class="modal-nav-btn next" id="modalNextBtn" onclick="navigateModal(1)" title="다음 경전 (→)" aria-label="다음 경전">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 18l6-6-6-6"/>
+                </svg>
+            </button>
+
+            <div class="modal-scroll-wrapper">
+                <div class="modal-header">
+                    <button class="modal-close-btn" onclick="closeSourceModal()" aria-label="닫기">×</button>
+                    <h3 id="modalTitle">경전 제목</h3>
+                    <p id="modalMeta" class="modal-meta">저자 | 시대 | 전통</p>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-section">
+                        <h4>간략 요약</h4>
+                        <p id="modalBriefSummary"></p>
+                    </div>
+                    <div class="modal-section">
+                        <h4>상세 요약</h4>
+                        <p id="modalDetailedSummary"></p>
+                    </div>
+                    <div class="modal-section">
+                        <h4>핵심 주제</h4>
+                        <div class="modal-themes" id="modalThemes"></div>
+                    </div>
+                    <div class="modal-section">
+                        <h4>원문 정보</h4>
+                        <p id="modalOriginalInfo"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+
+    // Append to body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+/**
+ * Close the source detail modal
+ */
+function closeSourceModal() {
+    const modal = document.getElementById('sourceModal');
+    if (modal) {
+        modal.classList.remove('active');
+        modalState.isOpen = false;
+        modalState.currentIndex = -1;
+        modalState.currentSutraId = null;
+    }
+}
+
+/**
+ * Navigate to previous/next source in the modal
+ * @param {number} direction - -1 for previous, 1 for next
+ */
+function navigateModal(direction) {
+    const newIndex = modalState.currentIndex + direction;
+
+    // Boundary check
+    if (newIndex < 0 || newIndex >= libraryState.filteredCards.length) {
+        return;
+    }
+
+    // Navigate to new source
+    const newSource = libraryState.filteredCards[newIndex];
+    if (newSource) {
+        showSourceDetail(newSource.sutra_id);
+    }
+}
+
+/**
+ * Update navigation button states (disabled at boundaries)
+ */
+function updateModalNavButtons() {
+    const prevBtn = document.getElementById('modalPrevBtn');
+    const nextBtn = document.getElementById('modalNextBtn');
+
+    if (!prevBtn || !nextBtn) return;
+
+    // Disable prev if at start
+    prevBtn.disabled = modalState.currentIndex <= 0;
+
+    // Disable next if at end
+    nextBtn.disabled = modalState.currentIndex >= libraryState.filteredCards.length - 1;
+}
+
+/**
+ * Handle keyboard events for modal navigation
+ */
+function handleModalKeyboard(e) {
+    if (!modalState.isOpen) return;
+
+    switch (e.key) {
+        case 'Escape':
+            closeSourceModal();
+            e.preventDefault();
+            break;
+        case 'ArrowLeft':
+            navigateModal(-1);
+            e.preventDefault();
+            break;
+        case 'ArrowRight':
+            navigateModal(1);
+            e.preventDefault();
+            break;
+    }
+}
+
+// ===== MOBILE FILTER DRAWER =====
+
+let drawerState = {
+    isOpen: false,
+    startY: 0,
+    currentY: 0
+};
+
+/**
+ * Open mobile filter bottom drawer
+ */
+function openMobileFilters() {
+    const drawer = document.getElementById('mobileFilterDrawer');
+    if (!drawer) return;
+
+    // Sync select options with desktop filters
+    syncDrawerOptions();
+
+    drawer.classList.add('active');
+    drawerState.isOpen = true;
+
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Close mobile filter bottom drawer
+ */
+function closeMobileFilters() {
+    const drawer = document.getElementById('mobileFilterDrawer');
+    if (!drawer) return;
+
+    drawer.classList.remove('active');
+    drawerState.isOpen = false;
+
+    // Restore body scroll
+    document.body.style.overflow = '';
+}
+
+/**
+ * Sync drawer filter options with desktop filter dropdowns
+ */
+function syncDrawerOptions() {
+    const desktopTheme = document.getElementById('libraryThemeFilter');
+    const desktopTradition = document.getElementById('libraryTraditionFilter');
+    const mobileTheme = document.getElementById('mobileThemeFilter');
+    const mobileTradition = document.getElementById('mobileTraditionFilter');
+
+    if (desktopTheme && mobileTheme) {
+        mobileTheme.innerHTML = desktopTheme.innerHTML;
+        mobileTheme.value = desktopTheme.value;
+    }
+
+    if (desktopTradition && mobileTradition) {
+        mobileTradition.innerHTML = desktopTradition.innerHTML;
+        mobileTradition.value = desktopTradition.value;
+    }
+}
+
+/**
+ * Sync mobile filter selection to desktop and apply
+ */
+function syncMobileFilter(type) {
+    const mobileTheme = document.getElementById('mobileThemeFilter');
+    const mobileTradition = document.getElementById('mobileTraditionFilter');
+    const desktopTheme = document.getElementById('libraryThemeFilter');
+    const desktopTradition = document.getElementById('libraryTraditionFilter');
+
+    if (type === 'theme' && mobileTheme && desktopTheme) {
+        desktopTheme.value = mobileTheme.value;
+    }
+    if (type === 'tradition' && mobileTradition && desktopTradition) {
+        desktopTradition.value = mobileTradition.value;
+    }
+
+    filterLibraryCards();
+    updateMobileFilterCount();
+}
+
+/**
+ * Update the mobile filter button badge count
+ */
+function updateMobileFilterCount() {
+    const countBadge = document.getElementById('mobileFilterCount');
+    if (!countBadge) return;
+
+    let count = 0;
+    if (libraryState.filters.theme) count++;
+    if (libraryState.filters.tradition) count++;
+
+    if (count > 0) {
+        countBadge.textContent = count;
+        countBadge.style.display = 'inline-flex';
+    } else {
+        countBadge.style.display = 'none';
+    }
 }
 
 // ===== EXPOSE GLOBAL FUNCTIONS =====
@@ -594,8 +1070,17 @@ function escapeHtml(text) {
 window.openLibrary = openLibrary;
 window.closeLibrary = closeLibrary;
 window.filterLibraryCards = filterLibraryCards;
+window.handleSearchInput = handleSearchInput;
 window.clearSearch = clearSearch;
 window.clearTheme = clearTheme;
 window.clearTradition = clearTradition;
 window.resetAllFilters = resetAllFilters;
-window.libraryState = libraryState;  // Expose for modal navigation
+window.clearApiCache = clearApiCache;
+window.libraryState = libraryState;
+window.loadInitialCards = loadInitialCards;
+window.showSourceDetail = showSourceDetail;
+window.closeSourceModal = closeSourceModal;
+window.navigateModal = navigateModal;
+window.openMobileFilters = openMobileFilters;
+window.closeMobileFilters = closeMobileFilters;
+window.syncMobileFilter = syncMobileFilter;

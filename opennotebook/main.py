@@ -37,6 +37,9 @@ from langchain_core.prompts import PromptTemplate
 from usage_tracker import log_token_usage, analyze_usage_logs, get_recent_queries, export_usage_csv
 from qa_logger import log_qa_pair, get_qa_pairs, export_to_json, analyze_popular_queries
 
+# Tradition normalization
+from tradition_normalizer import normalize_tradition, get_normalized_traditions
+
 
 # ============================================================================
 # Configuration
@@ -1346,15 +1349,15 @@ async def get_qa_analytics(days: int = 7, top_n: int = 10):
 
 
 @app.get("/")
-async def root():
-    """Root endpoint - password page."""
-    return HTMLResponse(content=open("password.html", encoding="utf-8").read())
+async def home_page():
+    """Home page with new UI."""
+    return HTMLResponse(content=open("index.html", encoding="utf-8").read())
 
 
 @app.get("/chat")
 async def chat_page():
-    """Chat interface - requires password authentication."""
-    return HTMLResponse(content=open("test_frontend.html", encoding="utf-8").read())
+    """Chat interface (legacy) - redirects to home."""
+    return HTMLResponse(content=open("index.html", encoding="utf-8").read())
 
 
 @app.get("/api/sutras/meta")
@@ -1364,12 +1367,15 @@ async def get_sutra_metadata():
 
     Returns:
     - total: Total sutra count
-    - traditions: List of unique Buddhist traditions
+    - traditions: List of unique Buddhist traditions (raw)
+    - traditions_normalized: List of canonical tradition categories
     - themes: List of unique key themes
     - periods: List of unique historical periods
     """
     try:
         metadata = await sutra_cache.get_metadata()
+        # Add normalized traditions for cleaner filtering
+        metadata['traditions_normalized'] = get_normalized_traditions()
         return metadata
     except HTTPException:
         raise
@@ -1383,6 +1389,7 @@ async def list_sources(
     search: Optional[str] = None,
     tradition: Optional[str] = None,
     period: Optional[str] = None,
+    theme: Optional[str] = None,
     limit: int = 50,
     offset: int = 0
 ):
@@ -1393,6 +1400,7 @@ async def list_sources(
     - search: Search in titles and summaries (Korean or Chinese)
     - tradition: Filter by Buddhist tradition (초기불교, 대승불교, 선종, etc.)
     - period: Filter by historical period
+    - theme: Filter by key theme (열반, 무상, 인연, etc.)
     - limit: Number of results (default 50, max 3000)
     - offset: Pagination offset
     """
@@ -1414,24 +1422,39 @@ async def list_sources(
                 if not (search_lower in title_ko or search_lower in original_title or search_lower in brief):
                     continue
 
-            # Tradition filter
-            if tradition and source.get('tradition', '').lower() != tradition.lower():
-                continue
+            # Tradition filter - supports both raw and normalized values
+            if tradition:
+                raw_trad = source.get('tradition', '')
+                normalized_trad = normalize_tradition(raw_trad)
+                # Match if tradition equals raw value OR normalized value
+                if tradition.lower() != raw_trad.lower() and tradition != normalized_trad:
+                    continue
 
             # Period filter
             if period and source.get('period', '').lower() != period.lower():
                 continue
 
+            # Theme filter
+            if theme:
+                key_themes = source.get('key_themes', [])
+                if isinstance(key_themes, str):
+                    key_themes = [key_themes]
+                if theme not in key_themes:
+                    continue
+
+            raw_tradition = source.get('tradition', '')
             filtered.append({
                 'sutra_id': sutra_id,
                 'title_ko': source.get('title_ko', ''),
                 'original_title': source.get('original_title', ''),
                 'author': source.get('author', ''),
                 'brief_summary': source.get('brief_summary', ''),
-                'tradition': source.get('tradition', ''),
+                'tradition': raw_tradition,
+                'tradition_normalized': normalize_tradition(raw_tradition),
                 'period': source.get('period', ''),
                 'volume': source.get('volume', ''),
-                'juan': source.get('juan', '')
+                'juan': source.get('juan', ''),
+                'key_themes': source.get('key_themes', [])
             })
 
         # Sort by sutra_id
@@ -1491,6 +1514,7 @@ async def get_source_detail(sutra_id: str):
 
         source = summaries[sutra_id]
 
+        raw_tradition = source.get('tradition', '')
         return {
             'sutra_id': sutra_id,
             'title_ko': source.get('title_ko', ''),
@@ -1502,7 +1526,8 @@ async def get_source_detail(sutra_id: str):
             'detailed_summary': source.get('detailed_summary', ''),
             'key_themes': source.get('key_themes', []),
             'period': source.get('period', ''),
-            'tradition': source.get('tradition', '')
+            'tradition': raw_tradition,
+            'tradition_normalized': normalize_tradition(raw_tradition)
         }
 
     except HTTPException:

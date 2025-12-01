@@ -2468,6 +2468,46 @@
             if (methodologyOpen) {
                 document.getElementById('methodologyPanel').classList.add('open');
             }
+            
+            // Check for context from other pages (e.g. search page)
+            const contextData = sessionStorage.getItem('chat_context');
+            if (contextData) {
+                try {
+                    const context = JSON.parse(contextData);
+                    sessionStorage.removeItem('chat_context'); // Clear it
+                    
+                    if (context.type === 'sutra_question' && context.sutraId) {
+                        // Use selectSutra function if available
+                        // Need to verify if allSources is populated, if not, we might need to wait or handle manually
+                        // Since loadSources() is async, we might need to handle the UI update manually here
+                        
+                        currentSutraFilter = context.sutraId;
+                        const sutraTitle = context.sutraTitle || context.sutraId;
+                        
+                        // Update UI for filter
+                        const sutraBadge = document.getElementById('sutraFilterBadge');
+                        const filterBadgesContainer = document.getElementById('filterBadgesContainer');
+                        const sutraText = document.getElementById('sutraFilterText');
+                        
+                        if (sutraBadge && filterBadgesContainer && sutraText) {
+                            filterBadgesContainer.style.display = 'flex';
+                            sutraText.textContent = `필터: ${sutraTitle}`;
+                            sutraBadge.style.display = 'block';
+                            sutraBadge.style.background = 'linear-gradient(135deg, #667eea15 0%, #764ba215 100%)';
+                            sutraBadge.style.borderLeft = '3px solid #667eea';
+                            updateInputStyling();
+                        }
+                        
+                        // Set the query
+                        if (context.initialQuery) {
+                            queryInput.value = context.initialQuery;
+                            queryInput.focus();
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error parsing chat context', e);
+                }
+            }
         });
 
         // ===== Methodology Panel Toggle =====
@@ -2610,12 +2650,12 @@
                         id="librarySearch"
                         placeholder="경전 제목, 내용 검색..."
                         aria-label="경전 검색"
-                        oninput="filterLibraryCards()"
+                        oninput="handleSearchInput()"
                     />
                 </div>
 
-                <!-- Filters -->
-                <div class="library-filters">
+                <!-- Desktop Filters -->
+                <div class="library-filters library-filters-desktop">
                     <select id="libraryThemeFilter" onchange="filterLibraryCards()" aria-label="주제 필터">
                         <option value="">모든 주제</option>
                     </select>
@@ -2628,6 +2668,15 @@
                         초기화
                     </button>
                 </div>
+
+                <!-- Mobile Filter Button -->
+                <button class="mobile-filter-btn" onclick="openMobileFilters()" aria-label="필터 열기">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>
+                    </svg>
+                    필터
+                    <span class="filter-count" id="mobileFilterCount" style="display:none;">0</span>
+                </button>
 
                 <!-- Filter Badges -->
                 <div id="libraryFilterBadges" class="library-filter-badges"></div>
@@ -2654,6 +2703,40 @@
             <!-- Scripture Cards Grid -->
             <div class="library-grid" id="libraryGrid">
                 <!-- Cards rendered by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Filter Bottom Drawer -->
+    <div class="mobile-filter-drawer" id="mobileFilterDrawer">
+        <div class="drawer-backdrop" onclick="closeMobileFilters()"></div>
+        <div class="drawer-content">
+            <div class="drawer-handle"></div>
+            <div class="drawer-header">
+                <h3>필터</h3>
+                <button class="drawer-close" onclick="closeMobileFilters()" aria-label="닫기">✕</button>
+            </div>
+            <div class="drawer-body">
+                <div class="drawer-filter-group">
+                    <label for="mobileThemeFilter">주제</label>
+                    <select id="mobileThemeFilter" onchange="syncMobileFilter('theme')" aria-label="주제 필터">
+                        <option value="">모든 주제</option>
+                    </select>
+                </div>
+                <div class="drawer-filter-group">
+                    <label for="mobileTraditionFilter">전통</label>
+                    <select id="mobileTraditionFilter" onchange="syncMobileFilter('tradition')" aria-label="전통 필터">
+                        <option value="">모든 전통</option>
+                    </select>
+                </div>
+            </div>
+            <div class="drawer-footer">
+                <button class="drawer-reset-btn" onclick="resetAllFilters(); closeMobileFilters();">
+                    초기화
+                </button>
+                <button class="drawer-apply-btn" onclick="closeMobileFilters()">
+                    적용하기
+                </button>
             </div>
         </div>
     </div>
