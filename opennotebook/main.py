@@ -145,6 +145,7 @@ class ChatRequest(BaseModel):
     collection: Optional[str] = Field(default="all", description="Text collection to search (all/chinese/english/korean)")
     max_sources: int = Field(default=5, ge=1, le=20, description="Maximum number of source citations")
     sutra_filter: Optional[str] = Field(default=None, description="Filter by specific sutra ID (e.g., 'T01n0001' for 장아함경)")
+    tradition_filter: Optional[str] = Field(default=None, description="Filter by Buddhist tradition (초기불교, 대승불교, 선종, etc.)")
     detailed_mode: bool = Field(default=False, description="Enable detailed mode for comprehensive answers (activated by /자세히 prefix)")
     # Follow-up question support
     session_id: Optional[str] = Field(default=None, description="Session ID for follow-up questions (optional, created automatically if not provided)")
@@ -1033,6 +1034,28 @@ async def chat(request: ChatRequest, http_request: Request):
                     max_tokens=8000  # 4x normal
                 )
 
+        # Normalize tradition filter if provided (e.g., "선불교" -> "선종")
+        tradition_filter_normalized = None
+        tradition_sutra_ids = None
+        if request.tradition_filter:
+            tradition_filter_normalized = normalize_tradition(request.tradition_filter)
+            logger.info(f"Tradition filter: {request.tradition_filter} -> normalized to: {tradition_filter_normalized}")
+
+            # Get list of sutra_ids matching this tradition from cache
+            try:
+                cache_data = await sutra_cache.get_data()
+                summaries = cache_data.get('summaries', {})
+                tradition_sutra_ids = []
+                for sutra_id, source in summaries.items():
+                    raw_trad = source.get('tradition', '')
+                    normalized_trad = normalize_tradition(raw_trad)
+                    if normalized_trad == tradition_filter_normalized:
+                        tradition_sutra_ids.append(sutra_id)
+                logger.info(f"Found {len(tradition_sutra_ids)} sutras for tradition: {tradition_filter_normalized}")
+            except Exception as e:
+                logger.warning(f"Failed to get tradition sutra list: {e}")
+                tradition_sutra_ids = None
+
         # Run RAG query with optional sutra filtering and detailed mode
         if request.sutra_filter:
             # User specified a sutra filter (e.g., "/장아함경" -> "T01n0001")
@@ -1104,6 +1127,72 @@ Answer:"""
 
             result = filtered_qa_chain({"query": query})
             logger.info(f"Filtered query completed for sutra: {request.sutra_filter}")
+        elif tradition_sutra_ids and len(tradition_sutra_ids) > 0:
+            # Tradition filter active - search only within matching sutras
+            logger.info(f"Applying tradition filter: {tradition_filter_normalized} ({len(tradition_sutra_ids)} sutras)")
+
+            # Determine retrieval k based on detailed mode
+            retrieval_k = (detailed_k * 2) if request.detailed_mode else (config.top_k_retrieval * 2)
+
+            # Create filtered retriever using $in operator for multiple sutra_ids
+            filtered_retriever = app_state.vectorstore.as_retriever(
+                search_kwargs={
+                    "k": retrieval_k,
+                    "filter": {"sutra_id": {"$in": tradition_sutra_ids}}
+                }
+            )
+
+            # Select prompt template based on detailed mode
+            if request.detailed_mode:
+                prompt_template = """아래 {tradition} 경전 내용을 바탕으로 **가능한 한 상세하고 포괄적으로** 답변하세요.
+
+**답변 지침:**
+1. 경전에 제공된 모든 관련 내용을 최대한 활용하여 **깊이 있게** 설명하세요
+2. {tradition}의 관점과 해석을 중심으로 답변하세요
+3. 경전 원문을 인용할 때는 인용 표시를 하고, 그 의미를 자세히 풀어 설명하세요
+4. 역사적 배경, 맥락을 포함하여 종합적으로 설명하세요
+5. **마크다운 헤더(#, ##, ###)를 절대 사용하지 마세요**
+6. **자기소개나 서두 없이 바로 본론으로 시작하세요**
+
+참고 경전:
+{{context}}
+
+Question: {{question}}
+
+Answer:""".replace("{tradition}", tradition_filter_normalized)
+            else:
+                prompt_template = """아래 {tradition} 경전 내용을 바탕으로 답변하세요.
+
+**답변 지침:**
+1. 경전에 제공된 내용을 최대한 활용하여 답변하세요
+2. {tradition}의 관점에서 설명하세요
+3. 경전의 내용을 인용할 때는 인용 표시를 하세요
+4. 마크다운 헤더(#, ##, ###)를 사용하지 말고 일반 텍스트로 작성하세요
+5. 자기소개나 서두 없이 바로 본론으로 시작하세요
+
+참고 경전:
+{{context}}
+
+Question: {{question}}
+
+Answer:""".replace("{tradition}", tradition_filter_normalized)
+
+            PROMPT = PromptTemplate(
+                template=prompt_template,
+                input_variables=["context", "question"]
+            )
+
+            # Create QA chain with tradition filter
+            tradition_qa_chain = RetrievalQA.from_chain_type(
+                llm=detailed_llm if detailed_llm else app_state.llm,
+                chain_type="stuff",
+                retriever=filtered_retriever,
+                return_source_documents=True,
+                chain_type_kwargs={"prompt": PROMPT}
+            )
+
+            result = tradition_qa_chain({"query": query})
+            logger.info(f"Tradition-filtered query completed: {tradition_filter_normalized}")
         elif request.detailed_mode:
             # Detailed mode without sutra filter
             logger.info("Running detailed mode query without sutra filter")
@@ -1322,10 +1411,34 @@ async def chat_stream(request: ChatRequest, http_request: Request):
             if app_state.hyde_expander and not is_detailed:
                 query = app_state.hyde_expander.expand_query(query, weight_original=config.hyde_weight)
 
-            # Vector search with optional sutra filter
+            # Vector search with optional sutra/tradition filter
             search_kwargs = {"k": retrieval_k}
+
+            # Handle tradition filter - get matching sutra_ids
+            tradition_sutra_ids = None
+            tradition_filter_normalized = None
+            if request.tradition_filter:
+                tradition_filter_normalized = normalize_tradition(request.tradition_filter)
+                logger.info(f"[Stream] Tradition filter: {request.tradition_filter} -> {tradition_filter_normalized}")
+
+                try:
+                    cache_data = await sutra_cache.get_data()
+                    summaries = cache_data.get('summaries', {})
+                    tradition_sutra_ids = []
+                    for sutra_id, source in summaries.items():
+                        raw_trad = source.get('tradition', '')
+                        normalized_trad = normalize_tradition(raw_trad)
+                        if normalized_trad == tradition_filter_normalized:
+                            tradition_sutra_ids.append(sutra_id)
+                    logger.info(f"[Stream] Found {len(tradition_sutra_ids)} sutras for tradition: {tradition_filter_normalized}")
+                except Exception as e:
+                    logger.warning(f"[Stream] Failed to get tradition sutra list: {e}")
+
+            # Apply filter based on priority: sutra_filter > tradition_filter
             if request.sutra_filter:
                 search_kwargs["filter"] = {"sutra_id": request.sutra_filter}
+            elif tradition_sutra_ids and len(tradition_sutra_ids) > 0:
+                search_kwargs["filter"] = {"sutra_id": {"$in": tradition_sutra_ids}}
 
             docs = app_state.vectorstore.similarity_search(query, **search_kwargs)
 
