@@ -8,7 +8,7 @@ on:
       - 'opennotebook/**'
       - '!opennotebook/archive/**'
       - '!opennotebook/**/*.md'
-  workflow_dispatch:
+      - '.github/workflows/deploy-vm.yml'
 
 env:
   PROJECT_ID: gen-lang-client-0324154376
@@ -75,7 +75,7 @@ jobs:
             --tunnel-through-iap \
             --zone=${{ env.VM_ZONE }} \
             --project=${{ env.PROJECT_ID }} \
-            --ssh-flag="-o StrictHostKeyChecking=no"
+            --scp-flag="-o StrictHostKeyChecking=no"
 
           # Extract tarball on VM
           gcloud beta compute ssh ${{ env.VM_NAME }} \
@@ -119,8 +119,8 @@ jobs:
               sudo docker cp /opt/buddha-korea/cache_cosmology.py buddhakorea-fastapi:/app/
               sudo docker cp /opt/buddha-korea/cache_llm.py buddhakorea-fastapi:/app/
 
-              # Set container permissions
-              sudo docker exec -u root buddhakorea-fastapi chown buddha:buddha /app/*.html /app/*.py
+              # Set container permissions (use sh -c for wildcard expansion and ignore errors)
+              sudo docker exec -u root buddhakorea-fastapi sh -c 'chown buddha:buddha /app/*.html /app/*.py || true'
 
               # Cleanup
               rm -rf /tmp/deploy
