@@ -41,6 +41,13 @@ jobs:
           set -e
           echo "Starting deployment..."
 
+          # Create target directory on VM first
+          gcloud compute ssh ${{ env.VM_NAME }} \
+            --tunnel-through-iap \
+            --zone=${{ env.VM_ZONE }} \
+            --project=${{ env.PROJECT_ID }} \
+            --command="mkdir -p /tmp/deploy"
+
           # Copy files to VM
           gcloud compute scp \
             --tunnel-through-iap \
