@@ -70,13 +70,12 @@ jobs:
             cache_llm.py
 
           # Copy tarball to VM (beta required for WIF)
-          gcloud beta compute scp \
-            --ssh-flag="-o StrictHostKeyChecking=no" \
+          # Note: positional args (source, dest) must come before flags
+          gcloud beta compute scp /tmp/deploy.tar.gz ${{ env.VM_NAME }}:/tmp/deploy/ \
             --tunnel-through-iap \
             --zone=${{ env.VM_ZONE }} \
             --project=${{ env.PROJECT_ID }} \
-            /tmp/deploy.tar.gz \
-            ${{ env.VM_NAME }}:/tmp/deploy/
+            --ssh-flag="-o StrictHostKeyChecking=no"
 
           # Extract tarball on VM
           gcloud beta compute ssh ${{ env.VM_NAME }} \
