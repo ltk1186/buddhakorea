@@ -31,7 +31,7 @@ steps:
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated' # Adjust based on your authentication needs
-      - '--set-env-vars=GCP_PROJECT_ID=${PROJECT_ID},GCP_LOCATION=${_GCP_LOCATION}' # Inject other environment variables as needed
+      - '--set-env-vars=GCP_PROJECT_ID=${PROJECT_ID},GCP_LOCATION=${_GCP_LOCATION},USE_GEMINI_FOR_QUERIES=true,LLM_MODEL=gemini-2.0-flash' # Inject other environment variables as needed
       # Example of injecting secrets from Secret Manager (requires Cloud Run service account to have Secret Manager Secret Accessor role)
       # - '--set-secrets=OPENAI_API_KEY=OPENAI_API_KEY:latest,ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest'
       # This example above shows how to set secrets from Secret Manager. The actual values (OPENAI_API_KEY, ANTHROPIC_API_KEY)

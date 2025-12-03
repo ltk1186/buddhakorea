@@ -1,0 +1,140 @@
+# .github/workflows/deploy-vm.yml
+name: Deploy to VM
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'opennotebook/**'
+      - '!opennotebook/archive/**'
+      - '!opennotebook/**/*.md'
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: gen-lang-client-0324154376
+  VM_NAME: buddhakorea-rag-server
+  VM_ZONE: us-central1-a
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: 'projects/5222548937/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
+          service_account: 'deploy-sa@gen-lang-client-0324154376.iam.gserviceaccount.com'
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy to VM via IAP tunnel
+        run: |
+          set -e
+          echo "Starting deployment..."
+
+          # Copy files to VM
+          gcloud compute scp \
+            --tunnel-through-iap \
+            --zone=${{ env.VM_ZONE }} \
+            --project=${{ env.PROJECT_ID }} \
+            opennotebook/index.html \
+            opennotebook/main.py \
+            opennotebook/tradition_normalizer.py \
+            opennotebook/privacy.py \
+            opennotebook/usage_tracker.py \
+            opennotebook/qa_logger.py \
+            opennotebook/gemini_query_embedder.py \
+            opennotebook/hyde.py \
+            opennotebook/reranker.py \
+            opennotebook/cache_cosmology.py \
+            opennotebook/cache_llm.py \
+            ${{ env.VM_NAME }}:/tmp/deploy/
+
+          # Execute deployment on VM
+          gcloud compute ssh ${{ env.VM_NAME }} \
+            --tunnel-through-iap \
+            --zone=${{ env.VM_ZONE }} \
+            --project=${{ env.PROJECT_ID }} \
+            --command="
+              set -e
+
+              # Create backup
+              echo 'Creating backup...'
+              sudo cp /opt/buddha-korea/index.html /opt/buddha-korea/index.html.bak 2>/dev/null || true
+
+              # Copy files to app directory
+              echo 'Copying files...'
+              sudo cp /tmp/deploy/* /opt/buddha-korea/
+
+              # Set permissions
+              echo 'Setting permissions...'
+              sudo chown appuser:appuser /opt/buddha-korea/*.html /opt/buddha-korea/*.py 2>/dev/null || true
+
+              # Copy to Docker container
+              echo 'Updating container...'
+              sudo docker cp /opt/buddha-korea/index.html buddhakorea-fastapi:/app/
+              sudo docker cp /opt/buddha-korea/main.py buddhakorea-fastapi:/app/
+              sudo docker cp /opt/buddha-korea/tradition_normalizer.py buddhakorea-fastapi:/app/
+              sudo docker cp /opt/buddha-korea/privacy.py buddhakorea-fastapi:/app/
+              sudo docker cp /opt/buddha-korea/usage_tracker.py buddhakorea-fastapi:/app/
+              sudo docker cp /opt/buddha-korea/qa_logger.py buddhakorea-fastapi:/app/
+              sudo docker cp /opt/buddha-korea/gemini_query_embedder.py buddhakorea-fastapi:/app/
+              sudo docker cp /opt/buddha-korea/hyde.py buddhakorea-fastapi:/app/
+              sudo docker cp /opt/buddha-korea/reranker.py buddhakorea-fastapi:/app/
+              sudo docker cp /opt/buddha-korea/cache_cosmology.py buddhakorea-fastapi:/app/
+              sudo docker cp /opt/buddha-korea/cache_llm.py buddhakorea-fastapi:/app/
+
+              # Set container permissions
+              sudo docker exec -u root buddhakorea-fastapi chown buddha:buddha /app/*.html /app/*.py
+
+              # Cleanup
+              rm -rf /tmp/deploy
+
+              echo 'Deployment completed!'
+            "
+
+      - name: Health Check
+        run: |
+          echo "Waiting for service to be ready..."
+          sleep 15
+
+          for i in {1..5}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://ai.buddhakorea.com/api/health)
+            if [ "$STATUS" = "200" ]; then
+              echo "Health check passed! (attempt $i)"
+              exit 0
+            fi
+            echo "Attempt $i: Status $STATUS, retrying in 5s..."
+            sleep 5
+          done
+
+          echo "Health check failed after 5 attempts"
+          exit 1
+
+      - name: Rollback on Failure
+        if: failure()
+        run: |
+          echo "Deployment failed, attempting rollback..."
+          gcloud compute ssh ${{ env.VM_NAME }} \
+            --tunnel-through-iap \
+            --zone=${{ env.VM_ZONE }} \
+            --project=${{ env.PROJECT_ID }} \
+            --command="
+              if [ -f /opt/buddha-korea/index.html.bak ]; then
+                sudo mv /opt/buddha-korea/index.html.bak /opt/buddha-korea/index.html
+                sudo docker cp /opt/buddha-korea/index.html buddhakorea-fastapi:/app/
+                sudo docker exec -u root buddhakorea-fastapi chown buddha:buddha /app/index.html
+                echo 'Rollback completed!'
+              else
+                echo 'No backup found, rollback skipped'
+              fi
+            "
