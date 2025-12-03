@@ -47,16 +47,16 @@ jobs:
           # Generate SSH key for gcloud compute ssh
           ssh-keygen -t rsa -f ~/.ssh/google_compute_engine -N "" -q || true
 
-          # Create target directory on VM first
-          gcloud compute ssh ${{ env.VM_NAME }} \
+          # Create target directory on VM first (beta required for WIF)
+          gcloud beta compute ssh ${{ env.VM_NAME }} \
             --tunnel-through-iap \
             --zone=${{ env.VM_ZONE }} \
             --project=${{ env.PROJECT_ID }} \
             --ssh-flag="-o StrictHostKeyChecking=no" \
             --command="mkdir -p /tmp/deploy"
 
-          # Copy files to VM
-          gcloud compute scp \
+          # Copy files to VM (beta required for WIF)
+          gcloud beta compute scp \
             --ssh-flag="-o StrictHostKeyChecking=no" \
             --tunnel-through-iap \
             --zone=${{ env.VM_ZONE }} \
@@ -74,8 +74,8 @@ jobs:
             opennotebook/cache_llm.py \
             ${{ env.VM_NAME }}:/tmp/deploy/
 
-          # Execute deployment on VM
-          gcloud compute ssh ${{ env.VM_NAME }} \
+          # Execute deployment on VM (beta required for WIF)
+          gcloud beta compute ssh ${{ env.VM_NAME }} \
             --tunnel-through-iap \
             --zone=${{ env.VM_ZONE }} \
             --project=${{ env.PROJECT_ID }} \
@@ -139,7 +139,7 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed, attempting rollback..."
-          gcloud compute ssh ${{ env.VM_NAME }} \
+          gcloud beta compute ssh ${{ env.VM_NAME }} \
             --tunnel-through-iap \
             --zone=${{ env.VM_ZONE }} \
             --project=${{ env.PROJECT_ID }} \
