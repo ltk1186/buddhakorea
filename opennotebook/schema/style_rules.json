@@ -1,0 +1,75 @@
+{
+  "version": "1.0",
+  "description": "Writing style normalization rules - convert to 한다/이다 declarative form",
+  "target_style": "한다/이다체 (평서형 종결어미)",
+  "forbidden_endings": {
+    "patterns": [
+      "습니다",
+      "옵니다",
+      "합니다",
+      "됩니다",
+      "입니다",
+      "있습니다",
+      "없습니다",
+      "였습니다",
+      "했습니다",
+      "해요",
+      "에요",
+      "이에요",
+      "세요",
+      "시요",
+      "이옵나이다"
+    ],
+    "regex": "(습니다|옵니다|합니다|됩니다|입니다|있습니다|없습니다|였습니다|했습니다|해요|에요|이에요|세요|시요|이옵나이다)(?=[.!?,\\s]|$)"
+  },
+  "allowed_endings": {
+    "patterns": [
+      "한다",
+      "이다",
+      "였다",
+      "된다",
+      "있다",
+      "없다",
+      "했다",
+      "는다",
+      "ㄴ다",
+      "다"
+    ],
+    "description": "평서형 종결어미 (한다체)"
+  },
+  "conversion_examples": [
+    {"from": "설명합니다", "to": "설명한다"},
+    {"from": "강조합니다", "to": "강조한다"},
+    {"from": "다루고 있습니다", "to": "다루고 있다"},
+    {"from": "담고 있습니다", "to": "담고 있다"},
+    {"from": "경전입니다", "to": "경전이다"},
+    {"from": "제시합니다", "to": "제시한다"},
+    {"from": "설하고 있습니다", "to": "설하고 있다"}
+  ],
+  "preservation_rules": [
+    {
+      "type": "quoted_text",
+      "description": "따옴표 안의 텍스트는 원문 그대로 유지",
+      "regex": "[\"'].*?[\"']"
+    },
+    {
+      "type": "parenthetical",
+      "description": "괄호 안의 보조 설명은 원문 유지",
+      "regex": "\\(.*?\\)"
+    },
+    {
+      "type": "proper_nouns",
+      "description": "경전명, 인명, 지명 등 고유명사는 원문 유지",
+      "examples": ["아미타경", "법화경", "비파시불"]
+    },
+    {
+      "type": "html_tags",
+      "description": "HTML 태그가 있는 경우 태그 구조 보존",
+      "regex": "<[^>]+>"
+    }
+  ],
+  "api_config": {
+    "model": "gemini-2.0-flash-exp",
+    "prompt_template": "다음 불교 경전 요약문을 한다/이다체(평서형)로 문체만 변환해주세요. 의미와 내용은 절대 변경하지 마세요. 따옴표나 괄호 안의 내용은 그대로 유지하세요.\n\n원문: {text}\n\n변환된 문장:"
+  }
+}

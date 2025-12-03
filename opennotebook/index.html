@@ -977,6 +977,7 @@
 
         .methodology-header {
             text-align: center;
+            margin-top: var(--space-xl);
             margin-bottom: var(--space-2xl);
         }
 
@@ -1079,9 +1080,19 @@
             color: var(--gold);
         }
 
+        /* AI Disclaimer */
+        .methodology-disclaimer {
+            margin-top: var(--space-2xl);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8125rem;
+            max-width: 500px;
+            line-height: 1.5;
+        }
+
         /* Footer Note */
         .methodology-footer {
-            margin-top: var(--space-2xl);
+            margin-top: var(--space-md);
             text-align: center;
             color: var(--text-tertiary);
             font-size: 0.875rem;
@@ -1094,6 +1105,74 @@
         }
 
         .methodology-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* License Notice */
+        .license-notice {
+            margin-top: var(--space-2xl);
+            padding: var(--space-lg);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(167, 148, 224, 0.1);
+            border-radius: 12px;
+            max-width: 700px;
+        }
+
+        .license-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-md);
+            text-align: center;
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid rgba(167, 148, 224, 0.1);
+        }
+
+        .license-content {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        .license-section {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+
+        .license-text {
+            font-size: 0.75rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+            text-align: justify;
+        }
+
+        .license-text a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .license-text a:hover {
+            text-decoration: underline;
+        }
+
+        .contact-notice {
+            color: var(--text-tertiary);
+        }
+
+        .license-contact {
+            text-align: center;
+            margin-top: var(--space-sm);
+        }
+
+        .license-contact a {
+            color: var(--gold);
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .license-contact a:hover {
             text-decoration: underline;
         }
 
@@ -1533,9 +1612,50 @@
                 </div>
             </div>
 
+            <p class="methodology-disclaimer">
+                본 서비스는 인공지능 기반으로 생성된 답변을 제공하며, 부정확하거나 오류가 포함될 수 있습니다.
+            </p>
+
             <p class="methodology-footer">
                 데이터 출처: <a href="https://cbeta.org" target="_blank" rel="noopener">CBETA 전자불전협회</a>
             </p>
+
+            <!-- License & Legal Notice -->
+            <div class="license-notice">
+                <h4 class="license-title">라이선스 및 법적 고지 / License & Legal Notice</h4>
+
+                <div class="license-content">
+                    <div class="license-section">
+                        <p class="license-text">
+                            본 서비스에서 사용된 모든 경전 데이터는 <a href="https://cbeta.org" target="_blank" rel="noopener">CBETA(中華電子佛典協會)</a>의
+                            <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> 라이선스에 따라
+                            비영리 교육 및 연구 목적으로만 제공됩니다. 본 프로젝트는 어떠한 상업적 이익도 추구하지 않으며,
+                            CBETA의 라이선스 조건을 엄격히 준수하고 있습니다.
+                        </p>
+                        <p class="license-text">
+                            All sutra data used in this service is provided under the
+                            <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> license from
+                            <a href="https://cbeta.org" target="_blank" rel="noopener">CBETA (Chinese Buddhist Electronic Text Association)</a>,
+                            strictly for non-commercial educational and research purposes. This project does not seek any commercial gain
+                            and fully complies with CBETA's licensing terms and all applicable legal requirements.
+                        </p>
+                    </div>
+
+                    <div class="license-section">
+                        <p class="license-text contact-notice">
+                            저작권 또는 라이선스 관련 문의사항이 있으시면 아래 이메일로 연락해 주시기 바랍니다.
+                            문제가 확인될 경우 즉시 해당 콘텐츠를 수정하거나 삭제하겠습니다.
+                        </p>
+                        <p class="license-text contact-notice">
+                            For any copyright or licensing concerns, please contact us at the email below.
+                            We will promptly modify or remove any content upon verification of any issues.
+                        </p>
+                        <p class="license-contact">
+                            <a href="mailto:ltk118698@gmail.com">ltk118698@gmail.com</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
         </section>
     </div>
 
