@@ -450,10 +450,627 @@
     }
 }
 
+/* ========================================
+   37보리분법 (37 Bodhi Factors)
+   ======================================== */
+
+.section-description {
+    text-align: center;
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--color-text-secondary);
+    max-width: 800px;
+    margin: 20px auto 40px;
+}
+
+.bpf-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.bpf-category-card {
+    background: rgba(255, 255, 255, 0.7);
+    border: 2px solid rgba(167, 148, 224, 0.2);
+    border-radius: 20px;
+    padding: 32px 24px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.bpf-category-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, var(--teaching-primary), var(--teaching-gold));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 0;
+}
+
+.bpf-category-card:hover::before {
+    opacity: 0.05;
+}
+
+.bpf-category-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--teaching-primary);
+    box-shadow: 0 12px 40px rgba(167, 148, 224, 0.2);
+}
+
+.bpf-category-card:active {
+    transform: translateY(-2px);
+}
+
+.bpf-category-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.bpf-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.bpf-number {
+    font-size: 2rem;
+    font-weight: 200;
+    color: var(--teaching-primary);
+    opacity: 0.6;
+}
+
+.bpf-count {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    background: rgba(167, 148, 224, 0.1);
+    padding: 4px 12px;
+    border-radius: 12px;
+}
+
+.bpf-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0 0 8px;
+}
+
+.bpf-subtitle {
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+    margin: 0 0 12px;
+}
+
+.bpf-pali {
+    font-size: 0.9rem;
+    font-style: italic;
+    color: var(--color-text-secondary);
+    opacity: 0.7;
+    margin-bottom: 16px;
+}
+
+.bpf-category-badge {
+    display: inline-block;
+    font-size: 0.85rem;
+    padding: 6px 14px;
+    border-radius: 16px;
+    background: rgba(137, 184, 255, 0.15);
+    color: var(--teaching-secondary);
+    font-weight: 500;
+    margin-top: 8px;
+}
+
+.bpf-category-badge.balance {
+    background: rgba(167, 148, 224, 0.15);
+    color: var(--teaching-primary);
+}
+
+.bpf-category-badge.harmony {
+    background: rgba(155, 235, 180, 0.15);
+    color: var(--teaching-accent);
+}
+
+.bpf-category-badge.complete {
+    background: rgba(218, 165, 32, 0.15);
+    color: var(--teaching-gold);
+}
+
+/* 37BPF 상세 패널 */
+.exp-teaching {
+    background: rgba(167, 148, 224, 0.1);
+    border-left: 3px solid var(--teaching-primary);
+    padding: 16px 20px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: var(--color-text-primary);
+    line-height: 1.8;
+    margin-bottom: 24px;
+}
+
+.elements-list {
+    margin-top: 32px;
+}
+
+.elements-list h4 {
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--teaching-primary);
+    margin: 0 0 24px;
+    text-align: center;
+}
+
+.elements-grid {
+    display: grid;
+    gap: 20px;
+}
+
+.element-item {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(167, 148, 224, 0.15);
+    border-radius: 16px;
+    padding: 20px;
+    position: relative;
+}
+
+.element-number {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-size: 2rem;
+    font-weight: 200;
+    color: var(--teaching-primary);
+    opacity: 0.2;
+}
+
+.element-item h5 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0 0 8px;
+}
+
+.element-pali {
+    font-size: 0.9rem;
+    font-style: italic;
+    color: var(--color-text-secondary);
+    margin: 0 0 12px;
+}
+
+.element-description {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--color-text-primary);
+    margin: 0 0 12px;
+}
+
+.element-practice,
+.element-balance,
+.element-group,
+.element-training {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+    margin: 8px 0;
+}
+
+/* Balance Diagram */
+.balance-diagram,
+.harmony-diagram,
+.triple-training {
+    margin: 24px 0;
+    padding: 20px;
+    background: rgba(167, 148, 224, 0.05);
+    border-radius: 16px;
+}
+
+.balance-diagram h4,
+.harmony-diagram h4,
+.triple-training h4 {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--teaching-primary);
+    margin: 0 0 20px;
+    text-align: center;
+}
+
+.balance-scale {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.balance-description {
+    text-align: center;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+}
+
+.balance-pair {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+}
+
+.balance-left,
+.balance-right {
+    flex: 1;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    padding: 12px;
+    background: rgba(137, 184, 255, 0.1);
+    border-radius: 8px;
+}
+
+.balance-symbol {
+    font-size: 1.5rem;
+}
+
+.balance-principle {
+    width: 100%;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    margin-top: 8px;
+}
+
+.balance-always {
+    text-align: center;
+    padding: 16px;
+    background: rgba(218, 165, 32, 0.1);
+    border-radius: 12px;
+    border: 2px solid rgba(218, 165, 32, 0.2);
+}
+
+.balance-always-label {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 8px;
+}
+
+.balance-always-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--teaching-gold);
+}
+
+/* Harmony Diagram */
+.harmony-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.harmony-principle {
+    text-align: center;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    margin-bottom: 8px;
+}
+
+.harmony-group {
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    border-left: 4px solid var(--teaching-accent);
+}
+
+.harmony-group h5 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0 0 8px;
+}
+
+.harmony-when {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 8px;
+}
+
+.harmony-elements {
+    font-size: 0.95rem;
+    color: var(--color-text-primary);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.harmony-effect {
+    font-size: 0.9rem;
+    color: var(--teaching-accent);
+    font-style: italic;
+}
+
+/* Triple Training */
+.triple-training-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.training-group {
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.training-group.sila {
+    background: rgba(137, 184, 255, 0.1);
+    border: 2px solid rgba(137, 184, 255, 0.3);
+}
+
+.training-group.samadhi {
+    background: rgba(155, 235, 180, 0.1);
+    border: 2px solid rgba(155, 235, 180, 0.3);
+}
+
+.training-group.panna {
+    background: rgba(218, 165, 32, 0.1);
+    border: 2px solid rgba(218, 165, 32, 0.3);
+}
+
+.training-group h5 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0 0 12px;
+}
+
+.training-elements {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+}
+
+/* ========================================
+   12연기 (Dependent Origination)
+   ======================================== */
+
+.do-controls {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin: 32px 0;
+}
+
+.do-toggle-btn {
+    padding: 12px 32px;
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.7);
+    border: 2px solid rgba(167, 148, 224, 0.2);
+    border-radius: 24px;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.do-toggle-btn:hover {
+    border-color: var(--teaching-primary);
+    background: rgba(167, 148, 224, 0.1);
+}
+
+.do-toggle-btn.active {
+    background: var(--teaching-primary);
+    color: white;
+    border-color: var(--teaching-primary);
+}
+
+/* DO Playback Controls */
+.do-playback-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin: 32px 0;
+    flex-wrap: wrap;
+}
+
+.control-btn {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(167, 148, 224, 0.2);
+    border-radius: 20px;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.control-btn:hover:not(:disabled) {
+    background: rgba(167, 148, 224, 0.1);
+    border-color: var(--teaching-primary);
+}
+
+.control-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.do-playback-controls label {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+}
+
+#do-speed {
+    width: 150px;
+}
+
+#do-speed-label {
+    font-size: 0.9rem;
+    color: var(--color-text-primary);
+    font-weight: 500;
+    min-width: 50px;
+}
+
+/* DO Step Panel */
+.do-step-panel {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 32px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 2px solid rgba(167, 148, 224, 0.2);
+    border-radius: 24px;
+    min-height: 200px;
+}
+
+.do-step-panel h3 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--teaching-primary);
+    margin: 0 0 12px;
+}
+
+.do-step-pali {
+    font-size: 1.1rem;
+    font-style: italic;
+    color: var(--color-text-secondary);
+    margin: 0 0 16px;
+}
+
+.do-step-description {
+    font-size: 1.05rem;
+    line-height: 2;
+    color: var(--color-text-primary);
+    margin: 0 0 16px;
+}
+
+.do-step-condition {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--teaching-gold);
+    font-weight: 500;
+    margin: 0 0 20px;
+}
+
+.do-step-teaching {
+    background: rgba(167, 148, 224, 0.1);
+    border-left: 3px solid var(--teaching-primary);
+    padding: 16px 20px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: var(--color-text-primary);
+    line-height: 1.8;
+}
+
+/* DO SVG Styles */
+.do-step {
+    transition: all 0.3s ease;
+}
+
+.do-step:hover circle {
+    stroke-width: 3;
+    filter: drop-shadow(0 4px 12px rgba(218, 165, 32, 0.3));
+}
+
+.do-step.active circle {
+    fill: var(--teaching-gold);
+    stroke: var(--teaching-gold);
+    stroke-width: 3;
+    filter: drop-shadow(0 6px 20px rgba(218, 165, 32, 0.5));
+}
+
+.do-step.active text {
+    fill: white;
+    font-weight: 600;
+}
+
+.do-step-number {
+    font-size: 16px;
+    font-weight: 500;
+    fill: var(--color-text-primary);
+}
+
+.do-step-name {
+    font-size: 14px;
+    font-weight: 500;
+    fill: var(--color-text-primary);
+}
+
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+    .bpf-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 10px;
+    }
+
+    .bpf-category-card {
+        padding: 24px 20px;
+    }
+
+    .bpf-title {
+        font-size: 1.3rem;
+    }
+
+    .triple-training-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .do-controls {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .do-toggle-btn {
+        width: 100%;
+        padding: 12px 24px;
+    }
+
+    .do-playback-controls {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .control-btn {
+        width: 100%;
+    }
+
+    #do-speed {
+        width: 100%;
+    }
+
+    .do-step-panel {
+        padding: 24px 20px;
+    }
+
+    .do-step-panel h3 {
+        font-size: 1.3rem;
+    }
+
+    .panel-content {
+        max-height: 85vh;
+    }
+}
+
 /* 접근성: 감소된 모션 */
 @media (prefers-reduced-motion: reduce) {
     .truth-card,
     .path-card,
+    .bpf-category-card,
+    .do-step,
     .connection-line,
     .panel-content {
         transition-duration: 0.1s;

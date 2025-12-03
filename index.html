@@ -35,18 +35,11 @@
             <nav class="header-nav">
                 <a href="index.html" class="nav-link">홈</a>
                 <a href="methodology.html" class="nav-link">방법론</a>
-                <div class="nav-dropdown">
-                    <button class="nav-link dropdown-toggle" id="ai-nav-button">AI</button>
-                    <div class="dropdown-menu">
-                        <a href="https://notebooklm.google.com/notebook/1f5450ac-8ba6-4c30-b1ce-f63977dabfc1" target="_blank" class="dropdown-item">아비담마 AI</a>
-                        <a href="https://notebooklm.google.com/notebook/18c4a48e-3225-4ddc-abe8-42515c19cbba" target="_blank" class="dropdown-item">청정도론 AI</a>
-                        <a href="https://notebooklm.google.com/notebook/de2a2db1-e57e-428b-903b-43e75506833f" target="_blank" class="dropdown-item">초기불교 AI</a>
-                        <a href="search.html" class="dropdown-item">경전 검색</a>
-                    </div>
-                </div>
+                <a href="https://ai.buddhakorea.com" class="nav-link">AI</a>
                 <a href="sutra-writing.html" class="nav-link">사경</a>
-                <a href="meditation.html" class="nav-link">명상</a>
-                <a href="teaching.html" class="nav-link">교학</a>
+                <!-- Temporarily disabled navigation links -->
+                <!-- <a href="meditation.html" class="nav-link">명상</a> -->
+                <!-- <a href="teaching.html" class="nav-link">교학</a> -->
             </nav>
         </div>
     </header>
@@ -95,11 +88,12 @@
     </section>
 
     <!-- 4. Experience Lab Section: 직접 체득 -->
+    <!-- Temporarily commented out - Ephemeral Sentences feature
     <section id="experience-lab" class="section">
         <div class="container">
             <h3 class="section-title reveal">직접 체득하는 무상</h3>
             <p class="section-subtitle reveal" style="transition-delay: 100ms;">체험을 통해 삼특상을 발견하세요</p>
-            
+
             <div class="experience-card reveal" style="transition-delay: 200ms;" onclick="openEphemeralSentences()">
                 <div class="experience-content">
                     <h4>찰나의 문장</h4>
@@ -109,6 +103,7 @@
             </div>
         </div>
     </section>
+    -->
 
     <!-- 5. Acknowledgement Section: 프로젝트의 정신 -->
     <section id="acknowledgement" class="section">
@@ -145,10 +140,10 @@
         </div>
     </footer>
 
-    <!-- Floating Action Button -->
-    <button class="fab" onclick="openEphemeralSentences()" aria-label="체험하기">
-        <span class="fab-icon">✨</span>
-        <span class="fab-text">체험</span>
+    <!-- Floating Feedback Button -->
+    <button class="fab" onclick="openFeedbackModal()" aria-label="피드백 남기기">
+        <span class="fab-icon">💬</span>
+        <span class="fab-text">피드백</span>
     </button>
 
     <!-- Ephemeral Sentences Modal -->
@@ -173,9 +168,12 @@
         </div>
     </div>
 
+    <!-- Feedback functionality now uses Google Forms - see js/feedback.js -->
+
     <!-- JavaScript -->
     <script src="js/main.js"></script>
     <script src="js/ephemeral.js"></script>
+    <script src="js/feedback.js"></script>
 
 </body>
 </html>

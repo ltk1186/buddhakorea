@@ -13,52 +13,6 @@ function initInteractiveLight() {
     });
 }
 
-// --- Scroll to AI Section ---
-function scrollToAI(event) {
-    // On mobile: redirect to main page AI section and prevent dropdown
-    // On desktop: allow dropdown to open
-    const isMobile = window.innerWidth <= 768;
-
-    if (isMobile) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        // Check if we're on index.html
-        const isIndexPage = window.location.pathname.endsWith('index.html') ||
-                           window.location.pathname.endsWith('/') ||
-                           window.location.pathname.includes('/buddhakorea/') && !window.location.pathname.match(/\/(sutra-writing|meditation|teaching)\.html/);
-
-        if (isIndexPage) {
-            // If on index page, scroll to AI section with optimal mobile positioning
-            scrollToAISection();
-        } else {
-            // If on other pages, redirect to index page AI section
-            window.location.href = 'index.html#ai-tools';
-        }
-    }
-    // On desktop, do nothing - let dropdown work normally
-}
-
-// --- Scroll to AI Section with optimal mobile positioning ---
-function scrollToAISection() {
-    const aiSection = document.getElementById('ai-tools');
-    if (!aiSection) return;
-
-    // Get the section's position
-    const sectionTop = aiSection.getBoundingClientRect().top + window.pageYOffset;
-
-    // Calculate optimal scroll position for mobile
-    // Subtract header height (60px on mobile) and add some padding for better visual positioning
-    const headerHeight = 60;
-    const additionalOffset = 20; // Add 20px padding from top
-    const targetScrollPosition = sectionTop - headerHeight - additionalOffset;
-
-    window.scrollTo({
-        top: targetScrollPosition,
-        behavior: 'smooth'
-    });
-}
-
 // --- Scroll Reveal Animation  ---
 function initScrollReveal() {
     const revealElements = document.querySelectorAll('.reveal');
@@ -84,37 +38,6 @@ function initScrollReveal() {
 function init() {
     initInteractiveLight();
     initScrollReveal();
-    initAINavButton();
-    handleHashNavigation();
-}
-
-// --- Initialize AI Navigation Button ---
-function initAINavButton() {
-    const aiNavButton = document.getElementById('ai-nav-button');
-    if (aiNavButton) {
-        aiNavButton.addEventListener('click', scrollToAI);
-    }
-}
-
-// --- Handle hash navigation (when coming from other pages) ---
-function handleHashNavigation() {
-    // Check if URL has #ai-tools hash
-    if (window.location.hash === '#ai-tools') {
-        const isMobile = window.innerWidth <= 768;
-
-        if (isMobile) {
-            // Wait for page to fully load and render before scrolling
-            setTimeout(() => {
-                scrollToAISection();
-            }, 100);
-        } else {
-            // On desktop, use default browser behavior
-            const aiSection = document.getElementById('ai-tools');
-            if (aiSection) {
-                aiSection.scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-    }
 }
 
 // Run when DOM is ready

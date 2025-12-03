@@ -1446,3 +1446,21 @@ svg defs linearGradient {
         transition: transform 0.1s ease;
     }
 }
+
+/* ========================================
+   피드백 버튼 - 명상 실행 중에는 숨기기
+   ======================================== */
+.fab-meditation {
+    display: block;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* 명상 타이머 실행 중이거나 완료 화면에서는 숨기기 */
+#screen-meditation.show ~ .fab-meditation,
+#screen-complete.show ~ .fab-meditation,
+#screen-buddha-meditation.show ~ .fab-meditation,
+#screen-buddha-complete.show ~ .fab-meditation {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.8);
+}

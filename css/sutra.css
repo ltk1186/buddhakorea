@@ -274,6 +274,153 @@ body {
     padding: 0 30px;
 }
 
+/* Mode Selector */
+.mode-selector {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin: 0 0 40px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: var(--radius-md);
+    border: 2px solid rgba(167, 148, 224, 0.15);
+}
+
+.mode-btn {
+    flex: 1;
+    max-width: 240px;
+    background: rgba(255, 255, 255, 0.6);
+    border: 2px solid rgba(167, 148, 224, 0.2);
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+    font-family: inherit;
+}
+
+.mode-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--gradient-color-1), var(--gradient-color-2));
+    opacity: 0;
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 0;
+}
+
+.mode-btn > * {
+    position: relative;
+    z-index: 1;
+}
+
+.mode-icon {
+    font-size: 2rem;
+    line-height: 1;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mode-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    transition: color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mode-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    transition: color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mode-btn:hover {
+    transform: translateY(-4px);
+    border-color: rgba(167, 148, 224, 0.4);
+    box-shadow: 0 12px 30px rgba(167, 148, 224, 0.25);
+}
+
+.mode-btn:hover .mode-icon {
+    transform: scale(1.15);
+}
+
+.mode-btn.active {
+    background: linear-gradient(135deg, var(--gradient-color-1), var(--gradient-color-2));
+    border-color: transparent;
+    box-shadow: 0 15px 40px rgba(167, 148, 224, 0.35);
+}
+
+.mode-btn.active::before {
+    opacity: 1;
+}
+
+.mode-btn.active .mode-label,
+.mode-btn.active .mode-desc {
+    color: var(--white);
+}
+
+.mode-btn:focus-visible {
+    outline: 2px solid var(--gradient-color-1);
+    outline-offset: 4px;
+}
+
+/* Mode Hint */
+.mode-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 0 auto 30px;
+    padding: 16px 24px;
+    max-width: 600px;
+    background: linear-gradient(135deg, rgba(155, 235, 180, 0.15), rgba(137, 184, 255, 0.15));
+    border: 1px solid rgba(137, 184, 255, 0.3);
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    animation: hintFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes hintFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hint-icon {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+.hint-text {
+    line-height: 1.6;
+}
+
+.hint-text strong {
+    color: var(--gradient-color-2);
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .mode-hint {
+        flex-direction: column;
+        text-align: center;
+        padding: 14px 20px;
+        font-size: 0.9rem;
+    }
+}
+
 .back-btn {
     position: relative;
     background: none;
@@ -360,7 +507,15 @@ body {
     white-space: pre-wrap;
     word-break: keep-all;
     font-weight: 300;
-    pointer-events: none;
+    pointer-events: none; /* Default: not clickable */
+    position: relative;
+    z-index: 5; /* Below input by default */
+}
+
+/* Make clickable in Easy Mode */
+.text-bg.clickable {
+    pointer-events: auto;
+    z-index: 15; /* Above input in Easy Mode */
 }
 
 .text-bg span {
@@ -373,8 +528,39 @@ body {
     color: var(--golden-primary);
 }
 
+/* Typed characters in Easy Mode - show golden */
+.text-bg.clickable span.done {
+    opacity: 1;
+    color: var(--golden-primary);
+    text-shadow: 0 0 20px rgba(218, 165, 32, 0.4), 0 0 40px rgba(218, 165, 32, 0.2);
+}
 
-/* 입력창 */
+/* Skipped characters in Easy Mode - peaceful sky blue */
+.text-bg span.skipped {
+    opacity: 0.75;
+    color: #6BB6FF; /* Vivid sky blue - peaceful assistance */
+    text-shadow: 0 0 15px rgba(107, 182, 255, 0.5), 0 0 30px rgba(107, 182, 255, 0.3);
+}
+
+/* Clickable background spans in Easy Mode */
+.text-bg.clickable span {
+    cursor: pointer;
+    pointer-events: auto !important;
+    transition: all 0.2s ease;
+}
+
+.text-bg.clickable span:hover:not(.done):not(.skipped) {
+    color: var(--gradient-color-1) !important;
+    opacity: 0.8 !important;
+    transform: scale(1.1);
+}
+
+.text-bg.clickable span.done,
+.text-bg.clickable span.skipped {
+    cursor: default;
+}
+
+/* 입력창 - Traditional Mode (Textarea) */
 .text-input {
     position: absolute;
     top: 60px;
@@ -397,6 +583,36 @@ body {
     pointer-events: auto;
     text-shadow: 0 0 20px rgba(218, 165, 32, 0.4),
                  0 0 40px rgba(218, 165, 32, 0.2);
+}
+
+/* 입력창 - Easy Mode (Contenteditable) */
+.text-input-easy {
+    position: absolute;
+    top: 60px;
+    left: 60px;
+    right: 60px;
+    bottom: 60px;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 1.8rem;
+    line-height: 2.6;
+    color: transparent; /* Hide typed text - show via bg instead */
+    caret-color: #a794e0;
+    font-family: inherit;
+    font-weight: 400;
+    white-space: pre-wrap;
+    word-break: keep-all;
+    z-index: 10;
+    pointer-events: auto; /* Allow typing */
+    overflow-y: auto;
+    /* No text-shadow since text is transparent */
+}
+
+.text-input-easy:empty:before {
+    content: attr(data-placeholder);
+    color: rgba(150, 150, 150, 0.35);
+    pointer-events: none;
 }
 
 /* 회향 박스 */
@@ -434,6 +650,43 @@ body {
     color: #6c757d;
     margin: 0 0 55px;
     line-height: 1.9;
+}
+
+/* Typing Statistics */
+.typing-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin: 30px 0 40px;
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: var(--radius-md);
+    border: 2px solid rgba(167, 148, 224, 0.15);
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.stat-label {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 1.3rem;
+    font-weight: 600;
+    background: linear-gradient(120deg, var(--golden-primary), var(--golden-light));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
 }
 
 .realm-buttons {
@@ -860,18 +1113,51 @@ body {
 
 /* 반응형 */
 @media (max-width: 768px) {
+    /* Mode selector responsive */
+    .mode-selector {
+        flex-direction: column;
+        gap: 12px;
+        padding: 10px;
+    }
+
+    .mode-btn {
+        max-width: 100%;
+        padding: 16px 20px;
+    }
+
+    .mode-icon {
+        font-size: 1.6rem;
+    }
+
+    .mode-label {
+        font-size: 1rem;
+    }
+
+    .mode-desc {
+        font-size: 0.8rem;
+    }
+
+    /* Typing statistics responsive */
+    .typing-stats {
+        flex-direction: column;
+        gap: 20px;
+        padding: 20px;
+    }
+
     .type-box {
         padding: 40px;
         min-height: 350px;
     }
 
     .text-bg,
-    .text-input {
+    .text-input,
+    .text-input-easy {
         font-size: 1.5rem;
         line-height: 2.3;
     }
 
-    .text-input {
+    .text-input,
+    .text-input-easy {
         top: 40px;
         left: 40px;
         right: 40px;
@@ -968,4 +1254,20 @@ body {
     outline: 3px solid var(--white);
     outline-offset: 3px;
     box-shadow: 0 0 0 6px rgba(244, 208, 63, 0.4);
+}
+
+/* ========================================
+   피드백 버튼 - 선택 화면에서만 표시
+   ======================================== */
+.fab-sutra {
+    display: block;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* 작성 화면이나 회향 화면에서는 숨기기 */
+#screen-write.show ~ .fab-sutra,
+#screen-dedication-complete.show ~ .fab-sutra {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.8);
 }
