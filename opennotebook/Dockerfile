@@ -43,6 +43,7 @@ WORKDIR /app
 # Copy application code
 COPY --chown=buddha:buddha main.py .
 COPY --chown=buddha:buddha usage_tracker.py .
+COPY --chown=buddha:buddha tradition_normalizer.py .
 COPY --chown=buddha:buddha qa_logger.py .
 COPY --chown=buddha:buddha privacy.py .
 COPY --chown=buddha:buddha gemini_query_embedder.py .
