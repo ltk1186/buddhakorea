@@ -41,15 +41,23 @@ jobs:
           set -e
           echo "Starting deployment..."
 
+          # SSH options to avoid interactive prompts
+          export CLOUDSDK_CORE_DISABLE_PROMPTS=1
+
+          # Generate SSH key for gcloud compute ssh
+          ssh-keygen -t rsa -f ~/.ssh/google_compute_engine -N "" -q || true
+
           # Create target directory on VM first
           gcloud compute ssh ${{ env.VM_NAME }} \
             --tunnel-through-iap \
             --zone=${{ env.VM_ZONE }} \
             --project=${{ env.PROJECT_ID }} \
+            --ssh-flag="-o StrictHostKeyChecking=no" \
             --command="mkdir -p /tmp/deploy"
 
           # Copy files to VM
           gcloud compute scp \
+            --ssh-flag="-o StrictHostKeyChecking=no" \
             --tunnel-through-iap \
             --zone=${{ env.VM_ZONE }} \
             --project=${{ env.PROJECT_ID }} \
