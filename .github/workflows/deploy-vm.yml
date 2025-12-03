@@ -66,8 +66,7 @@ jobs:
             gemini_query_embedder.py \
             hyde.py \
             reranker.py \
-            cache_cosmology.py \
-            cache_llm.py
+            cache_cosmology.py
 
           # Copy tarball to VM (beta required for WIF)
           # Note: positional args (source, dest) must come before flags
@@ -117,7 +116,6 @@ jobs:
               sudo docker cp /opt/buddha-korea/hyde.py buddhakorea-fastapi:/app/
               sudo docker cp /opt/buddha-korea/reranker.py buddhakorea-fastapi:/app/
               sudo docker cp /opt/buddha-korea/cache_cosmology.py buddhakorea-fastapi:/app/
-              sudo docker cp /opt/buddha-korea/cache_llm.py buddhakorea-fastapi:/app/
 
               # Set container permissions (use sh -c for wildcard expansion and ignore errors)
               sudo docker exec -u root buddhakorea-fastapi sh -c 'chown buddha:buddha /app/*.html /app/*.py || true'
