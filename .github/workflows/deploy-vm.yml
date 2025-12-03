@@ -55,24 +55,36 @@ jobs:
             --ssh-flag="-o StrictHostKeyChecking=no" \
             --command="mkdir -p /tmp/deploy"
 
-          # Copy files to VM (beta required for WIF)
+          # Bundle files into tarball for transfer
+          tar czf /tmp/deploy.tar.gz -C opennotebook \
+            index.html \
+            main.py \
+            tradition_normalizer.py \
+            privacy.py \
+            usage_tracker.py \
+            qa_logger.py \
+            gemini_query_embedder.py \
+            hyde.py \
+            reranker.py \
+            cache_cosmology.py \
+            cache_llm.py
+
+          # Copy tarball to VM (beta required for WIF)
           gcloud beta compute scp \
             --ssh-flag="-o StrictHostKeyChecking=no" \
             --tunnel-through-iap \
             --zone=${{ env.VM_ZONE }} \
             --project=${{ env.PROJECT_ID }} \
-            opennotebook/index.html \
-            opennotebook/main.py \
-            opennotebook/tradition_normalizer.py \
-            opennotebook/privacy.py \
-            opennotebook/usage_tracker.py \
-            opennotebook/qa_logger.py \
-            opennotebook/gemini_query_embedder.py \
-            opennotebook/hyde.py \
-            opennotebook/reranker.py \
-            opennotebook/cache_cosmology.py \
-            opennotebook/cache_llm.py \
+            /tmp/deploy.tar.gz \
             ${{ env.VM_NAME }}:/tmp/deploy/
+
+          # Extract tarball on VM
+          gcloud beta compute ssh ${{ env.VM_NAME }} \
+            --tunnel-through-iap \
+            --zone=${{ env.VM_ZONE }} \
+            --project=${{ env.PROJECT_ID }} \
+            --ssh-flag="-o StrictHostKeyChecking=no" \
+            --command="cd /tmp/deploy && tar xzf deploy.tar.gz && rm deploy.tar.gz"
 
           # Execute deployment on VM (beta required for WIF)
           gcloud beta compute ssh ${{ env.VM_NAME }} \
