@@ -168,7 +168,8 @@ function selectSutra(id) {
 
     currentSutraId = id; // Track for category-specific animations
     const sutra = SUTRAS[id];
-    sutraText = sutra.text;
+    // Normalize to NFC for consistent Korean character comparison
+    sutraText = sutra.text.normalize('NFC');
     userTyped = '';
     typedIndices.clear();
     skippedIndices.clear();
@@ -331,7 +332,8 @@ function selectSutra(id) {
 // ========================================
 function checkInput() {
     const input = document.getElementById('text-input');
-    const typed = input.value;
+    // Normalize typed input to NFC for consistent comparison
+    const typed = input.value.normalize('NFC');
 
     console.log('checkInput called - typed:', typed, 'userTyped:', userTyped);
 
@@ -347,7 +349,7 @@ function checkInput() {
         if (typed[i] === sutraText[i]) {
             correctLength++;
         } else {
-            console.log(`Mismatch at ${i}: typed="${typed[i]}" expected="${sutraText[i]}"`);
+            console.log(`Mismatch at ${i}: typed="${typed[i]}" (${typed.charCodeAt(i)}) expected="${sutraText[i]}" (${sutraText.charCodeAt(i)})`);
             break;
         }
     }
@@ -413,6 +415,9 @@ function updateVisuals() {
 function handleCharacterClick(index) {
     console.log('Character clicked:', index);
 
+    // Save reference to clicked span for scroll restoration
+    const clickedSpan = bgSpans[index];
+
     // Auto-complete all characters up to this index
     for (let i = 0; i < index; i++) {
         if (!typedIndices.has(i) && !skippedIndices.has(i)) {
@@ -433,9 +438,14 @@ function handleCharacterClick(index) {
     userTyped = completedText;
 
     // Focus on contenteditable and set cursor to the clicked position
-    textInputEasy.focus();
+    // Use preventScroll to avoid browser auto-scrolling to input
+    textInputEasy.focus({ preventScroll: true });
     setTimeout(() => {
         setCursorPosition(textInputEasy, index);
+        // Scroll clicked span into view to maintain position
+        if (clickedSpan) {
+            clickedSpan.scrollIntoView({ behavior: 'instant', block: 'center' });
+        }
     }, 0);
 
     // Check for completion
@@ -495,7 +505,8 @@ function completeToNextLine() {
 // Check input for Easy Mode
 function checkInputEasy() {
     const input = document.getElementById('text-input-easy');
-    const typed = input.textContent;
+    // Normalize typed input to NFC for consistent comparison
+    const typed = input.textContent.normalize('NFC');
 
     console.log('checkInputEasy - typed length:', typed.length, 'userTyped length:', userTyped.length);
 

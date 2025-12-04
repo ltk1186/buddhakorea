@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buddha Korea | 붓다 코리아</title>
-    
+
     <!-- SEO Meta Tags -->
     <meta name="description" content="A serene space for exploring the core teachings of Buddhism through AI. 각묵스님과 여러 선각자들의 가르침을 바탕으로 한 아비담마, 청정도론, 초기불교 AI를 만나보세요.">
     <meta name="keywords" content="Buddha Korea, 붓다 코리아, 초기불교, 불교 AI, 아비담마, 청정도론, 니까야, 각묵스님, 명상, 위빠사나">
@@ -30,113 +30,195 @@
                 <img src="assets/buddha-line.png" alt="Buddha Korea" class="logo-icon">
                 <span class="logo-text">Buddha Korea</span>
             </a>
-            
+
             <!-- 네비게이션 -->
             <nav class="header-nav">
                 <a href="index.html" class="nav-link">홈</a>
-                <a href="methodology.html" class="nav-link">방법론</a>
                 <a href="https://ai.buddhakorea.com" class="nav-link">AI</a>
                 <a href="sutra-writing.html" class="nav-link">사경</a>
-                <!-- Temporarily disabled navigation links -->
-                <!-- <a href="meditation.html" class="nav-link">명상</a> -->
-                <!-- <a href="teaching.html" class="nav-link">교학</a> -->
             </nav>
         </div>
     </header>
 
-<!-- 헤더 높이만큼 스페이서 (컨텐츠가 헤더에 가려지지 않도록) -->
-<div class="header-spacer"></div>
+    <!-- 헤더 높이만큼 스페이서 -->
+    <div class="header-spacer"></div>
 
-    <!-- 1. Interactive Background Element -->
+    <!-- Interactive Background Element -->
     <div class="interactive-light"></div>
 
-    <!-- 2. Hero Section: 첫 화면 -->
-    <section id="hero" class="section">
+    <!-- 1. Hero Section -->
+    <section id="hero" class="section hero-new">
         <div class="container">
-            <img src="assets/buddha-line.png" alt="Buddha" class="buddha-icon reveal">
+            <img src="assets/buddha-line.png" alt="Buddha" class="hero-buddha-icon reveal">
 
-            <p class="reveal">Welcome to</p>
-            <h1 class="reveal" style="transition-delay: 100ms;">Buddha Korea</h1>
-        </div>
-        <div class="scroll-indicator reveal" style="transition-delay: 300ms;"></div>
-    </section>
+            <h1 class="hero-headline reveal" style="transition-delay: 100ms;">
+                불교를 AI와 함께
+            </h1>
 
-    <!-- 3. AI Tools Section: 핵심 경험 영역 -->
-    <section id="ai-tools" class="section">
-        <div class="container">
-            <div class="card-grid">
-                <a href="https://notebooklm.google.com/notebook/1f5450ac-8ba6-4c30-b1ce-f63977dabfc1" target="_blank" class="card reveal">
-                    <div class="card-content">
-                        <h2>아비담마AI</h2>
-                        <p>노트북LM을 이용한 마음과 물질의 해체를 통한 분석적 지혜 탐구</p>
-                    </div>
+            <p class="hero-subtitle reveal" style="transition-delay: 200ms;">
+                CBETA 신수대장경 2,459개 문헌을<br>
+                AI와 함께 탐구하세요
+            </p>
+
+            <div class="hero-cta reveal" style="transition-delay: 300ms;">
+                <a href="https://ai.buddhakorea.com" class="btn-primary">
+                    AI 채팅 시작 <span class="badge-beta">Beta</span>
                 </a>
-                <a href="https://notebooklm.google.com/notebook/18c4a48e-3225-4ddc-abe8-42515c19cbba" target="_blank" class="card reveal" style="transition-delay: 150ms;">
-                    <div class="card-content">
-                        <h2>청정도론AI</h2>
-                        <p>노트북LM을 이용한 계·정·혜 삼학의 체계적인 수행에 대한 심층적 이해</p>
-                    </div>
-                </a>
-                <a href="https://notebooklm.google.com/notebook/de2a2db1-e57e-428b-903b-43e75506833f" target="_blank" class="card reveal" style="transition-delay: 300ms;">
-                    <div class="card-content">
-                        <h2>초기불교AI</h2>
-                        <p>노트북LM을 이용한 경장·율장·논장을 통한 부처님 근본 가르침 탐구</p>
-                    </div>
+                <a href="#taisho-ai" class="btn-secondary">
+                    더 알아보기
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- 4. Experience Lab Section: 직접 체득 -->
-    <!-- Temporarily commented out - Ephemeral Sentences feature
-    <section id="experience-lab" class="section">
+    <!-- 2. NotebookLM AI Section -->
+    <section id="notebook-ai" class="section">
         <div class="container">
-            <h3 class="section-title reveal">직접 체득하는 무상</h3>
-            <p class="section-subtitle reveal" style="transition-delay: 100ms;">체험을 통해 삼특상을 발견하세요</p>
+            <div class="section-header reveal">
+                <span class="platform-badge">Google NotebookLM</span>
+                <h2 class="section-title">초기불교 AI 시리즈</h2>
+                <p class="section-desc">각묵스님 강의를 학습한 AI와 대화하세요</p>
+            </div>
 
-            <div class="experience-card reveal" style="transition-delay: 200ms;" onclick="openEphemeralSentences()">
-                <div class="experience-content">
-                    <h4>찰나의 문장</h4>
-                    <p>오늘 가장 중요한 것을 타이핑하는 순간, 사라지는 글자</p>
-                    <span class="cta-arrow">체험하기 →</span>
+            <div class="card-grid reveal" style="transition-delay: 100ms;">
+                <a href="https://notebooklm.google.com/notebook/1f5450ac-8ba6-4c30-b1ce-f63977dabfc1" target="_blank" rel="noopener" class="card-new">
+                    <div class="card-body">
+                        <h3>아비담마 AI</h3>
+                        <p>마음과 물질의 분석적 지혜 탐구</p>
+                    </div>
+                    <span class="card-link">대화하기 <span class="external-icon">↗</span></span>
+                </a>
+
+                <a href="https://notebooklm.google.com/notebook/18c4a48e-3225-4ddc-abe8-42515c19cbba" target="_blank" rel="noopener" class="card-new">
+                    <div class="card-body">
+                        <h3>청정도론 AI</h3>
+                        <p>계·정·혜 삼학의 체계적 수행</p>
+                    </div>
+                    <span class="card-link">대화하기 <span class="external-icon">↗</span></span>
+                </a>
+
+                <a href="https://notebooklm.google.com/notebook/de2a2db1-e57e-428b-903b-43e75506833f" target="_blank" rel="noopener" class="card-new">
+                    <div class="card-body">
+                        <h3>초기불교 AI</h3>
+                        <p>경장·율장·논장의 근본 가르침</p>
+                    </div>
+                    <span class="card-link">대화하기 <span class="external-icon">↗</span></span>
+                </a>
+            </div>
+
+            <p class="login-notice reveal" style="transition-delay: 200ms;">
+                <span class="info-icon">ⓘ</span> Google 계정 로그인이 필요합니다 (NotebookLM)
+            </p>
+        </div>
+    </section>
+
+    <!-- 3. 신수대장경 AI Section -->
+    <section id="taisho-ai" class="section">
+        <div class="container">
+            <div class="featured-card reveal">
+                <span class="badge-new">BETA</span>
+
+                <h2 class="featured-title">CBETA 신수대장경 AI</h2>
+
+                <div class="featured-stats">
+                    <span>2,459개 문헌</span>
+                    <span class="stat-dot">·</span>
+                    <span>99,723개 청크</span>
+                    <span class="stat-dot">·</span>
+                    <span>Gemini 2.5 Pro</span>
                 </div>
+
+                <p class="featured-desc">
+                    대정신수대장경(T) 전체를 학습한 RAG 시스템으로<br>
+                    원하는 불교 주제에 대해 질문하고 경전 출처를 확인하세요
+                </p>
+
+                <a href="https://ai.buddhakorea.com" class="btn-primary btn-lg">
+                    ai.buddhakorea.com 열기
+                </a>
             </div>
         </div>
     </section>
-    -->
 
-    <!-- 5. Acknowledgement Section: 프로젝트의 정신 -->
+    <!-- 4. 디지털 사경 Section -->
+    <section id="sutra-writing" class="section section-subtle">
+        <div class="container">
+            <div class="inline-feature reveal">
+                <div class="inline-feature-content">
+                    <span class="feature-icon">✍️</span>
+                    <div class="feature-text">
+                        <h3>디지털 사경</h3>
+                        <p>글자 하나하나에 마음을 담아, 경전을 필사하는 타이핑 명상</p>
+                    </div>
+                </div>
+                <a href="sutra-writing.html" class="btn-secondary">사경 시작하기</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Acknowledgement Section -->
     <section id="acknowledgement" class="section">
         <div class="container">
-            <div class="content-block reveal">
-                <p>
-                    부처님의 가르침을 공부하는 모든 분들을 위해 순수한 학습용으로 만들어졌습니다.
-                    인공지능은 때로 학습한 자료의 본래 가르침과 다른, 부정확한 답변을 할 수 있습니다.
-                    답변의 모든 잠재적 오류는 AI의 기술적 한계에 따르며, 원천 자료와 무관함을 알려드립니다.
+            <div class="acknowledgement-block reveal">
+                <p class="disclaimer">
+                    순수한 학습 목적으로 제작되었습니다.<br>
+                    AI는 부정확한 답변을 할 수 있으며, 모든 오류는 원천 자료와 무관합니다.
                 </p>
-                
-                <h4>주요 학습 자료</h4>
-                <p>
-                    <strong>아비담마 AI:</strong> 각묵 스님의 강의와 Alexander S. Berger의 영문본<br>
-                    <strong>청정도론 AI:</strong> 각묵 스님의 강의<br>
-                    <strong>초기불교 AI:</strong> 
-                    삼장(경장·율장·논장) 및 주석서의 영문 번역본
-                    <br>
-                    <em style="font-size: 0.95rem; opacity: 0.8;">
-                    주요 번역자: Bhikkhu Sujato,  Bhikkhu Brahmali, Bhikkhu Bodhi, Caroline Rhys Davids, U Nārada 외 다수
-                    </em>
 
-                <p class="gratitude">
-                    법을 세상에 펼쳐주신 각묵 스님과 모든 스승, 번역가, 학자분들께 깊은 존경과 감사를 드립니다.
+                <div class="sources-grid">
+                    <div class="source-item">
+                        <strong>아비담마 AI</strong>
+                        <span>각묵 스님 강의, A.S. Berger 영문본</span>
+                    </div>
+                    <div class="source-item">
+                        <strong>청정도론 AI</strong>
+                        <span>각묵 스님 강의</span>
+                    </div>
+                    <div class="source-item">
+                        <strong>초기불교 AI</strong>
+                        <span>삼장 영문 번역본 (Bhikkhu Sujato 외)</span>
+                    </div>
+                    <div class="source-item">
+                        <strong>신수대장경 AI</strong>
+                        <span>CBETA 한문 원전</span>
+                    </div>
+                </div>
+
+                <p class="gratitude-text">
+                    법을 세상에 펼쳐주신 모든 스승님들께<br>
+                    깊은 존경과 감사를 올립니다
                 </p>
             </div>
         </div>
     </section>
 
-    <!-- 5. Footer -->
-    <footer>
-        <div class="container reveal">
-            <p>노트북LM 이용을 위해 구글 계정 로그인이 필요합니다.</p>
+    <!-- 6. Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <strong>Buddha Korea</strong>
+                    <span>붓다코리아</span>
+                </div>
+
+                <div class="footer-links">
+                    <div class="footer-col">
+                        <h4>서비스</h4>
+                        <a href="https://ai.buddhakorea.com">AI 채팅</a>
+                        <a href="https://ai.buddhakorea.com" onclick="localStorage.setItem('initialTab', 'library'); return true;">경전 라이브러리</a>
+                        <a href="sutra-writing.html">디지털 사경</a>
+                    </div>
+                    <div class="footer-col">
+                        <h4>문의</h4>
+                        <a href="#" onclick="openFeedbackModal(); return false;">피드백</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <span>경전 데이터: <a href="https://cbeta.org" target="_blank" rel="noopener">CBETA</a> CC BY-NC-SA 4.0</span>
+                <span>© 2025 Buddha Korea</span>
+            </div>
         </div>
     </footer>
 
@@ -146,33 +228,8 @@
         <span class="fab-text">피드백</span>
     </button>
 
-    <!-- Ephemeral Sentences Modal -->
-    <div id="ephemeral-modal" class="modal">
-        <button class="modal-close" onclick="closeEphemeralSentences()" aria-label="닫기">✕</button>
-        
-        <div class="modal-content">
-            <div class="ephemeral-header">
-                <h2>찰나의 문장</h2>
-                <p class="ephemeral-subtitle">오늘 당신에게 가장 중요한 것을 적어보세요.<br> 
-                                                그것이 사라지는 모습을 관찰하세요.</p>
-            </div>
-            
-            <div class="ephemeral-input-wrapper">
-                <div id="ephemeral-canvas" contenteditable="true" spellcheck="false" 
-                     placeholder="오늘 가장 중요한 것은..."></div>
-            </div>
-            
-            <div class="ephemeral-footer">
-                <p class="dhamma-quote">"모든 형성된 것들은 사라지기 마련이다"<br> - 부처님</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Feedback functionality now uses Google Forms - see js/feedback.js -->
-
     <!-- JavaScript -->
     <script src="js/main.js"></script>
-    <script src="js/ephemeral.js"></script>
     <script src="js/feedback.js"></script>
 
 </body>

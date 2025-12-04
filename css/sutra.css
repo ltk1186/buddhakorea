@@ -7,15 +7,18 @@
     --char-fade-duration: 1.2s;
     --total-dedication-time: 5s;
 
-    /* Color Palette */
-    --gradient-color-1: #a794e0;
-    --gradient-color-2: #89b8ff;
-    --gradient-color-3: #9bebb4;
-    --golden-primary: #daa520;
-    --golden-light: #f4d03f;
-    --text-dark: #212529;
-    --text-muted: #6c757d;
-    --bg-neutral: #F5F5F7;
+    /* Sage Green Color Palette */
+    --sage-primary: #5A9A6E;
+    --sage-light: #8CB89C;
+    --sage-lighter: #B8D4C2;
+    --sage-pale: #E8F0EB;
+    --sage-glow: #F4F9F6;
+    --gradient-color-1: #8CB89C;
+    --gradient-color-2: #A3C9AE;
+    --gradient-color-3: #B8D4C2;
+    --text-dark: #1d1d1f;
+    --text-muted: #6e6e73;
+    --bg-neutral: #FFFFFF;
     --white: #ffffff;
 
     /* Transitions */
@@ -37,10 +40,10 @@
     --radius-xl: 28px;
 
     /* Shadows */
-    --shadow-soft: 0 15px 60px rgba(0, 0, 0, 0.1);
-    --shadow-golden-subtle: 0 15px 80px rgba(218, 165, 32, 0.12);
-    --shadow-golden-hover: 0 15px 100px rgba(218, 165, 32, 0.18);
-    --shadow-card-hover: 0 25px 60px rgba(167, 148, 224, 0.35);
+    --shadow-soft: 0 15px 60px rgba(0, 0, 0, 0.08);
+    --shadow-sage-subtle: 0 15px 80px rgba(90, 154, 110, 0.12);
+    --shadow-sage-hover: 0 15px 100px rgba(90, 154, 110, 0.18);
+    --shadow-card-hover: 0 25px 60px rgba(90, 154, 110, 0.25);
 }
 
 /* 페이지 배경 */
@@ -48,14 +51,14 @@ body {
     background: var(--bg-neutral);
 }
 
-/* 마우스 빛 효과 (황금빛) */
+/* 마우스 빛 효과 (Sage Green) */
 .mouse-light {
     position: fixed;
     top: 0;
     left: 0;
     width: 600px;
     height: 600px;
-    background: radial-gradient(circle, rgba(218, 165, 32, 0.2), transparent 70%);
+    background: radial-gradient(circle, rgba(90, 154, 110, 0.18), transparent 70%);
     border-radius: 50%;
     pointer-events: none;
     filter: blur(120px);
@@ -85,9 +88,10 @@ body {
 
 /* 중앙 박스 */
 .center-box {
-    max-width: 650px;
+    max-width: 1200px;
     width: 100%;
     text-align: center;
+    padding: 0 20px;
 }
 
 /* ========================================
@@ -98,7 +102,7 @@ body {
     font-size: clamp(3rem, 8vw, 5rem);
     font-weight: 300;
     margin: 0 0 20px;
-    background: linear-gradient(120deg, #a794e0, #89b8ff);
+    background: linear-gradient(120deg, var(--sage-primary), var(--sage-light));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -114,17 +118,36 @@ body {
 
 .sutra-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 30px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+/* Responsive grid for sutra cards */
+@media (max-width: 1100px) {
+    .sutra-cards {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 800px) {
+    .sutra-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 500px) {
+    .sutra-cards {
+        grid-template-columns: 1fr;
+    }
 }
 
 .sutra-cards .card {
     background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 2px solid rgba(167, 148, 224, 0.2);
+    border: 2px solid rgba(90, 154, 110, 0.15);
     border-radius: var(--radius-lg);
-    padding: var(--spacing-xl) var(--spacing-lg);
+    padding: var(--spacing-lg) var(--spacing-md);
     cursor: pointer;
     transition: var(--transition-smooth);
     position: relative;
@@ -145,7 +168,7 @@ body {
 .sutra-cards .card:hover {
     transform: translateY(-8px) scale(1.02);
     box-shadow: var(--shadow-card-hover);
-    border-color: rgba(167, 148, 224, 0.4);
+    border-color: rgba(90, 154, 110, 0.35);
 }
 
 .sutra-cards .card:hover::before {
@@ -153,9 +176,9 @@ body {
 }
 
 .sutra-cards .card h2 {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 600;
-    margin: 0 0 15px;
+    margin: 0 0 10px;
     color: var(--text-dark);
     position: relative;
     z-index: 1;
@@ -163,7 +186,7 @@ body {
 }
 
 .sutra-cards .card p {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     color: var(--text-muted);
     margin: 0;
     position: relative;
@@ -189,7 +212,7 @@ body {
     background: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 2px solid rgba(167, 148, 224, 0.2);
+    border: 2px solid rgba(90, 154, 110, 0.15);
     border-radius: 20px;
     padding: 12px 28px;
     font-size: 1rem;
@@ -202,16 +225,16 @@ body {
 
 .tab-btn:hover {
     background: rgba(255, 255, 255, 0.9);
-    border-color: rgba(167, 148, 224, 0.4);
+    border-color: rgba(90, 154, 110, 0.35);
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(167, 148, 224, 0.25);
+    box-shadow: 0 8px 25px rgba(90, 154, 110, 0.20);
 }
 
 .tab-btn.active {
-    background: linear-gradient(135deg, var(--gradient-color-1), var(--gradient-color-2));
+    background: var(--sage-primary);
     color: white;
     border-color: transparent;
-    box-shadow: 0 10px 30px rgba(167, 148, 224, 0.35);
+    box-shadow: 0 4px 16px rgba(90, 154, 110, 0.30);
 }
 
 .tab-btn:focus {
@@ -241,7 +264,7 @@ body {
     gap: 16px;
     margin-top: 20px;
     padding-top: 15px;
-    border-top: 1px solid rgba(167, 148, 224, 0.15);
+    border-top: 1px solid rgba(90, 154, 110, 0.12);
     font-size: 0.9rem;
     position: relative;
     z-index: 1;
@@ -285,14 +308,14 @@ body {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-radius: var(--radius-md);
-    border: 2px solid rgba(167, 148, 224, 0.15);
+    border: 2px solid rgba(90, 154, 110, 0.12);
 }
 
 .mode-btn {
     flex: 1;
     max-width: 240px;
     background: rgba(255, 255, 255, 0.6);
-    border: 2px solid rgba(167, 148, 224, 0.2);
+    border: 2px solid rgba(90, 154, 110, 0.15);
     border-radius: var(--radius-md);
     padding: 20px 24px;
     cursor: pointer;
@@ -342,8 +365,8 @@ body {
 
 .mode-btn:hover {
     transform: translateY(-4px);
-    border-color: rgba(167, 148, 224, 0.4);
-    box-shadow: 0 12px 30px rgba(167, 148, 224, 0.25);
+    border-color: rgba(90, 154, 110, 0.35);
+    box-shadow: 0 12px 30px rgba(90, 154, 110, 0.20);
 }
 
 .mode-btn:hover .mode-icon {
@@ -351,9 +374,9 @@ body {
 }
 
 .mode-btn.active {
-    background: linear-gradient(135deg, var(--gradient-color-1), var(--gradient-color-2));
+    background: var(--sage-primary);
     border-color: transparent;
-    box-shadow: 0 15px 40px rgba(167, 148, 224, 0.35);
+    box-shadow: 0 4px 16px rgba(90, 154, 110, 0.30);
 }
 
 .mode-btn.active::before {
@@ -379,8 +402,8 @@ body {
     margin: 0 auto 30px;
     padding: 16px 24px;
     max-width: 600px;
-    background: linear-gradient(135deg, rgba(155, 235, 180, 0.15), rgba(137, 184, 255, 0.15));
-    border: 1px solid rgba(137, 184, 255, 0.3);
+    background: rgba(90, 154, 110, 0.08);
+    border: 1px solid rgba(90, 154, 110, 0.20);
     border-radius: var(--radius-md);
     font-size: 0.95rem;
     color: var(--text-dark);
@@ -408,7 +431,7 @@ body {
 }
 
 .hint-text strong {
-    color: var(--gradient-color-2);
+    color: var(--sage-primary);
     font-weight: 600;
 }
 
@@ -437,7 +460,7 @@ body {
     content: '';
     position: absolute;
     inset: -4px;
-    background: radial-gradient(circle, rgba(218, 165, 32, 0.15), transparent 70%);
+    background: radial-gradient(circle, rgba(90, 154, 110, 0.12), transparent 70%);
     opacity: 0;
     transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     z-index: -1;
@@ -445,7 +468,7 @@ body {
 }
 
 .back-btn:hover {
-    color: var(--golden-primary);
+    color: var(--sage-primary);
     transform: translateX(-8px);
 }
 
@@ -463,7 +486,7 @@ body {
     font-weight: 500;
     text-align: center;
     margin: 0 0 50px;
-    background: linear-gradient(120deg, #a794e0, #89b8ff);
+    background: linear-gradient(120deg, var(--sage-primary), var(--sage-light));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -485,17 +508,17 @@ body {
 
 @keyframes breathingGlow {
     0%, 100% {
-        box-shadow: var(--shadow-golden-subtle);
+        box-shadow: var(--shadow-sage-subtle);
     }
     50% {
-        box-shadow: var(--shadow-golden-hover);
+        box-shadow: var(--shadow-sage-hover);
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .type-box {
         animation: none;
-        box-shadow: var(--shadow-golden-subtle);
+        box-shadow: var(--shadow-sage-subtle);
     }
 }
 
@@ -525,14 +548,14 @@ body {
 
 .text-bg span.done {
     opacity: 0;
-    color: var(--golden-primary);
+    color: var(--sage-primary);
 }
 
-/* Typed characters in Easy Mode - show golden */
+/* Typed characters in Easy Mode - show sage green */
 .text-bg.clickable span.done {
     opacity: 1;
-    color: var(--golden-primary);
-    text-shadow: 0 0 20px rgba(218, 165, 32, 0.4), 0 0 40px rgba(218, 165, 32, 0.2);
+    color: var(--sage-primary);
+    text-shadow: 0 0 20px rgba(90, 154, 110, 0.4), 0 0 40px rgba(90, 154, 110, 0.2);
 }
 
 /* Skipped characters in Easy Mode - peaceful sky blue */
@@ -572,8 +595,8 @@ body {
     outline: none;
     font-size: 1.8rem;
     line-height: 2.6;
-    color: #daa520;
-    caret-color: #a794e0;
+    color: var(--sage-primary);
+    caret-color: var(--sage-light);
     resize: none;
     font-family: inherit;
     font-weight: 400;
@@ -581,8 +604,8 @@ body {
     word-break: keep-all;
     z-index: 10;
     pointer-events: auto;
-    text-shadow: 0 0 20px rgba(218, 165, 32, 0.4),
-                 0 0 40px rgba(218, 165, 32, 0.2);
+    text-shadow: 0 0 20px rgba(90, 154, 110, 0.35),
+                 0 0 40px rgba(90, 154, 110, 0.18);
 }
 
 /* 입력창 - Easy Mode (Contenteditable) */
@@ -598,7 +621,7 @@ body {
     font-size: 1.8rem;
     line-height: 2.6;
     color: transparent; /* Hide typed text - show via bg instead */
-    caret-color: #a794e0;
+    caret-color: var(--sage-light);
     font-family: inherit;
     font-weight: 400;
     white-space: pre-wrap;
@@ -638,7 +661,7 @@ body {
     font-size: 2.8rem;
     font-weight: 300;
     margin: 0 0 25px;
-    background: linear-gradient(120deg, #daa520, #f4d03f);
+    background: linear-gradient(120deg, var(--sage-primary), var(--sage-light));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -663,7 +686,7 @@ body {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-radius: var(--radius-md);
-    border: 2px solid rgba(167, 148, 224, 0.15);
+    border: 2px solid rgba(90, 154, 110, 0.12);
 }
 
 .stat-item {
@@ -682,7 +705,7 @@ body {
 .stat-value {
     font-size: 1.3rem;
     font-weight: 600;
-    background: linear-gradient(120deg, var(--golden-primary), var(--golden-light));
+    background: linear-gradient(120deg, var(--sage-primary), var(--sage-light));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -700,7 +723,7 @@ body {
 .realm-buttons button {
     position: relative;
     background: rgba(255, 255, 255, 0.85);
-    border: 2px solid rgba(218, 165, 32, 0.2);
+    border: 2px solid rgba(90, 154, 110, 0.15);
     border-radius: var(--radius-md);
     padding: 28px 20px;
     font-size: 1.1rem;
@@ -717,7 +740,7 @@ body {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(218, 165, 32, 0.1), rgba(244, 208, 63, 0.1));
+    background: rgba(90, 154, 110, 0.06);
     opacity: 0;
     border-radius: inherit;
     transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
@@ -732,8 +755,8 @@ body {
 
 .realm-buttons button:hover {
     transform: translateY(-6px) scale(1.02);
-    border-color: var(--golden-primary);
-    box-shadow: 0 15px 40px rgba(218, 165, 32, 0.3);
+    border-color: var(--sage-primary);
+    box-shadow: 0 15px 40px rgba(90, 154, 110, 0.25);
     background: var(--white);
 }
 
@@ -743,21 +766,22 @@ body {
 
 .realm-buttons button.primary {
     grid-column: 1 / -1;
-    background: linear-gradient(135deg, var(--golden-primary) 0%, var(--golden-light) 100%);
+    background: var(--sage-primary);
     color: var(--white);
     border: none;
     font-size: 1.25rem;
     padding: 32px 20px;
-    box-shadow: 0 8px 30px rgba(218, 165, 32, 0.4);
+    box-shadow: 0 4px 16px rgba(90, 154, 110, 0.30);
 }
 
 .realm-buttons button.primary::before {
-    background: linear-gradient(135deg, var(--golden-light), var(--golden-primary));
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .realm-buttons button.primary:hover {
     transform: translateY(-6px) scale(1.02);
-    box-shadow: 0 20px 50px rgba(218, 165, 32, 0.5);
+    background: #4A8A5E;
+    box-shadow: 0 12px 35px rgba(90, 154, 110, 0.40);
 }
 
 /* ========================================
@@ -767,7 +791,7 @@ body {
 .dedication-complete-text {
     font-size: clamp(3rem, 8vw, 5rem);
     font-weight: 300;
-    background: linear-gradient(120deg, var(--golden-primary), var(--golden-light));
+    background: linear-gradient(120deg, var(--sage-primary), var(--sage-light));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -821,7 +845,7 @@ body {
     transform: translate(-50%, -50%);
     width: 250px;
     height: 250px;
-    background: radial-gradient(circle, rgba(218, 165, 32, 0.35), transparent 65%);
+    background: radial-gradient(circle, rgba(90, 154, 110, 0.30), transparent 65%);
     border-radius: 50%;
     animation: pulse 2.5s ease-in-out infinite;
 }
@@ -841,14 +865,14 @@ body {
     position: relative;
     font-size: 7rem;
     z-index: 2;
-    filter: drop-shadow(0 6px 18px rgba(218, 165, 32, 0.4));
+    filter: drop-shadow(0 6px 18px rgba(90, 154, 110, 0.35));
 }
 
 #screen-done h2 {
     font-size: 3rem;
     font-weight: 300;
     margin: 0 0 25px;
-    background: linear-gradient(120deg, var(--golden-primary), var(--golden-light));
+    background: linear-gradient(120deg, var(--sage-primary), var(--sage-light));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -942,8 +966,8 @@ body {
         filter: blur(0) brightness(1);
         -webkit-filter: blur(0) brightness(1);
         text-shadow:
-            0 0 20px rgba(218, 165, 32, 0.4),
-            0 0 40px rgba(218, 165, 32, 0.2);
+            0 0 20px rgba(90, 154, 110, 0.4),
+            0 0 40px rgba(90, 154, 110, 0.2);
     }
     25% {
         opacity: 0.9;
@@ -951,8 +975,8 @@ body {
         filter: blur(0.5px) brightness(1.3);
         -webkit-filter: blur(0.5px) brightness(1.3);
         text-shadow:
-            0 0 30px rgba(218, 165, 32, 0.6),
-            0 0 60px rgba(218, 165, 32, 0.4);
+            0 0 30px rgba(90, 154, 110, 0.6),
+            0 0 60px rgba(90, 154, 110, 0.4);
     }
     50% {
         opacity: 0.65;
@@ -960,8 +984,8 @@ body {
         filter: blur(2px) brightness(1.4);
         -webkit-filter: blur(2px) brightness(1.4);
         text-shadow:
-            0 0 40px rgba(218, 165, 32, 0.5),
-            0 0 80px rgba(218, 165, 32, 0.3);
+            0 0 40px rgba(90, 154, 110, 0.5),
+            0 0 80px rgba(90, 154, 110, 0.3);
     }
     75% {
         opacity: 0.35;
@@ -969,8 +993,8 @@ body {
         filter: blur(4px) brightness(1.3);
         -webkit-filter: blur(4px) brightness(1.3);
         text-shadow:
-            0 0 50px rgba(218, 165, 32, 0.3),
-            0 0 100px rgba(218, 165, 32, 0.2);
+            0 0 50px rgba(90, 154, 110, 0.3),
+            0 0 100px rgba(90, 154, 110, 0.2);
     }
     100% {
         opacity: 0;
@@ -978,8 +1002,8 @@ body {
         filter: blur(8px) brightness(1);
         -webkit-filter: blur(8px) brightness(1);
         text-shadow:
-            0 0 60px rgba(218, 165, 32, 0.1),
-            0 0 120px rgba(218, 165, 32, 0.05);
+            0 0 60px rgba(90, 154, 110, 0.1),
+            0 0 120px rgba(90, 154, 110, 0.05);
     }
 }
 
@@ -997,28 +1021,28 @@ body {
         transform: translateY(0) scale(1);
         filter: blur(0) brightness(1);
         -webkit-filter: blur(0) brightness(1);
-        color: #daa520;
+        color: var(--sage-primary);
     }
     15% {
         opacity: 1;
         transform: translateY(-8px) scale(1.05);
         filter: blur(0) brightness(1.15);
         -webkit-filter: blur(0) brightness(1.15);
-        color: #f4d03f;
+        color: var(--sage-light);
     }
     40% {
         opacity: 0.9;
         transform: translateY(-50px) scale(1.1);
         filter: blur(1px) brightness(1.35);
         -webkit-filter: blur(1px) brightness(1.35);
-        color: #fffacd;
+        color: #d4e8da;
     }
     70% {
         opacity: 0.5;
         transform: translateY(-110px) scale(1.15);
         filter: blur(3px) brightness(1.5);
         -webkit-filter: blur(3px) brightness(1.5);
-        color: #ffffe0;
+        color: #e8f4eb;
     }
     100% {
         opacity: 0;
@@ -1034,7 +1058,7 @@ body {
     /* 타이핑 박스 호흡 애니메이션 비활성화 */
     .type-box {
         animation: none;
-        box-shadow: var(--shadow-golden-subtle);
+        box-shadow: var(--shadow-sage-subtle);
     }
 
     /* 완료 화면 애니메이션 간소화 */
@@ -1232,28 +1256,28 @@ body {
 
 /* 선택 카드 포커스 */
 .sutra-cards .card:focus-visible {
-    outline: 3px solid var(--gradient-color-1);
+    outline: 3px solid var(--sage-primary);
     outline-offset: 4px;
-    box-shadow: 0 0 0 6px rgba(167, 148, 224, 0.2);
+    box-shadow: 0 0 0 6px rgba(90, 154, 110, 0.15);
 }
 
 /* 타이핑 입력창 포커스 */
 .text-input:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(167, 148, 224, 0.3);
+    box-shadow: 0 0 0 3px rgba(90, 154, 110, 0.25);
 }
 
 /* 회향 버튼 포커스 */
 .realm-buttons button:focus-visible {
-    outline: 2px solid var(--golden-primary);
+    outline: 2px solid var(--sage-primary);
     outline-offset: 3px;
-    box-shadow: 0 0 0 5px rgba(218, 165, 32, 0.2);
+    box-shadow: 0 0 0 5px rgba(90, 154, 110, 0.18);
 }
 
 .realm-buttons button.primary:focus-visible {
     outline: 3px solid var(--white);
     outline-offset: 3px;
-    box-shadow: 0 0 0 6px rgba(244, 208, 63, 0.4);
+    box-shadow: 0 0 0 6px rgba(90, 154, 110, 0.35);
 }
 
 /* ========================================

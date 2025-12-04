@@ -6,30 +6,21 @@
 :root {
     --font-main: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
 
-    /* Colors - Light Theme (Sage Green) */
-    --color-background: #FFFFFF;
-    --color-background-subtle: #F8FAF8;
+    /* Colors - Light Theme */
+    --color-background: #F5F5F7;
     --color-text-primary: #1d1d1f;
     --color-text-secondary: #6e6e73;
     --color-text-muted: #86868b;
 
-    /* Sage Green Palette */
-    --sage-primary: #5A9A6E;
-    --sage-light: #8CB89C;
-    --sage-lighter: #B8D4C2;
-    --sage-pale: #E8F0EB;
-    --sage-glow: #F4F9F6;
-
     /* Signature Gradient Colors */
-    --gradient-color-1: #8CB89C;
-    --gradient-color-2: #A3C9AE;
-    --gradient-color-3: #B8D4C2;
+    --gradient-color-1: #a794e0;
+    --gradient-color-2: #89b8ff;
+    --gradient-color-3: #9bebb4;
 
     /* Surfaces */
-    --surface-primary: rgba(255, 255, 255, 0.95);
-    --surface-secondary: rgba(248, 250, 248, 0.9);
-    --border-subtle: rgba(90, 154, 110, 0.12);
-    --border-accent: rgba(90, 154, 110, 0.25);
+    --surface-primary: rgba(255, 255, 255, 0.9);
+    --surface-secondary: rgba(255, 255, 255, 0.6);
+    --border-subtle: rgba(0, 0, 0, 0.06);
 
     /* Transitions */
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -86,17 +77,13 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle,
-        rgba(140, 184, 156, 0.30) 0%,
-        rgba(90, 154, 110, 0.12) 50%,
-        transparent 70%
-    );
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(167, 148, 224, 0.25), transparent 70%);
     border-radius: 50%;
     pointer-events: none;
-    filter: blur(80px);
-    z-index: 1;
+    filter: blur(100px);
+    z-index: -1;
     transition: transform 0.15s ease-out;
 }
 
@@ -109,7 +96,7 @@ body {
     left: 0;
     width: 100%;
     height: 70px;
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(245, 245, 247, 0.8);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border-subtle);
@@ -153,7 +140,7 @@ body {
 .logo-text {
     font-size: 1.1rem;
     font-weight: 600;
-    background: linear-gradient(135deg, var(--sage-primary), var(--sage-light));
+    background: linear-gradient(135deg, var(--gradient-color-1), var(--gradient-color-2));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -210,7 +197,7 @@ body {
 }
 
 .section-subtle {
-    background: rgba(90, 154, 110, 0.03);
+    background: rgba(167, 148, 224, 0.03);
 }
 
 .section-header {
@@ -233,7 +220,7 @@ body {
 .platform-badge {
     display: inline-block;
     padding: 6px 14px;
-    background: rgba(90, 154, 110, 0.1);
+    background: rgba(167, 148, 224, 0.1);
     color: var(--gradient-color-1);
     font-size: 0.8125rem;
     font-weight: 600;
@@ -255,7 +242,7 @@ body {
     height: auto;
     mix-blend-mode: multiply;
     opacity: 0.9;
-    filter: drop-shadow(0 0 40px rgba(90, 154, 110, 0.2));
+    filter: drop-shadow(0 0 40px rgba(167, 148, 224, 0.25));
     margin-bottom: var(--space-lg);
     animation: floatIcon 4s ease-in-out infinite;
 }
@@ -304,8 +291,8 @@ body {
     align-items: center;
     justify-content: center;
     padding: 14px 28px;
-    background: var(--sage-primary);
-    color: #FFFFFF;
+    background: linear-gradient(135deg, var(--gradient-color-1), var(--gradient-color-2));
+    color: white;
     font-size: 1rem;
     font-weight: 600;
     text-decoration: none;
@@ -313,13 +300,12 @@ body {
     border-radius: var(--radius-full);
     cursor: pointer;
     transition: all var(--transition-fast);
-    box-shadow: 0 2px 8px rgba(90, 154, 110, 0.25);
+    box-shadow: 0 4px 20px rgba(167, 148, 224, 0.35);
 }
 
 .btn-primary:hover {
-    background: #4A8A5E;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(90, 154, 110, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(167, 148, 224, 0.45);
 }
 
 .btn-primary:active {
@@ -334,15 +320,14 @@ body {
 .badge-beta {
     display: inline-block;
     margin-left: 8px;
-    padding: 3px 10px;
-    background: rgba(255, 255, 255, 0.9);
-    color: var(--sage-primary);
+    padding: 2px 8px;
+    background: rgba(255, 255, 255, 0.25);
+    color: white;
     font-size: 0.6875rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border-radius: var(--radius-sm);
-    border: none;
     vertical-align: middle;
 }
 
@@ -356,14 +341,14 @@ body {
     font-size: 1rem;
     font-weight: 600;
     text-decoration: none;
-    border: 1.5px solid rgba(90, 154, 110, 0.3);
+    border: 1.5px solid rgba(167, 148, 224, 0.4);
     border-radius: var(--radius-full);
     cursor: pointer;
     transition: all var(--transition-fast);
 }
 
 .btn-secondary:hover {
-    background: rgba(90, 154, 110, 0.08);
+    background: rgba(167, 148, 224, 0.08);
     border-color: var(--gradient-color-1);
 }
 
@@ -398,7 +383,7 @@ body {
 .card-new:hover {
     transform: translateY(-6px);
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
-    border-color: rgba(90, 154, 110, 0.2);
+    border-color: rgba(167, 148, 224, 0.25);
 }
 
 .card-body h3 {
@@ -699,9 +684,9 @@ body {
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    background: var(--sage-primary);
+    background: linear-gradient(135deg, var(--gradient-color-1), var(--gradient-color-2));
     border: none;
-    box-shadow: 0 4px 16px rgba(90, 154, 110, 0.30);
+    box-shadow: 0 4px 20px rgba(167, 148, 224, 0.4);
     cursor: pointer;
     display: flex;
     flex-direction: column;
@@ -710,13 +695,12 @@ body {
     gap: 2px;
     transition: all var(--transition-fast);
     z-index: 999;
-    color: #FFFFFF;
+    color: white;
 }
 
 .fab:hover {
-    background: #4A8A5E;
-    transform: scale(1.05) translateY(-2px);
-    box-shadow: 0 6px 24px rgba(90, 154, 110, 0.40);
+    transform: scale(1.1) translateY(-2px);
+    box-shadow: 0 8px 30px rgba(167, 148, 224, 0.5);
 }
 
 .fab:active {
