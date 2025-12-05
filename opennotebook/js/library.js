@@ -269,7 +269,7 @@ async function loadInitialCards() {
         console.log('Initial cards loaded:', libraryState.cards.length);
     } catch (error) {
         console.error('Failed to load cards:', error);
-        showError('경전을 불러오는데 실패했습니다.');
+        showError('문헌을 불러오는데 실패했습니다.');
     } finally {
         libraryState.isLoading = false;
     }
@@ -525,7 +525,7 @@ function updateResultCount() {
         ? ` / 총 ${libraryState.totalCount.toLocaleString()}개`
         : '';
 
-    countElement.innerHTML = `<span>${total.toLocaleString()}</span>개 경전 표시 중${ofTotal}`;
+    countElement.innerHTML = `<span>${total.toLocaleString()}</span>개 문헌 표시 중${ofTotal}`;
 }
 
 function updateFilterBadges() {
@@ -850,7 +850,7 @@ async function showSourceDetail(sutraId) {
 
     } catch (error) {
         console.error('Error loading source detail:', error);
-        alert('경전 상세 정보를 불러올 수 없습니다.');
+        alert('문헌 상세 정보를 불러올 수 없습니다.');
     }
 }
 
@@ -862,12 +862,12 @@ function createSourceModal() {
     <div class="source-modal" id="sourceModal" onclick="if(event.target === this) closeSourceModal()">
         <div class="source-modal-content" onclick="event.stopPropagation()">
             <!-- Navigation Buttons -->
-            <button class="modal-nav-btn prev" id="modalPrevBtn" onclick="navigateModal(-1)" title="이전 경전 (←)" aria-label="이전 경전">
+            <button class="modal-nav-btn prev" id="modalPrevBtn" onclick="navigateModal(-1)" title="이전 문헌 (←)" aria-label="이전 문헌">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M15 18l-6-6 6-6"/>
                 </svg>
             </button>
-            <button class="modal-nav-btn next" id="modalNextBtn" onclick="navigateModal(1)" title="다음 경전 (→)" aria-label="다음 경전">
+            <button class="modal-nav-btn next" id="modalNextBtn" onclick="navigateModal(1)" title="다음 문헌 (→)" aria-label="다음 문헌">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M9 18l6-6-6-6"/>
                 </svg>
@@ -876,13 +876,13 @@ function createSourceModal() {
             <div class="modal-scroll-wrapper">
                 <div class="modal-header">
                     <button class="modal-close-btn" onclick="closeSourceModal()" aria-label="닫기">×</button>
-                    <h3 id="modalTitle">경전 제목</h3>
+                    <h3 id="modalTitle">문헌 제목</h3>
                     <p id="modalMeta" class="modal-meta">저자 | 시대 | 전통</p>
                     <button class="modal-ask-btn" id="modalAskBtn" onclick="askAboutCurrentSutra()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                         </svg>
-                        이 경전에 대해 질문하기
+                        이 문헌에 대해 질문하기
                     </button>
                 </div>
                 <div class="modal-body">

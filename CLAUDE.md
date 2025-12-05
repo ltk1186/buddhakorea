@@ -84,7 +84,7 @@ function checkInput() {
 
 Different sutra categories have different animation effects on completion (회향):
 
-- **sutra** (경전): `char-fade` - Characters fade upward like smoke
+- **sutra** (문헌): `char-fade` - Characters fade upward like smoke
 - **mantra** (진언): `char-radiate` - Characters radiate outward with random vectors
 - **name** (명호): `char-pureland` - Characters ascend to Pure Land
 - **verse** (게송): `char-fade` - Default fade

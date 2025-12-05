@@ -9,7 +9,6 @@ on:
       - 'sutra-writing.html'
       - 'meditation.html'
       - 'teaching.html'
-      - 'search.html'
       - 'methodology.html'
       - 'css/**'
       - 'js/**'

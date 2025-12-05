@@ -1386,11 +1386,11 @@
                 <div class="hero-stats">
                     <div class="hero-stat">
                         <div class="hero-stat-value">99,723</div>
-                        <div class="hero-stat-label">경전 청크</div>
+                        <div class="hero-stat-label">문헌 청크</div>
                     </div>
                     <div class="hero-stat">
                         <div class="hero-stat-value">2,459</div>
-                        <div class="hero-stat-label">경전 수</div>
+                        <div class="hero-stat-label">문헌 수</div>
                     </div>
                     <div class="hero-stat">
                         <div class="hero-stat-value">Gemini</div>
@@ -1410,7 +1410,7 @@
                             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
                             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
                         </svg>
-                        경전 둘러보기
+                        문헌 둘러보기
                     </button>
                 </div>
 
@@ -1474,7 +1474,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="progress-text" id="progressText">경전 검색 중...</div>
+                    <div class="progress-text" id="progressText">문헌 검색 중...</div>
                 </div>
             </div>
 
@@ -1498,9 +1498,9 @@
                         </div>
                         <div class="chat-option-divider"></div>
                         <div class="chat-option-group">
-                            <span class="chat-option-label">경전</span>
+                            <span class="chat-option-label">문헌</span>
                             <div class="sutra-select-chip" id="sutraSelectChip" onclick="openSutraSelector()">
-                                <span class="sutra-select-name" id="sutraSelectName">전체 경전</span>
+                                <span class="sutra-select-name" id="sutraSelectName">전체 문헌</span>
                             </div>
                         </div>
                     </div>
@@ -1528,10 +1528,10 @@
                 <div class="library-container" id="libraryContainer" style="pointer-events: auto;">
                     <div class="library-header">
                         <div class="library-header-top">
-                            <h2 id="libraryTitle">경전 라이브러리</h2>
+                            <h2 id="libraryTitle">문헌 라이브러리</h2>
                         </div>
                         <div class="library-search-bar">
-                            <input type="text" id="librarySearch" placeholder="경전 제목, 내용 검색..." oninput="handleSearchInput()">
+                            <input type="text" id="librarySearch" placeholder="문헌 제목, 내용 검색..." oninput="handleSearchInput()">
                         </div>
                         <div class="library-filters library-filters-desktop">
                             <select id="libraryThemeFilter" onchange="filterLibraryCards()">
@@ -1551,12 +1551,12 @@
                         </button>
                         <div id="libraryFilterBadges" class="library-filter-badges"></div>
                         <div class="library-results-count" id="libraryResultsCount">
-                            전체 <span>0</span>개 경전
+                            전체 <span>0</span>개 문헌
                         </div>
                     </div>
                     <div id="libraryLoading" class="library-loading" style="display: none;">
                         <div class="loading-spinner"></div>
-                        <p>경전을 불러오는 중...</p>
+                        <p>문헌을 불러오는 중...</p>
                     </div>
                     <div id="libraryEmpty" class="library-empty" style="display: none;">
                         <div class="empty-icon">&#128218;</div>
@@ -1583,7 +1583,7 @@
                     </div>
                     <div class="step-content">
                         <h3 class="step-title">CBETA 대장경</h3>
-                        <p class="step-desc">대정신수대장경(T) 2,459개 경전을 1024 토큰 단위로 분할</p>
+                        <p class="step-desc">대정신수대장경(T) 2,459개 문헌을 1024 토큰 단위로 분할</p>
                         <div class="step-metric"><span class="step-metric-value">99,723</span>개 청크</div>
                     </div>
                 </div>
@@ -1607,7 +1607,7 @@
                     </div>
                     <div class="step-content">
                         <h3 class="step-title">의미 검색</h3>
-                        <p class="step-desc">질문과 가장 유사한 경전 구절을 코사인 유사도로 검색</p>
+                        <p class="step-desc">질문과 가장 유사한 문헌 구절을 코사인 유사도로 검색</p>
                         <div class="step-metric">Top <span class="step-metric-value">10~20</span> 검색</div>
                     </div>
                 </div>
@@ -1619,7 +1619,7 @@
                     </div>
                     <div class="step-content">
                         <h3 class="step-title">AI 답변 생성</h3>
-                        <p class="step-desc">Gemini 2.5 Pro가 검색된 경전을 기반으로 답변 작성</p>
+                        <p class="step-desc">Gemini 2.5 Pro가 검색된 문헌을 기반으로 답변 작성</p>
                         <div class="step-metric"><span class="step-metric-value">2M</span> 토큰 컨텍스트</div>
                     </div>
                 </div>
@@ -1640,7 +1640,7 @@
                 <div class="license-content">
                     <div class="license-section">
                         <p class="license-text">
-                            본 서비스에서 사용된 모든 경전 데이터는 <a href="https://cbeta.org" target="_blank" rel="noopener">CBETA(中華電子佛典協會)</a>의
+                            본 서비스에서 사용된 모든 문헌 데이터는 <a href="https://cbeta.org" target="_blank" rel="noopener">CBETA(中華電子佛典協會)</a>의
                             <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> 라이선스에 따라
                             비영리 교육 및 연구 목적으로만 제공됩니다. 본 프로젝트는 CBETA의 라이선스 조건을 엄격히 준수하고 있습니다.
                         </p>
@@ -1783,7 +1783,7 @@
                 nameEl.innerHTML = `${chatOptions.selectedSutra.title} <button class="sutra-select-clear" onclick="event.stopPropagation(); clearSelectedSutra();">×</button>`;
             } else {
                 chip.classList.remove('has-selection');
-                nameEl.textContent = '전체 경전';
+                nameEl.textContent = '전체 문헌';
             }
         }
 
@@ -2000,7 +2000,7 @@
 
         // Helper functions for streaming (Apple Watch Style)
         const stageMessages = {
-            'searching': '경전 검색 중...',
+            'searching': '문헌 검색 중...',
             'analyzing': '관련 구절 분석 중...',
             'generating': '답변 작성 중...'
         };
@@ -2067,7 +2067,7 @@
             const messageContent = messageContainer.querySelector('.message-content');
             const sourceHtml = `
                 <div class="message-sources">
-                    <div class="message-sources-title">참고 경전</div>
+                    <div class="message-sources-title">참고 문헌</div>
                     <div class="message-source-tags">
                         ${sources.map(s => `<span class="source-tag" onclick="showSourceDetail('${s.text_id}')">${s.title || s.text_id}</span>`).join('')}
                     </div>
@@ -2108,7 +2108,7 @@
 
             const sourceHtml = sources.length > 0 ? `
                 <div class="message-sources">
-                    <div class="message-sources-title">참고 경전</div>
+                    <div class="message-sources-title">참고 문헌</div>
                     <div class="message-source-tags">
                         ${sources.map(s => `<span class="source-tag" onclick="showSourceDetail('${s.text_id}')">${s.title || s.text_id}</span>`).join('')}
                     </div>

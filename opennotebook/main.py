@@ -30,7 +30,7 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_google_vertexai import ChatVertexAI
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain.chains import RetrievalQA
+from langchain_classic.chains import RetrievalQA
 from langchain_core.prompts import PromptTemplate
 
 # Usage tracking
@@ -53,7 +53,7 @@ class AppConfig(BaseSettings):
     anthropic_api_key: Optional[str] = None
 
     # Model Configuration
-    llm_model: str = "claude-3-5-sonnet-20241022"  # For detailed/academic modes
+    llm_model: str = "gemini-2.5-pro"  # For detailed/academic modes
     llm_model_fast: str = "gemini-2.5-flash"  # For normal mode (faster responses)
     embedding_model: str = "BAAI/bge-m3"  # Better for Classical Chinese (75-80% vs 60-70%)
 
@@ -783,16 +783,16 @@ async def lifespan(app: FastAPI):
 
     # Create RAG chain if vectorstore exists
     if app_state.vectorstore:
-        prompt_template = """아래 제공된 불교 경전 내용을 참고하여 질문에 상세하게 답변하세요.
+        prompt_template = """아래 제공된 불교 문헌 내용을 참고하여 질문에 상세하게 답변하세요.
 
 **답변 지침:**
-- 경전의 내용을 기반으로 정확하고 명확하게 설명하세요
+- 문헌의 내용을 기반으로 정확하고 명확하게 설명하세요
 - 여러 전통(초기불교, 대승불교 등)의 관점이 다를 수 있다면 각 관점을 소개하세요
-- 경전 내용을 인용할 때는 인용 표시를 하세요
+- 문헌 내용을 인용할 때는 인용 표시를 하세요
 - 마크다운 헤더(#, ##, ###)를 사용하지 말고 일반 텍스트로 작성하세요
 - 자기소개나 서두 없이 바로 본론으로 시작하세요
 
-참고 경전:
+참고 문헌:
 {context}
 
 Question: {question}
@@ -1074,37 +1074,37 @@ async def chat(request: ChatRequest, http_request: Request):
 
             # Select prompt template based on detailed mode
             if request.detailed_mode:
-                prompt_template = """아래 경전 내용을 바탕으로 **가능한 한 상세하고 포괄적으로** 답변하세요.
+                prompt_template = """아래 문헌 내용을 바탕으로 **가능한 한 상세하고 포괄적으로** 답변하세요.
 
 **답변 지침:**
-1. 경전에 제공된 모든 관련 내용을 최대한 활용하여 **깊이 있게** 설명하세요
+1. 문헌에 제공된 모든 관련 내용을 최대한 활용하여 **깊이 있게** 설명하세요
 2. 여러 관점과 해석이 있다면 모두 소개하세요
-3. 경전 원문을 인용할 때는 인용 표시를 하고, 그 의미를 자세히 풀어 설명하세요
+3. 문헌 원문을 인용할 때는 인용 표시를 하고, 그 의미를 자세히 풀어 설명하세요
 4. 역사적 배경, 맥락, 다른 가르침과의 연결고리를 포함하여 종합적으로 설명하세요
-5. 다른 경전이나 일반적인 불교 지식은 언급하지 마세요 (오직 이 경전의 내용만)
-6. 경전에 전혀 관련이 없는 질문이라면, "이 경전에서는 해당 주제를 다루지 않습니다"라고 답변하세요
+5. 다른 문헌이나 일반적인 불교 지식은 언급하지 마세요 (오직 이 문헌의 내용만)
+6. 문헌에 전혀 관련이 없는 질문이라면, "이 문헌에서는 해당 주제를 다루지 않습니다"라고 답변하세요
 7. **마크다운 헤더(#, ##, ###)를 절대 사용하지 마세요**
 8. **자기소개나 서두 없이 바로 본론으로 시작하세요**
 
-참고 경전:
+참고 문헌:
 {context}
 
 Question: {question}
 
 Answer:"""
             else:
-                prompt_template = """아래 경전 내용을 바탕으로 답변하세요.
+                prompt_template = """아래 문헌 내용을 바탕으로 답변하세요.
 
 **답변 지침:**
-1. 경전에 제공된 내용을 최대한 활용하여 답변하세요
-2. 직접적인 언급이 없더라도 경전에 관련된 내용이 있다면 그것을 바탕으로 설명하세요
-3. 경전의 내용을 인용할 때는 인용 표시를 하세요
-4. 다른 경전이나 일반적인 불교 지식은 언급하지 마세요 (오직 이 경전의 내용만)
-5. 경전에 전혀 관련이 없는 질문이라면, "이 경전에서는 해당 주제를 다루지 않습니다"라고 답변하세요
+1. 문헌에 제공된 내용을 최대한 활용하여 답변하세요
+2. 직접적인 언급이 없더라도 문헌에 관련된 내용이 있다면 그것을 바탕으로 설명하세요
+3. 문헌의 내용을 인용할 때는 인용 표시를 하세요
+4. 다른 문헌이나 일반적인 불교 지식은 언급하지 마세요 (오직 이 문헌의 내용만)
+5. 문헌에 전혀 관련이 없는 질문이라면, "이 문헌에서는 해당 주제를 다루지 않습니다"라고 답변하세요
 6. 마크다운 헤더(#, ##, ###)를 사용하지 말고 일반 텍스트로 작성하세요
 7. 자기소개나 서두 없이 바로 본론으로 시작하세요
 
-참고 경전:
+참고 문헌:
 {context}
 
 Question: {question}
@@ -1144,33 +1144,33 @@ Answer:"""
 
             # Select prompt template based on detailed mode
             if request.detailed_mode:
-                prompt_template = """아래 {tradition} 경전 내용을 바탕으로 **가능한 한 상세하고 포괄적으로** 답변하세요.
+                prompt_template = """아래 {tradition} 문헌 내용을 바탕으로 **가능한 한 상세하고 포괄적으로** 답변하세요.
 
 **답변 지침:**
-1. 경전에 제공된 모든 관련 내용을 최대한 활용하여 **깊이 있게** 설명하세요
+1. 문헌에 제공된 모든 관련 내용을 최대한 활용하여 **깊이 있게** 설명하세요
 2. {tradition}의 관점과 해석을 중심으로 답변하세요
-3. 경전 원문을 인용할 때는 인용 표시를 하고, 그 의미를 자세히 풀어 설명하세요
+3. 문헌 원문을 인용할 때는 인용 표시를 하고, 그 의미를 자세히 풀어 설명하세요
 4. 역사적 배경, 맥락을 포함하여 종합적으로 설명하세요
 5. **마크다운 헤더(#, ##, ###)를 절대 사용하지 마세요**
 6. **자기소개나 서두 없이 바로 본론으로 시작하세요**
 
-참고 경전:
+참고 문헌:
 {{context}}
 
 Question: {{question}}
 
 Answer:""".replace("{tradition}", tradition_filter_normalized)
             else:
-                prompt_template = """아래 {tradition} 경전 내용을 바탕으로 답변하세요.
+                prompt_template = """아래 {tradition} 문헌 내용을 바탕으로 답변하세요.
 
 **답변 지침:**
-1. 경전에 제공된 내용을 최대한 활용하여 답변하세요
+1. 문헌에 제공된 내용을 최대한 활용하여 답변하세요
 2. {tradition}의 관점에서 설명하세요
-3. 경전의 내용을 인용할 때는 인용 표시를 하세요
+3. 문헌의 내용을 인용할 때는 인용 표시를 하세요
 4. 마크다운 헤더(#, ##, ###)를 사용하지 말고 일반 텍스트로 작성하세요
 5. 자기소개나 서두 없이 바로 본론으로 시작하세요
 
-참고 경전:
+참고 문헌:
 {{context}}
 
 Question: {{question}}
@@ -1203,18 +1203,18 @@ Answer:""".replace("{tradition}", tradition_filter_normalized)
             )
 
             # Create detailed prompt
-            prompt_template = """아래 제공된 불교 경전 내용을 참고하여 **가능한 한 상세하고 포괄적으로** 답변하세요.
+            prompt_template = """아래 제공된 불교 문헌 내용을 참고하여 **가능한 한 상세하고 포괄적으로** 답변하세요.
 
 **답변 지침:**
-1. 경전에 제공된 모든 관련 내용을 최대한 활용하여 **깊이 있게** 설명하세요
+1. 문헌에 제공된 모든 관련 내용을 최대한 활용하여 **깊이 있게** 설명하세요
 2. 여러 전통(초기불교, 대승불교 등)의 관점이 다를 수 있다면 각 관점을 자세히 소개하세요
-3. 경전 원문을 인용할 때는 인용 표시를 하고, 그 의미를 자세히 풀어 설명하세요
+3. 문헌 원문을 인용할 때는 인용 표시를 하고, 그 의미를 자세히 풀어 설명하세요
 4. 역사적 배경, 맥락, 다른 가르침과의 연결고리를 포함하여 종합적으로 설명하세요
 5. 가능한 한 구체적인 예시와 비유를 들어 설명하세요
 6. **마크다운 헤더(#, ##, ###)를 절대 사용하지 마세요**
 7. **자기소개나 서두 없이 바로 본론으로 시작하세요**
 
-참고 경전:
+참고 문헌:
 {context}
 
 Question: {question}
@@ -1393,7 +1393,7 @@ async def chat_stream(request: ChatRequest, http_request: Request):
     async def generate():
         try:
             # Stage 1: Searching
-            yield f"data: {json.dumps({'type': 'stage', 'stage': 'searching', 'message': '경전 검색 중...'})}\n\n"
+            yield f"data: {json.dumps({'type': 'stage', 'stage': 'searching', 'message': '문헌 검색 중...'})}\n\n"
             await asyncio.sleep(0.1)  # Small delay for UI update
 
             # Determine retrieval k based on detailed mode
@@ -1486,31 +1486,31 @@ async def chat_stream(request: ChatRequest, http_request: Request):
 
             # Build prompt
             if is_detailed:
-                prompt_template = """아래 경전 내용을 바탕으로 **가능한 한 상세하고 포괄적으로** 답변하세요.
+                prompt_template = """아래 문헌 내용을 바탕으로 **가능한 한 상세하고 포괄적으로** 답변하세요.
 
 **답변 지침:**
-1. 경전에 제공된 모든 관련 내용을 최대한 활용하여 **깊이 있게** 설명하세요
+1. 문헌에 제공된 모든 관련 내용을 최대한 활용하여 **깊이 있게** 설명하세요
 2. 여러 관점과 해석이 있다면 모두 소개하세요
-3. 경전 원문을 인용할 때는 인용 표시를 하고, 그 의미를 자세히 풀어 설명하세요
+3. 문헌 원문을 인용할 때는 인용 표시를 하고, 그 의미를 자세히 풀어 설명하세요
 4. **마크다운 헤더(#, ##, ###)를 절대 사용하지 마세요**
 5. **자기소개나 서두 없이 바로 본론으로 시작하세요**
 
-참고 경전:
+참고 문헌:
 {context}
 
 Question: {question}
 
 Answer:"""
             else:
-                prompt_template = """아래 제공된 불교 경전 내용을 참고하여 질문에 답변하세요.
+                prompt_template = """아래 제공된 불교 문헌 내용을 참고하여 질문에 답변하세요.
 
 **답변 지침:**
-- 경전의 내용을 기반으로 정확하고 명확하게 설명하세요
-- 경전 내용을 인용할 때는 인용 표시를 하세요
+- 문헌의 내용을 기반으로 정확하고 명확하게 설명하세요
+- 문헌 내용을 인용할 때는 인용 표시를 하세요
 - 마크다운 헤더(#, ##, ###)를 사용하지 말고 일반 텍스트로 작성하세요
 - 자기소개나 서두 없이 바로 본론으로 시작하세요
 
-참고 경전:
+참고 문헌:
 {context}
 
 Question: {question}

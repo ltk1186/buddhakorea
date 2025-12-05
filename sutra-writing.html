@@ -35,7 +35,7 @@
     <!-- 메인 컨테이너 -->
     <div class="sutra-page">
 
-        <!-- 1. 경전 선택 화면 -->
+        <!-- 1. 문헌 선택 화면 -->
         <div id="screen-select" class="screen show">
             <div class="center-box">
                 <h1>전자 사경</h1>
@@ -55,7 +55,7 @@
                             aria-selected="false"
                             aria-controls="sutra-card-container"
                             data-category="sutra">
-                        경전
+                        문헌
                     </button>
                     <button class="tab-btn"
                             role="tab"
@@ -94,7 +94,7 @@
         <!-- 2. 사경 작성 화면 -->
         <div id="screen-write" class="screen">
             <div class="write-container">
-                <button class="back-btn" onclick="goBack()" aria-label="경전 선택 화면으로 돌아가기">← 돌아가기</button>
+                <button class="back-btn" onclick="goBack()" aria-label="문헌 선택 화면으로 돌아가기">← 돌아가기</button>
 
                 <h2 id="sutra-name" class="sutra-name">자애경</h2>
 
@@ -134,13 +134,13 @@
                     <div id="text-bg" class="text-bg" aria-live="polite" aria-atomic="false"></div>
                     <!-- Traditional Mode: Textarea -->
                     <textarea id="text-input" class="text-input"
-                              aria-label="경전 타이핑 입력창"
+                              aria-label="문헌 타이핑 입력창"
                               aria-describedby="sutra-name"></textarea>
                     <!-- Easy Mode: Contenteditable -->
                     <div id="text-input-easy" class="text-input-easy"
                          contenteditable="true"
                          spellcheck="false"
-                         aria-label="경전 타이핑 입력창 (편안한 모드)"
+                         aria-label="문헌 타이핑 입력창 (편안한 모드)"
                          aria-describedby="sutra-name"
                          style="display: none;"></div>
                 </div>
@@ -274,7 +274,7 @@
             } catch (error) {
                 console.error('Failed to load sutra data:', error);
                 const container = document.getElementById('sutra-card-container');
-                container.innerHTML = '<p style="color: red; text-align: center;">경전 데이터를 불러오는데 실패했습니다. 페이지를 새로고침해주세요.</p>';
+                container.innerHTML = '<p style="color: red; text-align: center;">문헌 데이터를 불러오는데 실패했습니다. 페이지를 새로고침해주세요.</p>';
             }
         });
     </script>

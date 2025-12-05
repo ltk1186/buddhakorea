@@ -28,7 +28,7 @@ dataLoadedPromise.then(() => {
     console.log('Sutra data ready for use');
 }).catch(error => {
     console.error('Failed to load sutra data:', error);
-    alert('경전 데이터를 불러오는데 실패했습니다. 페이지를 새로고침해주세요.');
+    alert('문헌 데이터를 불러오는데 실패했습니다. 페이지를 새로고침해주세요.');
 });
 
 // ========================================
@@ -158,7 +158,7 @@ function showScreen(id) {
 }
 
 // ========================================
-// 경전 선택
+// 문헌 선택
 // ========================================
 function selectSutra(id) {
     if (!dataLoaded) {

@@ -19,7 +19,7 @@ python golden_set_builder.py
 ```
 
 이 스크립트는:
-- CBETA 경전 요약을 읽고
+- CBETA 문헌 요약을 읽고
 - Gemini 2.0 Flash로 고품질 Q&A 생성
 - Factual, Interpretive, Practical 질문을 골고루 분포
 - `golden_set.json`에 저장 (자동 checkpoint)

@@ -1597,14 +1597,14 @@
     <!-- Source Explorer Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <h2>📖 경전 라이브러리</h2>
-            <p id="sourceCount">경전 목록을 불러오는 중...</p>
+            <h2>📖 문헌 라이브러리</h2>
+            <p id="sourceCount">문헌 목록을 불러오는 중...</p>
         </div>
         <div class="sidebar-search">
             <input
                 type="text"
                 id="sourceSearch"
-                placeholder="경전 검색..."
+                placeholder="문헌 검색..."
                 oninput="filterSources()"
             />
             <select id="themeFilter" onchange="filterSources()" style="margin-top: 10px; width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px;">
@@ -1631,8 +1631,8 @@
                 <h1 style="margin-bottom: 8px;">🙏 불교 AI 챗봇</h1>
                 <p style="margin: 0;">Fine-tuned BERT 임베딩 + Gemini 2.5 Pro | CBETA 대장경 99,723 문서</p>
             </div>
-            <button class="library-header-btn" onclick="openLibrary()" aria-label="경전 라이브러리 열기">
-                📚 경전 라이브러리
+            <button class="library-header-btn" onclick="openLibrary()" aria-label="문헌 라이브러리 열기">
+                📚 문헌 라이브러리
             </button>
         </div>
 
@@ -1650,7 +1650,7 @@
             <div class="message assistant">
                 <div class="message-content">
                     안녕하세요! 저는 CBETA 대장경을 기반으로 한 불교 AI 챗봇입니다.<br><br>
-                    궁금하신 불교 교리나 경전 내용을 질문해 주세요. 정확한 출처와 함께 답변드리겠습니다.
+                    궁금하신 불교 교리나 문헌 내용을 질문해 주세요. 정확한 출처와 함께 답변드리겠습니다.
                 </div>
             </div>
         </div>
@@ -1700,15 +1700,15 @@
     <div class="modal" id="sourceModal" onclick="if(event.target === this) closeModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <!-- Previous Button -->
-            <button class="modal-nav-button prev" id="modalPrevBtn" onclick="navigateModal(-1)" title="이전 경전 (←)" aria-label="이전 경전"></button>
+            <button class="modal-nav-button prev" id="modalPrevBtn" onclick="navigateModal(-1)" title="이전 문헌 (←)" aria-label="이전 문헌"></button>
 
             <!-- Next Button -->
-            <button class="modal-nav-button next" id="modalNextBtn" onclick="navigateModal(1)" title="다음 경전 (→)" aria-label="다음 경전"></button>
+            <button class="modal-nav-button next" id="modalNextBtn" onclick="navigateModal(1)" title="다음 문헌 (→)" aria-label="다음 문헌"></button>
 
             <div class="modal-scroll-wrapper">
                 <div class="modal-header">
                     <button class="modal-close" onclick="closeModal()">×</button>
-                    <h3 id="modalTitle">경전 제목</h3>
+                    <h3 id="modalTitle">문헌 제목</h3>
                     <p id="modalMeta">저자 | 시대 | 전통</p>
                 </div>
                 <div class="modal-body">
@@ -1793,12 +1793,12 @@
                 filteredSources = [...allSources];
 
                 document.getElementById('sourceCount').textContent =
-                    `총 ${data.total.toLocaleString()}개 경전 (${data.sources.length}개 표시)`;
+                    `총 ${data.total.toLocaleString()}개 문헌 (${data.sources.length}개 표시)`;
 
                 renderSources();
             } catch (error) {
                 console.error('Error loading sources:', error);
-                document.getElementById('sourceCount').textContent = '경전 로딩 실패';
+                document.getElementById('sourceCount').textContent = '문헌 로딩 실패';
             }
         }
 
@@ -1851,7 +1851,7 @@
             });
 
             document.getElementById('sourceCount').textContent =
-                `총 ${allSources.length.toLocaleString()}개 경전 (${filteredSources.length}개 표시)`;
+                `총 ${allSources.length.toLocaleString()}개 문헌 (${filteredSources.length}개 표시)`;
 
             renderSources();
         }
@@ -1913,7 +1913,7 @@
                 updateModalNavButtons();
             } catch (error) {
                 console.error('Error loading source detail:', error);
-                alert('경전 상세 정보를 불러올 수 없습니다.');
+                alert('문헌 상세 정보를 불러올 수 없습니다.');
             }
         }
 
@@ -2542,7 +2542,7 @@
             <section class="method-section">
                 <h3>📚 CBETA 대정신수대장경 (T)</h3>
                 <p>전자불전문화재단(CBETA)의 <strong>대정신수대장경(Taishō Tripiṭaka)</strong> 컬렉션을 사용합니다.</p>
-                <p>CBETA 전체가 아닌, <strong>T 폴더의 경전만</strong> 선별하여 높은 품질의 데이터를 확보했습니다.</p>
+                <p>CBETA 전체가 아닌, <strong>T 폴더의 문헌만</strong> 선별하여 높은 품질의 데이터를 확보했습니다.</p>
                 <div class="feature-badge" title="대정신수대장경 T 폴더">99,723개 청크</div>
             </section>
 
@@ -2556,7 +2556,7 @@
                 gemini-embedding-001 모델로 CBETA 대장경 전체(99,723개 청크)를 재임베딩하여 ChromaDB에 저장했습니다.<br>
                 사용자 질문도 동일한 Gemini 모델로 실시간 임베딩하여 의미 기반 검색을 수행합니다.</p>
 
-                <p>벡터 공간에서 질문과 <strong>의미가 유사한 경전</strong>을 밀리초 단위로 검색합니다.</p>
+                <p>벡터 공간에서 질문과 <strong>의미가 유사한 문헌</strong>을 밀리초 단위로 검색합니다.</p>
                 <div class="feature-badge" title="현재 검색 가능한 청크 수">🔍 99,723개 청크 검색 가능</div>
                 <div class="feature-badge" title="현재 사용 중인 임베딩">3072-dim (Gemini)</div>
             </section>
@@ -2567,20 +2567,20 @@
 
                 <p><strong>작동 원리:</strong></p>
                 <p>① 질문을 Gemini로 3072차원 벡터로 변환<br>
-                ② ChromaDB에서 유사도 상위 10개 경전 추출 (자세히 모드: 20개)<br>
-                ③ 추출된 경전을 Gemini 2.5 Pro에 함께 제공</p>
+                ② ChromaDB에서 유사도 상위 10개 문헌 추출 (자세히 모드: 20개)<br>
+                ③ 추출된 문헌을 Gemini 2.5 Pro에 함께 제공</p>
 
-                <p>단순 키워드 매칭이 아닌, <strong>의미 기반 검색</strong>으로 관련 경전을 찾습니다.</p>
+                <p>단순 키워드 매칭이 아닌, <strong>의미 기반 검색</strong>으로 관련 문헌을 찾습니다.</p>
             </section>
 
             <section class="method-section">
                 <h3>🤖 Gemini 2.5 Pro 답변 생성</h3>
-                <p><strong>Google Gemini 2.5 Pro</strong> (Vertex AI)가 검색된 경전을 분석하여 답변을 작성합니다.</p>
+                <p><strong>Google Gemini 2.5 Pro</strong> (Vertex AI)가 검색된 문헌을 분석하여 답변을 작성합니다.</p>
 
                 <p><strong>왜 Gemini 2.5 Pro인가?</strong></p>
                 <p>✨ <strong>2M 토큰 컨텍스트</strong> - 일반 모델 대비 15배 이상!<br>
                 📚 약 1,500페이지 분량을 동시 분석 가능<br>
-                🎯 여러 경전을 종합하여 깊이 있는 답변 생성</p>
+                🎯 여러 문헌을 종합하여 깊이 있는 답변 생성</p>
 
                 <div class="feature-badge" title="컨텍스트 윈도우 크기">2M 토큰 = 1,500페이지</div>
             </section>
@@ -2595,7 +2595,7 @@
 ③ ChromaDB 벡터 검색
    → 유사도 계산 (문서도 Gemini 3072-dim)
    ↓
-④ 상위 10개 경전 추출 (자세히: 20개)
+④ 상위 10개 문헌 추출 (자세히: 20개)
    → 관련도 높은 구절 선별
    ↓
 ⑤ Gemini 2.5 Pro 분석
@@ -2608,7 +2608,7 @@
                 <h3>💡 기술 용어 설명</h3>
                 <p><strong>임베딩 (Embedding)</strong>: 텍스트를 숫자 벡터로 변환하는 기술. 의미가 비슷한 문장은 벡터 공간에서 가까운 위치에 배치됩니다.</p>
 
-                <p><strong>벡터 (Vector)</strong>: 다차원 숫자 좌표. 현재 시스템은 경전과 질문 모두 Gemini로 3072차원 공간의 한 점으로 표현합니다.</p>
+                <p><strong>벡터 (Vector)</strong>: 다차원 숫자 좌표. 현재 시스템은 문헌과 질문 모두 Gemini로 3072차원 공간의 한 점으로 표현합니다.</p>
 
                 <p><strong>2가지 임베딩 모델 실험</strong>: 처음에 BAAI/bge-m3 (1024-dim)로 임베딩했고, 이후 Gemini (3072-dim)로 재임베딩했습니다. 현재는 Gemini 임베딩을 사용합니다.</p>
             </section>
@@ -2637,7 +2637,7 @@
             <!-- Header -->
             <div class="library-header">
                 <div class="library-header-top">
-                    <h2 id="libraryTitle">📚 경전 라이브러리</h2>
+                    <h2 id="libraryTitle">📚 문헌 라이브러리</h2>
                     <button class="library-close" onclick="closeLibrary()" aria-label="라이브러리 닫기">
                         ✕
                     </button>
@@ -2648,8 +2648,8 @@
                     <input
                         type="text"
                         id="librarySearch"
-                        placeholder="경전 제목, 내용 검색..."
-                        aria-label="경전 검색"
+                        placeholder="문헌 제목, 내용 검색..."
+                        aria-label="문헌 검색"
                         oninput="handleSearchInput()"
                     />
                 </div>
@@ -2683,14 +2683,14 @@
 
                 <!-- Results Count -->
                 <div class="library-results-count" id="libraryResultsCount">
-                    전체 <span>0</span>개 경전
+                    전체 <span>0</span>개 문헌
                 </div>
             </div>
 
             <!-- Loading State -->
             <div id="libraryLoading" class="library-loading" style="display: none;">
                 <div class="loading-spinner"></div>
-                <p>경전을 불러오는 중...</p>
+                <p>문헌을 불러오는 중...</p>
             </div>
 
             <!-- Empty State -->

@@ -40,7 +40,7 @@ def log_qa_pair(
         query: Full user query (no truncation)
         response: Full LLM response (no truncation)
         detailed_mode: Whether /자세히 mode was used
-        sutra_filter: T-number if /경전 filter was used
+        sutra_filter: T-number if /문헌 filter was used
         session_id: Session ID (optional)
         model: Model name used for generation
         sources: List of source documents referenced
