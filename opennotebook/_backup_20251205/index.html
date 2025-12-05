@@ -20,28 +20,28 @@
     <style>
         /* ===== CSS Variables ===== */
         :root {
-            /* Colors - Sage Green (matching main site) */
-            --primary: #5A9A6E;
-            --primary-light: #8CB89C;
-            --secondary: #A3C9AE;
-            --accent: #B8D4C2;
-            --gold: #5A9A6E;
+            /* Colors */
+            --primary: #a794e0;
+            --primary-light: #c4b8f0;
+            --secondary: #89b8ff;
+            --accent: #9bebb4;
+            --gold: #daa520;
 
-            /* Backgrounds - Light Theme */
-            --bg-dark: #FFFFFF;
-            --bg-medium: #F8FAF8;
-            --bg-light: #E8F0EB;
-            --bg-card: rgba(255, 255, 255, 0.95);
+            /* Backgrounds */
+            --bg-dark: #0a0e1a;
+            --bg-medium: #12162d;
+            --bg-light: #1a1f3d;
+            --bg-card: rgba(26, 31, 61, 0.8);
 
-            /* Glass - Light Theme */
-            --glass-bg: rgba(255, 255, 255, 0.8);
-            --glass-border: rgba(90, 154, 110, 0.15);
+            /* Glass */
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(167, 148, 224, 0.15);
             --glass-blur: blur(20px);
 
-            /* Text - Dark on Light */
-            --text-primary: #1d1d1f;
-            --text-secondary: #6e6e73;
-            --text-muted: #86868b;
+            /* Text */
+            --text-primary: rgba(255, 255, 255, 0.95);
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-muted: rgba(255, 255, 255, 0.5);
 
             /* Typography */
             --font-main: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
@@ -258,12 +258,12 @@
         .btn-primary {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            box-shadow: 0 4px 20px rgba(90, 154, 110, 0.4);
+            box-shadow: 0 4px 20px rgba(167, 148, 224, 0.4);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(90, 154, 110, 0.5);
+            box-shadow: 0 8px 30px rgba(167, 148, 224, 0.5);
         }
 
         .btn-secondary {
@@ -299,7 +299,7 @@
         }
 
         .sample-question:hover {
-            background: rgba(90, 154, 110, 0.15);
+            background: rgba(167, 148, 224, 0.15);
             border-color: var(--primary);
             color: var(--text-primary);
         }
@@ -360,7 +360,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(10, 14, 26, 0.9);
             backdrop-filter: var(--glass-blur);
             border-bottom: 1px solid var(--glass-border);
             padding: var(--space-md) var(--space-lg);
@@ -495,8 +495,8 @@
         }
 
         .message.user .message-text {
-            background: rgba(90, 154, 110, 0.15);
-            border-color: rgba(90, 154, 110, 0.3);
+            background: rgba(167, 148, 224, 0.15);
+            border-color: rgba(167, 148, 224, 0.3);
             border-top-left-radius: 16px;
             border-top-right-radius: 4px;
         }
@@ -571,13 +571,13 @@
         }
 
         .chat-chip:hover {
-            background: rgba(90, 154, 110, 0.1);
+            background: rgba(167, 148, 224, 0.1);
             border-color: var(--primary);
             color: var(--text-primary);
         }
 
         .chat-chip.active {
-            background: rgba(90, 154, 110, 0.2);
+            background: rgba(167, 148, 224, 0.2);
             border-color: var(--primary);
             color: var(--primary);
         }
@@ -611,7 +611,7 @@
         }
 
         .sutra-select-chip:hover {
-            background: rgba(90, 154, 110, 0.1);
+            background: rgba(167, 148, 224, 0.1);
             border-color: var(--primary);
         }
 
@@ -694,7 +694,7 @@
 
         .chat-input:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(90, 154, 110, 0.15);
+            box-shadow: 0 0 0 4px rgba(167, 148, 224, 0.15);
         }
 
         .chat-send-btn {
@@ -790,7 +790,7 @@
         }
 
         .welcome-suggestion:hover {
-            background: rgba(90, 154, 110, 0.15);
+            background: rgba(167, 148, 224, 0.15);
             border-color: var(--primary);
             color: var(--text-primary);
         }
@@ -856,10 +856,10 @@
 
         @keyframes ringPulse {
             0%, 100% {
-                box-shadow: 0 0 0 0 rgba(90, 154, 110, 0.4);
+                box-shadow: 0 0 0 0 rgba(167, 148, 224, 0.4);
             }
             50% {
-                box-shadow: 0 0 0 8px rgba(90, 154, 110, 0);
+                box-shadow: 0 0 0 8px rgba(167, 148, 224, 0);
             }
         }
 
@@ -921,7 +921,7 @@
             left: 0;
             right: 0;
             height: var(--tab-bar-height);
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(10, 14, 26, 0.95);
             backdrop-filter: var(--glass-blur);
             border-top: 1px solid var(--glass-border);
             display: flex;
@@ -1081,7 +1081,7 @@
             gap: 6px;
             margin-top: var(--space-sm);
             padding: 6px 12px;
-            background: rgba(90, 154, 110, 0.1);
+            background: rgba(167, 148, 224, 0.1);
             border-radius: 100px;
             font-size: 0.8125rem;
             color: var(--primary);
@@ -1126,7 +1126,7 @@
             margin-top: var(--space-2xl);
             padding: var(--space-lg);
             background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(90, 154, 110, 0.1);
+            border: 1px solid rgba(167, 148, 224, 0.1);
             border-radius: 12px;
             max-width: 700px;
         }
@@ -1138,7 +1138,7 @@
             margin-bottom: var(--space-md);
             text-align: center;
             padding-bottom: var(--space-sm);
-            border-bottom: 1px solid rgba(90, 154, 110, 0.1);
+            border-bottom: 1px solid rgba(167, 148, 224, 0.1);
         }
 
         .license-content {
@@ -1211,7 +1211,7 @@
             left: 0;
             right: 0;
             height: var(--header-height);
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(10, 14, 26, 0.95);
             backdrop-filter: var(--glass-blur);
             border-bottom: 1px solid var(--glass-border);
             display: none;
@@ -1265,7 +1265,7 @@
         }
 
         .desktop-nav-link.active {
-            background: rgba(90, 154, 110, 0.15);
+            background: rgba(167, 148, 224, 0.15);
             color: var(--primary);
         }
 
