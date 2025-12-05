@@ -637,9 +637,9 @@
 }
 
 .library-card-tag.tradition {
-    background: rgba(137, 184, 255, 0.08);
-    border-color: rgba(137, 184, 255, 0.2);
-    color: var(--secondary);
+    background: rgba(90, 154, 110, 0.1);
+    border-color: rgba(90, 154, 110, 0.25);
+    color: #5A9A6E;
 }
 
 .library-card-tag.period {
@@ -649,7 +649,7 @@
 }
 
 .library-card:hover .library-card-tag {
-    border-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(90, 154, 110, 0.35);
 }
 
 /* Scroll sentinel for infinite scroll */
