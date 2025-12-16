@@ -30,7 +30,7 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_google_vertexai import ChatVertexAI
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_classic.chains import RetrievalQA
+from langchain.chains import RetrievalQA
 from langchain_core.prompts import PromptTemplate
 
 # Usage tracking
