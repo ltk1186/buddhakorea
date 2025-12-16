@@ -4,9 +4,9 @@ on:
   push:
     branches: [main]
     paths:
-      - 'opennotebook/**'
-      - '!opennotebook/archive/**'
-      - '!opennotebook/**/*.md'
+      - 'backend/**'
+      - 'config/**'
+      - 'Dockerfile'
       - '.github/workflows/deploy-hetzner.yml'
   workflow_dispatch:  # 수동 배포 허용
 
@@ -26,14 +26,17 @@ jobs:
           port: 22
           script: |
             echo "🎉 Connecting to Hetzner Server..."
+            # Assuming the repo is cloned into /opt/buddha-korea
             cd /opt/buddha-korea
 
             echo "📥 Pulling latest code..."
+            # Ensure we are in a safe directory
             git config --global --add safe.directory /opt/buddha-korea
             git pull origin main
 
             echo "🐳 Rebuilding Docker containers..."
-            docker compose up -d --build
+            # Use the config file in the new location
+            docker compose -f config/docker-compose.yml up -d --build
 
             echo "🧹 Cleaning up..."
             docker image prune -f

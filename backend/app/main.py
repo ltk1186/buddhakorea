@@ -116,14 +116,14 @@ logger.add(sys.stdout, level=config.log_level.upper(), serialize=True, enqueue=T
 
 
 # ============================================================================
-# Session Management for Follow-up Questions
+# Session Management - Redis (Persistent)
 # ============================================================================
 
-# In-memory session storage (for production, consider Redis)
-CONVERSATION_SESSIONS: Dict[str, Dict[str, Any]] = {}
-SESSION_TTL_SECONDS = 3600  # 1 hour
-MAX_MESSAGES_PER_SESSION = 20
-MAX_CONVERSATION_HISTORY_TURNS = 5  # Keep last 5 turns in context
+from redis_session import get_session_manager, RedisSessionManager
+
+# Initialize session manager lazily in lifespan
+session_manager: Optional[RedisSessionManager] = None
+MAX_CONVERSATION_HISTORY_TURNS = 5  # Keep for local context usage if needed
 
 
 # ============================================================================
@@ -312,7 +312,7 @@ app_state = AppState()
 
 def create_or_get_session(session_id: Optional[str] = None) -> str:
     """
-    Create a new session or retrieve existing one.
+    Create a new session or retrieve existing one (Redis-backed).
 
     Args:
         session_id: Optional existing session ID
@@ -320,32 +320,10 @@ def create_or_get_session(session_id: Optional[str] = None) -> str:
     Returns:
         Session ID (new or existing)
     """
-    # If session_id provided, check if it exists and is not expired
-    if session_id and session_id in CONVERSATION_SESSIONS:
-        session = CONVERSATION_SESSIONS[session_id]
-        # Check if session expired
-        if datetime.now() - session['last_accessed'] > timedelta(seconds=SESSION_TTL_SECONDS):
-            logger.info(f"Session {session_id[:8]}... expired, creating new session")
-            del CONVERSATION_SESSIONS[session_id]
-            session_id = None
-        else:
-            # Update last accessed time
-            session['last_accessed'] = datetime.now()
-            logger.info(f"Reusing session {session_id[:8]}... (depth: {len(session['messages'])//2})")
-            return session_id
-
-    # Create new session
-    new_session_id = str(uuid.uuid4())
-    CONVERSATION_SESSIONS[new_session_id] = {
-        'session_id': new_session_id,
-        'created_at': datetime.now(),
-        'last_accessed': datetime.now(),
-        'messages': [],  # List of {'role': 'user'|'assistant', 'content': str}
-        'context_chunks': [],  # Retrieved document chunks
-        'metadata': {}  # Store query parameters (detailed_mode, sutra_filter, etc.)
-    }
-    logger.info(f"Created new session {new_session_id[:8]}...")
-    return new_session_id
+    if not session_manager:
+        logger.warning("Session manager not initialized, using temporary ID")
+        return str(uuid.uuid4())
+    return session_manager.create_or_get_session(session_id)
 
 
 def update_session(
@@ -356,80 +334,27 @@ def update_session(
     metadata: Dict[str, Any]
 ):
     """
-    Update session with new message exchange and context.
-
-    Args:
-        session_id: Session ID
-        user_message: User's question
-        assistant_message: Assistant's response
-        context_chunks: Retrieved context chunks
-        metadata: Query metadata (detailed_mode, sutra_filter, etc.)
+    Update session with new message exchange and context (Redis-backed).
     """
-    if session_id not in CONVERSATION_SESSIONS:
-        logger.warning(f"Session {session_id[:8]}... not found, cannot update")
-        return
-
-    session = CONVERSATION_SESSIONS[session_id]
-
-    # Add messages
-    session['messages'].append({'role': 'user', 'content': user_message})
-    session['messages'].append({'role': 'assistant', 'content': assistant_message})
-
-    # Store context chunks (only if this is the first query or context changed significantly)
-    if not session['context_chunks'] or not metadata.get('is_followup', False):
-        session['context_chunks'] = context_chunks
-
-    # Update metadata
-    session['metadata'].update(metadata)
-
-    # Enforce max messages limit
-    if len(session['messages']) > MAX_MESSAGES_PER_SESSION * 2:  # *2 because user+assistant pair
-        # Remove oldest pair
-        session['messages'] = session['messages'][2:]
-        logger.info(f"Session {session_id[:8]}... trimmed to {len(session['messages'])//2} exchanges")
-
-    session['last_accessed'] = datetime.now()
+    if session_manager:
+        session_manager.update_session(
+            session_id, user_message, assistant_message, context_chunks, metadata
+        )
 
 
 def get_session_context(session_id: str) -> Dict[str, Any]:
     """
-    Get session conversation history and context.
-
-    Args:
-        session_id: Session ID
-
-    Returns:
-        Dict with 'messages', 'context_chunks', 'metadata'
+    Get session conversation history and context (Redis-backed).
     """
-    if session_id not in CONVERSATION_SESSIONS:
-        return {'messages': [], 'context_chunks': [], 'metadata': {}}
-
-    session = CONVERSATION_SESSIONS[session_id]
-
-    # Get last N turns for context (to avoid overwhelming LLM)
-    recent_messages = session['messages'][-MAX_CONVERSATION_HISTORY_TURNS * 2:]
-
-    return {
-        'messages': recent_messages,
-        'context_chunks': session['context_chunks'],
-        'metadata': session['metadata'],
-        'conversation_depth': len(session['messages']) // 2
-    }
+    if not session_manager:
+        return {'messages': [], 'context_chunks': [], 'metadata': {}, 'conversation_depth': 0}
+    return session_manager.get_session_context(session_id)
 
 
 def cleanup_expired_sessions():
-    """Remove sessions that have exceeded TTL."""
-    now = datetime.now()
-    expired = [
-        sid for sid, session in CONVERSATION_SESSIONS.items()
-        if now - session['last_accessed'] > timedelta(seconds=SESSION_TTL_SECONDS)
-    ]
-
-    for sid in expired:
-        del CONVERSATION_SESSIONS[sid]
-
-    if expired:
-        logger.info(f"Cleaned up {len(expired)} expired sessions")
+    """Remove sessions that have exceeded TTL (handled by Redis or fallback)."""
+    if session_manager:
+        session_manager.cleanup_expired()
 
 
 def format_conversation_history(messages: List[Dict[str, str]]) -> str:
@@ -638,6 +563,12 @@ async def lifespan(app: FastAPI):
 
     # Load response cache
     load_response_cache()
+
+    # Initialize Redis session manager
+    global session_manager
+    session_manager = get_session_manager()
+    stats = session_manager.get_stats()
+    logger.info(f"✓ Session manager initialized: {stats}")
 
     # Load sutra library cache
     logger.info("Loading sutra library cache...")
