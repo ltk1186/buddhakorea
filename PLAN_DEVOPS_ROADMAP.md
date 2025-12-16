@@ -1,21 +1,152 @@
 # DevOps 로드맵 (VM 유지 + 안정성 중심)
 
 > **결정사항**: GCE VM 유지, Cloud Run은 비활성화
-> **마지막 업데이트**: 2025-12-03
+> **마지막 업데이트**: 2025-12-09 (Verified by Codebase Audit)
 > **검토자**: GCP DevOps Advisor
+
+---
+
+## 시스템 아키텍처 개요
+
+### RAG (Retrieval-Augmented Generation) 파이프라인
+
+```
+사용자 질문: "반야심경의 핵심 가르침은?"
+         │
+         ▼
+┌─────────────────────────────────────┐
+│  1. Vertex AI (Gemini Embedding)    │  ← 텍스트 → 벡터 변환만 담당
+│     모델: gemini-embedding-001      │
+│     입력: "반야심경..."             │
+│     출력: [0.23, -0.45, ..., 0.12]  │
+│           (3072차원 벡터)           │
+└─────────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────┐
+│  2. ChromaDB (벡터 검색 엔진)       │  ← 실제 시맨틱 검색 수행
+│     - 쿼리 벡터를 받아서            │
+│     - 3GB 사전 인덱싱된 DB 검색     │
+│     - 코사인 유사도로 가장 가까운   │
+│       문서 청크들을 찾음            │
+│     - top-k 관련 청크 반환          │
+└─────────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────┐
+│  3. Vertex AI (Gemini LLM)          │  ← 검색된 청크로 답변 생성
+│     모델: gemini-2.5-pro (상세)     │
+│           gemini-2.5-flash (일반)   │
+│     입력: 관련 청크 + 사용자 질문   │
+│     출력: 한국어 답변               │
+└─────────────────────────────────────┘
+         │
+         ▼
+       답변 반환
+```
+
+### 핵심 개념 정리
+
+| 용어 | 설명 | 역할 |
+|------|------|------|
+| **Vertex AI** | Google Cloud의 AI/ML 플랫폼 | 임베딩 생성 + LLM 답변 생성 |
+| **ChromaDB** | 오픈소스 벡터 데이터베이스 | **시맨틱 검색 (유사도 매칭)** 수행 |
+| **임베딩** | 텍스트를 숫자 벡터로 변환 | 의미적 유사성 비교 가능하게 함 |
+| **RAG** | 검색 증강 생성 | 외부 지식을 LLM에 주입하는 기법 |
+
+### GCP 서비스별 역할
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    GCP 서비스 역할                          │
+├─────────────────────────────────────────────────────────────┤
+│ Compute Engine (VM)                                         │
+│   └── Docker Compose로 3개 컨테이너 실행                    │
+│       ├── FastAPI (백엔드 API)                              │
+│       ├── ChromaDB (벡터 검색 - 파일 기반)                  │
+│       ├── Nginx (리버스 프록시 + SSL)                       │
+│       └── (Planned) Redis (캐싱 + 세션)                     │
+│                                                             │
+│ Vertex AI                                                   │
+│   ├── gemini-embedding-001: 쿼리 임베딩 (API 호출)         │
+│   └── gemini-2.5-pro/flash: 답변 생성 (API 호출)           │
+│                                                             │
+│ IAM + Workload Identity Federation                          │
+│   └── GitHub Actions → GCP 인증 (SSH 키 없이)               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
 
 ## 현재 상태 → 목표
 
 ```
 현재                                목표
 ─────────────────────────────────────────────────────────────
-인프라:      VM + Cloud Run 혼재     VM 단일화 (Cloud Run 비활성화)
-CI/CD:       수동 배포              GitHub Actions + IAP 자동 배포
-보안:        SSH 키 기반            Workload Identity Federation
+인프라:      VM 단일화 (완료)        Redis 컨테이너 추가
+CI/CD:       GitHub Actions + IAP   (완료)
+보안:        WIF (키 없음)          (완료)
 모니터링:    없음                   Cloud Monitoring + 구조화된 로깅
 백업:        없음                   자동 백업 (ChromaDB, Redis)
 비용:        최적화 없음            LLM 캐싱으로 40% 절감
 ```
+
+---
+
+## GitHub Actions 배포 트리거 이해하기
+
+### 왜 어떤 커밋은 배포되고 어떤 커밋은 안 되는가?
+
+GitHub Actions 워크플로우의 `paths` 필터가 결정합니다:
+
+```yaml
+# .github/workflows/deploy-vm.yml
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'opennotebook/**'    # ← 이 폴더 변경시에만 트리거
+      - '!opennotebook/archive/**'  # archive 폴더는 제외
+```
+
+```yaml
+# .github/workflows/deploy-pages.yml
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'         # ← 이 파일들 변경시에만 트리거
+      - 'sutra-writing.html'
+      - 'css/**'
+      - 'js/**'
+```
+
+### 배포 트리거 매트릭스
+
+| 변경된 파일 | VM 배포 (AI 챗봇) | Pages 배포 (정적 사이트) |
+|------------|-------------------|------------------------|
+| `opennotebook/main.py` | ✅ 트리거됨 | ❌ 무시됨 |
+| `opennotebook/gemini_query_embedder.py` | ✅ 트리거됨 | ❌ 무시됨 |
+| `index.html` | ❌ 무시됨 | ✅ 트리거됨 |
+| `css/styles.css` | ❌ 무시됨 | ✅ 트리거됨 |
+| `js/main.js` | ❌ 무시됨 | ✅ 트리거됨 |
+| `README.md` | ❌ 무시됨 | ❌ 무시됨 |
+| `CLAUDE.md` | ❌ 무시됨 | ❌ 무시됨 |
+| `PLAN_DEVOPS_ROADMAP.md` | ❌ 무시됨 | ❌ 무시됨 |
+| `opennotebook/archive/*` | ❌ 명시적 제외 | ❌ 무시됨 |
+
+### 브랜치 조건
+
+- `main` 브랜치에 푸시할 때만 배포됨
+- `feature-*`, `dev` 등 다른 브랜치는 배포 트리거 안 됨
+- PR 머지 시 main으로 푸시되므로 배포됨
+
+### 수동 배포 방법
+
+워크플로우에서 `workflow_dispatch`가 활성화되어 있다면:
+1. GitHub → Actions 탭
+2. 원하는 워크플로우 선택
+3. "Run workflow" 버튼 클릭
 
 ---
 
@@ -33,7 +164,7 @@ CI/CD:       수동 배포              GitHub Actions + IAP 자동 배포
 
 ---
 
-# Phase 0: 인프라 정리
+# Phase 0: 인프라 정리 (✅ 완료됨)
 
 ## 0.1 현재 상태 분석
 
@@ -77,9 +208,9 @@ mv opennotebook/cloudbuild.yaml opennotebook/archive/cloudbuild.yaml.disabled
 
 ---
 
-# Phase 1: 보안 강화 CI/CD
+# Phase 1: 보안 강화 CI/CD (✅ 완료됨)
 
-> **핵심 변경**: SSH 키 대신 Workload Identity Federation + IAP 사용
+> **핵심 변경**: SSH 키 대신 Workload Identity Federation + IAP 사용 (이미 적용됨)
 
 ## 1.1 왜 SSH 키가 위험한가?
 
@@ -682,7 +813,19 @@ docker restart buddhakorea-redis
 
 ---
 
-# Phase 5: LLM 비용 최적화
+# Phase 5: 인프라 업그레이드 (Redis) 및 비용 최적화
+
+## 5.0 Redis 컨테이너 추가 (선결 과제)
+
+```yaml
+# docker-compose.yml에 추가 필요
+  redis:
+    image: redis:alpine
+    container_name: buddhakorea-redis
+    restart: always
+    volumes:
+      - ./redis_data:/data
+```
 
 ## 5.1 Redis 기반 응답 캐싱
 
@@ -857,19 +1000,19 @@ Week 3+ (선택):
 
 # 전체 체크리스트
 
-## Phase 0: 인프라 정리
-- [ ] Cloud Build 트리거 비활성화
-- [ ] cloudbuild.yaml 비활성화
+## Phase 0: 인프라 정리 (✅ 완료)
+- [x] Cloud Build 트리거 비활성화
+- [x] cloudbuild.yaml 비활성화
 
-## Phase 1: 보안 강화 CI/CD
-- [ ] Workload Identity Pool 생성
-- [ ] OIDC Provider 설정
-- [ ] 서비스 계정 생성/권한 부여
-- [ ] IAP 터널 설정
-- [ ] GitHub Secrets 설정
-- [ ] 워크플로우 파일 작성
-- [ ] 브랜치 보호 규칙 설정
-- [ ] 테스트 배포 성공
+## Phase 1: 보안 강화 CI/CD (✅ 완료)
+- [x] Workload Identity Pool 생성
+- [x] OIDC Provider 설정
+- [x] 서비스 계정 생성/권한 부여
+- [x] IAP 터널 설정
+- [x] GitHub Secrets 설정
+- [x] 워크플로우 파일 작성
+- [x] 브랜치 보호 규칙 설정
+- [x] 테스트 배포 성공
 
 ## Phase 2: 모니터링
 - [ ] Ops Agent 설치
