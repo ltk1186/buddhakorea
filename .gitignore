@@ -44,9 +44,30 @@ coverage.xml
 # Environment variables
 .env
 
-# Data directories
-data/cbeta-t/
+# ============================================
+# LARGE DATA FILES - MUST EXCLUDE
+# ============================================
+
+# Vector Database (2.9GB)
 data/chroma_db/
+**/chroma_db/
+opennotebook/chroma_db/
+
+# CBETA corpus
+data/cbeta-t/
+
+# Source Data (127MB+) - keep structure, exclude large files
+**/source_data/*.json
+!**/source_data/.gitkeep
+
+# ============================================
+# BACKUP FILES - NEVER COMMIT
+# ============================================
+*.backup*
+*.bak
+*.old
+*.backup.css
+*.json.backup*
 
 # Jupyter
 .ipynb_checkpoints
@@ -58,6 +79,8 @@ Thumbs.db
 
 # Logs
 *.log
+logs/
+**/logs/
 
 # Type checking
 .mypy_cache/
