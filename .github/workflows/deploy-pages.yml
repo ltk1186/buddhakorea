@@ -5,17 +5,10 @@ on:
   push:
     branches: [main]
     paths:
-      - 'index.html'
-      - 'sutra-writing.html'
-      - 'meditation.html'
-      - 'teaching.html'
-      - 'methodology.html'
-      - 'css/**'
-      - 'js/**'
-      - 'assets/**'
-      - 'data/**'
+      - 'frontend/**'
       - 'CNAME'
       - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -41,11 +34,18 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      - name: Prepare deployment
+        run: |
+          # Copy frontend to deployment directory
+          mkdir -p _site
+          cp -r frontend/* _site/
+          # Copy CNAME for custom domain
+          cp CNAME _site/
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload only static site files (exclude opennotebook, etc.)
-          path: '.'
+          path: '_site'
 
       - name: Deploy to GitHub Pages
         id: deployment
