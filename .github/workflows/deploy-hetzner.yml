@@ -1,0 +1,59 @@
+name: Deploy to Hetzner
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'opennotebook/**'
+      - '!opennotebook/archive/**'
+      - '!opennotebook/**/*.md'
+      - '.github/workflows/deploy-hetzner.yml'
+  workflow_dispatch:  # 수동 배포 허용
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USERNAME }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          port: 22
+          script: |
+            echo "🎉 Connecting to Hetzner Server..."
+            cd /opt/buddha-korea
+
+            echo "📥 Pulling latest code..."
+            git config --global --add safe.directory /opt/buddha-korea
+            git pull origin main
+
+            echo "🐳 Rebuilding Docker containers..."
+            docker compose up -d --build
+
+            echo "🧹 Cleaning up..."
+            docker image prune -f
+
+            echo "✅ Deployment Complete!"
+
+      - name: Health Check
+        run: |
+          echo "Waiting for service to be ready..."
+          sleep 30
+
+          for i in {1..5}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 https://ai.buddhakorea.com/api/health 2>/dev/null || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ Health check passed! (attempt $i)"
+              exit 0
+            fi
+            echo "Attempt $i: Status $STATUS, retrying in 10s..."
+            sleep 10
+          done
+
+          echo "❌ Health check failed after 5 attempts"
+          exit 1
