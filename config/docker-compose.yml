@@ -90,7 +90,7 @@ services:
     volumes:
       - ../data/chroma_db:/app/chroma_db        # ChromaDB 벡터 데이터
       - ../data/logs:/app/logs                   # 앱 로그
-      - ../data/source_data:/app/source_explorer  # 경전 요약 데이터
+      - ../data/source_data:/data/source_data      # 경전 요약 데이터
       - ./gcp-key.json:/app/gcp-key.json:ro      # GCP 서비스 계정 키
     environment:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-buddhakorea}
