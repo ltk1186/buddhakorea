@@ -86,3 +86,16 @@ logs/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# Docker volumes (development)
+postgres-data/
+redis-data/
+config/postgres-data/
+config/redis-data/
+config/ssl/
+config/gcp-key.json
+
+# ============================================
+# SENSITIVE DOCUMENTATION
+# ============================================
+docs/INFRASTRUCTURE.md
