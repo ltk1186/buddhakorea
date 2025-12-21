@@ -940,11 +940,18 @@ app = FastAPI(
 # Session Middleware for OAuth
 app.add_middleware(SessionMiddleware, secret_key=config.secret_key)
 
-# CORS middleware - Allow all origins for local development
+# CORS middleware - Allow specific origins with credentials
+ALLOWED_ORIGINS = [
+    "https://buddhakorea.com",
+    "https://www.buddhakorea.com",
+    "https://ai.buddhakorea.com",
+    "http://localhost:3000",
+    "http://localhost:8000",
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for local testing
-    allow_credentials=False,  # Must be False when allow_origins is ["*"]
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
