@@ -27,17 +27,26 @@ jobs:
           command_timeout: 30m
           script: |
             echo "🎉 Connecting to Hetzner Server..."
-            # Assuming the repo is cloned into /opt/buddha-korea
             cd /opt/buddha-korea
 
             echo "📥 Pulling latest code..."
-            # Ensure we are in a safe directory
             git config --global --add safe.directory /opt/buddha-korea
+
+            # 변경된 파일 확인
+            git fetch origin main
+            CHANGED_FILES=$(git diff --name-only HEAD origin/main)
+            echo "Changed files: $CHANGED_FILES"
+
             git pull origin main
 
-            echo "🐳 Rebuilding Docker containers..."
-            # Use the config file in the new location
-            docker compose -f config/docker-compose.yml up -d --build
+            # Dockerfile 또는 requirements.txt 변경 시에만 빌드
+            if echo "$CHANGED_FILES" | grep -qE "(Dockerfile|requirements\.txt)"; then
+              echo "🐳 Dockerfile/requirements changed - Full rebuild..."
+              docker compose -f config/docker-compose.yml up -d --build
+            else
+              echo "🔄 Code only changed - Quick restart..."
+              docker compose -f config/docker-compose.yml up -d --force-recreate
+            fi
 
             echo "🧹 Cleaning up..."
             docker image prune -f
@@ -50,7 +59,7 @@ jobs:
           sleep 30
 
           for i in {1..5}; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 https://buddhakorea.com/api/health 2>/dev/null || echo "000")
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 https://ai.buddhakorea.com/api/health 2>/dev/null || echo "000")
             if [ "$STATUS" = "200" ]; then
               echo "✅ Health check passed! (attempt $i)"
               exit 0
