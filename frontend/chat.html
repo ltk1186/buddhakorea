@@ -2099,6 +2099,9 @@
 
     <!-- Main JavaScript -->
     <script>
+        // ===== API Configuration =====
+        const API_BASE_URL = 'https://ai.buddhakorea.com';
+
         // ===== State =====
         let currentTab = 'hero';
         let isHeroVisible = true;
@@ -2120,7 +2123,7 @@
         // Check if user is logged in
         async function checkAuthStatus() {
             try {
-                const response = await fetch('/api/users/me', { credentials: 'include' });
+                const response = await fetch(`${API_BASE_URL}/api/users/me`, { credentials: 'include' });
                 if (response.ok) {
                     currentUser = await response.json();
                     isLoggedIn = true;
@@ -2142,7 +2145,7 @@
             }
 
             try {
-                const response = await fetch('/api/chat/sessions', { credentials: 'include' });
+                const response = await fetch(`${API_BASE_URL}/api/chat/sessions`, { credentials: 'include' });
                 if (response.ok) {
                     const data = await response.json();
                     chatSessions = data.sessions || [];
@@ -2222,7 +2225,7 @@
         // Load a specific chat session
         async function loadChatSession(sessionUuid) {
             try {
-                const response = await fetch(`/api/chat/sessions/${sessionUuid}/messages`, { credentials: 'include' });
+                const response = await fetch(`${API_BASE_URL}/api/chat/sessions/${sessionUuid}/messages`, { credentials: 'include' });
                 if (!response.ok) throw new Error('Failed to load messages');
 
                 const data = await response.json();
@@ -2286,7 +2289,7 @@
             if (!confirm('이 대화를 삭제하시겠습니까?')) return;
 
             try {
-                const response = await fetch(`/api/chat/sessions/${sessionUuid}`, {
+                const response = await fetch(`${API_BASE_URL}/api/chat/sessions/${sessionUuid}`, {
                     method: 'DELETE',
                     credentials: 'include'
                 });
@@ -2581,7 +2584,7 @@
                 }
 
                 // Use streaming endpoint
-                const response = await fetch('/api/chat/stream', {
+                const response = await fetch(`${API_BASE_URL}/api/chat/stream`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -2844,7 +2847,7 @@
         // ===== Load Metadata =====
         async function loadMetadata() {
             try {
-                const response = await fetch('/api/sutras/meta');
+                const response = await fetch(`${API_BASE_URL}/api/sutras/meta`);
                 if (!response.ok) throw new Error('Failed to load metadata');
 
                 const metadata = await response.json();

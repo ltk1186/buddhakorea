@@ -243,10 +243,12 @@
     <!-- JavaScript -->
     <script src="js/main.js"></script>
     <script>
-        // Simple Auth Logic - uses relative URLs (same origin)
+        const API_BASE_URL = 'https://ai.buddhakorea.com';
+
+        // Simple Auth Logic
         async function checkAuth() {
             try {
-                const response = await fetch('/api/users/me', {
+                const response = await fetch(`${API_BASE_URL}/api/users/me`, {
                     credentials: 'include'
                 });
                 const authContainer = document.getElementById('auth-container');
@@ -259,7 +261,7 @@
                     `;
                 } else {
                     authContainer.innerHTML = `
-                        <a href="/auth/login/google" style="font-size: 0.9rem; font-weight: 500; color: #444; text-decoration: none;">로그인</a>
+                        <a href="${API_BASE_URL}/auth/login/google" style="font-size: 0.9rem; font-weight: 500; color: #444; text-decoration: none;">로그인</a>
                     `;
                 }
             } catch (e) {
