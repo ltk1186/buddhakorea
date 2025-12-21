@@ -46,6 +46,35 @@ services:
         max-file: "3"
 
   # ──────────────────────────────────────────────────────────
+  # PostgreSQL: 사용자 정보 및 영구 데이터 저장소
+  # ──────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: buddhakorea-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-buddhakorea}
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    networks:
+      - buddhist-ai-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # ──────────────────────────────────────────────────────────
   # Backend: FastAPI + 파일 기반 ChromaDB
   # ──────────────────────────────────────────────────────────
   backend:
@@ -56,12 +85,15 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
     volumes:
       - ../data/chroma_db:/app/chroma_db        # ChromaDB 벡터 데이터
       - ../data/logs:/app/logs                   # 앱 로그
       - ../data/source_data:/app/source_explorer  # 경전 요약 데이터
       - ./gcp-key.json:/app/gcp-key.json:ro      # GCP 서비스 계정 키
     environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-buddhakorea}
       # ─── GCP Vertex AI ───
       - GCP_PROJECT_ID=${GCP_PROJECT_ID}
       - GCP_LOCATION=${GCP_LOCATION:-us-central1}

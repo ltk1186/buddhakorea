@@ -45,6 +45,9 @@
                 <a href="index.html" class="nav-link">홈</a>
                 <a href="chat.html" class="nav-link">AI</a>
                 <a href="sutra-writing.html" class="nav-link">사경</a>
+                <span id="auth-container" style="margin-left: 10px;">
+                    <!-- Auth content injected by JS -->
+                </span>
             </nav>
         </div>
     </header>
@@ -143,7 +146,7 @@
                 </p>
 
                 <a href="chat.html" class="btn-primary btn-lg">
-                    ai.buddhakorea.com 열기
+                    AI 채팅 시작하기
                 </a>
             </div>
         </div>
@@ -239,7 +242,41 @@
 
     <!-- JavaScript -->
     <script src="js/main.js"></script>
-    <script src="js/feedback.js"></script>
+    <script>
+        // Simple Auth Logic - uses relative URLs (same origin)
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/users/me', {
+                    credentials: 'include'
+                });
+                const authContainer = document.getElementById('auth-container');
 
+                if (response.ok) {
+                    const user = await response.json();
+                    authContainer.innerHTML = `
+                        <span style="font-size: 0.9rem; margin-right: 8px;">${user.nickname}님</span>
+                        <a href="#" onclick="logout(); return false;" style="font-size: 0.85rem; color: #666; text-decoration: none;">로그아웃</a>
+                    `;
+                } else {
+                    authContainer.innerHTML = `
+                        <a href="/auth/login/google" style="font-size: 0.9rem; font-weight: 500; color: #444; text-decoration: none;">로그인</a>
+                    `;
+                }
+            } catch (e) {
+                console.error("Auth check failed", e);
+            }
+        }
+
+        async function logout() {
+            try {
+                await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
+                window.location.reload();
+            } catch (e) {
+                console.error("Logout failed", e);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', checkAuth);
+    </script>
 </body>
 </html>

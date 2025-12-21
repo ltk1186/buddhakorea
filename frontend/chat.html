@@ -1342,6 +1342,317 @@
             }
         }
 
+        /* ===== Chat History Sidebar ===== */
+        .chat-history-sidebar {
+            position: fixed;
+            left: 0;
+            top: var(--header-height);
+            bottom: 0;
+            width: 280px;
+            background: var(--bg-medium);
+            border-right: 1px solid var(--glass-border);
+            display: none;
+            flex-direction: column;
+            z-index: 99;
+        }
+
+        .chat-history-sidebar.visible {
+            display: flex;
+        }
+
+        .chat-history-header {
+            padding: var(--space-md) var(--space-lg);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-history-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .new-chat-btn {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            padding: var(--space-sm) var(--space-md);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .new-chat-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(90, 154, 110, 0.3);
+        }
+
+        .chat-history-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--space-sm);
+        }
+
+        .chat-history-empty {
+            padding: var(--space-xl);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .chat-history-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-md);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            margin-bottom: var(--space-xs);
+        }
+
+        .chat-history-item:hover {
+            background: rgba(90, 154, 110, 0.1);
+        }
+
+        .chat-history-item.active {
+            background: rgba(90, 154, 110, 0.15);
+            border: 1px solid rgba(90, 154, 110, 0.3);
+        }
+
+        .chat-history-item-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .chat-history-item-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chat-history-item-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-history-item-date {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .chat-history-item-delete {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: var(--transition-fast);
+        }
+
+        .chat-history-item:hover .chat-history-item-delete {
+            opacity: 1;
+        }
+
+        .chat-history-item-delete:hover {
+            background: rgba(255, 59, 48, 0.1);
+            color: #ff3b30;
+        }
+
+        /* Login prompt in sidebar */
+        .chat-history-login-prompt {
+            padding: var(--space-lg);
+            text-align: center;
+        }
+
+        .chat-history-login-prompt p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-md);
+            line-height: 1.5;
+        }
+
+        .login-prompt-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-lg);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 100px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .login-prompt-btn:hover {
+            background: rgba(90, 154, 110, 0.1);
+            border-color: var(--primary);
+        }
+
+        /* Sidebar toggle button */
+        .sidebar-toggle-btn {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-fast);
+        }
+
+        .sidebar-toggle-btn:hover {
+            background: rgba(90, 154, 110, 0.1);
+            color: var(--text-primary);
+        }
+
+        /* Mobile History Drawer */
+        .chat-history-drawer {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: none;
+        }
+
+        .chat-history-drawer.active {
+            display: block;
+        }
+
+        .history-drawer-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .history-drawer-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-height: 70vh;
+            background: var(--bg-dark);
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.3s var(--ease-out);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .history-drawer-handle {
+            width: 36px;
+            height: 4px;
+            background: var(--glass-border);
+            border-radius: 2px;
+            margin: var(--space-sm) auto var(--space-md);
+        }
+
+        .history-drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 var(--space-lg) var(--space-md);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .history-drawer-header h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .history-drawer-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .history-drawer-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--space-md);
+        }
+
+        .history-drawer-new-chat {
+            margin: var(--space-md);
+            padding: var(--space-md);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+        }
+
+        /* Desktop: Show toggle button and adjust layout when sidebar open */
+        @media (min-width: 768px) {
+            .sidebar-toggle-btn {
+                display: flex;
+            }
+
+            /* When sidebar is visible, adjust chat section */
+            body.sidebar-open .chat-section {
+                margin-left: 280px;
+            }
+
+            body.sidebar-open .chat-input-container {
+                left: 280px;
+            }
+        }
+
         /* ===== Utilities ===== */
         .hidden {
             display: none !important;
@@ -1370,6 +1681,12 @@
     <!-- Desktop Navigation -->
     <nav class="desktop-nav" id="desktopNav">
         <div class="desktop-nav-brand" onclick="goHome()">
+            <button class="sidebar-toggle-btn" onclick="event.stopPropagation(); toggleSidebar();" title="채팅 기록">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    <path d="M8 9h8M8 13h6"/>
+                </svg>
+            </button>
             <span>&#x2638;</span>
             <span>불교 AI</span>
         </div>
@@ -1379,6 +1696,22 @@
             <button class="desktop-nav-link" data-tab="methodology" onclick="switchTab('methodology')">방법론</button>
         </div>
     </nav>
+
+    <!-- Chat History Sidebar (Desktop) -->
+    <aside class="chat-history-sidebar" id="chatHistorySidebar">
+        <div class="chat-history-header">
+            <span class="chat-history-title">채팅 기록</span>
+            <button class="new-chat-btn" onclick="startNewChat()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 5v14M5 12h14"/>
+                </svg>
+                새 채팅
+            </button>
+        </div>
+        <div class="chat-history-list" id="chatHistoryList">
+            <!-- Login prompt or history items will be rendered here -->
+        </div>
+    </aside>
 
     <!-- App -->
     <div class="app">
@@ -1687,6 +2020,13 @@
             </svg>
             <span class="tab-label">채팅</span>
         </div>
+        <div class="tab-item" onclick="openHistoryDrawer()" data-tab="history">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span class="tab-label">기록</span>
+        </div>
         <div class="tab-item" onclick="switchTab('library')" data-tab="library">
             <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
@@ -1702,6 +2042,27 @@
             <span class="tab-label">방법론</span>
         </div>
     </nav>
+
+    <!-- Mobile Chat History Drawer -->
+    <div class="chat-history-drawer" id="chatHistoryDrawer">
+        <div class="history-drawer-backdrop" onclick="closeHistoryDrawer()"></div>
+        <div class="history-drawer-content">
+            <div class="history-drawer-handle"></div>
+            <div class="history-drawer-header">
+                <h3>채팅 기록</h3>
+                <button class="history-drawer-close" onclick="closeHistoryDrawer()">&times;</button>
+            </div>
+            <div class="history-drawer-body" id="historyDrawerBody">
+                <!-- History items will be rendered here -->
+            </div>
+            <button class="history-drawer-new-chat" onclick="startNewChat(); closeHistoryDrawer();">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 5v14M5 12h14"/>
+                </svg>
+                새 채팅 시작
+            </button>
+        </div>
+    </div>
 
     <!-- Mobile Filter Drawer -->
     <div class="mobile-filter-drawer" id="mobileFilterDrawer">
@@ -1742,6 +2103,10 @@
         let currentTab = 'hero';
         let isHeroVisible = true;
         let allSources = [];
+        let currentSessionUuid = null;  // Current chat session UUID
+        let chatSessions = [];          // List of user's chat sessions
+        let isLoggedIn = false;         // User login status
+        let currentUser = null;         // Current user info
 
         // Chat options state
         let chatOptions = {
@@ -1749,6 +2114,289 @@
             traditionFilter: 'all',  // all, 초기불교, 대승불교, 선불교
             selectedSutra: null      // { text_id, title } or null
         };
+
+        // ===== Chat History Functions =====
+
+        // Check if user is logged in
+        async function checkAuthStatus() {
+            try {
+                const response = await fetch('/api/users/me', { credentials: 'include' });
+                if (response.ok) {
+                    currentUser = await response.json();
+                    isLoggedIn = true;
+                    return true;
+                }
+            } catch (e) {
+                console.log('Not logged in');
+            }
+            isLoggedIn = false;
+            currentUser = null;
+            return false;
+        }
+
+        // Load chat sessions from API
+        async function loadChatSessions() {
+            if (!isLoggedIn) {
+                renderLoginPrompt();
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/chat/sessions', { credentials: 'include' });
+                if (response.ok) {
+                    const data = await response.json();
+                    chatSessions = data.sessions || [];
+                    renderChatHistory();
+                } else if (response.status === 401) {
+                    isLoggedIn = false;
+                    renderLoginPrompt();
+                }
+            } catch (e) {
+                console.error('Failed to load chat sessions:', e);
+                renderChatHistory();
+            }
+        }
+
+        // Render login prompt for non-logged-in users
+        function renderLoginPrompt() {
+            const listEl = document.getElementById('chatHistoryList');
+            const drawerBody = document.getElementById('historyDrawerBody');
+
+            const promptHtml = `
+                <div class="chat-history-login-prompt">
+                    <p>로그인하면 채팅 기록을<br>저장하고 관리할 수 있습니다</p>
+                    <button class="login-prompt-btn" onclick="window.location.href='/auth/login/google'">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Google로 로그인
+                    </button>
+                </div>
+            `;
+
+            if (listEl) listEl.innerHTML = promptHtml;
+            if (drawerBody) drawerBody.innerHTML = promptHtml;
+        }
+
+        // Render chat history list
+        function renderChatHistory() {
+            const listEl = document.getElementById('chatHistoryList');
+            const drawerBody = document.getElementById('historyDrawerBody');
+
+            if (chatSessions.length === 0) {
+                const emptyHtml = `
+                    <div class="chat-history-empty">
+                        <p>아직 저장된 채팅이 없습니다</p>
+                        <p style="margin-top: 8px; font-size: 0.75rem;">새로운 질문을 시작해보세요!</p>
+                    </div>
+                `;
+                if (listEl) listEl.innerHTML = emptyHtml;
+                if (drawerBody) drawerBody.innerHTML = emptyHtml;
+                return;
+            }
+
+            const itemsHtml = chatSessions.map(session => `
+                <div class="chat-history-item ${session.session_uuid === currentSessionUuid ? 'active' : ''}"
+                     onclick="loadChatSession('${session.session_uuid}')"
+                     data-session-uuid="${session.session_uuid}">
+                    <div class="chat-history-item-icon">&#x2638;</div>
+                    <div class="chat-history-item-content">
+                        <div class="chat-history-item-title">${escapeHtml(session.title || '새 대화')}</div>
+                        <div class="chat-history-item-date">${formatRelativeTime(session.last_message_at)}</div>
+                    </div>
+                    <button class="chat-history-item-delete" onclick="event.stopPropagation(); deleteChatSession('${session.session_uuid}')" title="삭제">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                        </svg>
+                    </button>
+                </div>
+            `).join('');
+
+            if (listEl) listEl.innerHTML = itemsHtml;
+            if (drawerBody) drawerBody.innerHTML = itemsHtml;
+        }
+
+        // Load a specific chat session
+        async function loadChatSession(sessionUuid) {
+            try {
+                const response = await fetch(`/api/chat/sessions/${sessionUuid}/messages`, { credentials: 'include' });
+                if (!response.ok) throw new Error('Failed to load messages');
+
+                const data = await response.json();
+                currentSessionUuid = sessionUuid;
+
+                // Clear current messages and render loaded messages
+                const messagesEl = document.getElementById('chatMessages');
+                const welcome = document.getElementById('chatWelcome');
+                if (welcome) welcome.style.display = 'none';
+
+                // Clear existing messages (except welcome)
+                messagesEl.innerHTML = '';
+
+                // Render each message
+                if (data.messages && data.messages.length > 0) {
+                    data.messages.forEach(msg => {
+                        addMessageToUI(msg.role, msg.content, msg.created_at);
+                    });
+                } else {
+                    // Show welcome if no messages
+                    messagesEl.innerHTML = getWelcomeHtml();
+                }
+
+                // Update active state in sidebar
+                updateActiveSession(sessionUuid);
+
+                // Close drawer if on mobile
+                closeHistoryDrawer();
+
+                // Switch to chat tab
+                switchTab('chat');
+
+            } catch (e) {
+                console.error('Failed to load chat session:', e);
+            }
+        }
+
+        // Add message to UI (for loaded messages)
+        function addMessageToUI(role, content, timestamp) {
+            const messages = document.getElementById('chatMessages');
+            const time = timestamp ? new Date(timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : '';
+
+            const html = `
+                <div class="message ${role}">
+                    <div class="message-avatar">${role === 'user' ? '&#128100;' : '&#x2638;'}</div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-sender">${role === 'user' ? '나' : '불교 AI'}</span>
+                            <span class="message-time">${time}</span>
+                        </div>
+                        <div class="message-text">${formatMessage(content)}</div>
+                    </div>
+                </div>
+            `;
+
+            messages.insertAdjacentHTML('beforeend', html);
+        }
+
+        // Delete a chat session
+        async function deleteChatSession(sessionUuid) {
+            if (!confirm('이 대화를 삭제하시겠습니까?')) return;
+
+            try {
+                const response = await fetch(`/api/chat/sessions/${sessionUuid}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    // Remove from local list
+                    chatSessions = chatSessions.filter(s => s.session_uuid !== sessionUuid);
+                    renderChatHistory();
+
+                    // If deleted current session, start new chat
+                    if (currentSessionUuid === sessionUuid) {
+                        startNewChat();
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to delete session:', e);
+            }
+        }
+
+        // Start a new chat
+        function startNewChat() {
+            currentSessionUuid = null;
+            clearChat();
+            updateActiveSession(null);
+            document.getElementById('chatInput').focus();
+        }
+
+        // Update active state in history list
+        function updateActiveSession(sessionUuid) {
+            document.querySelectorAll('.chat-history-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.sessionUuid === sessionUuid);
+            });
+        }
+
+        // Toggle sidebar visibility
+        function toggleSidebar() {
+            const sidebar = document.getElementById('chatHistorySidebar');
+            const isVisible = sidebar.classList.contains('visible');
+
+            if (isVisible) {
+                sidebar.classList.remove('visible');
+                document.body.classList.remove('sidebar-open');
+            } else {
+                sidebar.classList.add('visible');
+                document.body.classList.add('sidebar-open');
+                // Load sessions when opening
+                if (isLoggedIn) {
+                    loadChatSessions();
+                }
+            }
+        }
+
+        // Open mobile history drawer
+        function openHistoryDrawer() {
+            const drawer = document.getElementById('chatHistoryDrawer');
+            drawer.classList.add('active');
+            // Load sessions
+            loadChatSessions();
+        }
+
+        // Close mobile history drawer
+        function closeHistoryDrawer() {
+            const drawer = document.getElementById('chatHistoryDrawer');
+            drawer.classList.remove('active');
+        }
+
+        // Helper: Format relative time
+        function formatRelativeTime(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return '방금 전';
+            if (diffMins < 60) return `${diffMins}분 전`;
+            if (diffHours < 24) return `${diffHours}시간 전`;
+            if (diffDays < 7) return `${diffDays}일 전`;
+            return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+        }
+
+        // Helper: Escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Helper: Get welcome HTML
+        function getWelcomeHtml() {
+            return `
+                <div class="chat-welcome" id="chatWelcome">
+                    <div class="chat-welcome-icon">&#x2638;</div>
+                    <h2 class="chat-welcome-title">불교 AI에 오신 것을 환영합니다</h2>
+                    <p class="chat-welcome-desc">
+                        2,459개 CBETA 대장경을 기반으로<br>
+                        불교에 대한 질문에 답변해 드립니다.
+                    </p>
+                    <div class="chat-welcome-suggestions">
+                        <button class="welcome-suggestion" onclick="askQuestion('사성제란 무엇인가요?')">사성제란?</button>
+                        <button class="welcome-suggestion" onclick="askQuestion('팔정도를 설명해주세요')">팔정도란?</button>
+                        <button class="welcome-suggestion" onclick="askQuestion('무아의 개념이란?')">무아란?</button>
+                        <button class="welcome-suggestion" onclick="askQuestion('연기법이란 무엇인가요?')">연기법이란?</button>
+                    </div>
+                </div>
+            `;
+        }
 
         // ===== Chat Options Functions =====
         function setResponseMode(mode) {
@@ -1912,6 +2560,11 @@
                     detailed_mode: chatOptions.responseMode === 'detailed' || chatOptions.responseMode === 'academic'
                 };
 
+                // Add session_id if we have a current session
+                if (currentSessionUuid) {
+                    requestBody.session_id = currentSessionUuid;
+                }
+
                 // Add tradition filter if not 'all' and no specific sutra selected
                 if (chatOptions.traditionFilter !== 'all' && !chatOptions.selectedSutra) {
                     requestBody.tradition_filter = chatOptions.traditionFilter;
@@ -1928,9 +2581,10 @@
                 }
 
                 // Use streaming endpoint
-                const response = await fetch('https://ai.buddhakorea.com/api/chat/stream', {
+                const response = await fetch('/api/chat/stream', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
                     body: JSON.stringify(requestBody)
                 });
 
@@ -1983,6 +2637,14 @@
                                         // Add sources
                                         if (sources.length > 0) {
                                             addSourcesToMessage(messageContainer, sources);
+                                        }
+                                        // Update current session UUID from response
+                                        if (data.session_id) {
+                                            currentSessionUuid = data.session_id;
+                                            // Refresh history list if logged in
+                                            if (isLoggedIn) {
+                                                setTimeout(() => loadChatSessions(), 500);
+                                            }
                                         }
                                         console.log(`Response completed in ${data.latency_ms}ms using ${data.model}`);
                                         break;
@@ -2206,7 +2868,17 @@
         window.selectSutraForChat = selectSutraForChat;
 
         // ===== Initialize =====
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check auth status first
+            await checkAuthStatus();
+
+            // Initialize sidebar content based on auth status
+            if (isLoggedIn) {
+                loadChatSessions();
+            } else {
+                renderLoginPrompt();
+            }
+
             loadMetadata();
 
             // Scroll indicator click handler

@@ -40,23 +40,11 @@ COPY --from=builder /opt/venv /opt/venv
 # Set working directory
 WORKDIR /app
 
-# Copy application code from new structure
-COPY --chown=buddha:buddha backend/app/main.py .
-COPY --chown=buddha:buddha backend/app/usage_tracker.py .
-COPY --chown=buddha:buddha backend/app/tradition_normalizer.py .
-COPY --chown=buddha:buddha backend/app/qa_logger.py .
-COPY --chown=buddha:buddha backend/app/privacy.py .
-COPY --chown=buddha:buddha backend/app/gemini_query_embedder.py .
-COPY --chown=buddha:buddha backend/app/hyde.py .
-COPY --chown=buddha:buddha backend/app/reranker.py .
-COPY --chown=buddha:buddha backend/app/cache_cosmology.py .
-COPY --chown=buddha:buddha backend/app/redis_session.py .
+# Copy application code (entire backend/app as package)
+COPY --chown=buddha:buddha backend/app/ ./app/
 
-# Copy frontend for backend to serve (chat interface)
-COPY --chown=buddha:buddha frontend/chat.html ./index.html
-COPY --chown=buddha:buddha frontend/css ./css/
-COPY --chown=buddha:buddha frontend/js ./js/
-COPY --chown=buddha:buddha frontend/assets ./assets/
+# Copy frontend for backend to serve
+COPY --chown=buddha:buddha frontend/ ./frontend/
 
 # Copy source explorer data structure (actual data mounted via volume)
 COPY --chown=buddha:buddha backend/source_explorer ./source_explorer/
@@ -78,7 +66,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 
 # Run with Gunicorn (production WSGI server)
 # Use stdout/stderr for logs (Docker will capture them)
-CMD ["gunicorn", "main:app", \
+CMD ["gunicorn", "app.main:app", \
      "--workers", "2", \
      "--worker-class", "uvicorn.workers.UvicornWorker", \
      "--bind", "0.0.0.0:8000", \

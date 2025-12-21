@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 from loguru import logger
 
-from privacy import mask_pii
+from .privacy import mask_pii
 
 # Usage log file path (DEPRECATED: Cloud Logging을 통해 BigQuery로 분석 예정)
 # 로컬 개발/테스트용으로만 유지

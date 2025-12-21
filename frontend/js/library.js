@@ -254,7 +254,7 @@ async function loadInitialCards() {
             offset: 0
         });
 
-        const response = await fetch(`https://ai.buddhakorea.com/api/sources?${params}`);
+        const response = await fetch(`/api/sources?${params}`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const data = await response.json();
@@ -296,7 +296,7 @@ async function loadMoreCards() {
             ...(libraryState.filters.theme && { theme: libraryState.filters.theme })
         });
 
-        const response = await fetch(`https://ai.buddhakorea.com/api/sources?${params}`);
+        const response = await fetch(`/api/sources?${params}`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const data = await response.json();
@@ -416,7 +416,7 @@ async function refetchCards() {
         let data = getCachedResponse(cacheKey);
 
         if (!data) {
-            const response = await fetch(`https://ai.buddhakorea.com/api/sources?${params}`);
+            const response = await fetch(`/api/sources?${params}`);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             data = await response.json();
             setCachedResponse(cacheKey, data);
@@ -796,7 +796,7 @@ async function showSourceDetail(sutraId) {
         modalState.currentSutraId = sutraId;
         console.log('Current index:', modalState.currentIndex);
 
-        const response = await fetch(`https://ai.buddhakorea.com/api/sources/${sutraId}`);
+        const response = await fetch(`/api/sources/${sutraId}`);
         if (!response.ok) throw new Error('Failed to load source detail');
 
         const source = await response.json();

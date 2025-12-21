@@ -16,10 +16,11 @@ from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Request, status, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Request, status, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, HTMLResponse, StreamingResponse
+from fastapi.responses import JSONResponse, HTMLResponse, StreamingResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.sessions import SessionMiddleware
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
 from loguru import logger
@@ -32,13 +33,20 @@ from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA
 from langchain_core.prompts import PromptTemplate
+from sqlalchemy.future import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+# Internal modules
+from . import auth, database
+from .models.user import User
+from .models.chat import ChatSession, ChatMessage
 
 # Usage tracking
-from usage_tracker import log_token_usage, analyze_usage_logs, get_recent_queries, export_usage_csv
-from qa_logger import log_qa_pair, get_qa_pairs, export_to_json, analyze_popular_queries
+from .usage_tracker import log_token_usage, analyze_usage_logs, get_recent_queries, export_usage_csv
+from .qa_logger import log_qa_pair, get_qa_pairs, export_to_json, analyze_popular_queries
 
 # Tradition normalization
-from tradition_normalizer import normalize_tradition, get_normalized_traditions
+from .tradition_normalizer import normalize_tradition, get_normalized_traditions
 
 
 # ============================================================================
@@ -51,6 +59,21 @@ class AppConfig(BaseSettings):
     # API Keys
     openai_api_key: Optional[str] = None
     anthropic_api_key: Optional[str] = None
+    
+    # Auth & Security
+    secret_key: str = "your-secret-key-please-change"
+    cookie_domain: Optional[str] = None  # None for localhost, ".buddhakorea.com" for production
+    google_client_id: Optional[str] = None
+    google_client_secret: Optional[str] = None
+    naver_client_id: Optional[str] = None
+    naver_client_secret: Optional[str] = None
+    kakao_client_id: Optional[str] = None
+    kakao_client_secret: Optional[str] = None
+    
+    # Database Configuration
+    postgres_user: Optional[str] = None
+    postgres_password: Optional[str] = None
+    postgres_db: Optional[str] = None
 
     # Model Configuration
     llm_model: str = "gemini-2.5-pro"  # For detailed/academic modes
@@ -119,7 +142,7 @@ logger.add(sys.stdout, level=config.log_level.upper(), serialize=True, enqueue=T
 # Session Management - Redis (Persistent)
 # ============================================================================
 
-from redis_session import get_session_manager, RedisSessionManager
+from .redis_session import get_session_manager, RedisSessionManager
 
 # Initialize session manager lazily in lifespan
 session_manager: Optional[RedisSessionManager] = None
@@ -227,7 +250,7 @@ class SutraCache:
     async def load(self) -> bool:
         """Load sutra data and compute metadata."""
         try:
-            path = Path(__file__).parent / "source_explorer/source_data/source_summaries_ko.json"
+            path = Path(__file__).parent.parent.parent / "data/source_data/source_summaries_ko.json"
             # Read file in thread to avoid blocking
             content = await asyncio.to_thread(path.read_text, encoding='utf-8')
             data = json.loads(content)
@@ -340,6 +363,138 @@ def update_session(
         session_manager.update_session(
             session_id, user_message, assistant_message, context_chunks, metadata
         )
+
+
+async def save_chat_to_db(
+    db: AsyncSession,
+    session_uuid: str,
+    user_id: Optional[int],
+    user_message: str,
+    assistant_message: str,
+    metadata: Dict[str, Any]
+):
+    """
+    Save chat messages to database for permanent storage.
+
+    Args:
+        db: Database session
+        session_uuid: Redis session UUID
+        user_id: User ID (None for anonymous)
+        user_message: User's question
+        assistant_message: AI's response
+        metadata: Additional metadata (model, sources_count, etc.)
+    """
+    try:
+        # Find or create ChatSession
+        stmt = select(ChatSession).where(ChatSession.session_uuid == session_uuid)
+        result = await db.execute(stmt)
+        chat_session = result.scalar_one_or_none()
+
+        if not chat_session:
+            # Create new session
+            # Generate title from first question (truncate to 100 chars)
+            title = user_message[:100] + "..." if len(user_message) > 100 else user_message
+            chat_session = ChatSession(
+                session_uuid=session_uuid,
+                user_id=user_id,
+                title=title
+            )
+            db.add(chat_session)
+            await db.flush()  # Get the ID
+
+        # Save user message
+        user_msg = ChatMessage(
+            session_id=chat_session.id,
+            role="user",
+            content=user_message,
+            response_mode=metadata.get("response_mode")
+        )
+        db.add(user_msg)
+
+        # Save assistant message
+        assistant_msg = ChatMessage(
+            session_id=chat_session.id,
+            role="assistant",
+            content=assistant_message,
+            model_used=metadata.get("model"),
+            sources_count=metadata.get("sources_count", 0),
+            response_mode=metadata.get("response_mode")
+        )
+        db.add(assistant_msg)
+
+        await db.commit()
+        logger.debug(f"Saved chat to DB: session={session_uuid[:8]}..., user_id={user_id}")
+
+    except Exception as e:
+        logger.error(f"Failed to save chat to DB: {e}")
+        await db.rollback()
+
+
+async def get_user_chat_sessions(
+    db: AsyncSession,
+    user_id: int,
+    limit: int = 20,
+    offset: int = 0
+) -> List[Dict[str, Any]]:
+    """
+    Get user's chat sessions ordered by most recent.
+    """
+    stmt = (
+        select(ChatSession)
+        .where(ChatSession.user_id == user_id, ChatSession.is_active == True)
+        .order_by(ChatSession.last_message_at.desc())
+        .limit(limit)
+        .offset(offset)
+    )
+    result = await db.execute(stmt)
+    sessions = result.scalars().all()
+
+    return [
+        {
+            "id": s.id,
+            "session_uuid": s.session_uuid,
+            "title": s.title,
+            "created_at": s.created_at.isoformat() if s.created_at else None,
+            "last_message_at": s.last_message_at.isoformat() if s.last_message_at else None
+        }
+        for s in sessions
+    ]
+
+
+async def get_chat_messages(
+    db: AsyncSession,
+    session_uuid: str,
+    limit: int = 50
+) -> List[Dict[str, Any]]:
+    """
+    Get messages for a specific chat session.
+    """
+    stmt = select(ChatSession).where(ChatSession.session_uuid == session_uuid)
+    result = await db.execute(stmt)
+    chat_session = result.scalar_one_or_none()
+
+    if not chat_session:
+        return []
+
+    stmt = (
+        select(ChatMessage)
+        .where(ChatMessage.session_id == chat_session.id)
+        .order_by(ChatMessage.created_at.asc())
+        .limit(limit)
+    )
+    result = await db.execute(stmt)
+    messages = result.scalars().all()
+
+    return [
+        {
+            "role": m.role,
+            "content": m.content,
+            "created_at": m.created_at.isoformat() if m.created_at else None,
+            "model_used": m.model_used,
+            "sources_count": m.sources_count
+        }
+        for m in messages
+    ]
 
 
 def get_session_context(session_id: str) -> Dict[str, Any]:
@@ -558,6 +713,13 @@ def extract_token_usage(result: Dict[str, Any], query: str, model: str) -> Dict[
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialize and cleanup application resources."""
+    
+    # Initialize Auth
+    auth.setup_auth(config)
+    
+    # Initialize DB (create tables)
+    await database.init_db()
+    logger.info("✓ Database initialized")
 
     logger.info("Starting Buddhist AI Chatbot...")
 
@@ -577,7 +739,7 @@ async def lifespan(app: FastAPI):
     # Initialize embeddings
     if config.use_gemini_for_queries:
         logger.info("🚀 Using Gemini API for query embeddings")
-        from gemini_query_embedder import GeminiQueryEmbedder
+        from .gemini_query_embedder import GeminiQueryEmbedder
 
         app_state.embeddings = GeminiQueryEmbedder(
             project_id=config.gcp_project_id,
@@ -635,72 +797,82 @@ async def lifespan(app: FastAPI):
         app_state.chroma_client = None
 
     # Initialize LLM
-    logger.info(f"Initializing LLM: {config.llm_model}")
-    if "claude" in config.llm_model:
-        if not config.anthropic_api_key:
-            logger.error("Anthropic API key not found")
-            raise ValueError("ANTHROPIC_API_KEY required for Claude models")
-        app_state.llm = ChatAnthropic(
-            model=config.llm_model,
-            anthropic_api_key=config.anthropic_api_key,
-            temperature=0.3,
-            max_tokens=2000
-        )
-    elif "gemini" in config.llm_model:
-        # Gemini models via Vertex AI
-        logger.info(f"Using Vertex AI for Gemini model")
-        app_state.llm = ChatVertexAI(
-            model=config.llm_model,
-            project=config.gcp_project_id,
-            location=config.gcp_location,
-            temperature=0.3,
-            max_tokens=8192  # Increased to 8192 for comprehensive answers (same as detailed mode)
-        )
-    else:
-        if not config.openai_api_key:
-            logger.error("OpenAI API key not found")
-            raise ValueError("OPENAI_API_KEY required for GPT models")
-        app_state.llm = ChatOpenAI(
-            model=config.llm_model,
-            openai_api_key=config.openai_api_key,
-            temperature=0.3,
-            max_tokens=2000
-        )
-    logger.info("✓ LLM initialized")
+    try:
+        logger.info(f"Initializing LLM: {config.llm_model}")
+        if "claude" in config.llm_model:
+            if not config.anthropic_api_key:
+                logger.warning("Anthropic API key not found - LLM features will be disabled")
+                app_state.llm = None
+            else:
+                app_state.llm = ChatAnthropic(
+                    model=config.llm_model,
+                    anthropic_api_key=config.anthropic_api_key,
+                    temperature=0.3,
+                    max_tokens=2000
+                )
+        elif "gemini" in config.llm_model:
+            # Gemini models via Vertex AI
+            logger.info(f"Using Vertex AI for Gemini model")
+            app_state.llm = ChatVertexAI(
+                model=config.llm_model,
+                project=config.gcp_project_id,
+                location=config.gcp_location,
+                temperature=0.3,
+                max_tokens=8192
+            )
+        else:
+            if not config.openai_api_key:
+                logger.warning("OpenAI API key not found - LLM features will be disabled")
+                app_state.llm = None
+            else:
+                app_state.llm = ChatOpenAI(
+                    model=config.llm_model,
+                    openai_api_key=config.openai_api_key,
+                    temperature=0.3,
+                    max_tokens=2000
+                )
+        
+        if app_state.llm:
+            logger.info("✓ LLM initialized")
 
-    # Initialize Fast LLM for normal mode (streaming + speed)
-    logger.info(f"Initializing Fast LLM: {config.llm_model_fast}")
-    if "gemini" in config.llm_model_fast:
-        app_state.llm_fast = ChatVertexAI(
-            model=config.llm_model_fast,
-            project=config.gcp_project_id,
-            location=config.gcp_location,
-            temperature=0.3,
-            max_tokens=8192,
-            streaming=True  # Enable streaming for fast responses
-        )
-    elif "claude" in config.llm_model_fast:
-        app_state.llm_fast = ChatAnthropic(
-            model=config.llm_model_fast,
-            anthropic_api_key=config.anthropic_api_key,
-            temperature=0.3,
-            max_tokens=8192,
-            streaming=True
-        )
-    else:
-        app_state.llm_fast = ChatOpenAI(
-            model=config.llm_model_fast,
-            openai_api_key=config.openai_api_key,
-            temperature=0.3,
-            max_tokens=8192,
-            streaming=True
-        )
-    logger.info("✓ Fast LLM initialized")
+        # Initialize Fast LLM
+        if app_state.llm:  # Only if main LLM succeeded
+            logger.info(f"Initializing Fast LLM: {config.llm_model_fast}")
+            if "gemini" in config.llm_model_fast:
+                app_state.llm_fast = ChatVertexAI(
+                    model=config.llm_model_fast,
+                    project=config.gcp_project_id,
+                    location=config.gcp_location,
+                    temperature=0.3,
+                    max_tokens=8192,
+                    streaming=True
+                )
+            elif "claude" in config.llm_model_fast:
+                app_state.llm_fast = ChatAnthropic(
+                    model=config.llm_model_fast,
+                    anthropic_api_key=config.anthropic_api_key,
+                    temperature=0.3,
+                    max_tokens=8192,
+                    streaming=True
+                )
+            else:
+                app_state.llm_fast = ChatOpenAI(
+                    model=config.llm_model_fast,
+                    openai_api_key=config.openai_api_key,
+                    temperature=0.3,
+                    max_tokens=8192,
+                    streaming=True
+                )
+            logger.info("✓ Fast LLM initialized")
+    except Exception as e:
+        logger.warning(f"LLM initialization failed: {e} - Chat features disabled")
+        app_state.llm = None
+        app_state.llm_fast = None
 
     # Initialize HyDE if enabled
     if config.use_hyde:
         logger.info(f"Initializing HyDE with {config.hyde_model}")
-        from hyde import HyDEQueryExpander
+        from .hyde import HyDEQueryExpander
 
         if not config.openai_api_key:
             logger.warning("HyDE requires OpenAI API key - disabling")
@@ -765,6 +937,9 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Session Middleware for OAuth
+app.add_middleware(SessionMiddleware, secret_key=config.secret_key)
+
 # CORS middleware - Allow all origins for local development
 app.add_middleware(
     CORSMiddleware,
@@ -774,9 +949,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files for library CSS and JS
-app.mount("/css", StaticFiles(directory="css"), name="css")
-app.mount("/js", StaticFiles(directory="js"), name="js")
+# Mount static files for frontend
+app.mount("/css", StaticFiles(directory="frontend/css"), name="css")
+app.mount("/js", StaticFiles(directory="frontend/js"), name="js")
+app.mount("/assets", StaticFiles(directory="frontend/assets"), name="assets")
+app.mount("/data", StaticFiles(directory="frontend/data"), name="data")
 
 
 # ============================================================================
@@ -802,6 +979,233 @@ def check_rate_limit(client_ip: str) -> bool:
 
     rate_limiter[client_ip].append(now)
     return True
+
+
+# ============================================================================
+# Auth Endpoints
+# ============================================================================
+
+@app.get("/auth/login/{provider}")
+async def login(provider: str, request: Request):
+    """Initiate OAuth login."""
+    # Build redirect URI
+    redirect_uri = request.url_for('auth_callback', provider=provider)
+    return await auth.oauth.create_client(provider).authorize_redirect(request, redirect_uri)
+
+@app.get("/auth/callback/{provider}", name="auth_callback")
+async def auth_callback(
+    provider: str, 
+    request: Request, 
+    db: AsyncSession = Depends(database.get_db)
+):
+    """OAuth callback."""
+    try:
+        client = auth.oauth.create_client(provider)
+        token = await client.authorize_access_token(request)
+        user_info = token.get('userinfo')
+        
+        if not user_info:
+            user_info = await client.userinfo(token=token)
+            
+        # Parse User Info
+        email = user_info.get('email')
+        social_id = str(user_info.get('sub', user_info.get('id')))
+        nickname = user_info.get('name', user_info.get('nickname', 'User'))
+        profile_img = user_info.get('picture', user_info.get('profile_image', ''))
+        
+        if not email:
+            raise HTTPException(400, "Email not provided by social provider")
+
+        # DB: Find or Create
+        stmt = select(User).where(User.email == email)
+        result = await db.execute(stmt)
+        user = result.scalar_one_or_none()
+        
+        if not user:
+            user = User(
+                email=email,
+                social_id=social_id,
+                provider=provider,
+                nickname=nickname,
+                profile_img=profile_img
+            )
+            db.add(user)
+        else:
+            # Update existing user info
+            user.last_login = datetime.now()
+            user.profile_img = profile_img
+            
+        await db.commit()
+        await db.refresh(user)
+        
+        # Create JWT
+        jwt_token = auth.create_access_token({"sub": user.email, "user_id": user.id})
+        
+        # Redirect to frontend (index)
+        response = RedirectResponse(url="/")
+        
+        # Set cookie (secure, httponly)
+        # Note: secure=False for localhost development, True for production
+        is_secure = "https" in str(request.base_url)
+        cookie_kwargs = {
+            "key": "access_token",
+            "value": jwt_token,
+            "httponly": True,
+            "secure": is_secure,
+            "samesite": "lax",
+            "max_age": 60*60*24
+        }
+        # Only set domain for production (None = current host only)
+        if config.cookie_domain:
+            cookie_kwargs["domain"] = config.cookie_domain
+        response.set_cookie(**cookie_kwargs)
+        return response
+
+    except Exception as e:
+        logger.error(f"Auth callback error: {e}")
+        # raise HTTPException(500, f"Authentication failed: {str(e)}")
+        return RedirectResponse(url=f"/?error=auth_failed&detail={str(e)}")
+
+@app.get("/api/users/me")
+async def get_current_user_info(request: Request, db: AsyncSession = Depends(database.get_db)):
+    """Get current logged in user info."""
+    token = request.cookies.get("access_token")
+    if not token:
+         # Try header
+         auth_header = request.headers.get("Authorization")
+         if auth_header and auth_header.startswith("Bearer "):
+             token = auth_header.split(" ")[1]
+             
+    if not token:
+        raise HTTPException(401, "Not authenticated")
+        
+    payload = auth.decode_access_token(token)
+    if not payload:
+        raise HTTPException(401, "Invalid token")
+        
+    user_id = payload.get("user_id")
+    if not user_id:
+        raise HTTPException(401, "Invalid token")
+        
+    stmt = select(User).where(User.id == user_id)
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(404, "User not found")
+        
+    return {
+        "id": user.id,
+        "email": user.email,
+        "nickname": user.nickname,
+        "profile_img": user.profile_img,
+        "provider": user.provider
+    }
+
+@app.post("/auth/logout")
+async def logout():
+    response = JSONResponse({"status": "logged_out"})
+    response.delete_cookie("access_token")
+    return response
+
+
+# ============================================================================
+# Chat History Endpoints
+# ============================================================================
+
+@app.get("/api/chat/sessions")
+async def get_chat_sessions(
+    request: Request,
+    db: AsyncSession = Depends(database.get_db),
+    limit: int = 20,
+    offset: int = 0
+):
+    """Get current user's chat sessions."""
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(401, "Not authenticated")
+
+    payload = auth.decode_access_token(token)
+    if not payload:
+        raise HTTPException(401, "Invalid token")
+
+    user_id = payload.get("user_id")
+    if not user_id:
+        raise HTTPException(401, "Invalid token")
+
+    sessions = await get_user_chat_sessions(db, user_id, limit, offset)
+    return {"sessions": sessions, "count": len(sessions)}
+
+
+@app.get("/api/chat/sessions/{session_uuid}/messages")
+async def get_session_messages(
+    session_uuid: str,
+    request: Request,
+    db: AsyncSession = Depends(database.get_db),
+    limit: int = 50
+):
+    """Get messages for a specific chat session."""
+    # Verify ownership (optional - for now allow access to any session the user knows the ID of)
+    token = request.cookies.get("access_token")
+    user_id = None
+    if token:
+        payload = auth.decode_access_token(token)
+        if payload:
+            user_id = payload.get("user_id")
+
+    # Get session and verify ownership if logged in
+    stmt = select(ChatSession).where(ChatSession.session_uuid == session_uuid)
+    result = await db.execute(stmt)
+    chat_session = result.scalar_one_or_none()
+
+    if not chat_session:
+        raise HTTPException(404, "Session not found")
+
+    # If session has a user_id, verify it matches
+    if chat_session.user_id and chat_session.user_id != user_id:
+        raise HTTPException(403, "Access denied")
+
+    messages = await get_chat_messages(db, session_uuid, limit)
+    return {
+        "session_uuid": session_uuid,
+        "title": chat_session.title,
+        "messages": messages
+    }
+
+
+@app.delete("/api/chat/sessions/{session_uuid}")
+async def delete_chat_session(
+    session_uuid: str,
+    request: Request,
+    db: AsyncSession = Depends(database.get_db)
+):
+    """Delete a chat session (soft delete)."""
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(401, "Not authenticated")
+
+    payload = auth.decode_access_token(token)
+    if not payload:
+        raise HTTPException(401, "Invalid token")
+
+    user_id = payload.get("user_id")
+
+    # Get session and verify ownership
+    stmt = select(ChatSession).where(ChatSession.session_uuid == session_uuid)
+    result = await db.execute(stmt)
+    chat_session = result.scalar_one_or_none()
+
+    if not chat_session:
+        raise HTTPException(404, "Session not found")
+
+    if chat_session.user_id != user_id:
+        raise HTTPException(403, "Access denied")
+
+    # Soft delete
+    chat_session.is_active = False
+    await db.commit()
+
+    return {"status": "deleted", "session_uuid": session_uuid}
 
 
 # ============================================================================
@@ -1306,6 +1710,17 @@ async def chat_stream(request: ChatRequest, http_request: Request):
     """
     start_time = time.time()
 
+    # Extract user_id from JWT cookie (if logged in)
+    user_id = None
+    token = http_request.cookies.get("access_token")
+    if token:
+        payload = auth.decode_access_token(token)
+        if payload:
+            user_id = payload.get("user_id")
+
+    # Create or get session
+    session_uuid = create_or_get_session(request.session_id)
+
     # Rate limiting
     client_ip = http_request.client.host
     if not check_rate_limit(client_ip):
@@ -1472,15 +1887,37 @@ Answer:"""
                 output_tokens=0,
                 model=model_name,
                 mode="stream_detailed" if is_detailed else "stream_normal",
-                session_id=None,
+                session_id=session_uuid,
                 latency_ms=latency_ms,
                 from_cache=False
             )
 
-            # Send completion signal
-            yield f"data: {json.dumps({'type': 'done', 'latency_ms': latency_ms, 'model': model_name})}\n\n"
+            # Save to database (background task)
+            async def save_to_db():
+                try:
+                    async with database.SessionLocal() as db:
+                        await save_chat_to_db(
+                            db=db,
+                            session_uuid=session_uuid,
+                            user_id=user_id,
+                            user_message=request.query,
+                            assistant_message=full_response,
+                            metadata={
+                                "model": model_name,
+                                "sources_count": len(sources),
+                                "response_mode": "detailed" if is_detailed else "normal",
+                                "latency_ms": latency_ms
+                            }
+                        )
+                except Exception as e:
+                    logger.error(f"[Stream] DB save error: {e}")
 
-            logger.info(f"[Stream] Completed in {latency_ms}ms, model={model_name}")
+            asyncio.create_task(save_to_db())
+
+            # Send completion signal with session_id for follow-up
+            yield f"data: {json.dumps({'type': 'done', 'latency_ms': latency_ms, 'model': model_name, 'session_id': session_uuid})}\n\n"
+
+            logger.info(f"[Stream] Completed in {latency_ms}ms, model={model_name}, user_id={user_id}")
 
         except Exception as e:
             logger.error(f"[Stream] Error: {e}")
@@ -1631,20 +2068,74 @@ async def get_qa_analytics(days: int = 7, top_n: int = 10):
 
 @app.get("/")
 async def home_page():
-    """Home page with new UI."""
-    return HTMLResponse(content=open("index.html", encoding="utf-8").read())
+    """Home page."""
+    return HTMLResponse(content=open("frontend/index.html", encoding="utf-8").read())
+
+
+@app.get("/index.html")
+async def home_page_html():
+    """Home page (explicit .html)."""
+    return HTMLResponse(content=open("frontend/index.html", encoding="utf-8").read())
 
 
 @app.get("/chat")
 async def chat_page():
-    """Chat interface (legacy) - redirects to home."""
-    return HTMLResponse(content=open("index.html", encoding="utf-8").read())
+    """Chat interface."""
+    return HTMLResponse(content=open("frontend/chat.html", encoding="utf-8").read())
 
 
-@app.get("/methodology", response_class=HTMLResponse)
+@app.get("/chat.html")
+async def chat_page_html():
+    """Chat interface (explicit .html)."""
+    return HTMLResponse(content=open("frontend/chat.html", encoding="utf-8").read())
+
+
+@app.get("/sutra-writing")
+async def sutra_writing_page():
+    """Digital sutra copying page."""
+    return HTMLResponse(content=open("frontend/sutra-writing.html", encoding="utf-8").read())
+
+
+@app.get("/sutra-writing.html")
+async def sutra_writing_page_html():
+    """Digital sutra copying page (explicit .html)."""
+    return HTMLResponse(content=open("frontend/sutra-writing.html", encoding="utf-8").read())
+
+
+@app.get("/methodology")
 async def methodology_page():
-    """Methodology page - shows same page with methodology section."""
-    return HTMLResponse(content=open("index.html", encoding="utf-8").read())
+    """Methodology page."""
+    return HTMLResponse(content=open("frontend/methodology.html", encoding="utf-8").read())
+
+
+@app.get("/methodology.html")
+async def methodology_page_html():
+    """Methodology page (explicit .html)."""
+    return HTMLResponse(content=open("frontend/methodology.html", encoding="utf-8").read())
+
+
+@app.get("/meditation")
+async def meditation_page():
+    """Meditation page."""
+    return HTMLResponse(content=open("frontend/meditation.html", encoding="utf-8").read())
+
+
+@app.get("/meditation.html")
+async def meditation_page_html():
+    """Meditation page (explicit .html)."""
+    return HTMLResponse(content=open("frontend/meditation.html", encoding="utf-8").read())
+
+
+@app.get("/teaching")
+async def teaching_page():
+    """Teaching page."""
+    return HTMLResponse(content=open("frontend/teaching.html", encoding="utf-8").read())
+
+
+@app.get("/teaching.html")
+async def teaching_page_html():
+    """Teaching page (explicit .html)."""
+    return HTMLResponse(content=open("frontend/teaching.html", encoding="utf-8").read())
 
 
 @app.get("/api/sutras/meta")
@@ -1780,7 +2271,7 @@ async def get_source_detail(sutra_id: str):
     """
     try:
         # Load source summaries
-        summaries_path = "source_explorer/source_data/source_summaries_ko.json"
+        summaries_path = "data/source_data/source_summaries_ko.json"
 
         if not os.path.exists(summaries_path):
             raise HTTPException(
