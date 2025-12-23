@@ -393,7 +393,7 @@
 
         async function logout() {
             try {
-                await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
+                await fetch('https://ai.buddhakorea.com/auth/logout', { method: 'POST', credentials: 'include' });
                 window.location.reload();
             } catch (e) {
                 console.error("Logout failed", e);
