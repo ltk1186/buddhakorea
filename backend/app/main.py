@@ -947,8 +947,15 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Session Middleware for OAuth
-app.add_middleware(SessionMiddleware, secret_key=config.secret_key)
+# Session Middleware for OAuth (important: same_site="lax" allows OAuth redirects)
+# Note: https_only=False because nginx terminates SSL and proxies HTTP to backend
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=config.secret_key,
+    same_site="lax",  # Required for OAuth redirect flow
+    https_only=False,  # nginx handles SSL, backend sees HTTP
+    max_age=600,  # 10 minutes for OAuth state
+)
 
 # CORS middleware - Allow specific origins with credentials
 ALLOWED_ORIGINS = [
