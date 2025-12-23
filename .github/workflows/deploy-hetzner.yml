@@ -51,22 +51,42 @@ jobs:
             echo "🧹 Cleaning up..."
             docker image prune -f
 
+            # ⏳ Wait for all services to be healthy (including nginx)
+            echo "⏳ Waiting for all services to be healthy..."
+            for i in {1..20}; do
+              # Check if all containers are running
+              RUNNING=$(docker compose -f config/docker-compose.yml ps --format json 2>/dev/null | grep -c '"running"' || echo "0")
+              TOTAL=$(docker compose -f config/docker-compose.yml ps --format json 2>/dev/null | wc -l | tr -d ' ')
+
+              if [ "$RUNNING" -ge 4 ]; then
+                echo "✅ All $RUNNING containers are running!"
+                break
+              fi
+
+              echo "  Attempt $i/20: $RUNNING containers running, waiting..."
+              sleep 10
+            done
+
+            # Show final container status
+            echo "📊 Container Status:"
+            docker compose -f config/docker-compose.yml ps
+
             echo "✅ Deployment Complete!"
 
       - name: Health Check
         run: |
           echo "Waiting for service to be ready..."
-          sleep 30
+          sleep 10
 
-          for i in {1..5}; do
+          for i in {1..10}; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 https://ai.buddhakorea.com/api/health 2>/dev/null || echo "000")
             if [ "$STATUS" = "200" ]; then
               echo "✅ Health check passed! (attempt $i)"
               exit 0
             fi
-            echo "Attempt $i: Status $STATUS, retrying in 10s..."
-            sleep 10
+            echo "Attempt $i: Status $STATUS, retrying in 15s..."
+            sleep 15
           done
 
-          echo "❌ Health check failed after 5 attempts"
+          echo "❌ Health check failed after 10 attempts"
           exit 1
