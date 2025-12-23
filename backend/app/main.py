@@ -972,8 +972,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files for frontend (paths relative to backend directory)
-FRONTEND_DIR = Path(__file__).parent.parent.parent / "frontend"
+# Mount static files for frontend
+# Docker: /app/frontend, Local: ../../frontend relative to backend/app/
+FRONTEND_DIR = Path(__file__).parent.parent / "frontend"  # /app/app/../frontend = /app/frontend
+if not FRONTEND_DIR.exists():
+    # Fallback for local development
+    FRONTEND_DIR = Path(__file__).parent.parent.parent / "frontend"
 if FRONTEND_DIR.exists():
     app.mount("/css", StaticFiles(directory=str(FRONTEND_DIR / "css")), name="css")
     app.mount("/js", StaticFiles(directory=str(FRONTEND_DIR / "js")), name="js")
