@@ -1158,8 +1158,8 @@ async def auth_callback(
         # ========================================
         access_token, refresh_token = auth.create_token_pair(user.id, user.email)
 
-        # Redirect to frontend
-        response = RedirectResponse(url="/")
+        # Redirect to frontend (stay on same domain to keep cookies working)
+        response = RedirectResponse(url="/chat.html")
 
         # Set cookies
         is_secure = "https" in str(request.base_url)
