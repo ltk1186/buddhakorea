@@ -1008,12 +1008,16 @@ def check_rate_limit(client_ip: str) -> bool:
 @app.get("/auth/login/{provider}")
 async def login(provider: str, request: Request):
     """Initiate OAuth login with CSRF protection."""
-    # Build redirect URI
+    # Build redirect URI - force HTTPS for production
     redirect_uri = request.url_for('auth_callback', provider=provider)
+    # Convert to string and ensure HTTPS (nginx terminates SSL)
+    redirect_uri_str = str(redirect_uri)
+    if redirect_uri_str.startswith('http://') and 'localhost' not in redirect_uri_str:
+        redirect_uri_str = redirect_uri_str.replace('http://', 'https://', 1)
     # Generate and store CSRF state
     state = auth.generate_oauth_state()
     return await auth.oauth.create_client(provider).authorize_redirect(
-        request, redirect_uri, state=state
+        request, redirect_uri_str, state=state
     )
 
 
