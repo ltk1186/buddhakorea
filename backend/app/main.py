@@ -1173,7 +1173,9 @@ async def auth_callback(
         response = RedirectResponse(url="/chat.html")
 
         # Set cookies
-        is_secure = "https" in str(request.base_url)
+        # Check X-Forwarded-Proto header since nginx terminates SSL
+        forwarded_proto = request.headers.get("x-forwarded-proto", "")
+        is_secure = forwarded_proto == "https" or "https" in str(request.base_url)
         base_cookie_kwargs = {
             "httponly": True,
             "secure": is_secure,
