@@ -69,6 +69,8 @@ class AppConfig(BaseSettings):
     # Auth & Security
     secret_key: str = "your-secret-key-please-change"
     cookie_domain: Optional[str] = None  # None for localhost, ".buddhakorea.com" for production
+    cookie_samesite: str = "lax"  # lax, strict, none
+    cookie_secure: Optional[bool] = None  # None = auto-detect via proxy headers
     google_client_id: Optional[str] = None
     google_client_secret: Optional[str] = None
     naver_client_id: Optional[str] = None
@@ -959,10 +961,9 @@ app.add_middleware(
 
 # CORS middleware - Allow specific origins with credentials
 ALLOWED_ORIGINS = [
-    "https://buddhakorea.com",
-    "https://www.buddhakorea.com",
-    "http://localhost:3000",
-    "http://localhost:8000",
+    origin.strip()
+    for origin in config.allowed_origins.split(",")
+    if origin.strip()
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -1015,6 +1016,29 @@ def check_rate_limit(client_ip: str) -> bool:
 # ============================================================================
 # Auth Endpoints
 # ============================================================================
+
+def get_cookie_settings(request: Request) -> Dict[str, Any]:
+    """Centralize auth cookie settings to keep attributes consistent."""
+    forwarded_proto = request.headers.get("x-forwarded-proto", "")
+    if config.cookie_secure is None:
+        is_secure = forwarded_proto == "https" or request.url.scheme == "https"
+    else:
+        is_secure = config.cookie_secure
+
+    samesite = (config.cookie_samesite or "lax").lower()
+    if samesite not in {"lax", "strict", "none"}:
+        logger.warning(f"Invalid COOKIE_SAMESITE={config.cookie_samesite}, defaulting to 'lax'")
+        samesite = "lax"
+
+    cookie_kwargs: Dict[str, Any] = {
+        "httponly": True,
+        "secure": is_secure,
+        "samesite": samesite,
+    }
+    if config.cookie_domain:
+        cookie_kwargs["domain"] = config.cookie_domain
+
+    return cookie_kwargs
 
 @app.get("/auth/login/{provider}")
 async def login(provider: str, request: Request):
@@ -1170,25 +1194,17 @@ async def auth_callback(
         access_token, refresh_token = auth.create_token_pair(user.id, user.email)
 
         # Redirect to frontend (stay on same domain to keep cookies working)
-        response = RedirectResponse(url="/chat.html")
+        response = RedirectResponse(url="/chat.html", status_code=302)
 
         # Set cookies
-        # Check X-Forwarded-Proto header since nginx terminates SSL
-        forwarded_proto = request.headers.get("x-forwarded-proto", "")
-        is_secure = forwarded_proto == "https" or "https" in str(request.base_url)
-        base_cookie_kwargs = {
-            "httponly": True,
-            "secure": is_secure,
-            "samesite": "lax",
-        }
-        if config.cookie_domain:
-            base_cookie_kwargs["domain"] = config.cookie_domain
+        base_cookie_kwargs = get_cookie_settings(request)
 
         # Access token cookie (short-lived, 15 min)
         response.set_cookie(
             key="access_token",
             value=access_token,
             max_age=60 * 15,  # 15 minutes
+            path="/",
             **base_cookie_kwargs
         )
 
@@ -1278,8 +1294,9 @@ async def get_current_user_info(request: Request, db: AsyncSession = Depends(dat
 async def logout(request: Request):
     """Logout - clear both access and refresh tokens."""
     response = JSONResponse({"status": "logged_out"})
-    response.delete_cookie("access_token")
-    response.delete_cookie("refresh_token", path="/auth")
+    cookie_kwargs = get_cookie_settings(request)
+    response.delete_cookie("access_token", path="/", **cookie_kwargs)
+    response.delete_cookie("refresh_token", path="/auth", **cookie_kwargs)
     return response
 
 
@@ -1319,19 +1336,13 @@ async def refresh_access_token(
 
     # Set new access token cookie
     response = JSONResponse({"status": "refreshed"})
-    is_secure = "https" in str(request.base_url)
-
-    cookie_kwargs = {
+    cookie_kwargs = get_cookie_settings(request)
+    cookie_kwargs.update({
         "key": "access_token",
         "value": access_token,
-        "httponly": True,
-        "secure": is_secure,
-        "samesite": "lax",
-        "max_age": 60 * 15  # 15 minutes
-    }
-    if config.cookie_domain:
-        cookie_kwargs["domain"] = config.cookie_domain
-
+        "max_age": 60 * 15,  # 15 minutes
+        "path": "/",
+    })
     response.set_cookie(**cookie_kwargs)
     return response
 
@@ -2927,5 +2938,4 @@ if __name__ == "__main__":
     )
 
 # trigger
-
 
