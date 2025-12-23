@@ -1,0 +1,40 @@
+# ============================================================
+# Buddha Korea - Development Dockerfile
+# ============================================================
+# Hot-reload 지원, 디버깅 용이
+# ============================================================
+
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements first (cache layer)
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir debugpy watchfiles
+
+# Environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app
+
+# Create directories
+RUN mkdir -p /app/logs /app/chroma_db
+
+# Expose ports
+EXPOSE 8000 5678
+
+# Default command (can be overridden in docker-compose)
+CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

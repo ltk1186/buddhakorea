@@ -12,7 +12,7 @@
 
 // ===== GLOBAL STATE =====
 
-const API_BASE_URL = 'https://ai.buddhakorea.com';
+const API_BASE_URL = '';  // Use relative paths
 const MAX_CACHED_CARDS = 1000;
 const CARDS_PER_PAGE = 100;
 const DEBOUNCE_DELAY = 300; // ms for search debouncing
@@ -1115,6 +1115,7 @@ function askAboutSutraFromCard(sutraId, title) {
 
 /**
  * Ask about the currently displayed sutra in the modal
+ * This function sets the sutra as the chat filter and switches to chat tab
  */
 function askAboutCurrentSutra() {
     if (!modalState.currentSutraId) {
@@ -1122,17 +1123,39 @@ function askAboutCurrentSutra() {
         return;
     }
 
-    // Get the title from the modal
+    // Get the title from the modal BEFORE closing
     const titleEl = document.getElementById('modalTitle');
     const title = titleEl ? titleEl.textContent : modalState.currentSutraId;
+
+    // Store the sutraId BEFORE closing (closeSourceModal resets modalState)
+    const sutraId = modalState.currentSutraId;
+
+    console.log('[Library] askAboutCurrentSutra - sutraId:', sutraId, 'title:', title);
 
     // Close the modal
     closeSourceModal();
 
-    // Call the global askAboutSutra function from index.html
-    if (typeof window.askAboutSutra === 'function') {
-        window.askAboutSutra(modalState.currentSutraId, title);
+    // Call the global selectSutraForChat function to set the filter
+    if (typeof window.selectSutraForChat === 'function') {
+        window.selectSutraForChat(sutraId, title);
+        console.log('[Library] selectSutraForChat called successfully');
+
+        // Switch to chat tab
+        if (typeof window.switchTab === 'function') {
+            window.switchTab('chat');
+            console.log('[Library] Switched to chat tab');
+        } else {
+            console.warn('[Library] switchTab function not found, trying fallback');
+            // Fallback: use askAboutSutra which also switches tab
+            if (typeof window.askAboutSutra === 'function') {
+                window.askAboutSutra(sutraId, title);
+            }
+        }
+    } else if (typeof window.askAboutSutra === 'function') {
+        // Fallback to original function
+        console.log('[Library] Falling back to askAboutSutra');
+        window.askAboutSutra(sutraId, title);
     } else {
-        console.error('askAboutSutra function not found');
+        console.error('[Library] Neither selectSutraForChat nor askAboutSutra function found');
     }
 }

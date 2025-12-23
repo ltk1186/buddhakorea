@@ -26,6 +26,7 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 
+from src.buddhist_thesaurus import expand_query
 from src.embedder import Embedder
 from src.vectordb import VectorDB
 
@@ -117,8 +118,11 @@ class Retriever:
             RetrievalError: If retrieval fails
         """
         try:
-            # Embed query
-            query_embedding = self.embedder([query])
+            # Expand query with Buddhist term synonyms
+            expanded_query = expand_query(query)
+
+            # Embed expanded query
+            query_embedding = self.embedder([expanded_query])
 
             # Flatten to 1D if needed
             if query_embedding.ndim > 1:

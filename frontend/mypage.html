@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마이페이지 | Buddha Korea</title>
+
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PRT00DHTMG"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-PRT00DHTMG');
+    </script>
+
+    <!-- Favicon -->
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+
+    <!-- Fonts: Pretendard -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Mypage Specific Styles */
+        .mypage-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: var(--space-2xl) var(--space-lg);
+        }
+
+        .mypage-card {
+            background: var(--surface-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            padding: var(--space-2xl);
+            margin-bottom: var(--space-lg);
+        }
+
+        .mypage-card h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-md);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        /* Profile Section */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--sage-light), var(--sage-primary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            overflow: hidden;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .profile-email {
+            font-size: 0.9375rem;
+            color: var(--color-text-secondary);
+        }
+
+        .profile-joined {
+            font-size: 0.8125rem;
+            color: var(--color-text-muted);
+            margin-top: var(--space-xs);
+        }
+
+        /* Usage Section */
+        .usage-display {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-lg);
+            background: var(--sage-glow);
+            border-radius: var(--radius-md);
+        }
+
+        .usage-text {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+        }
+
+        .usage-label {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+        }
+
+        .usage-count {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+        }
+
+        .usage-count span {
+            color: var(--sage-primary);
+        }
+
+        .usage-bar-container {
+            width: 120px;
+            height: 8px;
+            background: var(--sage-lighter);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+
+        .usage-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--sage-primary), var(--sage-light));
+            border-radius: var(--radius-full);
+            transition: width 0.3s ease;
+        }
+
+        /* Social Accounts Section */
+        .social-account-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-md) 0;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .social-account-item:last-child {
+            border-bottom: none;
+        }
+
+        .social-account-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .social-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.125rem;
+        }
+
+        .social-icon.google {
+            background: #fff;
+            border: 1px solid #ddd;
+        }
+
+        .social-icon.naver {
+            background: #03C75A;
+            color: white;
+        }
+
+        .social-icon.kakao {
+            background: #FEE500;
+            color: #3C1E1E;
+        }
+
+        .social-account-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .social-provider {
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--color-text-primary);
+        }
+
+        .social-email {
+            font-size: 0.8125rem;
+            color: var(--color-text-muted);
+        }
+
+        .social-status {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            font-weight: 500;
+        }
+
+        .social-status.connected {
+            background: rgba(90, 154, 110, 0.1);
+            color: var(--sage-primary);
+        }
+
+        .social-status.not-connected {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--color-text-muted);
+        }
+
+        /* Actions Section */
+        .mypage-actions {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            padding: var(--space-md) var(--space-lg);
+            background: transparent;
+            border: 1.5px solid var(--border-accent);
+            border-radius: var(--radius-md);
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--color-text-primary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-decoration: none;
+        }
+
+        .action-btn:hover {
+            background: rgba(90, 154, 110, 0.05);
+            border-color: var(--sage-primary);
+        }
+
+        .action-btn.logout {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+
+        .action-btn.logout:hover {
+            background: rgba(220, 53, 69, 0.05);
+        }
+
+        /* Loading State */
+        .loading-state {
+            text-align: center;
+            padding: var(--space-3xl);
+            color: var(--color-text-muted);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--sage-lighter);
+            border-top-color: var(--sage-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto var(--space-md);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Not Logged In State */
+        .not-logged-in {
+            text-align: center;
+            padding: var(--space-3xl);
+        }
+
+        .not-logged-in h2 {
+            font-size: 1.25rem;
+            margin-bottom: var(--space-md);
+            border: none;
+            padding: 0;
+        }
+
+        .not-logged-in p {
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-xl);
+        }
+
+        @media (max-width: 768px) {
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .usage-display {
+                flex-direction: column;
+                gap: var(--space-md);
+                text-align: center;
+            }
+
+            .usage-bar-container {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="site-header">
+        <div class="header-container">
+            <a href="index.html" class="header-logo">
+                <img src="assets/buddha-line.png" alt="Buddha Korea" class="logo-icon">
+                <span class="logo-text">Buddha Korea</span>
+            </a>
+
+            <nav class="header-nav">
+                <a href="index.html" class="nav-link">홈</a>
+                <a href="chat.html" class="nav-link">AI</a>
+                <a href="sutra-writing.html" class="nav-link">사경</a>
+                <span id="auth-container" style="margin-left: 10px;">
+                    <!-- Auth content injected by JS -->
+                </span>
+            </nav>
+        </div>
+    </header>
+
+    <div class="header-spacer"></div>
+
+    <!-- Main Content -->
+    <main class="mypage-container" id="mypage-content">
+        <div class="loading-state" id="loading-state">
+            <div class="loading-spinner"></div>
+            <p>사용자 정보를 불러오는 중...</p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+                <span>© 2025 Buddha Korea</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const API_BASE_URL = '';
+
+        async function loadMyPage() {
+            const contentEl = document.getElementById('mypage-content');
+            const loadingEl = document.getElementById('loading-state');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    // Not logged in
+                    contentEl.innerHTML = `
+                        <div class="mypage-card not-logged-in">
+                            <h2>로그인이 필요합니다</h2>
+                            <p>마이페이지를 이용하려면 로그인해 주세요.</p>
+                            <a href="${API_BASE_URL}/auth/login/google" class="btn-primary">
+                                Google로 로그인
+                            </a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const user = await response.json();
+                renderMyPage(user);
+
+            } catch (error) {
+                console.error('Failed to load mypage:', error);
+                contentEl.innerHTML = `
+                    <div class="mypage-card not-logged-in">
+                        <h2>오류가 발생했습니다</h2>
+                        <p>잠시 후 다시 시도해 주세요.</p>
+                        <a href="index.html" class="btn-secondary">홈으로 돌아가기</a>
+                    </div>
+                `;
+            }
+        }
+
+        function renderMyPage(user) {
+            const contentEl = document.getElementById('mypage-content');
+
+            // Calculate usage percentage
+            const usagePercent = Math.min((user.today_usage / user.daily_limit) * 100, 100);
+
+            // Format joined date
+            const joinedDate = user.created_at ? new Date(user.created_at).toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            }) : '';
+
+            // Get initial or profile image
+            const initial = user.nickname ? user.nickname.charAt(0).toUpperCase() : 'U';
+            const avatarContent = user.profile_image_url
+                ? `<img src="${user.profile_image_url}" alt="${user.nickname}">`
+                : initial;
+
+            // Social accounts HTML
+            let socialAccountsHtml = '';
+            const providers = ['google', 'naver', 'kakao'];
+            const providerNames = { google: 'Google', naver: '네이버', kakao: '카카오' };
+            const providerIcons = {
+                google: '<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>',
+                naver: 'N',
+                kakao: 'K'
+            };
+
+            providers.forEach(provider => {
+                const account = user.social_accounts?.find(a => a.provider === provider);
+                const isConnected = !!account;
+
+                socialAccountsHtml += `
+                    <div class="social-account-item">
+                        <div class="social-account-info">
+                            <div class="social-icon ${provider}">${providerIcons[provider]}</div>
+                            <div class="social-account-details">
+                                <span class="social-provider">${providerNames[provider]}</span>
+                                ${isConnected ? `<span class="social-email">${account.provider_email || ''}</span>` : ''}
+                            </div>
+                        </div>
+                        <span class="social-status ${isConnected ? 'connected' : 'not-connected'}">
+                            ${isConnected ? '연결됨' : '미연결'}
+                        </span>
+                    </div>
+                `;
+            });
+
+            contentEl.innerHTML = `
+                <!-- Profile Card -->
+                <div class="mypage-card">
+                    <h2>프로필</h2>
+                    <div class="profile-header">
+                        <div class="profile-avatar">${avatarContent}</div>
+                        <div class="profile-info">
+                            <div class="profile-name">${user.nickname || '사용자'}</div>
+                            <div class="profile-email">${user.email || ''}</div>
+                            ${joinedDate ? `<div class="profile-joined">가입일: ${joinedDate}</div>` : ''}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Usage Card -->
+                <div class="mypage-card">
+                    <h2>오늘의 사용량</h2>
+                    <div class="usage-display">
+                        <div class="usage-text">
+                            <span class="usage-label">AI 질문 횟수</span>
+                            <span class="usage-count"><span>${user.today_usage || 0}</span> / ${user.daily_limit || 20}</span>
+                        </div>
+                        <div class="usage-bar-container">
+                            <div class="usage-bar" style="width: ${usagePercent}%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Social Accounts Card -->
+                <div class="mypage-card">
+                    <h2>연결된 계정</h2>
+                    ${socialAccountsHtml}
+                </div>
+
+                <!-- Actions Card -->
+                <div class="mypage-card">
+                    <h2>계정 관리</h2>
+                    <div class="mypage-actions">
+                        <a href="chat.html" class="action-btn">AI 채팅으로 이동</a>
+                        <button onclick="logout()" class="action-btn logout">로그아웃</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+                    credentials: 'include'
+                });
+                const authContainer = document.getElementById('auth-container');
+
+                if (response.ok) {
+                    const user = await response.json();
+                    authContainer.innerHTML = `
+                        <a href="mypage.html" style="font-size: 0.9rem; margin-right: 8px; text-decoration: none; color: var(--color-text-primary);">${user.nickname}님</a>
+                        <a href="#" onclick="logout(); return false;" style="font-size: 0.85rem; color: #666; text-decoration: none;">로그아웃</a>
+                    `;
+                } else {
+                    authContainer.innerHTML = `
+                        <a href="${API_BASE_URL}/auth/login/google" style="font-size: 0.9rem; font-weight: 500; color: #444; text-decoration: none;">로그인</a>
+                    `;
+                }
+            } catch (e) {
+                console.error("Auth check failed", e);
+            }
+        }
+
+        async function logout() {
+            try {
+                await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
+                window.location.href = 'index.html';
+            } catch (e) {
+                console.error("Logout failed", e);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            loadMyPage();
+        });
+    </script>
+</body>
+</html>

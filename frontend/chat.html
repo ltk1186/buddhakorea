@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>불교 AI | CBETA 대장경 탐색기</title>
+    <title>Ghosa AI | CBETA 대장경 탐색기</title>
 
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-PRT00DHTMG"></script>
@@ -358,11 +358,21 @@
             flex: 1;
             display: none;
             flex-direction: column;
+            min-height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
             padding-bottom: var(--tab-bar-height);
         }
 
         .chat-section.active {
             display: flex;
+        }
+
+        @supports (height: 100dvh) {
+            .chat-section {
+                min-height: 100dvh;
+                max-height: 100dvh;
+            }
         }
 
         .chat-header {
@@ -384,6 +394,7 @@
             display: flex;
             align-items: center;
             gap: var(--space-sm);
+            flex: 1;
         }
 
         .chat-header-title span:first-child {
@@ -393,6 +404,7 @@
         .chat-header-actions {
             display: flex;
             gap: var(--space-sm);
+            flex-shrink: 0;
         }
 
         .icon-btn {
@@ -418,6 +430,7 @@
         .chat-container {
             flex: 1;
             overflow-y: auto;
+            min-height: 0;
             padding: var(--space-lg);
             padding-bottom: 160px; /* Space for fixed input container + chips */
             max-width: var(--max-width);
@@ -1228,12 +1241,6 @@
             justify-content: space-between;
             padding: 0 var(--space-xl);
             z-index: 1000;
-            transform: translateY(-100%);
-            transition: transform var(--transition-normal);
-        }
-
-        .desktop-nav.visible {
-            transform: translateY(0);
         }
 
         .desktop-nav-brand {
@@ -1247,17 +1254,18 @@
             transition: var(--transition-fast);
         }
 
-        .desktop-nav-brand:hover {
+        .desktop-nav-brand:hover:not(:has(.sidebar-toggle-btn:hover)) {
             color: var(--primary);
         }
 
         .desktop-nav-links {
             display: flex;
-            gap: var(--space-xs);
+            gap: var(--space-sm);
+            margin-left: var(--space-lg);
         }
 
         .desktop-nav-link {
-            padding: var(--space-sm) var(--space-md);
+            padding: var(--space-sm) var(--space-lg);
             border-radius: 8px;
             font-size: 0.9375rem;
             font-weight: 500;
@@ -1266,6 +1274,7 @@
             transition: var(--transition-fast);
             border: none;
             background: transparent;
+            white-space: nowrap;
         }
 
         .desktop-nav-link:hover {
@@ -1276,6 +1285,44 @@
         .desktop-nav-link.active {
             background: rgba(90, 154, 110, 0.15);
             color: var(--primary);
+        }
+
+        .desktop-nav-auth {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            margin-left: auto;
+        }
+
+        .desktop-nav-auth a {
+            text-decoration: none;
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            transition: all var(--transition-fast);
+            font-family: var(--font-main);
+        }
+
+        .desktop-nav-auth a:hover {
+            color: var(--primary);
+        }
+
+        .desktop-nav-auth .user-link {
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.9375rem;
+        }
+
+        .desktop-nav-auth .logout-link {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: 6px;
+            transition: all var(--transition-fast);
+        }
+
+        .desktop-nav-auth .logout-link:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--text-secondary);
         }
 
         /* ===== Responsive ===== */
@@ -1354,10 +1401,23 @@
             display: none;
             flex-direction: column;
             z-index: 99;
+            transform: translateX(-100%);
+            transition: transform var(--transition-normal);
         }
 
-        .chat-history-sidebar.visible {
-            display: flex;
+        /* Only show sidebar on desktop */
+        @media (min-width: 768px) {
+            .chat-history-sidebar.visible {
+                display: flex;
+                transform: translateX(0);
+            }
+        }
+
+        /* Hide sidebar completely on mobile - use drawer instead */
+        @media (max-width: 767px) {
+            .chat-history-sidebar {
+                display: none !important;
+            }
         }
 
         .chat-history-header {
@@ -1490,23 +1550,30 @@
         .chat-history-login-prompt {
             padding: var(--space-lg);
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-sm);
         }
 
         .chat-history-login-prompt p {
             font-size: 0.875rem;
             color: var(--text-secondary);
-            margin-bottom: var(--space-md);
+            margin-bottom: var(--space-sm);
             line-height: 1.5;
         }
 
         .login-prompt-btn {
-            display: inline-flex;
+            display: flex;
             align-items: center;
+            justify-content: center;
             gap: var(--space-sm);
-            padding: var(--space-sm) var(--space-lg);
+            width: 100%;
+            max-width: 220px;
+            padding: 10px var(--space-lg);
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            border-radius: 100px;
+            border-radius: 8px;
             color: var(--text-primary);
             font-size: 0.875rem;
             font-weight: 500;
@@ -1515,18 +1582,142 @@
         }
 
         .login-prompt-btn:hover {
-            background: rgba(90, 154, 110, 0.1);
-            border-color: var(--primary);
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* Google - White/Gray */
+        .login-prompt-btn.login-google {
+            background: #fff;
+            border: 1px solid #ddd;
+            color: #333;
+        }
+        .login-prompt-btn.login-google:hover {
+            background: #f8f8f8;
+        }
+
+        /* Naver - Green */
+        .login-prompt-btn.login-naver {
+            background: #03C75A;
+            border: none;
+            color: #fff;
+        }
+        .login-prompt-btn.login-naver:hover {
+            background: #02b350;
+        }
+
+        /* Kakao - Yellow */
+        .login-prompt-btn.login-kakao {
+            background: #FEE500;
+            border: none;
+            color: #191919;
+        }
+        .login-prompt-btn.login-kakao:hover {
+            background: #f5dc00;
+        }
+
+        /* Login Modal */
+        .login-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            padding: var(--space-md);
+            box-sizing: border-box;
+            align-items: center;
+            justify-content: center;
+            place-items: center;
+        }
+
+        .login-modal-overlay.active {
+            display: grid;
+            place-items: center;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-modal {
+            margin: 0;
+            background: #fff;
+            border-radius: 16px;
+            padding: var(--space-xl);
+            max-width: 320px;
+            width: 100%;
+            max-height: calc(100vh - (2 * var(--space-md)));
+            overflow-y: auto;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            animation: modalFadeIn 0.2s ease-out;
+        }
+
+        @supports (height: 100dvh) {
+            .login-modal {
+                max-height: calc(100dvh - (2 * var(--space-md)));
+            }
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .login-modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: var(--space-xs);
+            color: var(--text-primary);
+        }
+
+        .login-modal-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-lg);
+        }
+
+        .login-modal-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+            align-items: stretch;
+        }
+
+        .login-modal-buttons .login-prompt-btn {
+            width: 100%;
+        }
+
+        .login-modal-close {
+            margin-top: var(--space-md);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+
+        .login-modal-close:hover {
+            color: var(--text-secondary);
         }
 
         /* Sidebar toggle button */
         .sidebar-toggle-btn {
             display: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: transparent;
+            border: none;
             color: var(--text-secondary);
             cursor: pointer;
             align-items: center;
@@ -1535,8 +1726,43 @@
         }
 
         .sidebar-toggle-btn:hover {
-            background: rgba(90, 154, 110, 0.1);
-            color: var(--text-primary);
+            background: rgba(90, 154, 110, 0.08);
+            color: var(--primary);
+        }
+
+        .sidebar-toggle-btn:active {
+            background: rgba(90, 154, 110, 0.15);
+        }
+
+        /* Mobile toggle button in chat header */
+        .mobile-toggle-btn {
+            display: flex;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-fast);
+            margin-right: var(--space-sm);
+        }
+
+        .mobile-toggle-btn:hover {
+            background: rgba(90, 154, 110, 0.08);
+            color: var(--primary);
+        }
+
+        .mobile-toggle-btn:active {
+            background: rgba(90, 154, 110, 0.15);
+        }
+
+        @media (min-width: 768px) {
+            .mobile-toggle-btn {
+                display: none;
+            }
         }
 
         /* Mobile History Drawer */
@@ -1668,6 +1894,55 @@
             clip: rect(0, 0, 0, 0);
             border: 0;
         }
+
+        /* Quota Exceeded Message Styles */
+        .quota-exceeded-message {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border: 1px solid #ffb74d;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .quota-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+
+        .quota-text {
+            color: #5d4037;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+
+        .quota-actions {
+            margin-top: 16px;
+        }
+
+        .quota-actions .login-btn {
+            background: linear-gradient(135deg, #4a7c59 0%, #2d5a3d 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .quota-actions .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 124, 89, 0.4);
+        }
+
+        .quota-actions .login-btn span {
+            font-size: 1.1rem;
+        }
     </style>
 </head>
 <body>
@@ -1688,12 +1963,15 @@
                 </svg>
             </button>
             <span>&#x2638;</span>
-            <span>불교 AI</span>
+            <span>Ghosa AI</span>
         </div>
         <div class="desktop-nav-links">
             <button class="desktop-nav-link active" data-tab="chat" onclick="switchTab('chat')">채팅</button>
             <button class="desktop-nav-link" data-tab="library" onclick="switchTab('library')">라이브러리</button>
             <button class="desktop-nav-link" data-tab="methodology" onclick="switchTab('methodology')">방법론</button>
+        </div>
+        <div class="desktop-nav-auth" id="desktopNavAuth">
+            <!-- Auth content injected by JS -->
         </div>
     </nav>
 
@@ -1715,11 +1993,11 @@
 
     <!-- App -->
     <div class="app">
-        <!-- Hero Section -->
-        <section class="hero" id="hero">
+        <!-- Hero Section (hidden by default - go straight to chat) -->
+        <section class="hero hidden" id="hero">
             <div class="hero-content">
                 <div class="hero-icon">&#x2638;</div>
-                <h1 class="hero-title">불교 AI 대장경 탐색기</h1>
+                <h1 class="hero-title">Ghosa AI 대장경 탐색기</h1>
                 <p class="hero-subtitle">
                     2,459개 CBETA 대장경을<br>
                     AI와 함께 탐험하세요
@@ -1773,11 +2051,17 @@
         </section>
 
         <!-- Chat Section -->
-        <section class="chat-section" id="chatSection">
+        <section class="chat-section active" id="chatSection">
             <header class="chat-header">
+                <button class="mobile-toggle-btn" onclick="openHistoryDrawer()" title="채팅 기록">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        <path d="M8 9h8M8 13h6"/>
+                    </svg>
+                </button>
                 <div class="chat-header-title">
                     <span>&#x2638;</span>
-                    <span>불교 AI</span>
+                    <span>Ghosa AI</span>
                 </div>
                 <div class="chat-header-actions">
                     <button class="icon-btn" onclick="clearChat()" title="새 대화">
@@ -1793,7 +2077,7 @@
                     <!-- Welcome Message -->
                     <div class="chat-welcome" id="chatWelcome">
                         <div class="chat-welcome-icon">&#x2638;</div>
-                        <h2 class="chat-welcome-title">불교 AI에 오신 것을 환영합니다</h2>
+                        <h2 class="chat-welcome-title">Ghosa AI에 오신 것을 환영합니다</h2>
                         <p class="chat-welcome-desc">
                             2,459개 CBETA 대장경을 기반으로<br>
                             불교에 대한 질문에 답변해 드립니다.
@@ -2094,6 +2378,38 @@
         </div>
     </div>
 
+    <!-- Login Modal -->
+    <div class="login-modal-overlay" id="loginModal" onclick="if(event.target === this) closeLoginModal()">
+        <div class="login-modal">
+            <div class="login-modal-title">로그인</div>
+            <div class="login-modal-desc">소셜 계정으로 간편하게 시작하세요</div>
+            <div class="login-modal-buttons">
+                <button class="login-prompt-btn login-google" onclick="window.location.href='/auth/login/google'">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Google로 로그인
+                </button>
+                <button class="login-prompt-btn login-naver" onclick="window.location.href='/auth/login/naver'">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/>
+                    </svg>
+                    네이버로 로그인
+                </button>
+                <button class="login-prompt-btn login-kakao" onclick="window.location.href='/auth/login/kakao'">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 3C6.477 3 2 6.463 2 10.691c0 2.756 1.819 5.175 4.546 6.52-.148.538-.952 3.456-.982 3.678 0 0-.02.161.085.223.105.062.229.014.229.014.302-.042 3.501-2.282 4.055-2.675.675.098 1.376.149 2.067.149 5.523 0 10-3.463 10-7.909C22 6.463 17.523 3 12 3z"/>
+                    </svg>
+                    카카오로 로그인
+                </button>
+            </div>
+            <button class="login-modal-close" onclick="closeLoginModal()">닫기</button>
+        </div>
+    </div>
+
     <!-- Library JavaScript -->
     <script src="js/library.js"></script>
 
@@ -2127,6 +2443,7 @@
                 if (response.ok) {
                     currentUser = await response.json();
                     isLoggedIn = true;
+                    updateDesktopNavAuth();
                     return true;
                 }
             } catch (e) {
@@ -2134,7 +2451,35 @@
             }
             isLoggedIn = false;
             currentUser = null;
+            updateDesktopNavAuth();
             return false;
+        }
+
+        // Update desktop nav auth display
+        function updateDesktopNavAuth() {
+            const authEl = document.getElementById('desktopNavAuth');
+            if (!authEl) return;
+
+            if (isLoggedIn && currentUser) {
+                authEl.innerHTML = `
+                    <a href="mypage.html" class="user-link">${currentUser.nickname}님</a>
+                    <a href="#" class="logout-link" onclick="handleLogout(); return false;">로그아웃</a>
+                `;
+            } else {
+                authEl.innerHTML = `
+                    <a href="#" class="user-link" onclick="showLoginModal(); return false;">로그인</a>
+                `;
+            }
+        }
+
+        // Handle logout
+        async function handleLogout() {
+            try {
+                await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
+                window.location.reload();
+            } catch (e) {
+                console.error("Logout failed", e);
+            }
         }
 
         // Load chat sessions from API
@@ -2168,7 +2513,7 @@
             const promptHtml = `
                 <div class="chat-history-login-prompt">
                     <p>로그인하면 채팅 기록을<br>저장하고 관리할 수 있습니다</p>
-                    <button class="login-prompt-btn" onclick="window.location.href='/auth/login/google'">
+                    <button class="login-prompt-btn login-google" onclick="window.location.href='/auth/login/google'">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -2176,6 +2521,18 @@
                             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                         </svg>
                         Google로 로그인
+                    </button>
+                    <button class="login-prompt-btn login-naver" onclick="window.location.href='/auth/login/naver'">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/>
+                        </svg>
+                        네이버로 로그인
+                    </button>
+                    <button class="login-prompt-btn login-kakao" onclick="window.location.href='/auth/login/kakao'">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 3C6.477 3 2 6.463 2 10.691c0 2.756 1.819 5.175 4.546 6.52-.148.538-.952 3.456-.982 3.678 0 0-.02.161.085.223.105.062.229.014.229.014.302-.042 3.501-2.282 4.055-2.675.675.098 1.376.149 2.067.149 5.523 0 10-3.463 10-7.909C22 6.463 17.523 3 12 3z"/>
+                        </svg>
+                        카카오로 로그인
                     </button>
                 </div>
             `;
@@ -2231,6 +2588,9 @@
                 const data = await response.json();
                 currentSessionUuid = sessionUuid;
 
+                // Save to localStorage for persistence
+                localStorage.setItem('lastChatSessionUuid', sessionUuid);
+
                 // Clear current messages and render loaded messages
                 const messagesEl = document.getElementById('chatMessages');
                 const welcome = document.getElementById('chatWelcome');
@@ -2242,8 +2602,10 @@
                 // Render each message
                 if (data.messages && data.messages.length > 0) {
                     data.messages.forEach(msg => {
-                        addMessageToUI(msg.role, msg.content, msg.created_at);
+                        addMessageToUI(msg.role, msg.content, msg.created_at, msg.sources || msg.references || []);
                     });
+                    // Scroll so newest thread is visible near the start of the last message
+                    setTimeout(() => scrollToBottom({ immediate: true, alignStart: true, force: true }), 100);
                 } else {
                     // Show welcome if no messages
                     messagesEl.innerHTML = getWelcomeHtml();
@@ -2263,20 +2625,39 @@
             }
         }
 
+        // Show login modal with all social login options
+        function showLoginModal() {
+            document.getElementById('loginModal').classList.add('active');
+        }
+
+        // Close login modal
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.remove('active');
+        }
+
         // Add message to UI (for loaded messages)
-        function addMessageToUI(role, content, timestamp) {
+        function addMessageToUI(role, content, timestamp, sources = []) {
             const messages = document.getElementById('chatMessages');
             const time = timestamp ? new Date(timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : '';
+
+            const sourceHtml = (Array.isArray(sources) && sources.length > 0) ? `
+                <div class="message-sources">
+                    <div class="message-sources-title">참고 문헌</div>
+                    <div class="message-source-tags">
+                        ${sources.map(s => `<span class="source-tag" onclick="showSourceDetail('${s.text_id}')">${s.title || s.text_id}</span>`).join('')}
+                    </div>
+                </div>
+            ` : '';
 
             const html = `
                 <div class="message ${role}">
                     <div class="message-avatar">${role === 'user' ? '&#128100;' : '&#x2638;'}</div>
                     <div class="message-content">
                         <div class="message-header">
-                            <span class="message-sender">${role === 'user' ? '나' : '불교 AI'}</span>
+                            <span class="message-sender">${role === 'user' ? '나' : 'Ghosa AI'}</span>
                             <span class="message-time">${time}</span>
                         </div>
-                        <div class="message-text">${formatMessage(content)}</div>
+                        <div class="message-text">${formatMessage(content)}${sourceHtml}</div>
                     </div>
                 </div>
             `;
@@ -2386,7 +2767,7 @@
             return `
                 <div class="chat-welcome" id="chatWelcome">
                     <div class="chat-welcome-icon">&#x2638;</div>
-                    <h2 class="chat-welcome-title">불교 AI에 오신 것을 환영합니다</h2>
+                    <h2 class="chat-welcome-title">Ghosa AI에 오신 것을 환영합니다</h2>
                     <p class="chat-welcome-desc">
                         2,459개 CBETA 대장경을 기반으로<br>
                         불교에 대한 질문에 답변해 드립니다.
@@ -2465,9 +2846,6 @@
             document.getElementById('hero').classList.add('hidden');
             isHeroVisible = false;
 
-            // Show desktop navigation
-            document.getElementById('desktopNav').classList.add('visible');
-
             // Update sections
             document.querySelectorAll('.chat-section, .library-section, .methodology-section').forEach(s => {
                 s.classList.remove('active');
@@ -2501,29 +2879,8 @@
 
         // ===== Go Home =====
         function goHome() {
-            // Hide all sections
-            document.querySelectorAll('.chat-section, .library-section, .methodology-section').forEach(s => {
-                s.classList.remove('active');
-            });
-
-            // Show hero
-            document.getElementById('hero').classList.remove('hidden');
-            isHeroVisible = true;
-
-            // Hide desktop nav
-            document.getElementById('desktopNav').classList.remove('visible');
-
-            // Reset tab states
-            document.querySelectorAll('.tab-item, .desktop-nav-link').forEach(item => {
-                item.classList.remove('active');
-            });
-            document.querySelector('.tab-item[data-tab="chat"]')?.classList.add('active');
-            document.querySelector('.desktop-nav-link[data-tab="chat"]')?.classList.add('active');
-
-            currentTab = 'hero';
-
-            // Scroll to top
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Navigate to index.html
+            window.location.href = 'index.html';
         }
 
         // ===== Start Chat =====
@@ -2554,7 +2911,7 @@
             const progressIndicator = document.getElementById('progressIndicator');
             progressIndicator.classList.add('active');
             resetProgressStages();
-            scrollToBottom();
+            scrollToBottom({ immediate: true, alignStart: true, force: true });
 
             try {
                 // Build request based on chat options
@@ -2574,8 +2931,12 @@
                 }
 
                 // Add specific sutra filter if selected
+                console.log('[Chat] chatOptions.selectedSutra:', chatOptions.selectedSutra);
                 if (chatOptions.selectedSutra) {
                     requestBody.sutra_filter = chatOptions.selectedSutra.text_id;
+                    console.log('[Chat] Sending sutra_filter:', requestBody.sutra_filter);
+                } else {
+                    console.log('[Chat] No sutra filter selected - searching all documents');
                 }
 
                 // Add academic mode hint to query if selected
@@ -2627,7 +2988,6 @@
                                         // Append content with typing effect
                                         fullContent += data.content;
                                         appendStreamingContent(messageText, data.content);
-                                        scrollToBottom();
                                         break;
 
                                     case 'sources':
@@ -2641,11 +3001,15 @@
                                         if (sources.length > 0) {
                                             addSourcesToMessage(messageContainer, sources);
                                         }
+                                        // Final scroll after streaming completes
+                                        setTimeout(() => scrollToBottom({ immediate: true, alignStart: true, force: true }), 100);
                                         // Update current session UUID from response
                                         if (data.session_id) {
                                             currentSessionUuid = data.session_id;
-                                            // Refresh history list if logged in
+                                            // Save to localStorage for persistence (logged-in users only)
                                             if (isLoggedIn) {
+                                                localStorage.setItem('lastChatSessionUuid', data.session_id);
+                                                // Refresh history list
                                                 setTimeout(() => loadChatSessions(), 500);
                                             }
                                         }
@@ -2655,7 +3019,28 @@
                                     case 'error':
                                         progressIndicator.classList.remove('active');
                                         messageText.classList.remove('streaming');
-                                        messageText.innerHTML = formatMessage('죄송합니다. 오류가 발생했습니다: ' + data.message);
+
+                                        // Handle quota exceeded specially
+                                        if (data.code === 'quota_exceeded') {
+                                            const isAnonymous = data.is_anonymous;
+                                            let quotaHtml = `<div class="quota-exceeded-message">
+                                                <div class="quota-icon">⏰</div>
+                                                <div class="quota-text">${data.message.replace(/\n/g, '<br>')}</div>`;
+
+                                            // Show login button for anonymous users
+                                            if (isAnonymous) {
+                                                quotaHtml += `
+                                                <div class="quota-actions">
+                                                    <button class="login-btn" onclick="showLoginModal()">
+                                                        <span>🔑</span> 로그인하고 더 질문하기
+                                                    </button>
+                                                </div>`;
+                                            }
+                                            quotaHtml += '</div>';
+                                            messageText.innerHTML = quotaHtml;
+                                        } else {
+                                            messageText.innerHTML = formatMessage('죄송합니다. 오류가 발생했습니다: ' + data.message);
+                                        }
                                         break;
                                 }
                             } catch (e) {
@@ -2668,6 +3053,42 @@
             } catch (error) {
                 console.error('Chat error:', error);
                 progressIndicator.classList.remove('active');
+
+                // Check if we might be hitting quota - try to get usage info
+                try {
+                    const usageResponse = await fetch(`${API_BASE_URL}/api/usage`, {
+                        credentials: 'include'
+                    });
+                    if (usageResponse.ok) {
+                        const usageData = await usageResponse.json();
+                        if (usageData.remaining <= 0) {
+                            // Quota exceeded - show friendly message
+                            if (usageData.is_anonymous) {
+                                const quotaHtml = `<div class="quota-exceeded-message">
+                                    <div class="quota-icon">⏰</div>
+                                    <div class="quota-text">오늘의 무료 체험 질문 수(3개)를 모두 사용하셨습니다.<br><br>구글/네이버/카카오로 1초 회원가입하면<br>하루 20개까지 무료로 질문할 수 있어요.<br>(베타 기간 동안은 전액 무료입니다.)</div>
+                                    <div class="quota-actions">
+                                        <button class="login-btn" onclick="showLoginModal()">
+                                            <span>🔑</span> 로그인하고 더 질문하기
+                                        </button>
+                                    </div>
+                                </div>`;
+                                addMessage('assistant', quotaHtml, [], true);
+                            } else {
+                                const quotaHtml = `<div class="quota-exceeded-message">
+                                    <div class="quota-icon">⏰</div>
+                                    <div class="quota-text">오늘의 무료 질문 한도(20개)를 모두 사용하셨습니다.<br><br>Buddha Korea는 현재 베타 서비스로,<br>안정적인 운영을 위해 하루 질문 수를 제한하고 있습니다.<br>내일 다시 이용해 주세요 🙏</div>
+                                </div>`;
+                                addMessage('assistant', quotaHtml, [], true);
+                            }
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Failed to check quota:', e);
+                }
+
+                // Generic error fallback
                 addMessage('assistant', '죄송합니다. 오류가 발생했습니다. 다시 시도해주세요.');
             }
         }
@@ -2698,7 +3119,7 @@
             if (text) text.textContent = stageMessages[stageName] || stageName;
 
             // Auto scroll to show progress
-            scrollToBottom();
+            scrollToBottom({ immediate: true, force: false });
         }
 
         function createStreamingMessage() {
@@ -2716,7 +3137,7 @@
                     <div class="message-avatar">&#x2638;</div>
                     <div class="message-content">
                         <div class="message-header">
-                            <span class="message-sender">불교 AI</span>
+                            <span class="message-sender">Ghosa AI</span>
                             <span class="message-time">${time}</span>
                         </div>
                         <div class="message-text"></div>
@@ -2725,7 +3146,7 @@
             `;
 
             messages.insertAdjacentHTML('beforeend', html);
-            scrollToBottom();
+            scrollToBottom({ immediate: true, alignStart: true, force: true });
             return messages.lastElementChild;
         }
 
@@ -2734,7 +3155,7 @@
             const currentHtml = messageText.innerHTML;
             messageText.innerHTML = formatMessage(currentHtml.replace(/▌$/, '') + content);
             // Auto scroll as content streams in
-            scrollToBottom();
+            scrollToBottom({ alignStart: true, force: false });
         }
 
         function addSourcesToMessage(messageContainer, sources) {
@@ -2749,28 +3170,68 @@
             `;
             const messageText = messageContainer.querySelector('.message-text');
             messageText.insertAdjacentHTML('afterend', sourceHtml);
-            scrollToBottom();
+            scrollToBottom({ immediate: true, alignStart: true, force: true });
         }
 
-        // Throttled scroll to prevent jitter during streaming
+        // Scroll to bottom - immediate for loading, smooth for streaming
         let scrollTimeout = null;
-        function scrollToBottom() {
+        let pendingScroll = false;
+
+        function scrollToBottom({ immediate = false, alignStart = true, force = false } = {}) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messagesWrapper = document.getElementById('chatMessages');
+            if (!chatContainer || !messagesWrapper) {
+                console.warn('scrollToBottom: chatContainer not found');
+                return;
+            }
+
+            // If the user has scrolled up significantly, avoid forcing them back unless force=true
+            if (!force) {
+                const distanceFromBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
+                if (distanceFromBottom > 200) {
+                    return;
+                }
+            }
+
+            const doScroll = () => {
+                const container = document.getElementById('chatContainer');
+                const targetMessage = messagesWrapper.lastElementChild;
+                if (container) {
+                    if (alignStart && targetMessage) {
+                        targetMessage.scrollIntoView({
+                            behavior: immediate ? 'auto' : 'smooth',
+                            block: 'start',
+                            inline: 'nearest'
+                        });
+                    } else {
+                        container.scrollTop = container.scrollHeight;
+                    }
+                }
+            };
+
+            if (immediate) {
+                // Immediate scroll without throttle (for page load, session switch)
+                doScroll();
+                // Double-check after a brief delay for DOM updates
+                setTimeout(doScroll, 50);
+                return;
+            }
+
+            // Mark that a scroll is pending
+            pendingScroll = true;
+
+            // Throttled smooth scroll (for streaming)
             if (scrollTimeout) return;
             scrollTimeout = setTimeout(() => {
                 scrollTimeout = null;
-                const chatMessages = document.getElementById('chatMessages');
-                if (chatMessages) {
-                    requestAnimationFrame(() => {
-                        chatMessages.scrollTo({
-                            top: chatMessages.scrollHeight,
-                            behavior: 'smooth'
-                        });
-                    });
+                if (pendingScroll) {
+                    pendingScroll = false;
+                    requestAnimationFrame(doScroll);
                 }
-            }, 50); // Throttle to max 20 scrolls per second
+            }, 50);
         }
 
-        function addMessage(role, text, sources = []) {
+        function addMessage(role, text, sources = [], isRawHtml = false) {
             const messages = document.getElementById('chatMessages');
             const time = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
 
@@ -2789,21 +3250,24 @@
                 </div>
             ` : '';
 
+            // Use raw HTML if isRawHtml is true, otherwise format the text
+            const messageContent = isRawHtml ? text : formatMessage(text);
+
             const html = `
                 <div class="message ${role}">
                     <div class="message-avatar">${role === 'user' ? '&#128100;' : '&#x2638;'}</div>
                     <div class="message-content">
                         <div class="message-header">
-                            <span class="message-sender">${role === 'user' ? '나' : '불교 AI'}</span>
+                            <span class="message-sender">${role === 'user' ? '나' : 'Ghosa AI'}</span>
                             <span class="message-time">${time}</span>
                         </div>
-                        <div class="message-text">${formatMessage(text)}${sourceHtml}</div>
+                        <div class="message-text">${messageContent}${sourceHtml}</div>
                     </div>
                 </div>
             `;
 
             messages.insertAdjacentHTML('beforeend', html);
-            scrollToBottom();
+            scrollToBottom({ immediate: true, alignStart: true, force: true });
         }
 
         function formatMessage(text) {
@@ -2821,7 +3285,7 @@
             document.getElementById('chatMessages').innerHTML = `
                 <div class="chat-welcome" id="chatWelcome">
                     <div class="chat-welcome-icon">&#x2638;</div>
-                    <h2 class="chat-welcome-title">불교 AI에 오신 것을 환영합니다</h2>
+                    <h2 class="chat-welcome-title">Ghosa AI에 오신 것을 환영합니다</h2>
                     <p class="chat-welcome-desc">
                         99,723개의 CBETA 대장경을 기반으로<br>
                         불교에 대한 질문에 답변해 드립니다.
@@ -2869,40 +3333,49 @@
         // ===== Expose globals for library.js =====
         window.askAboutSutra = askAboutSutra;
         window.selectSutraForChat = selectSutraForChat;
+        window.switchTab = switchTab;
 
         // ===== Initialize =====
         document.addEventListener('DOMContentLoaded', async () => {
+            // Always start with chat view (hide hero)
+            switchTab('chat');
+
+            // Check for auth error in URL and show login modal
+            const urlParams = new URLSearchParams(window.location.search);
+            const authError = urlParams.get('auth_error');
+            if (authError) {
+                // Clean up URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                // Show login modal with error
+                setTimeout(() => {
+                    showLoginModal();
+                    // Optionally show error message
+                    const modalDesc = document.querySelector('.login-modal-desc');
+                    if (modalDesc) {
+                        modalDesc.textContent = '로그인에 실패했습니다. 다른 방법으로 시도해주세요.';
+                        modalDesc.style.color = '#dc3545';
+                    }
+                }, 100);
+            }
+
             // Check auth status first
             await checkAuthStatus();
 
             // Initialize sidebar content based on auth status
             if (isLoggedIn) {
-                loadChatSessions();
+                // Load sessions
+                await loadChatSessions();
+
+                // Auto-restore last session if available
+                const lastSessionUuid = localStorage.getItem('lastChatSessionUuid');
+                if (lastSessionUuid && chatSessions.some(s => s.session_uuid === lastSessionUuid)) {
+                    await loadChatSession(lastSessionUuid);
+                }
             } else {
                 renderLoginPrompt();
             }
 
             loadMetadata();
-
-            // Scroll indicator click handler
-            const scrollIndicator = document.querySelector('.scroll-indicator');
-            if (scrollIndicator) {
-                scrollIndicator.style.cursor = 'pointer';
-                scrollIndicator.addEventListener('click', () => {
-                    startChat();
-                });
-            }
-
-            // Intersection observer for hero
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (!entry.isIntersecting && isHeroVisible) {
-                        // User scrolled past hero - could auto-switch to chat
-                    }
-                });
-            }, { threshold: 0.1 });
-
-            observer.observe(document.getElementById('hero'));
         });
     </script>
 </body>

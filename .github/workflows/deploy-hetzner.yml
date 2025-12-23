@@ -59,7 +59,7 @@ jobs:
           sleep 30
 
           for i in {1..5}; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 https://ai.buddhakorea.com/api/health 2>/dev/null || echo "000")
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 https://buddhakorea.com/api/health 2>/dev/null || echo "000")
             if [ "$STATUS" = "200" ]; then
               echo "✅ Health check passed! (attempt $i)"
               exit 0

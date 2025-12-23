@@ -1,0 +1,129 @@
+# ============================================================
+# Buddha Korea - Local Development Environment
+# ============================================================
+# 사용법: docker-compose -f config/docker-compose.dev.yml up
+# Hot-reload 지원, 디버깅 용이
+# ============================================================
+
+version: '3.8'
+
+services:
+  # ──────────────────────────────────────────────────────────
+  # Redis: 세션 저장소 + 캐시
+  # ──────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: buddhakorea-dev-redis
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-dev-data:/data
+    networks:
+      - dev-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  # ──────────────────────────────────────────────────────────
+  # PostgreSQL: 메인 데이터베이스
+  # ──────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: buddhakorea-dev-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-buddhakorea}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+    networks:
+      - dev-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ──────────────────────────────────────────────────────────
+  # Backend: FastAPI with Hot-Reload
+  # ──────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ..
+      dockerfile: Dockerfile.dev
+    container_name: buddhakorea-dev-backend
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    volumes:
+      # 소스 코드 마운트 (Hot-reload)
+      - ../backend:/app/backend:cached
+      - ../frontend:/app/frontend:cached
+      # ChromaDB 데이터 유지
+      - ../chroma_db:/app/chroma_db
+      # 로그
+      - ../logs:/app/logs
+    environment:
+      # Database
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/buddhakorea
+
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+      - REDIS_DB=0
+
+      # ChromaDB
+      - CHROMA_DB_PATH=/app/chroma_db
+      - CHROMA_COLLECTION_NAME=${CHROMA_COLLECTION_NAME:-cbeta_sutras_gemini}
+
+      # API
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - ALLOWED_ORIGINS=http://localhost:8000,http://localhost:3000,http://127.0.0.1:8000
+
+      # Development Mode
+      - DEBUG=true
+      - LOG_LEVEL=debug
+
+      # LLM (from .env)
+      - LLM_MODEL=${LLM_MODEL:-claude-3-5-sonnet-20241022}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    env_file:
+      - ../.env
+    ports:
+      - "8000:8000"
+      - "5678:5678"  # debugpy port
+    networks:
+      - dev-network
+    # Hot-reload command
+    command: >
+      uvicorn backend.app.main:app
+      --host 0.0.0.0
+      --port 8000
+      --reload
+      --reload-dir /app/backend
+    stdin_open: true
+    tty: true
+
+# ──────────────────────────────────────────────────────────
+# Volumes (개발 데이터 유지)
+# ──────────────────────────────────────────────────────────
+volumes:
+  redis-dev-data:
+  postgres-dev-data:
+
+# ──────────────────────────────────────────────────────────
+# Networks
+# ──────────────────────────────────────────────────────────
+networks:
+  dev-network:
+    driver: bridge

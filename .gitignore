@@ -95,6 +95,10 @@ config/redis-data/
 config/ssl/
 config/gcp-key.json
 
+# SQLite Database (user data, chat history)
+*.db
+buddha.db
+
 # ============================================
 # SENSITIVE DOCUMENTATION
 # ============================================

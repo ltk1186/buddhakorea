@@ -12,7 +12,7 @@ import uuid
 import asyncio
 import sys # ADDED
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone, date
 from typing import List, Optional, Dict, Any
 from contextlib import asynccontextmanager
 
@@ -40,6 +40,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from . import auth, database
 from .models.user import User
 from .models.chat import ChatSession, ChatMessage
+from .models.social_account import SocialAccount
+from .models.user_usage import UserUsage, AnonymousUsage
+
+# Auth dependencies and quota management
+from .dependencies import get_current_user_optional, get_current_user_required
+from .quota import check_quota, increment_usage, get_usage_info, get_client_ip
 
 # Usage tracking
 from .usage_tracker import log_token_usage, analyze_usage_logs, get_recent_queries, export_usage_csv
@@ -119,7 +125,7 @@ class AppConfig(BaseSettings):
     batch_size: int = 32
 
     class Config:
-        env_file = ".env"
+        env_file = "../.env"  # .env is in project root, not backend/
         case_sensitive = False
 
 
@@ -418,6 +424,7 @@ async def save_chat_to_db(
             content=assistant_message,
             model_used=metadata.get("model"),
             sources_count=metadata.get("sources_count", 0),
+            sources_json=metadata.get("sources"),
             response_mode=metadata.get("response_mode")
         )
         db.add(assistant_msg)
@@ -491,7 +498,8 @@ async def get_chat_messages(
             "content": m.content,
             "created_at": m.created_at.isoformat() if m.created_at else None,
             "model_used": m.model_used,
-            "sources_count": m.sources_count
+            "sources_count": m.sources_count,
+            "sources": m.sources_json or []
         }
         for m in messages
     ]
@@ -713,24 +721,26 @@ def extract_token_usage(result: Dict[str, Any], query: str, model: str) -> Dict[
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialize and cleanup application resources."""
-    
-    # Initialize Auth
-    auth.setup_auth(config)
-    
-    # Initialize DB (create tables)
-    await database.init_db()
-    logger.info("✓ Database initialized")
 
     logger.info("Starting Buddhist AI Chatbot...")
 
-    # Load response cache
-    load_response_cache()
-
-    # Initialize Redis session manager
+    # Initialize Redis session manager first (needed for auth)
     global session_manager
     session_manager = get_session_manager()
     stats = session_manager.get_stats()
     logger.info(f"✓ Session manager initialized: {stats}")
+
+    # Initialize Auth with Redis for CSRF state storage
+    redis_client = session_manager.redis_client if session_manager else None
+    auth.setup_auth(config, redis_client=redis_client)
+    logger.info("✓ Auth initialized")
+
+    # Initialize DB (create tables)
+    await database.init_db()
+    logger.info("✓ Database initialized")
+
+    # Load response cache
+    load_response_cache()
 
     # Load sutra library cache
     logger.info("Loading sutra library cache...")
@@ -944,7 +954,6 @@ app.add_middleware(SessionMiddleware, secret_key=config.secret_key)
 ALLOWED_ORIGINS = [
     "https://buddhakorea.com",
     "https://www.buddhakorea.com",
-    "https://ai.buddhakorea.com",
     "http://localhost:3000",
     "http://localhost:8000",
 ]
@@ -956,11 +965,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files for frontend
-app.mount("/css", StaticFiles(directory="frontend/css"), name="css")
-app.mount("/js", StaticFiles(directory="frontend/js"), name="js")
-app.mount("/assets", StaticFiles(directory="frontend/assets"), name="assets")
-app.mount("/data", StaticFiles(directory="frontend/data"), name="data")
+# Mount static files for frontend (paths relative to backend directory)
+FRONTEND_DIR = Path(__file__).parent.parent.parent / "frontend"
+if FRONTEND_DIR.exists():
+    app.mount("/css", StaticFiles(directory=str(FRONTEND_DIR / "css")), name="css")
+    app.mount("/js", StaticFiles(directory=str(FRONTEND_DIR / "js")), name="js")
+    app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIR / "assets")), name="assets")
+    app.mount("/data", StaticFiles(directory=str(FRONTEND_DIR / "data")), name="data")
+else:
+    logger.warning(f"Frontend directory not found at {FRONTEND_DIR}")
 
 
 # ============================================================================
@@ -994,126 +1007,327 @@ def check_rate_limit(client_ip: str) -> bool:
 
 @app.get("/auth/login/{provider}")
 async def login(provider: str, request: Request):
-    """Initiate OAuth login."""
+    """Initiate OAuth login with CSRF protection."""
     # Build redirect URI
     redirect_uri = request.url_for('auth_callback', provider=provider)
-    return await auth.oauth.create_client(provider).authorize_redirect(request, redirect_uri)
+    # Generate and store CSRF state
+    state = auth.generate_oauth_state()
+    return await auth.oauth.create_client(provider).authorize_redirect(
+        request, redirect_uri, state=state
+    )
+
 
 @app.get("/auth/callback/{provider}", name="auth_callback")
 async def auth_callback(
-    provider: str, 
-    request: Request, 
+    provider: str,
+    request: Request,
+    state: str = None,
     db: AsyncSession = Depends(database.get_db)
 ):
-    """OAuth callback."""
+    """OAuth callback - creates/updates user and social_account."""
     try:
+        # Validate CSRF state (skip if not provided for backwards compatibility)
+        if state and not auth.validate_oauth_state(state):
+            logger.warning(f"Invalid OAuth state for provider {provider}")
+            return RedirectResponse(url="/chat.html?auth_error=invalid_state")
+
         client = auth.oauth.create_client(provider)
         token = await client.authorize_access_token(request)
-        user_info = token.get('userinfo')
-        
-        if not user_info:
-            user_info = await client.userinfo(token=token)
-            
-        # Parse User Info
-        email = user_info.get('email')
-        social_id = str(user_info.get('sub', user_info.get('id')))
-        nickname = user_info.get('name', user_info.get('nickname', 'User'))
-        profile_img = user_info.get('picture', user_info.get('profile_image', ''))
-        
-        if not email:
-            raise HTTPException(400, "Email not provided by social provider")
+        access_token = token.get('access_token')
 
-        # DB: Find or Create
-        stmt = select(User).where(User.email == email)
-        result = await db.execute(stmt)
-        user = result.scalar_one_or_none()
-        
-        if not user:
-            user = User(
-                email=email,
-                social_id=social_id,
-                provider=provider,
-                nickname=nickname,
-                profile_img=profile_img
-            )
-            db.add(user)
+        # Get user info - each provider has different method
+        if provider == 'google':
+            # Google supports OpenID Connect userinfo endpoint
+            user_info = token.get('userinfo')
+            if not user_info:
+                user_info = await client.userinfo(token=token)
+        elif provider == 'naver':
+            # Naver: manually call their API endpoint
+            import httpx
+            async with httpx.AsyncClient() as http_client:
+                resp = await http_client.get(
+                    'https://openapi.naver.com/v1/nid/me',
+                    headers={'Authorization': f'Bearer {access_token}'}
+                )
+                user_info = resp.json()
+        elif provider == 'kakao':
+            # Kakao: manually call their API endpoint
+            import httpx
+            async with httpx.AsyncClient() as http_client:
+                resp = await http_client.get(
+                    'https://kapi.kakao.com/v2/user/me',
+                    headers={'Authorization': f'Bearer {access_token}'}
+                )
+                user_info = resp.json()
         else:
-            # Update existing user info
-            user.last_login = datetime.now()
+            # Fallback for unknown providers
+            user_info = token.get('userinfo') or {}
+
+        # Parse User Info (normalize across providers)
+        if provider == 'naver':
+            # Naver wraps user info in 'response' key
+            naver_response = user_info.get('response', {})
+            email = naver_response.get('email')
+            provider_user_id = str(naver_response.get('id', ''))
+            nickname = naver_response.get('nickname', naver_response.get('name', 'User'))
+            profile_img = naver_response.get('profile_image', '')
+        elif provider == 'kakao':
+            # Kakao has id at top level, email in kakao_account
+            kakao_account = user_info.get('kakao_account', {})
+            profile = kakao_account.get('profile', {})
+            email = kakao_account.get('email')
+            provider_user_id = str(user_info.get('id', ''))
+            nickname = profile.get('nickname', 'User')
+            profile_img = profile.get('profile_image_url', profile.get('thumbnail_image_url', ''))
+        else:
+            # Google (default) - uses standard OIDC fields
+            email = user_info.get('email')
+            provider_user_id = str(user_info.get('sub', user_info.get('id')))
+            nickname = user_info.get('name', user_info.get('nickname', 'User'))
+            profile_img = user_info.get('picture', user_info.get('profile_image', ''))
+
+        # For Kakao, email might not be available without business verification
+        # Generate a placeholder email using the provider user ID
+        if not email:
+            if provider == 'kakao':
+                email = f"kakao_{provider_user_id}@kakao.local"
+                logger.info(f"Kakao login without email, using placeholder: {email}")
+            else:
+                raise HTTPException(400, "Email not provided by social provider")
+
+        # ========================================
+        # Step 1: Find existing social account
+        # ========================================
+        stmt = select(SocialAccount).where(
+            SocialAccount.provider == provider,
+            SocialAccount.provider_user_id == provider_user_id
+        )
+        result = await db.execute(stmt)
+        social_account = result.scalar_one_or_none()
+
+        if social_account:
+            # Existing social account - explicitly query user (async-safe, no lazy loading)
+            user_stmt = select(User).where(User.id == social_account.user_id)
+            user_result = await db.execute(user_stmt)
+            user = user_result.scalar_one_or_none()
+            if not user:
+                raise HTTPException(400, "User not found for social account")
+            social_account.last_used_at = datetime.now(timezone.utc)
+            user.last_login = datetime.now(timezone.utc)
             user.profile_img = profile_img
-            
+        else:
+            # ========================================
+            # Step 2: No social account - check if email exists
+            # ========================================
+            stmt = select(User).where(User.email == email)
+            result = await db.execute(stmt)
+            user = result.scalar_one_or_none()
+
+            if not user:
+                # Create new user
+                user = User(
+                    email=email,
+                    nickname=nickname,
+                    profile_img=profile_img,
+                    provider=provider,  # Deprecated but keep for backwards compat
+                    social_id=provider_user_id  # Deprecated but keep for backwards compat
+                )
+                db.add(user)
+                await db.flush()  # Get user.id
+
+            # Create social account link
+            social_account = SocialAccount(
+                user_id=user.id,
+                provider=provider,
+                provider_user_id=provider_user_id,
+                provider_email=email,
+                raw_profile=dict(user_info) if user_info else None
+            )
+            db.add(social_account)
+            user.last_login = datetime.now(timezone.utc)
+
         await db.commit()
         await db.refresh(user)
-        
-        # Create JWT
-        jwt_token = auth.create_access_token({"sub": user.email, "user_id": user.id})
-        
-        # Redirect to frontend (index)
+
+        # ========================================
+        # Step 3: Create token pair (access + refresh)
+        # ========================================
+        access_token, refresh_token = auth.create_token_pair(user.id, user.email)
+
+        # Redirect to frontend
         response = RedirectResponse(url="/")
-        
-        # Set cookie (secure, httponly)
-        # Note: secure=False for localhost development, True for production
+
+        # Set cookies
         is_secure = "https" in str(request.base_url)
-        cookie_kwargs = {
-            "key": "access_token",
-            "value": jwt_token,
+        base_cookie_kwargs = {
             "httponly": True,
             "secure": is_secure,
             "samesite": "lax",
-            "max_age": 60*60*24
         }
-        # Only set domain for production (None = current host only)
         if config.cookie_domain:
-            cookie_kwargs["domain"] = config.cookie_domain
-        response.set_cookie(**cookie_kwargs)
+            base_cookie_kwargs["domain"] = config.cookie_domain
+
+        # Access token cookie (short-lived, 15 min)
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            max_age=60 * 15,  # 15 minutes
+            **base_cookie_kwargs
+        )
+
+        # Refresh token cookie (long-lived, 7 days, restricted path)
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            max_age=60 * 60 * 24 * 7,  # 7 days
+            path="/auth",  # Only sent to /auth/* endpoints
+            **base_cookie_kwargs
+        )
+
         return response
 
     except Exception as e:
         logger.error(f"Auth callback error: {e}")
-        # raise HTTPException(500, f"Authentication failed: {str(e)}")
-        return RedirectResponse(url=f"/?error=auth_failed&detail={str(e)}")
+        import urllib.parse
+        detail = urllib.parse.quote(str(e))
+        return RedirectResponse(url=f"/chat.html?auth_error=failed&detail={detail}")
 
 @app.get("/api/users/me")
 async def get_current_user_info(request: Request, db: AsyncSession = Depends(database.get_db)):
-    """Get current logged in user info."""
+    """Get current logged in user info with mypage data."""
     token = request.cookies.get("access_token")
     if not token:
          # Try header
          auth_header = request.headers.get("Authorization")
          if auth_header and auth_header.startswith("Bearer "):
              token = auth_header.split(" ")[1]
-             
+
     if not token:
         raise HTTPException(401, "Not authenticated")
-        
+
     payload = auth.decode_access_token(token)
     if not payload:
         raise HTTPException(401, "Invalid token")
-        
+
     user_id = payload.get("user_id")
     if not user_id:
         raise HTTPException(401, "Invalid token")
-        
+
     stmt = select(User).where(User.id == user_id)
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
-    
+
     if not user:
         raise HTTPException(404, "User not found")
-        
+
+    # Get today's usage
+    today = date.today()
+    usage_stmt = select(UserUsage).where(
+        UserUsage.user_id == user_id,
+        UserUsage.usage_date == today
+    )
+    usage_result = await db.execute(usage_stmt)
+    today_usage_record = usage_result.scalar_one_or_none()
+    today_usage = today_usage_record.chat_count if today_usage_record else 0
+
+    # Get social accounts
+    social_stmt = select(SocialAccount).where(SocialAccount.user_id == user_id)
+    social_result = await db.execute(social_stmt)
+    social_accounts = social_result.scalars().all()
+
+    social_accounts_data = [
+        {
+            "provider": sa.provider,
+            "provider_email": sa.provider_email,
+            "created_at": sa.created_at.isoformat() if sa.created_at else None
+        }
+        for sa in social_accounts
+    ]
+
     return {
         "id": user.id,
         "email": user.email,
         "nickname": user.nickname,
         "profile_img": user.profile_img,
-        "provider": user.provider
+        "profile_image_url": user.profile_img,  # Alias for frontend
+        "provider": user.provider,
+        "daily_limit": user.daily_chat_limit,
+        "today_usage": today_usage,
+        "created_at": user.created_at.isoformat() if user.created_at else None,
+        "social_accounts": social_accounts_data
     }
 
 @app.post("/auth/logout")
-async def logout():
+async def logout(request: Request):
+    """Logout - clear both access and refresh tokens."""
     response = JSONResponse({"status": "logged_out"})
     response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token", path="/auth")
     return response
+
+
+@app.post("/auth/refresh")
+async def refresh_access_token(
+    request: Request,
+    db: AsyncSession = Depends(database.get_db)
+):
+    """
+    Refresh access token using refresh token.
+
+    Returns new access token cookie if refresh token is valid.
+    """
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(401, "No refresh token")
+
+    # Decode refresh token
+    payload = auth.decode_refresh_token(refresh_token)
+    if not payload:
+        raise HTTPException(401, "Invalid or expired refresh token")
+
+    user_id = payload.get("user_id")
+    if not user_id:
+        raise HTTPException(401, "Invalid refresh token")
+
+    # Verify user still exists and is active
+    stmt = select(User).where(User.id == user_id, User.is_active == True)
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(401, "User not found or inactive")
+
+    # Create new access token
+    access_token = auth.create_access_token({"user_id": user.id, "sub": user.email})
+
+    # Set new access token cookie
+    response = JSONResponse({"status": "refreshed"})
+    is_secure = "https" in str(request.base_url)
+
+    cookie_kwargs = {
+        "key": "access_token",
+        "value": access_token,
+        "httponly": True,
+        "secure": is_secure,
+        "samesite": "lax",
+        "max_age": 60 * 15  # 15 minutes
+    }
+    if config.cookie_domain:
+        cookie_kwargs["domain"] = config.cookie_domain
+
+    response.set_cookie(**cookie_kwargs)
+    return response
+
+
+@app.get("/api/users/me/usage")
+async def get_my_usage(
+    request: Request,
+    db: AsyncSession = Depends(database.get_db),
+    user: Optional[User] = Depends(get_current_user_optional)
+):
+    """Get current user's usage info (works for both logged-in and anonymous)."""
+    usage_info = await get_usage_info(db, request, user)
+    return usage_info
 
 
 # ============================================================================
@@ -1261,19 +1475,23 @@ async def list_collections():
 
 
 @app.post("/api/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest, http_request: Request):
+async def chat(
+    request: ChatRequest,
+    http_request: Request,
+    db: AsyncSession = Depends(database.get_db),
+    user: Optional[User] = Depends(get_current_user_optional)
+):
     """
     Main chat endpoint - send a question and receive AI response with citations.
+
+    Quota limits:
+    - Anonymous users: 3 questions/day
+    - Registered users: 20 questions/day (beta)
     """
     start_time = time.time()
 
-    # Rate limiting
-    client_ip = http_request.client.host
-    if not check_rate_limit(client_ip):
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=f"Rate limit exceeded. Maximum {config.rate_limit_per_hour} requests per hour."
-        )
+    # Check quota (raises 429 if exceeded)
+    await check_quota(db, http_request, user)
 
     # Check if RAG chain is ready
     if not app_state.qa_chain:
@@ -1282,7 +1500,9 @@ async def chat(request: ChatRequest, http_request: Request):
             detail="RAG system not initialized. Ensure ChromaDB has embedded documents."
         )
 
-    logger.info(f"Query from {client_ip}: {request.query[:100]}...")
+    client_ip = get_client_ip(http_request)
+    user_info = f"user={user.id}" if user else f"ip={client_ip}"
+    logger.info(f"Query from {user_info}: {request.query[:100]}...")
 
     # Check cache for this query (only for non-follow-up questions)
     if not request.is_followup:
@@ -1299,6 +1519,9 @@ async def chat(request: ChatRequest, http_request: Request):
 
             # Create new session for cached response
             session_id = create_or_get_session(request.session_id)
+
+            # Increment usage quota (even for cached responses)
+            await increment_usage(db, http_request, user, tokens=0)
 
             # Log cached query (no tokens used)
             log_token_usage(
@@ -1334,8 +1557,12 @@ async def chat(request: ChatRequest, http_request: Request):
         logger.info(f"Follow-up question (depth: {session_context['conversation_depth'] + 1})")
 
     try:
+        # Apply Buddhist term expansion for better retrieval
+        from rag.buddhist_thesaurus import expand_query as expand_buddhist_terms
+        query = expand_buddhist_terms(request.query)
+        logger.debug(f"Buddhist term expansion: {request.query} -> {query}")
+
         # Apply HyDE query expansion if enabled
-        query = request.query
         if app_state.hyde_expander:
             expanded_query = app_state.hyde_expander.expand_query(
                 query,
@@ -1679,6 +1906,10 @@ Answer:"""
             from_cache=False
         )
 
+        # Increment usage quota after successful response
+        total_tokens = token_usage["input_tokens"] + token_usage["output_tokens"]
+        await increment_usage(db, http_request, user, tokens=total_tokens)
+
         return ChatResponse(
             response=response_text,
             sources=sources,
@@ -1703,7 +1934,12 @@ Answer:"""
 # ============================================================================
 
 @app.post("/api/chat/stream")
-async def chat_stream(request: ChatRequest, http_request: Request):
+async def chat_stream(
+    request: ChatRequest,
+    http_request: Request,
+    db: AsyncSession = Depends(database.get_db),
+    user: Optional[User] = Depends(get_current_user_optional)
+):
     """
     Streaming chat endpoint - sends responses as Server-Sent Events (SSE).
     Provides real-time progress updates and token-by-token response streaming.
@@ -1714,26 +1950,28 @@ async def chat_stream(request: ChatRequest, http_request: Request):
     - sources: Source documents (sent at end)
     - done: Stream completion signal
     - error: Error message
+
+    Quota limits:
+    - Anonymous users: 3 questions/day
+    - Registered users: 20 questions/day (beta)
     """
     start_time = time.time()
 
-    # Extract user_id from JWT cookie (if logged in)
-    user_id = None
-    token = http_request.cookies.get("access_token")
-    if token:
-        payload = auth.decode_access_token(token)
-        if payload:
-            user_id = payload.get("user_id")
+    # Check quota (returns error as SSE if exceeded)
+    try:
+        await check_quota(db, http_request, user)
+    except HTTPException as e:
+        async def quota_error():
+            error_detail = e.detail if isinstance(e.detail, dict) else {"message": str(e.detail)}
+            yield f"data: {json.dumps({'type': 'error', 'code': 'quota_exceeded', **error_detail})}\n\n"
+        return StreamingResponse(quota_error(), media_type="text/event-stream")
 
     # Create or get session
     session_uuid = create_or_get_session(request.session_id)
 
-    # Rate limiting
-    client_ip = http_request.client.host
-    if not check_rate_limit(client_ip):
-        async def rate_limit_error():
-            yield f"data: {json.dumps({'type': 'error', 'message': 'Rate limit exceeded'})}\n\n"
-        return StreamingResponse(rate_limit_error(), media_type="text/event-stream")
+    # Get user info for logging
+    user_id = user.id if user else None
+    client_ip = get_client_ip(http_request)
 
     # Check if RAG system is ready
     if not app_state.vectorstore:
@@ -1741,7 +1979,8 @@ async def chat_stream(request: ChatRequest, http_request: Request):
             yield f"data: {json.dumps({'type': 'error', 'message': 'RAG system not initialized'})}\n\n"
         return StreamingResponse(system_error(), media_type="text/event-stream")
 
-    logger.info(f"[Stream] Query from {client_ip}: {request.query[:100]}...")
+    user_info = f"user={user_id}" if user_id else f"ip={client_ip}"
+    logger.info(f"[Stream] Query from {user_info}: {request.query[:100]}...")
 
     async def generate():
         try:
@@ -1759,8 +1998,12 @@ async def chat_stream(request: ChatRequest, http_request: Request):
 
             logger.info(f"[Stream] Mode: {'detailed' if is_detailed else 'normal'}, k={retrieval_k}, model={model_name}")
 
+            # Apply Buddhist term expansion for better retrieval
+            from rag.buddhist_thesaurus import expand_query as expand_buddhist_terms
+            query = expand_buddhist_terms(request.query)
+            logger.info(f"[Stream] Buddhist term expansion: {request.query} -> {query}")
+
             # Apply HyDE if enabled
-            query = request.query
             if app_state.hyde_expander and not is_detailed:
                 query = app_state.hyde_expander.expand_query(query, weight_original=config.hyde_weight)
 
@@ -1788,12 +2031,21 @@ async def chat_stream(request: ChatRequest, http_request: Request):
                     logger.warning(f"[Stream] Failed to get tradition sutra list: {e}")
 
             # Apply filter based on priority: sutra_filter > tradition_filter
+            logger.info(f"[Stream] Received sutra_filter: {request.sutra_filter}")
+            logger.info(f"[Stream] Received tradition_filter: {request.tradition_filter}")
+
             if request.sutra_filter:
                 search_kwargs["filter"] = {"sutra_id": request.sutra_filter}
+                logger.info(f"[Stream] Applying sutra filter: {request.sutra_filter}")
             elif tradition_sutra_ids and len(tradition_sutra_ids) > 0:
                 search_kwargs["filter"] = {"sutra_id": {"$in": tradition_sutra_ids}}
+                logger.info(f"[Stream] Applying tradition filter with {len(tradition_sutra_ids)} sutras")
+            else:
+                logger.info("[Stream] No filter applied - searching all documents")
 
+            logger.info(f"[Stream] Final search_kwargs: {search_kwargs}")
             docs = app_state.vectorstore.similarity_search(query, **search_kwargs)
+            logger.info(f"[Stream] Retrieved {len(docs)} documents")
 
             # Stage 2: Analyzing
             yield f"data: {json.dumps({'type': 'stage', 'stage': 'analyzing', 'message': '관련 구절 분석 중...'})}\n\n"
@@ -1855,10 +2107,11 @@ Question: {question}
 
 Answer:"""
             else:
-                prompt_template = """아래 제공된 불교 문헌 내용을 참고하여 질문에 답변하세요.
+                prompt_template = """아래 제공된 불교 문헌 내용을 참고하여 질문에 상세하게 답변하세요.
 
 **답변 지침:**
 - 문헌의 내용을 기반으로 정확하고 명확하게 설명하세요
+- 여러 전통(초기불교, 대승불교 등)의 관점이 다를 수 있다면 각 관점을 소개하세요
 - 문헌 내용을 인용할 때는 인용 표시를 하세요
 - 마크다운 헤더(#, ##, ###)를 사용하지 말고 일반 텍스트로 작성하세요
 - 자기소개나 서두 없이 바로 본론으로 시작하세요
@@ -1899,12 +2152,12 @@ Answer:"""
                 from_cache=False
             )
 
-            # Save to database (background task)
-            async def save_to_db():
+            # Save to database and increment usage (background task)
+            async def save_to_db_and_usage():
                 try:
-                    async with database.SessionLocal() as db:
+                    async with database.SessionLocal() as db_session:
                         await save_chat_to_db(
-                            db=db,
+                            db=db_session,
                             session_uuid=session_uuid,
                             user_id=user_id,
                             user_message=request.query,
@@ -1912,14 +2165,24 @@ Answer:"""
                             metadata={
                                 "model": model_name,
                                 "sources_count": len(sources),
+                                "sources": sources,
                                 "response_mode": "detailed" if is_detailed else "normal",
                                 "latency_ms": latency_ms
                             }
                         )
+                        # Increment usage quota
+                        # Note: We need to get the user again since we're in a new session
+                        if user_id:
+                            stmt = select(User).where(User.id == user_id)
+                            result = await db_session.execute(stmt)
+                            user_for_usage = result.scalar_one_or_none()
+                        else:
+                            user_for_usage = None
+                        await increment_usage(db_session, http_request, user_for_usage, tokens=0)
                 except Exception as e:
-                    logger.error(f"[Stream] DB save error: {e}")
+                    logger.error(f"[Stream] DB save/usage error: {e}")
 
-            asyncio.create_task(save_to_db())
+            asyncio.create_task(save_to_db_and_usage())
 
             # Send completion signal with session_id for follow-up
             yield f"data: {json.dumps({'type': 'done', 'latency_ms': latency_ms, 'model': model_name, 'session_id': session_uuid})}\n\n"
@@ -2076,73 +2339,85 @@ async def get_qa_analytics(days: int = 7, top_n: int = 10):
 @app.get("/")
 async def home_page():
     """Home page."""
-    return HTMLResponse(content=open("frontend/index.html", encoding="utf-8").read())
+    return HTMLResponse(content=open(FRONTEND_DIR / "index.html", encoding="utf-8").read())
 
 
 @app.get("/index.html")
 async def home_page_html():
     """Home page (explicit .html)."""
-    return HTMLResponse(content=open("frontend/index.html", encoding="utf-8").read())
+    return HTMLResponse(content=open(FRONTEND_DIR / "index.html", encoding="utf-8").read())
 
 
 @app.get("/chat")
 async def chat_page():
     """Chat interface."""
-    return HTMLResponse(content=open("frontend/chat.html", encoding="utf-8").read())
+    return HTMLResponse(content=open(FRONTEND_DIR / "chat.html", encoding="utf-8").read())
 
 
 @app.get("/chat.html")
 async def chat_page_html():
     """Chat interface (explicit .html)."""
-    return HTMLResponse(content=open("frontend/chat.html", encoding="utf-8").read())
+    return HTMLResponse(content=open(FRONTEND_DIR / "chat.html", encoding="utf-8").read())
 
 
 @app.get("/sutra-writing")
 async def sutra_writing_page():
     """Digital sutra copying page."""
-    return HTMLResponse(content=open("frontend/sutra-writing.html", encoding="utf-8").read())
+    return HTMLResponse(content=open(FRONTEND_DIR / "sutra-writing.html", encoding="utf-8").read())
 
 
 @app.get("/sutra-writing.html")
 async def sutra_writing_page_html():
     """Digital sutra copying page (explicit .html)."""
-    return HTMLResponse(content=open("frontend/sutra-writing.html", encoding="utf-8").read())
+    return HTMLResponse(content=open(FRONTEND_DIR / "sutra-writing.html", encoding="utf-8").read())
 
 
 @app.get("/methodology")
 async def methodology_page():
     """Methodology page."""
-    return HTMLResponse(content=open("frontend/methodology.html", encoding="utf-8").read())
+    return HTMLResponse(content=open(FRONTEND_DIR / "methodology.html", encoding="utf-8").read())
 
 
 @app.get("/methodology.html")
 async def methodology_page_html():
     """Methodology page (explicit .html)."""
-    return HTMLResponse(content=open("frontend/methodology.html", encoding="utf-8").read())
+    return HTMLResponse(content=open(FRONTEND_DIR / "methodology.html", encoding="utf-8").read())
 
 
 @app.get("/meditation")
 async def meditation_page():
     """Meditation page."""
-    return HTMLResponse(content=open("frontend/meditation.html", encoding="utf-8").read())
+    return HTMLResponse(content=open(FRONTEND_DIR / "meditation.html", encoding="utf-8").read())
 
 
 @app.get("/meditation.html")
 async def meditation_page_html():
     """Meditation page (explicit .html)."""
-    return HTMLResponse(content=open("frontend/meditation.html", encoding="utf-8").read())
+    return HTMLResponse(content=open(FRONTEND_DIR / "meditation.html", encoding="utf-8").read())
+
+
+@app.get("/mypage")
+async def mypage_page():
+    """My page - user profile and settings."""
+    return HTMLResponse(content=open(FRONTEND_DIR / "mypage.html", encoding="utf-8").read())
+
+
+@app.get("/mypage.html")
+async def mypage_page_html():
+    """My page (explicit .html)."""
+    return HTMLResponse(content=open(FRONTEND_DIR / "mypage.html", encoding="utf-8").read())
 
 
 @app.get("/teaching")
 async def teaching_page():
     """Teaching page."""
-    return HTMLResponse(content=open("frontend/teaching.html", encoding="utf-8").read())
+    return HTMLResponse(content=open(FRONTEND_DIR / "teaching.html", encoding="utf-8").read())
 
 
 @app.get("/teaching.html")
 async def teaching_page_html():
     """Teaching page (explicit .html)."""
-    return HTMLResponse(content=open("frontend/teaching.html", encoding="utf-8").read())
+    return HTMLResponse(content=open(FRONTEND_DIR / "teaching.html", encoding="utf-8").read())
 
 
 @app.get("/api/sutras/meta")
@@ -2278,7 +2553,7 @@ async def get_source_detail(sutra_id: str):
     """
     try:
         # Load source summaries
-        summaries_path = "data/source_data/source_summaries_ko.json"
+        summaries_path = "../data/source_data/source_summaries_ko.json"
 
         if not os.path.exists(summaries_path):
             raise HTTPException(
@@ -2291,13 +2566,16 @@ async def get_source_detail(sutra_id: str):
 
         summaries = data.get('summaries', {})
 
-        if sutra_id not in summaries:
+        # Handle chunk format (e.g., "T01n0001:1" -> "T01n0001")
+        base_sutra_id = sutra_id.split(':')[0] if ':' in sutra_id else sutra_id
+
+        if base_sutra_id not in summaries:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Source {sutra_id} not found"
             )
 
-        source = summaries[sutra_id]
+        source = summaries[base_sutra_id]
 
         raw_tradition = source.get('tradition', '')
         return {
@@ -2413,6 +2691,25 @@ async def get_cache(cache_key: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
         )
+
+
+@app.get("/api/usage")
+async def get_user_quota(
+    http_request: Request,
+    db: AsyncSession = Depends(database.get_db),
+    user: Optional[User] = Depends(get_current_user_optional)
+):
+    """
+    Get current user's daily quota usage.
+
+    Returns:
+        - used: Number of questions used today
+        - limit: Daily question limit
+        - remaining: Remaining questions
+        - is_anonymous: Whether user is anonymous
+    """
+    from .quota import get_usage_info
+    return await get_usage_info(db, http_request, user)
 
 
 @app.get("/api/usage-stats")
@@ -2613,8 +2910,5 @@ if __name__ == "__main__":
     )
 
 # trigger
-
-
-
 
 
