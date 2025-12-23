@@ -43,6 +43,9 @@ WORKDIR /app
 # Copy application code (entire backend/app as package)
 COPY --chown=buddha:buddha backend/app/ ./app/
 
+# Copy RAG module (buddhist thesaurus, etc.)
+COPY --chown=buddha:buddha backend/rag/ ./rag/
+
 # Copy frontend for backend to serve
 COPY --chown=buddha:buddha frontend/ ./frontend/
 
