@@ -1,6 +1,6 @@
 # Buddha Korea 개발 및 배포 가이드
 
-> 최종 업데이트: 2024-12-24
+> 최종 업데이트: 2024-12-25
 
 ## 목차
 1. [인프라 구조](#1-인프라-구조)
@@ -120,9 +120,12 @@ git push origin main
        └─► backend/** 변경 → deploy-hetzner.yml → Hetzner VM
                                     │
                                     ├─► git pull
-                                    ├─► docker compose up -d --build (Dockerfile 변경 시)
-                                    └─► docker compose up -d --force-recreate (코드만 변경 시)
+                                    └─► docker compose up -d --build
 ```
+
+> **중요**: 백엔드 코드 변경 시 반드시 `--build` 플래그를 사용해야 합니다.
+> `--force-recreate`는 컨테이너만 재생성하고 이미지는 다시 빌드하지 않으므로,
+> Python 코드 변경이 반영되지 않습니다.
 
 ### 3.3 수동 배포 (긴급 시)
 
@@ -159,6 +162,10 @@ docker logs buddhakorea-backend -f
 - [ ] 프론트엔드 로드: `https://ai.buddhakorea.com/chat.html`
 - [ ] CSS/JS 로드 확인 (브라우저 개발자 도구 Network 탭)
 - [ ] Google 로그인 테스트 (시크릿 모드 권장)
+- [ ] **쿠키 확인**: 로그인 후 개발자 도구 → Application → Cookies에서:
+  - `session` 쿠키 존재 확인
+  - Domain이 `.buddhakorea.com`인지 확인
+  - SameSite가 `None`인지 확인
 - [ ] 채팅 기능 테스트
 - [ ] 컨테이너 상태: `docker compose ps`
 
@@ -244,9 +251,13 @@ df -h /
 free -h
 
 # Docker 이미지 정리 (디스크 부족 시)
-docker image prune -a
-docker system prune
+docker image prune              # 사용하지 않는 dangling 이미지만 삭제
+docker system prune             # 사용하지 않는 컨테이너, 네트워크 정리
 ```
+
+> **경고**: `docker image prune -a` 사용 시 모든 미사용 이미지가 삭제됩니다.
+> 롤백용 이전 버전 이미지도 삭제되므로, 긴급 롤백이 필요할 때 다시 빌드해야 합니다.
+> 롤백 가능성이 있다면 `-a` 옵션 없이 사용하세요.
 
 ---
 
@@ -265,7 +276,47 @@ docker system prune
 | `LLM_MODEL` | 기본 LLM 모델 | `gemini-2.5-pro` |
 | `LLM_MODEL_FAST` | 빠른 응답용 모델 | `gemini-2.5-flash` |
 
-### 6.2 로컬 vs 서버 환경변수 차이
+### 6.2 쿠키 및 세션 설정 (중요)
+
+OAuth 로그인이 정상 작동하려면 다음 설정이 필수입니다:
+
+#### SessionMiddleware 설정 (backend/app/main.py)
+
+```python
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=SECRET_KEY,
+    session_cookie="session",
+    same_site="none",      # 크로스 도메인 쿠키 허용 (서브도메인 간)
+    https_only=False,      # nginx SSL 종료 환경에서는 False
+    max_age=86400 * 7,     # 7일
+)
+```
+
+#### nginx 헤더 설정 (config/nginx.conf)
+
+```nginx
+location /api/ {
+    proxy_pass http://fastapi_backend;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;  # HTTPS 감지용
+}
+```
+
+#### 쿠키 설정 주의사항
+
+| 환경 | same_site | https_only | COOKIE_DOMAIN |
+|------|-----------|------------|---------------|
+| 로컬 (localhost) | `lax` | `False` | (비움) |
+| 서버 (서브도메인) | `none` | `False` | `.buddhakorea.com` |
+| 서버 (단일도메인) | `lax` | `True` | `buddhakorea.com` |
+
+> **경고**: `same_site="none"` 사용 시 브라우저에서 Secure 쿠키로 강제됩니다.
+> nginx가 SSL 종료를 처리하므로 `https_only=False`여도 실제로는 HTTPS로 전송됩니다.
+
+### 6.3 로컬 vs 서버 환경변수 차이
 
 | 변수 | 로컬 | 서버 |
 |------|------|------|

@@ -2,8 +2,8 @@
 
 > Buddha Korea + nikaya_gemini 합병 상세 계획서
 >
-> **Version:** 2.0 (수정본)
-> **Date:** 2024-12-24
+> **Version:** 2.1 (리뷰 반영)
+> **Date:** 2024-12-25
 > **Status:** 승인됨
 
 ---
@@ -344,9 +344,36 @@ PALI_HINT_ENABLED: bool = True
 aiosqlite>=0.19.0
 ```
 
+#### 2.7 DPD 힌트 시스템 (핵심 기능)
+
+번역 품질의 핵심은 **DPD (Digital Pali Dictionary) 힌트 시스템**입니다.
+
+**작동 원리:**
+1. 번역 전 각 빠알리 단어를 DPD에서 조회
+2. 품사(POS), 성(gender), 격(case), 수(number) 정보 추출
+3. LLM 프롬프트에 문법 힌트로 포함
+4. 환각(hallucination) 감소 및 일관성 향상
+
+**이식 대상:**
+| 원본 | 대상 | 설명 |
+|------|------|------|
+| `apps/backend/services/hint_generator.py` | `backend/app/services/hint_generator.py` | 힌트 생성 로직 |
+| `tools/dpd_lookup.py` | `backend/app/services/dpd_lookup.py` | DPD 조회 (선택) |
+
+**프롬프트 예시:**
+```
+[DPD Hints for segment]
+dhammā: noun, masc, nom/voc, pl (법)
+sabbe: adj, masc, nom/voc, pl (모든)
+manopubbaṅgamā: compound (마노+뿝방가마)
+
+[Pali text to translate]
+Manopubbaṅgamā dhammā...
+```
+
 ---
 
-### Phase 3: 데이터베이스 확장 (1-2일)
+### Phase 3: 데이터베이스 확장 및 데이터 이식 (1-2일)
 
 #### 3.1 PostgreSQL 스키마 확장
 
@@ -442,6 +469,33 @@ class PaliSegment(Base):
     literature = relationship("PaliLiterature", back_populates="segments")
 ```
 
+#### 3.3 기존 번역 데이터 이식
+
+**nikaya_gemini에 이미 번역된 데이터가 존재합니다:**
+
+| 문헌 | 세그먼트 수 | 파일 위치 |
+|------|------------|----------|
+| Suttanipata Commentary | 637 | `data/projects/suttanipata_commentary/` |
+| Mahaniddesa Commentary | 364 | `data/projects/mahaniddesa_commentary/` |
+| Culaniddesa Full | 2 | `data/projects/culaniddesa_commentary/` |
+| **총계** | **1,003+** | |
+
+**이식 방법:**
+```bash
+# 1. JSON 데이터 복사
+cp -r nikaya_gemini/data/projects/* buddhakorea/backend/data/pali_projects/
+
+# 2. Admin API로 import (기존 엔드포인트 활용)
+curl -X POST https://ai.buddhakorea.com/api/v1/pali/admin/import \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -F "file=@Suttanipata_Commentary_Processed.json"
+
+# 또는 직접 DB 스크립트
+python scripts/import_pali_data.py --source data/pali_projects/
+```
+
+> **참고**: 새 PDF 파싱이 필요한 경우 `POST /api/v1/pali/admin/parse-pdf` 엔드포인트 사용
+
 ---
 
 ### Phase 4: 프론트엔드 통합 (2-3일)
@@ -475,24 +529,99 @@ export const API_BASE_URL = import.meta.env.DEV ? DEV_API_URL : PROD_API_URL;
 
 #### 4.3 인증 상태 연동
 
-**nikaya_gemini/apps/frontend/src/hooks/useAuth.ts:**
+nikaya_gemini는 자체 인증이 없으므로, buddhakorea의 세션 기반 인증과 통합해야 합니다.
+
+**nikaya_gemini/apps/frontend/src/hooks/useAuth.ts (신규 생성):**
 ```typescript
+import { useState, useEffect } from 'react';
+
+interface User {
+  id: number;
+  email: string;
+  nickname: string;
+  provider: string;
+}
+
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // 기존 Buddha Korea 인증 API 호출
-    fetch('/api/users/me', { credentials: 'include' })
-      .then(res => res.ok ? res.json() : null)
+    // Buddha Korea 인증 API 호출
+    // credentials: 'include'로 HttpOnly 쿠키 전송
+    fetch('/api/users/me', {
+      credentials: 'include',
+      headers: { 'Accept': 'application/json' }
+    })
+      .then(res => {
+        if (res.ok) return res.json();
+        if (res.status === 401) return null; // 비로그인 상태
+        throw new Error('Auth check failed');
+      })
       .then(data => setUser(data))
-      .catch(() => setUser(null));
+      .catch(() => setUser(null))
+      .finally(() => setIsLoading(false));
   }, []);
 
-  return { user, isLoggedIn: !!user };
+  const login = () => {
+    // 로그인 페이지로 리다이렉트 (현재 URL을 redirect 파라미터로)
+    window.location.href = `/auth/login/google?redirect=${encodeURIComponent(window.location.pathname)}`;
+  };
+
+  const logout = async () => {
+    await fetch('/auth/logout', {
+      method: 'POST',
+      credentials: 'include'
+    });
+    setUser(null);
+    window.location.reload();
+  };
+
+  return { user, isLoading, isLoggedIn: !!user, login, logout };
 }
 ```
 
-#### 4.4 빌드 및 복사
+**기존 useSession.ts 수정 (sessionId → 실제 인증 연동):**
+```typescript
+// 기존: 로컬 sessionId만 관리
+// 수정: useAuth 훅과 연동하여 로그인 사용자는 user.id 사용
+
+import { useAuth } from './useAuth';
+
+export function useSession() {
+  const { user, isLoggedIn } = useAuth();
+
+  // 로그인 시 user.id, 비로그인 시 localStorage sessionId
+  const sessionId = isLoggedIn
+    ? `user-${user.id}`
+    : localStorage.getItem('pali-session-id') || generateSessionId();
+
+  return { sessionId, isLoggedIn, user };
+}
+```
+
+#### 4.4 인증 통합 테스트 체크리스트
+
+배포 전 반드시 확인:
+
+- [ ] `/pali/` 접속 시 `/api/users/me` 호출 확인 (DevTools → Network)
+- [ ] 요청에 `Cookie: session=...` 헤더 포함 확인
+- [ ] 비로그인 상태: 401 응답, `user = null`
+- [ ] 로그인 상태: 200 응답, 사용자 정보 표시
+- [ ] 로그인 버튼 → Google OAuth → `/pali/`로 리다이렉트
+- [ ] 로그아웃 → 세션 쿠키 삭제 확인
+
+**문제 발생 시 확인:**
+```bash
+# 쿠키 설정 확인
+curl -v https://ai.buddhakorea.com/api/users/me \
+  -H "Cookie: session=YOUR_SESSION_VALUE"
+
+# CORS 확인 (same-origin이면 문제 없음)
+# credentials: 'include' 시 SameSite 설정 확인
+```
+
+#### 4.5 빌드 및 복사
 
 ```bash
 # 빌드
@@ -609,14 +738,150 @@ services:
       # ...
 ```
 
+#### 6.3 배포 자동화 스크립트
+
+수동 배포 명령을 스크립트로 자동화하여 휴먼 에러를 방지합니다.
+
+**scripts/deploy_pali.sh:**
+```bash
+#!/bin/bash
+set -e
+
+# 색상 정의
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+echo -e "${YELLOW}[1/5] Pulling latest code...${NC}"
+cd /opt/buddha-korea
+git pull origin main
+
+echo -e "${YELLOW}[2/5] Building Docker image...${NC}"
+docker compose -f config/docker-compose.yml build --no-cache backend
+
+echo -e "${YELLOW}[3/5] Restarting containers...${NC}"
+docker compose -f config/docker-compose.yml up -d
+
+echo -e "${YELLOW}[4/5] Waiting for health check (30s)...${NC}"
+sleep 30
+
+echo -e "${YELLOW}[5/5] Verifying deployment...${NC}"
+
+# Health checks
+MAIN_HEALTH=$(curl -s -o /dev/null -w "%{http_code}" https://ai.buddhakorea.com/api/health)
+PALI_HEALTH=$(curl -s -o /dev/null -w "%{http_code}" https://ai.buddhakorea.com/api/v1/pali/health)
+PALI_PAGE=$(curl -s -o /dev/null -w "%{http_code}" https://ai.buddhakorea.com/pali/)
+
+if [ "$MAIN_HEALTH" = "200" ] && [ "$PALI_HEALTH" = "200" ] && [ "$PALI_PAGE" = "200" ]; then
+    echo -e "${GREEN}✅ Deployment successful!${NC}"
+    echo "  - Main API: $MAIN_HEALTH"
+    echo "  - Pāli API: $PALI_HEALTH"
+    echo "  - Pāli Page: $PALI_PAGE"
+else
+    echo -e "${RED}❌ Deployment verification failed!${NC}"
+    echo "  - Main API: $MAIN_HEALTH (expected 200)"
+    echo "  - Pāli API: $PALI_HEALTH (expected 200)"
+    echo "  - Pāli Page: $PALI_PAGE (expected 200)"
+    echo ""
+    echo -e "${YELLOW}Rolling back...${NC}"
+    git checkout HEAD~1
+    docker compose -f config/docker-compose.yml up -d --build
+    exit 1
+fi
+```
+
+**사용법:**
+```bash
+# 서버에 스크립트 복사
+scp scripts/deploy_pali.sh root@157.180.72.0:/opt/buddha-korea/scripts/
+
+# 실행 권한 부여
+ssh root@157.180.72.0 "chmod +x /opt/buddha-korea/scripts/deploy_pali.sh"
+
+# 배포 실행
+ssh root@157.180.72.0 "/opt/buddha-korea/scripts/deploy_pali.sh"
+```
+
 ---
 
-### Phase 7: 배포 및 테스트 (1-2일)
+### Phase 7: 테스트 및 배포 (2일)
 
-#### 7.1 로컬 테스트
+#### 7.1 자동화된 테스트 실행
+
+nikaya_gemini에 이미 존재하는 테스트를 이식하고 확장합니다.
+
+**기존 테스트 이식 (nikaya_gemini/apps/backend/tests/):**
+```bash
+# 테스트 디렉토리 복사
+cp -r nikaya_gemini/apps/backend/tests/* buddhakorea/backend/tests/pali/
+
+# 구조:
+# backend/tests/
+# ├── conftest.py          # 기존 + pali fixtures 추가
+# ├── test_auth.py         # 기존 인증 테스트
+# ├── test_chat.py         # 기존 채팅 테스트
+# └── pali/                # ← 신규
+#     ├── conftest.py      # Pāli 전용 fixtures
+#     ├── test_literature.py  # ~45 테스트 케이스
+#     └── test_dpd.py      # DPD 조회 테스트
+```
+
+**추가 테스트 작성:**
+```python
+# backend/tests/pali/test_translate.py
+import pytest
+from unittest.mock import AsyncMock, patch
+
+@pytest.mark.asyncio
+async def test_translate_segment_unauthorized(client):
+    """비로그인 사용자 번역 요청 - 제한 확인"""
+    response = await client.post("/api/v1/pali/translate/1")
+    # 로그인 필요 또는 rate limit
+    assert response.status_code in [401, 429]
+
+@pytest.mark.asyncio
+@patch('app.services.gemini_client.translate_with_hints_stream')
+async def test_translate_segment_success(mock_gemini, client, auth_headers):
+    """번역 요청 성공 - Gemini 응답 모킹"""
+    mock_gemini.return_value = AsyncMock(return_value={
+        "sentences": [{"original_pali": "test", "translation": "테스트"}]
+    })
+    response = await client.post(
+        "/api/v1/pali/translate/1",
+        headers=auth_headers
+    )
+    assert response.status_code == 200
+
+# backend/tests/pali/test_integration.py
+@pytest.mark.asyncio
+async def test_auth_integration_with_pali(client, logged_in_session):
+    """로그인 세션으로 Pāli API 접근"""
+    response = await client.get(
+        "/api/v1/pali/literature",
+        cookies=logged_in_session
+    )
+    assert response.status_code == 200
+```
+
+**테스트 실행:**
+```bash
+cd backend
+
+# 전체 테스트
+pytest tests/ -v
+
+# Pāli 테스트만
+pytest tests/pali/ -v
+
+# 커버리지 포함
+pytest tests/ --cov=app --cov-report=html
+```
+
+#### 7.2 로컬 통합 테스트
 
 ```bash
-# 백엔드 테스트
+# 백엔드 실행
 cd backend
 uvicorn app.main:app --reload --port 8000
 
@@ -626,7 +891,7 @@ curl http://localhost:8000/api/v1/pali/literature
 curl http://localhost:8000/api/v1/pali/dpd/buddha
 ```
 
-#### 7.2 Docker 로컬 테스트
+#### 7.3 Docker 로컬 테스트
 
 ```bash
 # 이미지 빌드
@@ -639,7 +904,7 @@ docker run -p 8000:8000 buddhakorea-test
 curl http://localhost:8000/api/v1/pali/health
 ```
 
-#### 7.3 Hetzner 배포
+#### 7.4 Hetzner 배포
 
 ```bash
 # 커밋 및 푸시
@@ -652,7 +917,10 @@ git checkout main
 git merge feature/pali-studio-integration
 git push origin main
 
-# GitHub Actions가 자동 배포하거나 수동 배포
+# 자동화 스크립트로 배포 (권장)
+ssh root@157.180.72.0 "/opt/buddha-korea/scripts/deploy_pali.sh"
+
+# 또는 수동 배포
 ssh root@157.180.72.0
 cd /opt/buddha-korea
 git pull origin main
@@ -681,13 +949,14 @@ curl https://ai.buddhakorea.com/chat.html
 |-------|------|----------|--------|
 | 0 | 준비 (백업, 브랜치) | 1일 | - |
 | 1 | 헤더 통합 + Coming Soon | 1일 | Phase 0 |
-| 2 | 백엔드 병합 | 3-4일 | Phase 0 |
-| 3 | DB 스키마 확장 | 1-2일 | Phase 2 |
-| 4 | 프론트엔드 통합 | 2-3일 | Phase 2 |
+| 2 | 백엔드 병합 + DPD 힌트 | 3-4일 | Phase 0 |
+| 3 | DB 스키마 확장 + 데이터 이식 | 1-2일 | Phase 2 |
+| 4 | 프론트엔드 통합 + 인증 연동 | 2-3일 | Phase 2 |
 | 5 | nginx 설정 | 1일 | Phase 4 |
-| 6 | Dockerfile 수정 | 1일 | Phase 4, 5 |
-| 7 | 배포 및 테스트 | 1-2일 | All |
-| **총계** | | **11-15일** | |
+| 6 | Dockerfile + 배포 스크립트 | 1일 | Phase 4, 5 |
+| 7 | 테스트 및 배포 | 2일 | All |
+| 8 | 문서 업데이트 | 0.5일 | Phase 7 |
+| **총계** | | **12-16일** | |
 
 ---
 
@@ -715,12 +984,13 @@ curl https://ai.buddhakorea.com/chat.html
 - [ ] health.py 이식 및 수정
 - [ ] dpd_service.py 이식
 - [ ] literature_service.py 이식
+- [ ] **hint_generator.py 이식** (DPD 힌트 시스템)
 - [ ] gemini_client.py 통합
 - [ ] main.py에 라우터 등록
-- [ ] requirements.txt 업데이트
+- [ ] requirements.txt 업데이트 (aiosqlite)
 - [ ] 로컬 API 테스트
 
-### Phase 3: 데이터베이스
+### Phase 3: 데이터베이스 및 데이터 이식
 - [ ] Alembic 마이그레이션 생성
 - [ ] pali_literatures 테이블 생성
 - [ ] pali_segments 테이블 생성
@@ -728,14 +998,18 @@ curl https://ai.buddhakorea.com/chat.html
 - [ ] pali_translation_logs 테이블 생성
 - [ ] SQLAlchemy 모델 추가
 - [ ] 마이그레이션 테스트
+- [ ] **기존 번역 데이터 복사** (data/projects/)
+- [ ] **Admin API로 데이터 import 또는 스크립트 실행**
 
-### Phase 4: 프론트엔드
+### Phase 4: 프론트엔드 및 인증 통합
 - [ ] vite.config.ts base 경로 수정
 - [ ] API URL 설정 수정
-- [ ] 인증 훅 연동
+- [ ] **useAuth.ts 훅 생성** (Buddha Korea 세션 연동)
+- [ ] **useSession.ts 수정** (로그인 사용자 ID 사용)
 - [ ] npm run build
 - [ ] frontend/pali/에 복사
 - [ ] 로컬 테스트
+- [ ] **인증 통합 테스트** (쿠키 전송 확인)
 
 ### Phase 5: nginx
 - [ ] /pali/ location 추가
@@ -743,49 +1017,113 @@ curl https://ai.buddhakorea.com/chat.html
 - [ ] nginx 설정 문법 검증
 - [ ] 로컬 테스트
 
-### Phase 6: Docker
+### Phase 6: Docker 및 배포 자동화
 - [ ] Dockerfile에 DPD 복사 추가
 - [ ] Dockerfile에 pali/ 포함 확인
 - [ ] docker-compose.yml 볼륨 추가 (필요시)
 - [ ] 로컬 Docker 빌드 테스트
+- [ ] **deploy_pali.sh 스크립트 작성**
+- [ ] **서버에 스크립트 복사 및 권한 부여**
 
-### Phase 7: 배포
+### Phase 7: 테스트 및 배포
+- [ ] 기존 테스트 이식 (tests/pali/)
+- [ ] 추가 테스트 작성 (translate, auth integration)
+- [ ] pytest 전체 실행 및 통과 확인
 - [ ] 코드 커밋 및 푸시
-- [ ] Hetzner 배포
-- [ ] Health check 확인
+- [ ] 배포 스크립트로 Hetzner 배포
+- [ ] Health check 확인 (main + pali)
 - [ ] Pāli 페이지 로드 확인
+- [ ] 인증 통합 테스트 (DevTools에서 쿠키 확인)
 - [ ] 기존 기능 회귀 테스트
 - [ ] 성능 모니터링
+
+### Phase 8: 문서 업데이트
+- [ ] README.md에 Pāli Studio 섹션 추가
+- [ ] API 문서 확인 (Swagger /docs)
+- [ ] 배포 가이드에 Pāli 관련 내용 추가
 
 ---
 
 ## 6. 롤백 계획
 
-문제 발생 시:
+> **중요**: `git reset --hard`는 프로덕션에서 위험합니다. 대신 `git revert` 또는 태그 기반 롤백을 사용하세요.
+
+### 6.1 배포 전 태그 생성 (권장)
 
 ```bash
-# 1. nginx를 이전 설정으로 복원
+# 배포 전 현재 상태에 태그
+git tag -a v1.0-pre-pali -m "Before Pāli Studio integration"
+git push origin v1.0-pre-pali
+```
+
+### 6.2 롤백 시나리오
+
+**시나리오 A: nginx 설정 문제만 있을 때**
+```bash
 ssh root@157.180.72.0
 cd /opt/buddha-korea
 git checkout HEAD~1 -- config/nginx.conf
 docker compose -f config/docker-compose.yml restart nginx
-
-# 2. 전체 롤백 필요 시
-git reset --hard backup/pre-pali-integration
-docker compose -f config/docker-compose.yml down
-docker compose -f config/docker-compose.yml up -d --build
-
-# 3. DB 롤백 필요 시 (마이그레이션 되돌리기)
-alembic downgrade -1
 ```
+
+**시나리오 B: 전체 롤백 필요 시 (revert 사용)**
+```bash
+ssh root@157.180.72.0
+cd /opt/buddha-korea
+
+# 마지막 커밋을 되돌리는 새 커밋 생성 (안전)
+git revert HEAD --no-edit
+git push origin main
+
+# 또는 태그로 롤백
+git checkout v1.0-pre-pali
+docker compose -f config/docker-compose.yml up -d --build
+```
+
+**시나리오 C: DB 롤백 필요 시**
+```bash
+# 컨테이너 내부에서 Alembic 실행
+docker exec buddhakorea-backend alembic downgrade -1
+
+# 또는 특정 리비전으로
+docker exec buddhakorea-backend alembic downgrade <revision_id>
+```
+
+### 6.3 롤백 체크리스트
+
+- [ ] 롤백 후 `/api/health` 응답 확인
+- [ ] 기존 기능 (채팅, 로그인) 정상 동작 확인
+- [ ] Pāli 관련 경로가 404 반환하는지 확인 (예상 동작)
+- [ ] 에러 로그 확인: `docker logs buddhakorea-backend --tail 100`
 
 ---
 
 ## 7. 참고 자료
 
+### 문서
 - 원본 계획서: `nikaya_gemini/docs/BUDDHA_KOREA_INTEGRATION_PLAN.md`
 - Buddha Korea 배포 가이드: `docs/DEPLOYMENT_GUIDE.md`
 - 빠른 체크리스트: `docs/QUICK_CHECKLIST.md`
+- Cloudflare 마이그레이션: `docs/MIGRATION_NOTES.md`
+
+### nikaya_gemini 주요 파일
+| 파일 | 용도 |
+|------|------|
+| `apps/backend/tests/` | 테스트 코드 (~45 케이스) |
+| `apps/frontend/src/hooks/useSSE.ts` | SSE 스트리밍 훅 |
+| `apps/frontend/src/utils/paliTokenizer.ts` | 빠알리 단어 토크나이저 |
+| `data/dpd/dpd.db` | DPD 사전 (2GB) |
+| `data/projects/` | 번역된 세그먼트 JSON |
+| `tools/` | CLI 배치 번역 도구 |
+
+### 성능 목표
+
+| 메트릭 | 목표 | 측정 방법 |
+|--------|------|----------|
+| 문헌 목록 조회 | < 200ms | `/api/v1/pali/literature` 응답 시간 |
+| DPD 단어 조회 | < 100ms | `/api/v1/pali/dpd/{word}` 응답 시간 |
+| 세그먼트 번역 | < 30s | SSE 첫 토큰까지 시간 |
+| React 앱 초기 로드 | < 3s | Lighthouse Performance 점수 |
 
 ---
 

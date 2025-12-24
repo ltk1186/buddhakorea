@@ -45,6 +45,10 @@ ssh root@157.180.72.0 "docker compose -f /opt/buddha-korea/config/docker-compose
 □ 페이지 정상 렌더링 (CSS 적용됨)
 □ "로그인" 버튼 클릭 → Google 로그인
 □ 로그인 후 닉네임 표시됨
+□ 쿠키 확인 (DevTools → Application → Cookies)
+  - session 쿠키 존재
+  - Domain: .buddhakorea.com
+  - SameSite: None
 □ 채팅 메시지 전송 → 응답 받음
 □ 로그아웃 작동
 ```
@@ -70,9 +74,10 @@ ssh root@157.180.72.0 "docker exec buddhakorea-nginx cat /etc/nginx/nginx.conf |
 ssh root@157.180.72.0 "docker logs buddhakorea-backend 2>&1 | grep -i auth"
 ```
 
-### 컨테이너 재시작
+### 컨테이너 재시작 (코드 변경 반영)
 ```bash
-ssh root@157.180.72.0 "cd /opt/buddha-korea && docker compose -f config/docker-compose.yml down && docker compose -f config/docker-compose.yml up -d"
+# 반드시 --build 플래그 사용! (--force-recreate는 이미지 재빌드 안함)
+ssh root@157.180.72.0 "cd /opt/buddha-korea && docker compose -f config/docker-compose.yml down && docker compose -f config/docker-compose.yml up -d --build"
 ```
 
 ---
@@ -89,9 +94,12 @@ docker logs buddhakorea-backend -f
 # 컨테이너 내부 접속
 docker exec -it buddhakorea-backend bash
 
-# 전체 재시작
-cd /opt/buddha-korea && docker compose -f config/docker-compose.yml restart
+# 전체 재시작 (코드 변경 시 --build 필수!)
+cd /opt/buddha-korea && docker compose -f config/docker-compose.yml up -d --build
 
 # 디스크 확인
 df -h /
+
+# 이미지 정리 (주의: -a 옵션은 롤백 이미지도 삭제함)
+docker image prune  # dangling만 삭제 (안전)
 ```
