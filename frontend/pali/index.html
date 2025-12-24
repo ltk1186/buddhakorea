@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>빠알리 스튜디오 | Buddha Korea</title>
+    <link rel="icon" href="../assets/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        .coming-soon-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: var(--space-xl);
+        }
+
+        .coming-soon-icon {
+            font-size: 4rem;
+            margin-bottom: var(--space-lg);
+        }
+
+        .coming-soon-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-md);
+        }
+
+        .coming-soon-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-lg);
+            max-width: 500px;
+        }
+
+        .coming-soon-description {
+            font-size: 1rem;
+            color: var(--text-tertiary);
+            max-width: 600px;
+            line-height: 1.7;
+            margin-bottom: var(--space-xl);
+        }
+
+        .coming-soon-features {
+            display: flex;
+            gap: var(--space-lg);
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: var(--space-xl);
+        }
+
+        .feature-card {
+            background: var(--surface-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            width: 200px;
+            text-align: center;
+        }
+
+        .feature-card-icon {
+            font-size: 2rem;
+            margin-bottom: var(--space-sm);
+        }
+
+        .feature-card-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .feature-card-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-md) var(--space-xl);
+            background: var(--sage-primary);
+            color: white;
+            border-radius: var(--radius-lg);
+            font-weight: 500;
+            text-decoration: none;
+            transition: background 0.2s ease;
+        }
+
+        .back-link:hover {
+            background: var(--sage-dark);
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="site-header">
+        <div class="header-container">
+            <a href="../index.html" class="header-logo">
+                <img src="../assets/buddha-line.png" alt="Buddha Korea" class="logo-icon">
+                <span class="logo-text">Buddha Korea</span>
+            </a>
+            <nav class="header-nav">
+                <a href="../index.html" class="nav-link">홈</a>
+                <a href="../chat.html" class="nav-link">AI</a>
+                <a href="./" class="nav-link active">빠알리</a>
+                <a href="../sutra-writing.html" class="nav-link">사경</a>
+            </nav>
+        </div>
+    </header>
+    <div class="header-spacer"></div>
+
+    <!-- 메인 컨텐츠 -->
+    <main class="coming-soon-container">
+        <div class="coming-soon-icon">📜</div>
+        <h1 class="coming-soon-title">빠알리 스튜디오</h1>
+        <p class="coming-soon-subtitle">Coming Soon</p>
+        <p class="coming-soon-description">
+            빠알리어 경전 번역 서비스가 곧 출시됩니다.<br>
+            DPD(Digital Pali Dictionary)와 AI를 활용하여<br>
+            빠알리 원전의 정밀한 번역을 제공합니다.
+        </p>
+
+        <div class="coming-soon-features">
+            <div class="feature-card">
+                <div class="feature-card-icon">📖</div>
+                <div class="feature-card-title">경전 원문</div>
+                <div class="feature-card-desc">빠알리 니까야 원문 열람</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-card-icon">🔍</div>
+                <div class="feature-card-title">DPD 사전</div>
+                <div class="feature-card-desc">단어별 문법 분석</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-card-icon">🤖</div>
+                <div class="feature-card-title">AI 번역</div>
+                <div class="feature-card-desc">문맥 기반 정밀 번역</div>
+            </div>
+        </div>
+
+        <a href="../chat.html" class="back-link">
+            AI 채팅으로 돌아가기
+        </a>
+    </main>
+</body>
+</html>
