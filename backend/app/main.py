@@ -990,6 +990,11 @@ if FRONTEND_DIR.exists():
     app.mount("/js", StaticFiles(directory=str(FRONTEND_DIR / "js")), name="js")
     app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIR / "assets")), name="assets")
     app.mount("/data", StaticFiles(directory=str(FRONTEND_DIR / "data")), name="data")
+
+    # Mount Pali Studio SPA (React)
+    PALI_DIR = FRONTEND_DIR / "pali"
+    if PALI_DIR.exists():
+        app.mount("/pali", StaticFiles(directory=str(PALI_DIR), html=True), name="pali")
 else:
     logger.warning(f"Frontend directory not found at {FRONTEND_DIR}")
 
