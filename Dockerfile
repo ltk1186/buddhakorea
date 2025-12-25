@@ -43,6 +43,9 @@ WORKDIR /app
 # Copy application code (entire backend/app as package)
 COPY --chown=buddha:buddha backend/app/ ./app/
 
+# Copy Pali Studio module (from nikaya_gemini)
+COPY --chown=buddha:buddha backend/pali/ ./pali/
+
 # Copy RAG module (buddhist thesaurus, etc.)
 COPY --chown=buddha:buddha backend/rag/ ./rag/
 

@@ -18,7 +18,11 @@ def get_default_dpd_path() -> str:
 
 
 class Settings(BaseSettings):
-    """Application settings loaded from environment variables."""
+    """Application settings loaded from environment variables.
+
+    Environment variables can use PALI_ prefix (e.g., PALI_DATABASE_URL)
+    or be set directly (e.g., DATABASE_URL).
+    """
 
     # Application
     APP_NAME: str = "Pali Translator API"
@@ -26,10 +30,10 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     DEBUG: bool = False
 
-    # Database
-    DATABASE_URL: str = "postgresql://pali:password@localhost:5432/pali_translator"
+    # Database (uses shared PostgreSQL from buddhakorea)
+    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/buddhakorea"
 
-    # Redis
+    # Redis (uses shared Redis from buddhakorea)
     REDIS_URL: str = "redis://localhost:6379/1"
 
     # Google Cloud / Vertex AI
@@ -49,8 +53,10 @@ class Settings(BaseSettings):
     # Admin
     ADMIN_TOKEN: Optional[str] = None
 
-    # CORS
+    # CORS (uses same origins as buddhakorea main app)
     CORS_ORIGINS: list[str] = [
+        "https://buddhakorea.com",
+        "https://www.buddhakorea.com",
         "https://ai.buddhakorea.com",
         "http://localhost:5173",
         "http://localhost:3000",
@@ -74,8 +80,10 @@ class Settings(BaseSettings):
     EXPLANATION_MAX_SENTENCES: int = 3
 
     class Config:
+        env_prefix = "PALI_"  # Allow PALI_ prefixed env vars
         env_file = ".env"
         case_sensitive = True
+        extra = "ignore"  # Ignore extra environment variables
 
 
 @lru_cache()
