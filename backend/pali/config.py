@@ -3,9 +3,18 @@ Configuration management for Pali Translator API.
 Loads settings from environment variables with sensible defaults.
 """
 import os
+from pathlib import Path
 from typing import Optional
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+
+# Dynamic path resolution for DPD database
+def get_default_dpd_path() -> str:
+    """Get default DPD database path relative to this config file."""
+    # backend/pali/config.py -> backend/data/dpd/dpd.db
+    config_dir = Path(__file__).parent
+    dpd_path = config_dir.parent / "data" / "dpd" / "dpd.db"
+    return str(dpd_path)
 
 
 class Settings(BaseSettings):
@@ -32,7 +41,7 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: Optional[str] = None
 
     # DPD Dictionary Database
-    DPD_DATABASE_PATH: str = "../../data/dpd/dpd.db"
+    DPD_DATABASE_PATH: str = get_default_dpd_path()
 
     # Sentry
     SENTRY_DSN: Optional[str] = None
