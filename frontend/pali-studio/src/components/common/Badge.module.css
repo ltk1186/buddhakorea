@@ -1,0 +1,28 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+}
+
+.default {
+  background: rgba(90, 154, 110, 0.1);
+  color: var(--sage-primary);
+}
+
+.success {
+  background: rgba(52, 199, 89, 0.1);
+  color: var(--color-success);
+}
+
+.warning {
+  background: rgba(255, 149, 0, 0.1);
+  color: var(--color-warning);
+}
+
+.error {
+  background: rgba(255, 59, 48, 0.1);
+  color: var(--color-error);
+}

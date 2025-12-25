@@ -455,18 +455,51 @@ class GeminiClient:
 
             full_response = ""
             async for chunk in response:
-                if chunk.text:
-                    full_response += chunk.text
-                    yield {"type": "token", "content": chunk.text}
+                try:
+                    if chunk.text:
+                        full_response += chunk.text
+                        yield {"type": "token", "content": chunk.text}
+                except ValueError as e:
+                    # chunk.text raises ValueError when no valid Part exists
+                    # This can happen due to content filtering or empty responses
+                    logger.warning(f"Empty chunk in batch translation: {e}")
+                    continue
 
             # Signal parsing phase
             yield {"type": "parse_complete", "status": "parsing"}
+
+            # Check if we got any response
+            if not full_response.strip():
+                logger.warning("Empty response from Gemini batch translation, falling back to individual")
+                yield {"type": "fallback_start", "reason": "Empty response from API"}
+                for seg_id, text in segments:
+                    try:
+                        async for event in self.translate_with_hints_stream(text, ""):
+                            if event["type"] == "complete":
+                                yield {
+                                    "type": "segment_complete",
+                                    "segment_id": seg_id,
+                                    "translation": event["data"]
+                                }
+                            elif event["type"] == "error":
+                                yield {
+                                    "type": "error",
+                                    "error": event["error"],
+                                    "segment_id": seg_id
+                                }
+                    except Exception as fallback_e:
+                        yield {
+                            "type": "error",
+                            "error": str(fallback_e),
+                            "segment_id": seg_id
+                        }
+                return
 
             # Parse batch results
             try:
                 cleaned = self._clean_json_response(full_response)
                 data = json.loads(cleaned)
-                results = data.get("results", [])
+                results = data.get("results") or []  # Handle None explicitly
 
                 # Debug: Log detailed info
                 logger.info(f"Batch translation: received {len(results)} results for {len(segment_ids)} segments")
@@ -492,8 +525,9 @@ class GeminiClient:
 
                     try:
                         # Validate individual translation
+                        sentences = result.get("sentences") or []
                         translation = TranslationResult.model_validate({
-                            "sentences": result.get("sentences", []),
+                            "sentences": sentences,
                             "summary": result.get("summary")
                         })
                         yield {

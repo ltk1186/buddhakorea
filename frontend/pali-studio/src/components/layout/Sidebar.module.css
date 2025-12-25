@@ -1,0 +1,300 @@
+.sidebar {
+  min-width: 200px;
+  max-width: 500px;
+  height: 100%;
+  background: var(--color-background-subtle);
+  border-right: 1px solid var(--border-subtle);
+  overflow-y: auto;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  padding: var(--space-md);
+  flex: 1;
+  overflow-y: auto;
+}
+
+.sectionTitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-md);
+}
+
+.pitaka {
+  margin-bottom: var(--space-lg);
+}
+
+.pitakaTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--sage-primary);
+  margin-bottom: var(--space-sm);
+  padding: var(--space-xs) 0;
+}
+
+.nikaya {
+  margin-bottom: var(--space-md);
+  padding-left: var(--space-sm);
+}
+
+.nikayaTitle {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-xs);
+}
+
+.literatureList {
+  list-style: none;
+  padding-left: var(--space-sm);
+}
+
+.literatureItem {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  font-size: 0.8125rem;
+  color: var(--color-text-primary);
+  transition: all var(--transition-fast);
+  min-height: var(--touch-target-min, 44px);
+}
+
+.literatureItem:hover {
+  background: var(--sage-pale);
+}
+
+.literatureItem.active {
+  background: var(--sage-primary);
+  color: white;
+}
+
+.literatureItem.active .literatureSecondary {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.literatureText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.literaturePrimary {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.literatureSecondary {
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status {
+  font-size: 0.625rem;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+  margin-left: var(--space-xs);
+  margin-top: 2px;
+}
+
+/* 번역 100% 완료 */
+.status.completed {
+  background: rgba(52, 199, 89, 0.15);
+  color: var(--color-success);
+}
+
+/* 번역 진행 중 (1-99%) */
+.status.inProgress {
+  background: rgba(255, 149, 0, 0.15);
+  color: var(--color-warning);
+}
+
+/* 미번역 (0%) */
+.status.notStarted {
+  background: rgba(142, 142, 147, 0.15);
+  color: var(--color-text-muted);
+}
+
+.literatureItem.active .status {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+/* ===== Hierarchy Wrapper with Resizer ===== */
+.hierarchyWrapper {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.resizeHandle {
+  height: 8px;
+  background: var(--border-subtle);
+  cursor: ns-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.resizeHandle:hover,
+.resizeHandle.resizing {
+  background: var(--sage-pale);
+}
+
+.resizeGrip {
+  width: 32px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--color-text-muted);
+  opacity: 0.4;
+  transition: opacity var(--transition-fast);
+}
+
+.resizeHandle:hover .resizeGrip,
+.resizeHandle.resizing .resizeGrip {
+  opacity: 0.7;
+}
+
+.hierarchyWrapper > div:last-child {
+  overflow-y: auto;
+}
+
+/* ===== Backdrop for Drawer Mode ===== */
+.backdrop {
+  display: none;
+}
+
+/* ===== Tablet: Sidebar as Drawer ===== */
+@media (min-width: 769px) and (max-width: 1023px) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: var(--header-height, 50px);
+    height: calc(100vh - var(--header-height, 50px));
+    height: calc(100dvh - var(--header-height, 50px));
+    z-index: var(--z-modal);
+    transform: translateX(-100%);
+    transition: transform 0.3s var(--ease-out);
+    box-shadow: none;
+    min-width: 280px;
+    max-width: 320px;
+    width: 80vw;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    top: var(--header-height, 50px);
+    background: rgba(0, 0, 0, 0.3);
+    z-index: calc(var(--z-modal) - 1);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .backdrop.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .content {
+    padding: var(--space-sm);
+  }
+
+  .literatureItem {
+    font-size: 0.75rem;
+    padding: var(--space-xs);
+  }
+}
+
+/* ===== Mobile: Sidebar as Drawer (same as tablet) ===== */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: var(--header-height, 50px);
+    height: calc(100vh - var(--header-height, 50px) - var(--mobile-nav-height, 60px));
+    height: calc(100dvh - var(--header-height, 50px) - var(--mobile-nav-height, 60px));
+    z-index: var(--z-modal);
+    transform: translateX(-100%);
+    transition: transform 0.3s var(--ease-out);
+    box-shadow: none;
+    min-width: 280px;
+    max-width: var(--drawer-width, 320px);
+    width: 85vw;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    top: var(--header-height, 50px);
+    bottom: var(--mobile-nav-height, 60px);
+    background: rgba(0, 0, 0, 0.4);
+    z-index: calc(var(--z-modal) - 1);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .backdrop.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .content {
+    padding: var(--space-sm);
+  }
+
+  .literatureItem {
+    min-height: var(--touch-target-comfortable, 48px);
+    padding: var(--space-sm);
+  }
+
+  .literaturePrimary {
+    font-size: 0.875rem;
+  }
+
+  .literatureSecondary {
+    font-size: 0.75rem;
+  }
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .backdrop {
+    transition: none;
+  }
+}

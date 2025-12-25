@@ -91,12 +91,12 @@ services:
       - ../data/chroma_db:/app/chroma_db        # ChromaDB 벡터 데이터
       - ../data/logs:/app/logs                   # 앱 로그
       - ../data/source_data:/data/source_data      # 경전 요약 데이터
-      - ../data/dpd:/app/data/dpd:ro               # DPD (Digital Pali Dictionary) 데이터
+      - ../data/dpd:/app/data/dpd:ro                    # DPD (Digital Pali Dictionary)
       - ./gcp-key.json:/app/gcp-key.json:ro      # GCP 서비스 계정 키
     environment:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-buddhakorea}
       # ─── GCP Vertex AI ───
-      - GCP_PROJECT_ID=${GCP_PROJECT_ID}
+      # Note: GCP_PROJECT_ID is loaded from .env file automatically
       - GCP_LOCATION=${GCP_LOCATION:-us-central1}
       - GOOGLE_APPLICATION_CREDENTIALS=/app/gcp-key.json
 
@@ -129,7 +129,7 @@ services:
 
       # ─── Pali Studio 설정 ───
       - PALI_DPD_DATABASE_PATH=/app/data/dpd/dpd.db
-      - PALI_GEMINI_API_KEY=${GEMINI_API_KEY}
+      # Note: PALI_GEMINI_API_KEY is loaded from .env (GEMINI_API_KEY) via env_file
       - PALI_DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-buddhakorea}
       - PALI_REDIS_URL=redis://:${REDIS_PASSWORD:-buddha-korea-redis-2024}@redis:6379/1
     env_file:

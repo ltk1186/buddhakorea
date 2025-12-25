@@ -1,0 +1,118 @@
+/* Toast Container - fixed position at bottom-right */
+.container {
+  position: fixed;
+  bottom: var(--space-lg);
+  right: var(--space-lg);
+  z-index: var(--z-toast, 9999);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  max-width: 400px;
+  pointer-events: none;
+}
+
+/* Individual toast */
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-background);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  border-left: 4px solid;
+  pointer-events: auto;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Toast variants */
+.toast.success {
+  border-left-color: var(--color-success);
+}
+
+.toast.success .icon {
+  color: var(--color-success);
+}
+
+.toast.error {
+  border-left-color: var(--color-error);
+}
+
+.toast.error .icon {
+  color: var(--color-error);
+}
+
+.toast.warning {
+  border-left-color: var(--color-warning);
+}
+
+.toast.warning .icon {
+  color: var(--color-warning);
+}
+
+.toast.info {
+  border-left-color: var(--sage-primary);
+}
+
+.toast.info .icon {
+  color: var(--sage-primary);
+}
+
+/* Icon */
+.icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Message */
+.message {
+  flex: 1;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  line-height: 1.4;
+}
+
+/* Close button */
+.closeButton {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  transition: all var(--transition-fast);
+}
+
+.closeButton:hover {
+  background: var(--sage-pale);
+  color: var(--color-text-primary);
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+  .container {
+    left: var(--space-md);
+    right: var(--space-md);
+    bottom: calc(var(--space-lg) + 60px); /* Above mobile nav */
+    max-width: none;
+  }
+
+  .toast {
+    padding: var(--space-sm) var(--space-md);
+  }
+}

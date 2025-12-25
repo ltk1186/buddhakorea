@@ -1,0 +1,96 @@
+.app {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* Account for site header (40px) at the top */
+  padding-top: 40px;
+}
+
+/* Skip to main content link - visible only when focused */
+.skipLink {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--sage-primary);
+  color: white;
+  padding: var(--space-sm) var(--space-md);
+  z-index: 1000;
+  transition: top 0.2s ease;
+}
+
+.skipLink:focus {
+  top: 0;
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ===== Tablet view (769px - 1023px) ===== */
+@media (min-width: 769px) and (max-width: 1023px) {
+  .main {
+    flex-direction: row;
+  }
+
+  .content {
+    flex: 1;
+  }
+}
+
+/* ===== Mobile view switching (768px and below) ===== */
+@media (max-width: 768px) {
+  .app {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    /* Smaller site header on mobile (36px) */
+    padding-top: 36px;
+  }
+
+  .main {
+    flex-direction: column;
+    flex: 1;
+    /* Account for site header (36px) + app header */
+    height: calc(100dvh - 36px - var(--header-height, 50px));
+    padding-bottom: calc(var(--mobile-nav-height, 60px) + env(safe-area-inset-bottom));
+    overflow: hidden;
+  }
+
+  .content {
+    flex: 1;
+    flex-direction: column;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ===== Very small screens ===== */
+@media (max-width: 480px) {
+  .main {
+    /* Same calculation but with smaller header if needed */
+  }
+}
+
+/* ===== Reduced motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .skipLink {
+    transition: none;
+  }
+
+  .content > * {
+    transition: none;
+  }
+}

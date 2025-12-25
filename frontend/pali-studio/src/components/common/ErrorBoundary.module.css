@@ -1,0 +1,147 @@
+/**
+ * ErrorBoundary Styles
+ * Phase 6: Accessibility & User Feedback
+ */
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  padding: var(--space-xl);
+  background: var(--color-background);
+}
+
+.content {
+  max-width: 500px;
+  text-align: center;
+}
+
+.icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-lg);
+  color: var(--color-error);
+}
+
+.icon svg {
+  opacity: 0.8;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-md);
+}
+
+.message {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-lg);
+}
+
+.details {
+  margin-bottom: var(--space-lg);
+  text-align: left;
+}
+
+.details summary {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: var(--space-sm);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+
+.details summary:hover {
+  background: var(--sage-pale);
+}
+
+.details[open] summary {
+  margin-bottom: var(--space-sm);
+}
+
+.errorStack {
+  font-size: 0.75rem;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  background: var(--sage-glow);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--color-text-secondary);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.retryButton,
+.reloadButton {
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 120px;
+}
+
+.retryButton {
+  background: var(--sage-primary);
+  color: white;
+  border: none;
+}
+
+.retryButton:hover {
+  background: var(--sage-light);
+  transform: translateY(-1px);
+}
+
+.retryButton:active {
+  transform: translateY(0);
+}
+
+.reloadButton {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--border-subtle);
+}
+
+.reloadButton:hover {
+  border-color: var(--sage-light);
+  color: var(--sage-primary);
+}
+
+/* Focus states for accessibility */
+.retryButton:focus-visible,
+.reloadButton:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+  .container {
+    padding: var(--space-lg);
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .retryButton,
+  .reloadButton {
+    width: 100%;
+  }
+}

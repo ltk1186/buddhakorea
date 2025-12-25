@@ -1,0 +1,38 @@
+/**
+ * PaliText Component Styles
+ */
+
+.paliText {
+  font-family: var(--font-pali);
+  font-style: italic;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-pali);
+  line-height: var(--line-height-pali);
+}
+
+.word {
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.word:hover {
+  background-color: var(--sage-pale);
+  color: var(--sage-primary);
+}
+
+.word:active {
+  background-color: var(--sage-lighter);
+}
+
+/* Search result highlighting */
+.highlight {
+  background-color: rgba(255, 220, 0, 0.4);
+  color: inherit;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+.word:hover .highlight {
+  background-color: rgba(255, 220, 0, 0.6);
+}

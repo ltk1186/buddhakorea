@@ -1,0 +1,132 @@
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--sage-glow);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-md);
+}
+
+.list {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-wrap: wrap;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+}
+
+.separator {
+  display: flex;
+  align-items: center;
+  color: var(--color-text-muted);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+.link:hover {
+  background: var(--sage-pale);
+  color: var(--sage-primary);
+}
+
+.link.current {
+  font-weight: 600;
+  color: var(--sage-primary);
+  background: var(--sage-pale);
+  cursor: default;
+}
+
+.label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-text-muted);
+}
+
+.copyButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.copyButton:hover {
+  background: var(--color-background);
+  border-color: var(--sage-light);
+  color: var(--sage-primary);
+}
+
+@media (max-width: 768px) {
+  .breadcrumb {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+    margin-bottom: var(--space-sm);
+  }
+
+  .link {
+    min-height: var(--touch-target-min, 44px);
+    padding: var(--space-sm);
+  }
+
+  .copyButton {
+    align-self: flex-end;
+    min-height: var(--touch-target-min, 44px);
+    padding: var(--space-sm) var(--space-md);
+  }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+  .breadcrumb {
+    padding: var(--space-xs);
+  }
+
+  .list {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .separator {
+    display: none;
+  }
+
+  .link {
+    font-size: 0.75rem;
+  }
+
+  .label {
+    font-size: 0.625rem;
+  }
+}

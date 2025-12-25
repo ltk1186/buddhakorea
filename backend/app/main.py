@@ -55,7 +55,8 @@ from .qa_logger import log_qa_pair, get_qa_pairs, export_to_json, analyze_popula
 from .tradition_normalizer import normalize_tradition, get_normalized_traditions
 
 # Pali Studio API (integrated from nikaya_gemini)
-from ..pali.api import router as pali_router
+# Use absolute import since pali is a sibling package at container root (/app)
+from pali.api import router as pali_router
 
 
 # ============================================================================

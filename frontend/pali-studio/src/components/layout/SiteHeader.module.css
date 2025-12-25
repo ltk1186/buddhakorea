@@ -1,0 +1,172 @@
+/**
+ * Buddha Korea Site Header Styles
+ *
+ * Minimal, glassmorphism-style header that hides on scroll.
+ * Provides platform navigation while minimizing visual distraction.
+ */
+
+.siteHeader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  z-index: calc(var(--z-sticky) + 10);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-subtle);
+  transition: transform 0.3s var(--ease-out), opacity 0.3s var(--ease-out);
+}
+
+.siteHeader.hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.container {
+  max-width: 100%;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  text-decoration: none;
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: opacity var(--transition-fast);
+}
+
+.logo:hover {
+  opacity: 0.8;
+}
+
+.logoText {
+  font-family: var(--font-main);
+  letter-spacing: -0.02em;
+}
+
+/* Current Section */
+.currentSection {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.sectionDivider {
+  color: var(--color-text-muted);
+  font-weight: 300;
+}
+
+.sectionName {
+  color: var(--sage-primary);
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+/* Spacer */
+.spacer {
+  flex: 1;
+}
+
+/* Navigation */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.navLink {
+  padding: var(--space-xs) var(--space-sm);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.navLink:hover {
+  color: var(--color-text-primary);
+  background: var(--sage-pale);
+}
+
+.navLink.active {
+  color: var(--sage-primary);
+  background: var(--sage-pale);
+}
+
+/* User Button */
+.userButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.userButton:hover {
+  color: var(--sage-primary);
+  background: var(--sage-pale);
+}
+
+/* Mobile: Hamburger menu instead */
+@media (max-width: 768px) {
+  .siteHeader {
+    height: 36px;
+  }
+
+  .logoText {
+    display: none;
+  }
+
+  .currentSection {
+    display: none;
+  }
+
+  .nav {
+    display: none;
+  }
+
+  /* Show hamburger menu on mobile - for now just user button */
+  .container {
+    justify-content: space-between;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+  .container {
+    padding: 0 var(--space-sm);
+  }
+}
+
+/* Safe area for iOS notch */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .siteHeader {
+    padding-top: var(--safe-area-top);
+    height: calc(40px + var(--safe-area-top));
+  }
+
+  @media (max-width: 768px) {
+    .siteHeader {
+      height: calc(36px + var(--safe-area-top));
+    }
+  }
+}

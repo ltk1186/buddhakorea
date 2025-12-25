@@ -1,0 +1,120 @@
+.divider {
+  position: relative;
+  flex-shrink: 0;
+  background: var(--border-subtle);
+  transition: background var(--transition-fast);
+  /* Touch-friendly hit area */
+  touch-action: none;
+}
+
+.divider:hover,
+.divider.dragging {
+  background: var(--sage-primary);
+}
+
+.divider:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.divider.horizontal {
+  width: 4px;
+  cursor: col-resize;
+}
+
+.divider.vertical {
+  height: 4px;
+  cursor: row-resize;
+}
+
+.handle {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+.divider.horizontal .handle {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 48px;
+  /* Extend touch target beyond visible divider */
+  padding: 0 10px;
+  margin-left: -10px;
+}
+
+.divider.vertical .handle {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  height: 24px;
+  padding: 10px 0;
+  margin-top: -10px;
+}
+
+/* Visual dots indicator for draggable area */
+.handleDots {
+  width: 4px;
+  height: 20px;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.divider:hover .handleDots,
+.divider.dragging .handleDots {
+  opacity: 1;
+}
+
+.divider.horizontal .handleDots {
+  background: repeating-linear-gradient(
+    to bottom,
+    white 0px,
+    white 2px,
+    transparent 2px,
+    transparent 5px
+  );
+}
+
+.divider.vertical .handleDots {
+  width: 20px;
+  height: 4px;
+  background: repeating-linear-gradient(
+    to right,
+    white 0px,
+    white 2px,
+    transparent 2px,
+    transparent 5px
+  );
+}
+
+/* Mobile: larger hit area */
+@media (max-width: 768px) {
+  .divider.horizontal {
+    width: 8px;
+  }
+
+  .divider.vertical {
+    height: 8px;
+  }
+
+  .divider.horizontal .handle {
+    width: 32px;
+    height: 64px;
+  }
+
+  .divider.vertical .handle {
+    width: 64px;
+    height: 32px;
+  }
+}
+
+/* Hide on very small screens where we use tab navigation instead */
+@media (max-width: 480px) {
+  .divider {
+    display: none;
+  }
+}

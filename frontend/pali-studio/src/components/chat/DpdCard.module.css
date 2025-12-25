@@ -1,0 +1,299 @@
+/**
+ * DpdCard Component Styles
+ */
+
+.card {
+  background: var(--sage-glow);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.icon {
+  font-size: 1rem;
+}
+
+.headword {
+  font-family: var(--font-pali);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--sage-primary);
+}
+
+.word {
+  font-family: var(--font-pali);
+  font-style: italic;
+  color: var(--color-text-secondary);
+}
+
+.grammar {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  background: var(--sage-pale);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.definition {
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-sm);
+}
+
+.notFound {
+  color: var(--color-text-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+.loadingRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border-subtle);
+  border-top-color: var(--sage-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loadingText {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.errorText {
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.section {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-xs);
+}
+
+.label {
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.etymology {
+  margin-bottom: var(--space-xs);
+}
+
+.root {
+  font-family: var(--font-pali);
+}
+
+.compoundDetail {
+  color: var(--color-text-muted);
+}
+
+.examples {
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px dashed var(--border-subtle);
+  font-size: 0.8125rem;
+}
+
+.example {
+  font-family: var(--font-pali);
+  font-style: italic;
+  color: var(--color-text-secondary);
+  margin: var(--space-xs) 0 0 0;
+  padding-left: var(--space-sm);
+}
+
+/* Suggestions UI */
+.notFoundHint {
+  color: var(--color-text-muted);
+  font-style: italic;
+  margin: 0 0 var(--space-sm) 0;
+  font-size: 0.8125rem;
+}
+
+.suggestionsSection {
+  margin-top: var(--space-xs);
+}
+
+.suggestionsLabel {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-xs) 0;
+  font-weight: 500;
+}
+
+.suggestionsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.suggestionItem {
+  background: var(--sage-pale);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  border-left: 2px solid var(--sage-primary);
+}
+
+.suggestionHeadword {
+  font-family: var(--font-pali);
+  font-weight: 600;
+  color: var(--sage-primary);
+  font-size: 0.875rem;
+}
+
+.suggestionGrammar {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  background: var(--color-bg-secondary);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  margin-left: var(--space-xs);
+}
+
+.suggestionDefinition {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  margin: var(--space-xs) 0 0 0;
+  line-height: 1.4;
+}
+
+/* Extended entry styles */
+.exampleItem {
+  margin: var(--space-xs) 0 0 0;
+  padding-left: var(--space-sm);
+}
+
+.exampleText {
+  font-family: var(--font-pali);
+  font-style: italic;
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.exampleText b {
+  font-weight: 600;
+  color: var(--sage-primary);
+  font-style: normal;
+}
+
+.exampleSource {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin: 2px 0 0 0;
+}
+
+.commentary {
+  font-family: var(--font-pali);
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  margin: var(--space-xs) 0 0 0;
+  padding-left: var(--space-sm);
+  border-left: 2px solid var(--border-subtle);
+  line-height: 1.5;
+}
+
+.commentary b {
+  font-weight: 600;
+  color: var(--sage-primary);
+}
+
+.relatedWords {
+  margin-bottom: var(--space-xs);
+}
+
+.notes {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin: var(--space-xs) 0 0 0;
+  font-style: italic;
+}
+
+/* Inflection table styles */
+.inflectionDetails {
+  margin-top: var(--space-sm);
+  border-top: 1px dashed var(--border-subtle);
+  padding-top: var(--space-sm);
+}
+
+.inflectionSummary {
+  cursor: pointer;
+  font-size: 0.8125rem;
+  color: var(--sage-primary);
+  font-weight: 500;
+  user-select: none;
+}
+
+.inflectionSummary:hover {
+  text-decoration: underline;
+}
+
+.inflectionTable {
+  margin-top: var(--space-sm);
+  font-size: 0.75rem;
+  overflow-x: auto;
+}
+
+.inflectionTable table {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: var(--font-pali);
+}
+
+.inflectionTable th,
+.inflectionTable td {
+  border: 1px solid var(--border-subtle);
+  padding: 4px 8px;
+  text-align: left;
+}
+
+.inflectionTable th {
+  background: var(--sage-pale);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.inflectionTable td {
+  color: var(--color-text-primary);
+}
+
+.inflectionTable td b {
+  color: var(--sage-primary);
+  font-weight: 600;
+}
+
+.inflectionTable .gray,
+.inflectionTable span.gray {
+  color: var(--color-text-muted);
+}
+
+.inflectionTable p.heading {
+  font-size: 0.8125rem;
+  margin: 0 0 var(--space-xs) 0;
+  color: var(--color-text-secondary);
+}
+
+.inflectionTable p.heading b {
+  color: var(--sage-primary);
+}

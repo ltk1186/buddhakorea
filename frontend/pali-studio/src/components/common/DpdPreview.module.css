@@ -1,0 +1,124 @@
+.preview {
+  position: fixed;
+  z-index: var(--z-tooltip);
+  min-width: 200px;
+  max-width: 320px;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-background);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-sm);
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.error .word {
+  font-family: var(--font-pali);
+  font-style: italic;
+  color: var(--color-text-primary);
+}
+
+.error .errorText {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xs);
+}
+
+.headword {
+  font-family: var(--font-pali);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--sage-primary);
+}
+
+.grammar {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.definition {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  margin: 0;
+  margin-bottom: var(--space-sm);
+  /* Limit to 3 lines */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.moreButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 0.75rem;
+  color: var(--sage-primary);
+  padding: var(--space-xs) 0;
+  transition: all var(--transition-fast);
+}
+
+.moreButton:hover {
+  color: var(--sage-light);
+}
+
+.moreButton svg {
+  transition: transform var(--transition-fast);
+}
+
+.moreButton:hover svg {
+  transform: translateX(2px);
+}
+
+/* Mobile: slightly larger for touch */
+@media (max-width: 768px) {
+  .preview {
+    min-width: 240px;
+    max-width: calc(100vw - 32px);
+    padding: var(--space-md);
+  }
+
+  .headword {
+    font-size: 1.125rem;
+  }
+
+  .definition {
+    font-size: 0.875rem;
+  }
+
+  .moreButton {
+    font-size: 0.8125rem;
+    min-height: var(--touch-target-min, 44px);
+  }
+}

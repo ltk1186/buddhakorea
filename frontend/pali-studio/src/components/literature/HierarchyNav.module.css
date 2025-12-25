@@ -1,0 +1,150 @@
+.container {
+  padding: var(--space-md);
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-sm);
+}
+
+.subtitle {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  margin-top: calc(var(--space-sm) * -0.5);
+  margin-bottom: var(--space-md);
+}
+
+.loading,
+.empty {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: var(--space-md);
+}
+
+.tree {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.vaggaGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.vaggaItem {
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
+}
+
+.vaggaItem:hover {
+  background: var(--sage-pale);
+}
+
+.vaggaItem.active {
+  background: var(--sage-primary);
+}
+
+.vaggaItem.active .vaggaName,
+.vaggaItem.active .expandBtn {
+  color: white;
+}
+
+.expandBtn {
+  padding: var(--space-xs);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.arrow {
+  transition: transform var(--transition-fast);
+}
+
+.arrow.expanded {
+  transform: rotate(90deg);
+}
+
+.vaggaName {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-xs) var(--space-sm);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  text-align: left;
+}
+
+.count {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  background: var(--sage-pale);
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+}
+
+.vaggaItem.active .count {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.suttaList {
+  display: flex;
+  flex-direction: column;
+  margin-left: var(--space-lg);
+  border-left: 1px solid var(--border-subtle);
+  padding-left: var(--space-xs);
+}
+
+.suttaItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-xs) var(--space-sm);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  text-align: left;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.suttaItem:hover {
+  background: var(--sage-glow);
+  color: var(--color-text-primary);
+}
+
+.suttaItem.active {
+  background: var(--sage-light);
+  color: white;
+}
+
+.suttaName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.range {
+  font-size: 0.625rem;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  margin-left: var(--space-xs);
+}
+
+.suttaItem.active .range {
+  color: rgba(255, 255, 255, 0.8);
+}

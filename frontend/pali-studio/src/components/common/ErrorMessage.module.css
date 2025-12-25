@@ -1,0 +1,139 @@
+/**
+ * ErrorMessage Styles
+ * Phase 6: Accessibility & User Feedback
+ */
+
+.container {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+/* Variants */
+.inline {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+}
+
+.card {
+  padding: var(--space-lg);
+  border-radius: var(--radius-md);
+}
+
+.banner {
+  border-radius: 0;
+  padding: var(--space-md) var(--space-lg);
+}
+
+.iconWrapper {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon {
+  color: var(--color-error);
+  opacity: 0.8;
+}
+
+.inline .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #991b1b;
+  margin: 0 0 var(--space-xs);
+}
+
+.inline .title {
+  font-size: 0.8125rem;
+}
+
+.message {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #b91c1c;
+  margin: 0;
+}
+
+.inline .message {
+  font-size: 0.8125rem;
+}
+
+.retryButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid #fca5a5;
+  border-radius: var(--radius-sm);
+  background: white;
+  color: #b91c1c;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.retryButton:hover {
+  background: #fee2e2;
+  border-color: #f87171;
+}
+
+.retryButton:active {
+  background: #fecaca;
+}
+
+.retryButton:focus-visible {
+  outline: 2px solid var(--color-error);
+  outline-offset: 2px;
+}
+
+.inline .retryButton {
+  padding: var(--space-xs) var(--space-sm);
+  font-size: 0.75rem;
+}
+
+/* Animation for appearing */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.container {
+  animation: slideIn 0.2s var(--ease-out);
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+  .container {
+    flex-wrap: wrap;
+  }
+
+  .retryButton {
+    width: 100%;
+    justify-content: center;
+    margin-top: var(--space-sm);
+  }
+}
