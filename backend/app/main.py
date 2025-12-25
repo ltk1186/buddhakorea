@@ -54,6 +54,9 @@ from .qa_logger import log_qa_pair, get_qa_pairs, export_to_json, analyze_popula
 # Tradition normalization
 from .tradition_normalizer import normalize_tradition, get_normalized_traditions
 
+# Pali Studio API (integrated from nikaya_gemini)
+from ..pali.api import router as pali_router
+
 
 # ============================================================================
 # Configuration
@@ -972,6 +975,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount Pali Studio API router
+app.include_router(pali_router, prefix="/api/v1/pali")
 
 # Mount static files for frontend
 # Docker: /app/frontend, Local: ../../frontend relative to backend/app/
