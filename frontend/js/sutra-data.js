@@ -14,7 +14,7 @@ let CATEGORY_ANIMATIONS = {};
  * @returns {string} - Joined text with spaces
  */
 function generateRepeatedText(pattern, count) {
-    return Array(count).fill(pattern).join(' ');
+    return Array(count).fill(pattern).join('\n');
 }
 
 /**

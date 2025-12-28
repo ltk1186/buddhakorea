@@ -62,7 +62,16 @@ body {
     border-radius: 50%;
     pointer-events: none;
     filter: blur(120px);
+    -webkit-filter: blur(120px);
     z-index: 1;
+    will-change: transform;
+}
+
+/* Hide mouse light on touch devices - saves battery */
+@media (hover: none) and (pointer: coarse) {
+    .mouse-light {
+        display: none;
+    }
 }
 
 /* 전체 페이지 */
@@ -544,6 +553,10 @@ body {
 .text-bg span {
     display: inline;
     transition: opacity 0.2s ease, color 0.15s ease;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .text-bg span.done {
@@ -1216,6 +1229,13 @@ body {
     .glow {
         width: 200px;
         height: 200px;
+    }
+}
+
+/* iOS safe area support */
+@supports (padding: env(safe-area-inset-bottom)) {
+    .screen {
+        padding-bottom: calc(20px + env(safe-area-inset-bottom));
     }
 }
 

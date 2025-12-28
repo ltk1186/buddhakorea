@@ -371,6 +371,28 @@
       "repeat": 108,
       "estimatedTime": "5-7분",
       "order": 35
+    },
+    "hangmaMantra": {
+      "id": "hangmaMantra",
+      "category": "mantra",
+      "title": "항마진언",
+      "subtitle": "降魔眞言",
+      "description": "마구니를 항복받아 모든 장애와 어려움을 물리치는 진언",
+      "pattern": "옴 소마니 소마니 훔 하리한나 하리한나 훔 하리한나 바나야 훔 아나야 혹 바아밤 바아라 훔 바탁",
+      "repeat": 108,
+      "estimatedTime": "15-20분",
+      "order": 36
+    },
+    "gwangmyeongMantra": {
+      "id": "gwangmyeongMantra",
+      "category": "mantra",
+      "title": "광명진언",
+      "subtitle": "光明眞言",
+      "description": "비로자나불의 광명으로 무명과 업장을 소멸시키는 진언",
+      "pattern": "옴 아모가 바이로차나 마하무드라 마니 파드마 즈바라 프라바릍타야 훔",
+      "repeat": 108,
+      "estimatedTime": "12-15분",
+      "order": 37
     }
   }
 }

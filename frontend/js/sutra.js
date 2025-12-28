@@ -208,15 +208,61 @@ function selectSutra(id) {
     // Cache DOM references for performance
     bgSpans = Array.from(textBg.children);
 
-    // Add click handlers for Easy Mode
+    // Add click/touch handlers for Easy Mode
+    // Use Map to store per-span touch state (fixes multi-touch issues)
+    const touchStates = new Map();
+
     bgSpans.forEach((span, index) => {
+        // Desktop click
         span.addEventListener('click', (e) => {
-            console.log('Span clicked:', index, 'mode:', currentMode, 'pointerEvents:', span.style.pointerEvents);
             if (currentMode === 'easy') {
                 e.preventDefault();
+                e.stopPropagation();
                 handleCharacterClick(index);
             }
         });
+
+        // Mobile touch - faster feedback with proper state isolation
+        span.addEventListener('touchstart', (e) => {
+            if (currentMode === 'easy') {
+                touchStates.set(index, {
+                    x: e.touches[0].clientX,
+                    y: e.touches[0].clientY,
+                    time: Date.now()
+                });
+                span.style.opacity = '0.7';
+            }
+        }, { passive: true });
+
+        span.addEventListener('touchend', (e) => {
+            if (currentMode === 'easy') {
+                const state = touchStates.get(index);
+                if (!state) return;
+
+                const touchEndX = e.changedTouches[0].clientX;
+                const touchEndY = e.changedTouches[0].clientY;
+                const duration = Date.now() - state.time;
+
+                // Tap detection: quick touch, minimal movement
+                const isQuickTap = duration < 300;
+                const isNotSwipe = Math.abs(touchEndX - state.x) < 20 &&
+                                   Math.abs(touchEndY - state.y) < 20;
+
+                if (isQuickTap && isNotSwipe) {
+                    e.preventDefault();
+                    handleCharacterClick(index);
+                    if (navigator.vibrate) navigator.vibrate(10);
+                }
+
+                span.style.opacity = '';
+                touchStates.delete(index);
+            }
+        });
+
+        span.addEventListener('touchcancel', () => {
+            span.style.opacity = '';
+            touchStates.delete(index);
+        }, { passive: true });
     });
 
     // ========================================
@@ -293,16 +339,37 @@ function selectSutra(id) {
         }
     });
 
-    // Double-space detection for Easy Mode
+    // Double-space detection for Easy Mode (improved for mobile keyboards)
     textInputEasy.addEventListener('keydown', (e) => {
         if (currentMode === 'easy' && e.key === ' ') {
+            // Skip if composing (Korean IME active)
+            if (textInputEasy.isComposing) return;
+
             const now = Date.now();
-            if (now - lastSpaceTime < 300) {
-                // Double-space detected
+            if (now - lastSpaceTime < 350 && now - lastSpaceTime > 50) {
+                // Double-space detected (50ms minimum to avoid key repeat)
                 e.preventDefault();
                 completeToNextLine();
+                lastSpaceTime = 0; // Reset to prevent triple-space
+            } else {
+                lastSpaceTime = now;
             }
-            lastSpaceTime = now;
+        }
+    });
+
+    // Also handle beforeinput for mobile keyboards that don't fire keydown
+    textInputEasy.addEventListener('beforeinput', (e) => {
+        if (currentMode === 'easy' && e.inputType === 'insertText' && e.data === ' ') {
+            if (textInputEasy.isComposing) return;
+
+            const now = Date.now();
+            if (now - lastSpaceTime < 350 && now - lastSpaceTime > 50) {
+                e.preventDefault();
+                completeToNextLine();
+                lastSpaceTime = 0;
+            } else {
+                lastSpaceTime = now;
+            }
         }
     });
 
@@ -415,8 +482,10 @@ function updateVisuals() {
 function handleCharacterClick(index) {
     console.log('Character clicked:', index);
 
-    // Save reference to clicked span for scroll restoration
-    const clickedSpan = bgSpans[index];
+    // Save scroll position before any DOM changes
+    const typeBox = document.querySelector('.type-box');
+    const savedScrollTop = typeBox ? typeBox.scrollTop : 0;
+    const savedWindowScrollY = window.scrollY;
 
     // Auto-complete all characters up to this index
     for (let i = 0; i < index; i++) {
@@ -437,16 +506,15 @@ function handleCharacterClick(index) {
     textInputEasy.textContent = completedText;
     userTyped = completedText;
 
-    // Focus on contenteditable and set cursor to the clicked position
-    // Use preventScroll to avoid browser auto-scrolling to input
+    // Focus without scroll, then restore scroll position
     textInputEasy.focus({ preventScroll: true });
-    setTimeout(() => {
+
+    // Restore scroll positions after focus
+    requestAnimationFrame(() => {
+        if (typeBox) typeBox.scrollTop = savedScrollTop;
+        window.scrollTo(0, savedWindowScrollY);
         setCursorPosition(textInputEasy, index);
-        // Scroll clicked span into view to maintain position
-        if (clickedSpan) {
-            clickedSpan.scrollIntoView({ behavior: 'instant', block: 'center' });
-        }
-    }, 0);
+    });
 
     // Check for completion
     checkCompletion();
@@ -455,24 +523,21 @@ function handleCharacterClick(index) {
 // Complete to next line break (double-space feature)
 function completeToNextLine() {
     const currentPos = userTyped.length;
-    console.log('Double-space detected at position:', currentPos, '/', sutraText.length);
 
     // If already at the end, do nothing
     if (currentPos >= sutraText.length) {
-        console.log('Already at end, no more to complete');
         return;
     }
+
+    // Save scroll position
+    const savedScrollY = window.scrollY;
 
     // Find next line break
     let nextLinePos = sutraText.indexOf('\n', currentPos);
     if (nextLinePos === -1 || nextLinePos < currentPos) {
-        // No line break found, complete to end
         nextLinePos = sutraText.length;
-        console.log('No more line breaks, completing to end:', nextLinePos);
     } else {
-        // Include the line break
-        nextLinePos++;
-        console.log('Completing to next line break at:', nextLinePos);
+        nextLinePos++; // Include the line break
     }
 
     // Mark characters as skipped
@@ -487,16 +552,15 @@ function completeToNextLine() {
     userTyped = sutraText.slice(0, nextLinePos);
     textInputEasy.textContent = userTyped;
 
-    console.log('Updated userTyped length:', userTyped.length, '/', sutraText.length);
-
     // Update visuals
     updateVisualsEasy();
 
-    // Focus and set cursor to new position
-    textInputEasy.focus();
-    setTimeout(() => {
+    // Focus and restore scroll
+    textInputEasy.focus({ preventScroll: true });
+    requestAnimationFrame(() => {
+        window.scrollTo(0, savedScrollY);
         setCursorPosition(textInputEasy, nextLinePos);
-    }, 0);
+    });
 
     // Check for completion
     checkCompletion();
@@ -577,22 +641,52 @@ function updateVisualsEasy() {
     }
 }
 
-// Helper: Set cursor position in contenteditable
+// Helper: Set cursor position in contenteditable (robust version)
 function setCursorPosition(element, position) {
     try {
-        const range = document.createRange();
         const sel = window.getSelection();
-        const textNode = element.firstChild;
+        if (!sel) return;
 
-        if (textNode && textNode.nodeType === Node.TEXT_NODE) {
-            const safePos = Math.min(position, textNode.length);
-            range.setStart(textNode, safePos);
-            range.collapse(true);
-            sel.removeAllRanges();
-            sel.addRange(range);
+        // Handle empty element
+        if (!element.firstChild) {
+            element.focus();
+            return;
         }
+
+        const range = document.createRange();
+
+        // Find the correct text node and offset
+        let currentOffset = 0;
+        const walker = document.createTreeWalker(
+            element,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+
+        let node = walker.nextNode();
+        while (node) {
+            const nodeLength = node.textContent.length;
+            if (currentOffset + nodeLength >= position) {
+                // Found the right node
+                const offsetInNode = Math.min(position - currentOffset, nodeLength);
+                range.setStart(node, offsetInNode);
+                range.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(range);
+                return;
+            }
+            currentOffset += nodeLength;
+            node = walker.nextNode();
+        }
+
+        // Fallback: position at end
+        range.selectNodeContents(element);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
     } catch (e) {
-        console.warn('Failed to set cursor position:', e);
+        // Silent fail - cursor position is not critical
     }
 }
 
