@@ -25,6 +25,7 @@ jobs:
           key: ${{ secrets.HETZNER_SSH_KEY }}
           port: 22
           command_timeout: 30m
+          envs: SECRET_KEY,REDIS_PASSWORD,POSTGRES_PASSWORD,GEMINI_API_KEY,PALI_GEMINI_API_KEY,GCP_PROJECT_ID,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,NAVER_CLIENT_ID,NAVER_CLIENT_SECRET,KAKAO_CLIENT_ID,KAKAO_CLIENT_SECRET
           script: |
             echo "🎉 Connecting to Hetzner Server..."
             cd /opt/buddha-korea
@@ -38,6 +39,74 @@ jobs:
             echo "Changed files: $CHANGED_FILES"
 
             git pull origin main
+
+            # Validate required secrets are present
+            echo "🔐 Validating GitHub Secrets..."
+            MISSING_SECRETS=""
+            [ -z "$GEMINI_API_KEY" ] && MISSING_SECRETS="$MISSING_SECRETS GEMINI_API_KEY"
+            [ -z "$SECRET_KEY" ] && MISSING_SECRETS="$MISSING_SECRETS SECRET_KEY"
+            [ -z "$REDIS_PASSWORD" ] && MISSING_SECRETS="$MISSING_SECRETS REDIS_PASSWORD"
+            [ -z "$POSTGRES_PASSWORD" ] && MISSING_SECRETS="$MISSING_SECRETS POSTGRES_PASSWORD"
+            if [ -n "$MISSING_SECRETS" ]; then
+              echo "❌ Missing required secrets:$MISSING_SECRETS"
+              exit 1
+            fi
+            echo "✅ All required secrets are present"
+
+            # Generate .env from GitHub Secrets (passed via envs parameter)
+            echo "🔐 Generating .env from GitHub Secrets..."
+            cat > .env << ENVFILE
+# Auto-generated from GitHub Secrets - DO NOT EDIT MANUALLY
+# LLM API Keys
+GEMINI_API_KEY=${GEMINI_API_KEY}
+PALI_GEMINI_API_KEY=${PALI_GEMINI_API_KEY}
+# GCP Configuration
+GCP_PROJECT_ID=${GCP_PROJECT_ID}
+GCP_LOCATION=us-central1
+USE_GEMINI_FOR_QUERIES=true
+# Model Configuration
+LLM_MODEL=gemini-2.5-pro
+LLM_MODEL_FAST=gemini-2.5-flash
+EMBEDDING_MODEL=BAAI/bge-m3
+# Vector Database
+CHROMA_DB_PATH=./chroma_db
+CHROMA_COLLECTION_NAME=cbeta_sutras_gemini
+# API Configuration
+API_HOST=0.0.0.0
+API_PORT=8000
+ALLOWED_ORIGINS=https://buddhakorea.com,https://www.buddhakorea.com,https://ai.buddhakorea.com
+RATE_LIMIT_PER_HOUR=100
+LOG_LEVEL=info
+# Retrieval Configuration
+TOP_K_RETRIEVAL=10
+TOP_K_RETRIEVAL_FAST=5
+MAX_CONTEXT_TOKENS=8000
+CHUNK_SIZE=1024
+CHUNK_OVERLAP=200
+# Performance
+MAX_WORKERS=4
+BATCH_SIZE=32
+# Authentication
+SECRET_KEY=${SECRET_KEY}
+COOKIE_DOMAIN=.buddhakorea.com
+# OAuth - Google
+GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+# OAuth - Naver
+NAVER_CLIENT_ID=${NAVER_CLIENT_ID}
+NAVER_CLIENT_SECRET=${NAVER_CLIENT_SECRET}
+# OAuth - Kakao
+KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}
+KAKAO_CLIENT_SECRET=${KAKAO_CLIENT_SECRET}
+# Database
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+POSTGRES_DB=buddhakorea
+# Redis
+REDIS_PASSWORD=${REDIS_PASSWORD}
+ENVFILE
+            chmod 600 .env
+            echo "✅ .env generated successfully"
 
             # Dockerfile 또는 requirements.txt 변경 시에만 빌드
             if echo "$CHANGED_FILES" | grep -qE "(Dockerfile|requirements\.txt)"; then

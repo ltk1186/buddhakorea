@@ -19,12 +19,12 @@ services:
       - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
       - ./redis-data:/data
     environment:
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-buddha-korea-redis-2024}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:?REDIS_PASSWORD is required}
     ports:
       - "127.0.0.1:6379:6379"  # 로컬만 노출 (보안)
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-buddha-korea-redis-2024}", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -53,7 +53,7 @@ services:
     container_name: buddhakorea-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: ${POSTGRES_DB:-buddhakorea}
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
@@ -94,7 +94,7 @@ services:
       - ../data/dpd:/app/data/dpd:ro                    # DPD (Digital Pali Dictionary)
       - ./gcp-key.json:/app/gcp-key.json:ro      # GCP 서비스 계정 키
     environment:
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-buddhakorea}
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-buddhakorea}
       # ─── GCP Vertex AI ───
       # Note: GCP_PROJECT_ID is loaded from .env file automatically
       - GCP_LOCATION=${GCP_LOCATION:-us-central1}
@@ -112,7 +112,7 @@ services:
       # ─── Redis ───
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-buddha-korea-redis-2024}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:?REDIS_PASSWORD is required}
       - REDIS_DB=0
 
       # ─── API 설정 ───
@@ -130,8 +130,8 @@ services:
       # ─── Pali Studio 설정 ───
       - PALI_DPD_DATABASE_PATH=/app/data/dpd/dpd.db
       # Note: PALI_GEMINI_API_KEY is loaded from .env (GEMINI_API_KEY) via env_file
-      - PALI_DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-buddhakorea}
-      - PALI_REDIS_URL=redis://:${REDIS_PASSWORD:-buddha-korea-redis-2024}@redis:6379/1
+      - PALI_DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-buddhakorea}
+      - PALI_REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/1
     env_file:
       - ../.env                              # 프로젝트 루트의 .env 파일
     ports:

@@ -164,8 +164,8 @@ blue_green_deploy() {
     log "Phase 3: Verifying services..."
 
     # Check FastAPI container
-    if ! docker ps | grep -q "buddhakorea-fastapi"; then
-        error "FastAPI container not running"
+    if ! docker ps | grep -q "buddhakorea-backend"; then
+        error "Backend container not running"
         rollback
         exit 1
     fi
@@ -266,8 +266,8 @@ main() {
     log ""
     log "Next steps:"
     log "1. Monitor logs: tail -f ${LOG_DIR}/app.log"
-    log "2. Test PII masking: docker exec buddhakorea-fastapi python3 privacy.py"
-    log "3. View Redis data: docker exec buddhakorea-redis redis-cli -a \${REDIS_PASSWORD} INFO"
+    log "2. Test PII masking: docker exec buddhakorea-backend python3 privacy.py"
+    log "3. View Redis data: docker exec buddhakorea-redis redis-cli --no-auth-warning -a \${REDIS_PASSWORD} INFO"
 }
 
 # Trap errors and run rollback
