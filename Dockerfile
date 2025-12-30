@@ -1,5 +1,24 @@
-# Multi-stage build for production
-FROM python:3.11-slim as builder
+# ===========================================
+# Stage 1: Build Pali Studio (React/Vite)
+# ===========================================
+FROM node:20-alpine AS pali-builder
+
+WORKDIR /build
+
+# Copy package files first (better layer caching)
+COPY frontend/pali-studio/package*.json ./
+
+# Install dependencies
+RUN npm ci --silent
+
+# Copy source and build
+COPY frontend/pali-studio/ ./
+RUN npm run build
+
+# ===========================================
+# Stage 2: Build Python dependencies
+# ===========================================
+FROM python:3.11-slim AS python-builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
@@ -21,7 +40,9 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir gunicorn
 
-# Final production stage
+# ===========================================
+# Stage 3: Final production image
+# ===========================================
 FROM python:3.11-slim
 
 # Create non-root user
@@ -34,8 +55,8 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy virtual environment from builder
-COPY --from=builder /opt/venv /opt/venv
+# Copy virtual environment from python-builder
+COPY --from=python-builder /opt/venv /opt/venv
 
 # Set working directory
 WORKDIR /app
@@ -51,6 +72,9 @@ COPY --chown=buddha:buddha backend/rag/ ./rag/
 
 # Copy frontend for backend to serve
 COPY --chown=buddha:buddha frontend/ ./frontend/
+
+# Copy Pali Studio build output from pali-builder stage
+COPY --from=pali-builder --chown=buddha:buddha /build/dist/ ./frontend/pali-studio/dist/
 
 # Copy source explorer data structure (actual data mounted via volume)
 COPY --chown=buddha:buddha backend/source_explorer ./source_explorer/
