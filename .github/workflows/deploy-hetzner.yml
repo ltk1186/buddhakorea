@@ -26,6 +26,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           PALI_GEMINI_API_KEY: ${{ secrets.PALI_GEMINI_API_KEY }}
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
@@ -38,7 +39,7 @@ jobs:
           key: ${{ secrets.HETZNER_SSH_KEY }}
           port: 22
           command_timeout: 30m
-          envs: SECRET_KEY,REDIS_PASSWORD,POSTGRES_PASSWORD,GEMINI_API_KEY,PALI_GEMINI_API_KEY,GCP_PROJECT_ID,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,NAVER_CLIENT_ID,NAVER_CLIENT_SECRET,KAKAO_CLIENT_ID,KAKAO_CLIENT_SECRET
+          envs: SECRET_KEY,REDIS_PASSWORD,POSTGRES_PASSWORD,GEMINI_API_KEY,PALI_GEMINI_API_KEY,GCP_PROJECT_ID,GCP_SERVICE_ACCOUNT_KEY,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,NAVER_CLIENT_ID,NAVER_CLIENT_SECRET,KAKAO_CLIENT_ID,KAKAO_CLIENT_SECRET
           script: |
             echo "🎉 Connecting to Hetzner Server..."
             cd /opt/buddha-korea
@@ -107,6 +108,25 @@ jobs:
             } > .env
             chmod 600 .env
             echo "✅ .env generated successfully"
+
+            # Generate GCP service account key from GitHub Secret
+            echo "🔑 Generating GCP service account key..."
+            if [ -n "$GCP_SERVICE_ACCOUNT_KEY" ]; then
+              echo "$GCP_SERVICE_ACCOUNT_KEY" > config/gcp-key.json
+              chmod 600 config/gcp-key.json
+              echo "✅ GCP key generated successfully"
+            else
+              echo "⚠️ GCP_SERVICE_ACCOUNT_KEY not set, using existing key"
+            fi
+
+            # Sync PostgreSQL password if container exists
+            echo "🔄 Syncing PostgreSQL password..."
+            if docker ps -q -f name=buddhakorea-postgres | grep -q .; then
+              docker exec buddhakorea-postgres psql -U postgres -c "ALTER USER postgres WITH PASSWORD '${POSTGRES_PASSWORD}';" 2>/dev/null || echo "⚠️ PostgreSQL password sync skipped (first run)"
+              echo "✅ PostgreSQL password synced"
+            else
+              echo "ℹ️ PostgreSQL container not running yet, password will be set on first start"
+            fi
 
             # Dockerfile 또는 requirements.txt 변경 시에만 빌드
             if echo "$CHANGED_FILES" | grep -qE "(Dockerfile|requirements\.txt)"; then
