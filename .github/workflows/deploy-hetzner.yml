@@ -55,56 +55,43 @@ jobs:
 
             # Generate .env from GitHub Secrets (passed via envs parameter)
             echo "🔐 Generating .env from GitHub Secrets..."
-            cat > .env << ENVFILE
-# Auto-generated from GitHub Secrets - DO NOT EDIT MANUALLY
-# LLM API Keys
-GEMINI_API_KEY=${GEMINI_API_KEY}
-PALI_GEMINI_API_KEY=${PALI_GEMINI_API_KEY}
-# GCP Configuration
-GCP_PROJECT_ID=${GCP_PROJECT_ID}
-GCP_LOCATION=us-central1
-USE_GEMINI_FOR_QUERIES=true
-# Model Configuration
-LLM_MODEL=gemini-2.5-pro
-LLM_MODEL_FAST=gemini-2.5-flash
-EMBEDDING_MODEL=BAAI/bge-m3
-# Vector Database
-CHROMA_DB_PATH=./chroma_db
-CHROMA_COLLECTION_NAME=cbeta_sutras_gemini
-# API Configuration
-API_HOST=0.0.0.0
-API_PORT=8000
-ALLOWED_ORIGINS=https://buddhakorea.com,https://www.buddhakorea.com,https://ai.buddhakorea.com
-RATE_LIMIT_PER_HOUR=100
-LOG_LEVEL=info
-# Retrieval Configuration
-TOP_K_RETRIEVAL=10
-TOP_K_RETRIEVAL_FAST=5
-MAX_CONTEXT_TOKENS=8000
-CHUNK_SIZE=1024
-CHUNK_OVERLAP=200
-# Performance
-MAX_WORKERS=4
-BATCH_SIZE=32
-# Authentication
-SECRET_KEY=${SECRET_KEY}
-COOKIE_DOMAIN=.buddhakorea.com
-# OAuth - Google
-GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-# OAuth - Naver
-NAVER_CLIENT_ID=${NAVER_CLIENT_ID}
-NAVER_CLIENT_SECRET=${NAVER_CLIENT_SECRET}
-# OAuth - Kakao
-KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}
-KAKAO_CLIENT_SECRET=${KAKAO_CLIENT_SECRET}
-# Database
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-POSTGRES_DB=buddhakorea
-# Redis
-REDIS_PASSWORD=${REDIS_PASSWORD}
-ENVFILE
+            {
+              echo "# Auto-generated from GitHub Secrets - DO NOT EDIT MANUALLY"
+              echo "GEMINI_API_KEY=${GEMINI_API_KEY}"
+              echo "PALI_GEMINI_API_KEY=${PALI_GEMINI_API_KEY}"
+              echo "GCP_PROJECT_ID=${GCP_PROJECT_ID}"
+              echo "GCP_LOCATION=us-central1"
+              echo "USE_GEMINI_FOR_QUERIES=true"
+              echo "LLM_MODEL=gemini-2.5-pro"
+              echo "LLM_MODEL_FAST=gemini-2.5-flash"
+              echo "EMBEDDING_MODEL=BAAI/bge-m3"
+              echo "CHROMA_DB_PATH=./chroma_db"
+              echo "CHROMA_COLLECTION_NAME=cbeta_sutras_gemini"
+              echo "API_HOST=0.0.0.0"
+              echo "API_PORT=8000"
+              echo "ALLOWED_ORIGINS=https://buddhakorea.com,https://www.buddhakorea.com,https://ai.buddhakorea.com"
+              echo "RATE_LIMIT_PER_HOUR=100"
+              echo "LOG_LEVEL=info"
+              echo "TOP_K_RETRIEVAL=10"
+              echo "TOP_K_RETRIEVAL_FAST=5"
+              echo "MAX_CONTEXT_TOKENS=8000"
+              echo "CHUNK_SIZE=1024"
+              echo "CHUNK_OVERLAP=200"
+              echo "MAX_WORKERS=4"
+              echo "BATCH_SIZE=32"
+              echo "SECRET_KEY=${SECRET_KEY}"
+              echo "COOKIE_DOMAIN=.buddhakorea.com"
+              echo "GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}"
+              echo "GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}"
+              echo "NAVER_CLIENT_ID=${NAVER_CLIENT_ID}"
+              echo "NAVER_CLIENT_SECRET=${NAVER_CLIENT_SECRET}"
+              echo "KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}"
+              echo "KAKAO_CLIENT_SECRET=${KAKAO_CLIENT_SECRET}"
+              echo "POSTGRES_USER=postgres"
+              echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}"
+              echo "POSTGRES_DB=buddhakorea"
+              echo "REDIS_PASSWORD=${REDIS_PASSWORD}"
+            } > .env
             chmod 600 .env
             echo "✅ .env generated successfully"
 
