@@ -1,0 +1,21 @@
+{
+  "name": "buddhakorea-frontend",
+  "version": "1.0.0",
+  "description": "Buddha Korea Frontend E2E Tests",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report"
+  },
+  "keywords": ["buddhism", "playwright", "e2e"],
+  "author": "Buddha Korea",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "@types/node": "^25.0.3",
+    "typescript": "^5.9.3"
+  }
+}

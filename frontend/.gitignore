@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# TypeScript
+dist/
+*.tsbuildinfo
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Auth state (테스트용 로그인 상태)
+.auth/

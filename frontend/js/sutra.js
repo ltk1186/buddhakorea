@@ -20,7 +20,10 @@ let currentMode = 'traditional';
 // Easy Mode state
 let typedIndices = new Set(); // User-typed character positions
 let skippedIndices = new Set(); // Auto-completed character positions
-let lastSpaceTime = 0; // For double-space detection
+
+// Double-space detection (counter-based, more reliable than timing)
+let consecutiveSpaces = 0;
+let spaceResetTimeout = null;
 
 // Wait for data to load
 dataLoadedPromise.then(() => {
@@ -105,7 +108,11 @@ function resetTypingState() {
     userTyped = '';
     typedIndices.clear();
     skippedIndices.clear();
-    lastSpaceTime = 0;
+    consecutiveSpaces = 0;
+    if (spaceResetTimeout) {
+        clearTimeout(spaceResetTimeout);
+        spaceResetTimeout = null;
+    }
 
     // Clear inputs
     const textInput = document.getElementById('text-input');
@@ -173,7 +180,11 @@ function selectSutra(id) {
     userTyped = '';
     typedIndices.clear();
     skippedIndices.clear();
-    lastSpaceTime = 0;
+    consecutiveSpaces = 0;
+    if (spaceResetTimeout) {
+        clearTimeout(spaceResetTimeout);
+        spaceResetTimeout = null;
+    }
 
     // 제목 설정 (subtitle도 표시)
     const sutraNameEl = document.getElementById('sutra-name');
@@ -339,36 +350,38 @@ function selectSutra(id) {
         }
     });
 
-    // Double-space detection for Easy Mode (improved for mobile keyboards)
+    // Double-space detection for Easy Mode (counter-based, more reliable)
     textInputEasy.addEventListener('keydown', (e) => {
         if (currentMode === 'easy' && e.key === ' ') {
             // Skip if composing (Korean IME active)
             if (textInputEasy.isComposing) return;
 
-            const now = Date.now();
-            if (now - lastSpaceTime < 350 && now - lastSpaceTime > 50) {
-                // Double-space detected (50ms minimum to avoid key repeat)
-                e.preventDefault();
-                completeToNextLine();
-                lastSpaceTime = 0; // Reset to prevent triple-space
-            } else {
-                lastSpaceTime = now;
+            // Clear any existing reset timeout
+            if (spaceResetTimeout) {
+                clearTimeout(spaceResetTimeout);
+                spaceResetTimeout = null;
             }
-        }
-    });
 
-    // Also handle beforeinput for mobile keyboards that don't fire keydown
-    textInputEasy.addEventListener('beforeinput', (e) => {
-        if (currentMode === 'easy' && e.inputType === 'insertText' && e.data === ' ') {
-            if (textInputEasy.isComposing) return;
+            // Increment space counter
+            consecutiveSpaces++;
 
-            const now = Date.now();
-            if (now - lastSpaceTime < 350 && now - lastSpaceTime > 50) {
+            if (consecutiveSpaces >= 2) {
+                // Double-space detected
                 e.preventDefault();
                 completeToNextLine();
-                lastSpaceTime = 0;
+                consecutiveSpaces = 0;
             } else {
-                lastSpaceTime = now;
+                // Reset counter after 600ms of inactivity (more forgiving than 350ms)
+                spaceResetTimeout = setTimeout(() => {
+                    consecutiveSpaces = 0;
+                }, 600);
+            }
+        } else if (e.key !== ' ' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+            // Any other key press resets the space counter
+            consecutiveSpaces = 0;
+            if (spaceResetTimeout) {
+                clearTimeout(spaceResetTimeout);
+                spaceResetTimeout = null;
             }
         }
     });
@@ -538,6 +551,11 @@ function completeToNextLine() {
         nextLinePos = sutraText.length;
     } else {
         nextLinePos++; // Include the line break
+
+        // Skip consecutive newlines (blank lines like \n\n)
+        while (nextLinePos < sutraText.length && sutraText[nextLinePos] === '\n') {
+            nextLinePos++;
+        }
     }
 
     // Mark characters as skipped
@@ -944,7 +962,11 @@ function goBack() {
     currentMode = 'traditional';
     typedIndices.clear();
     skippedIndices.clear();
-    lastSpaceTime = 0;
+    consecutiveSpaces = 0;
+    if (spaceResetTimeout) {
+        clearTimeout(spaceResetTimeout);
+        spaceResetTimeout = null;
+    }
 
     console.log('Session cleaned up - ready for new 사경');
 }
