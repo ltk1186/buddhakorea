@@ -28,7 +28,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: '홈', href: '/' },
-  { label: 'AI', href: '/gosa-ai/' },
+  { label: 'AI', href: '/chat.html' },
   { label: '빠알리', href: '/pali/', active: true },
   { label: '사경', href: '/sutra-writing.html' },
 ];
