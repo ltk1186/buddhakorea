@@ -57,7 +57,7 @@ from .tradition_normalizer import normalize_tradition, get_normalized_traditions
 # Pali Studio API (integrated from nikaya_gemini)
 # Use absolute import since pali is a sibling package at container root (/app)
 from pali.api import router as pali_router
-from pali.db.database import Base as PaliBase, engine as pali_engine
+from pali.db.database import Base as PaliBase, engine as pali_engine, SessionLocal as PaliSessionLocal
 from pali.db import models as pali_models  # Ensure models are registered
 
 
@@ -751,6 +751,17 @@ async def lifespan(app: FastAPI):
     try:
         PaliBase.metadata.create_all(bind=pali_engine)
         logger.info("✓ Pali Database initialized")
+
+        # Seed Pali Data if empty
+        try:
+            pali_db = PaliSessionLocal()
+            from pali.scripts.seed_data import seed_pali_data
+            seed_pali_data(pali_db)
+            pali_db.close()
+            logger.info("✓ Pali Database seeded")
+        except Exception as e:
+            logger.error(f"Error during Pali DB seeding: {e}")
+
     except Exception as e:
         logger.error(f"Failed to initialize Pali DB: {e}")
 
