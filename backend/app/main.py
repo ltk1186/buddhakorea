@@ -752,17 +752,24 @@ async def lifespan(app: FastAPI):
         PaliBase.metadata.create_all(bind=pali_engine)
         logger.info("✓ Pali Database initialized")
 
-        # Seed Pali Data if empty
+        # Seed Pali Data if empty (Import from JSON)
         try:
             # Check for SKIP_SEEDING env var
             if os.getenv("SKIP_SEEDING", "false").lower() == "true":
                 logger.info("Skipping Pali DB seeding (SKIP_SEEDING=true)")
             else:
                 pali_db = PaliSessionLocal()
-                from pali.scripts.seed_data import seed_pali_data
-                seed_pali_data(pali_db)
+                # Check if DB is empty
+                from pali.db.models import Literature
+                if pali_db.query(Literature).count() == 0:
+                    logger.info("Pali DB is empty. Importing from JSON summaries...")
+                    from pali.scripts.import_summaries import import_summaries
+                    import_summaries(pali_db)
+                    logger.info("✓ Pali Database imported from JSON")
+                else:
+                    logger.info("Pali Database already has data.")
+                
                 pali_db.close()
-                logger.info("✓ Pali Database seeded")
         except Exception as e:
             logger.error(f"Error during Pali DB seeding: {e}")
 
