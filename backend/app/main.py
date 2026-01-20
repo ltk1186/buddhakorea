@@ -754,11 +754,15 @@ async def lifespan(app: FastAPI):
 
         # Seed Pali Data if empty
         try:
-            pali_db = PaliSessionLocal()
-            from pali.scripts.seed_data import seed_pali_data
-            seed_pali_data(pali_db)
-            pali_db.close()
-            logger.info("✓ Pali Database seeded")
+            # Check for SKIP_SEEDING env var
+            if os.getenv("SKIP_SEEDING", "false").lower() == "true":
+                logger.info("Skipping Pali DB seeding (SKIP_SEEDING=true)")
+            else:
+                pali_db = PaliSessionLocal()
+                from pali.scripts.seed_data import seed_pali_data
+                seed_pali_data(pali_db)
+                pali_db.close()
+                logger.info("✓ Pali Database seeded")
         except Exception as e:
             logger.error(f"Error during Pali DB seeding: {e}")
 
