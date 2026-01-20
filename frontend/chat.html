@@ -2384,7 +2384,7 @@
             <div class="login-modal-title">로그인</div>
             <div class="login-modal-desc">소셜 계정으로 간편하게 시작하세요</div>
             <div class="login-modal-buttons">
-                <button class="login-prompt-btn login-google" onclick="window.location.href='https://ai.buddhakorea.com/auth/login/google'">
+                <button class="login-prompt-btn login-google" onclick="window.location.href='/auth/login/google'">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                         <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -2393,13 +2393,13 @@
                     </svg>
                     Google로 로그인
                 </button>
-                <button class="login-prompt-btn login-naver" onclick="window.location.href='https://ai.buddhakorea.com/auth/login/naver'">
+                <button class="login-prompt-btn login-naver" onclick="window.location.href='/auth/login/naver'">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/>
                     </svg>
                     네이버로 로그인
                 </button>
-                <button class="login-prompt-btn login-kakao" onclick="window.location.href='https://ai.buddhakorea.com/auth/login/kakao'">
+                <button class="login-prompt-btn login-kakao" onclick="window.location.href='/auth/login/kakao'">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 3C6.477 3 2 6.463 2 10.691c0 2.756 1.819 5.175 4.546 6.52-.148.538-.952 3.456-.982 3.678 0 0-.02.161.085.223.105.062.229.014.229.014.302-.042 3.501-2.282 4.055-2.675.675.098 1.376.149 2.067.149 5.523 0 10-3.463 10-7.909C22 6.463 17.523 3 12 3z"/>
                     </svg>
@@ -2415,6 +2415,8 @@
 
     <!-- Main JavaScript -->
     <script>
+        const API_BASE_URL = ''; // Relative path for API requests
+
         // ===== API Configuration =====
         // API_BASE_URL is defined in library.js
 
@@ -2475,7 +2477,7 @@
         // Handle logout
         async function handleLogout() {
             try {
-                await fetch('https://ai.buddhakorea.com/auth/logout', { method: 'POST', credentials: 'include' });
+                await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
                 window.location.reload();
             } catch (e) {
                 console.error("Logout failed", e);
@@ -2513,7 +2515,7 @@
             const promptHtml = `
                 <div class="chat-history-login-prompt">
                     <p>로그인하면 채팅 기록을<br>저장하고 관리할 수 있습니다</p>
-                    <button class="login-prompt-btn login-google" onclick="window.location.href='https://ai.buddhakorea.com/auth/login/google'">
+<button class="login-prompt-btn login-google" onclick="window.location.href='/auth/login/google'">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -2522,13 +2524,13 @@
                         </svg>
                         Google로 로그인
                     </button>
-                    <button class="login-prompt-btn login-naver" onclick="window.location.href='https://ai.buddhakorea.com/auth/login/naver'">
+<button class="login-prompt-btn login-naver" onclick="window.location.href='/auth/login/naver'">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/>
                         </svg>
                         네이버로 로그인
                     </button>
-                    <button class="login-prompt-btn login-kakao" onclick="window.location.href='https://ai.buddhakorea.com/auth/login/kakao'">
+                    <button class="login-prompt-btn login-kakao" onclick="window.location.href='/auth/login/kakao'">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 3C6.477 3 2 6.463 2 10.691c0 2.756 1.819 5.175 4.546 6.52-.148.538-.952 3.456-.982 3.678 0 0-.02.161.085.223.105.062.229.014.229.014.302-.042 3.501-2.282 4.055-2.675.675.098 1.376.149 2.067.149 5.523 0 10-3.463 10-7.909C22 6.463 17.523 3 12 3z"/>
                         </svg>
@@ -2945,7 +2947,7 @@
                 }
 
                 // Use streaming endpoint
-                const response = await fetch(`${API_BASE_URL}/api/chat/stream`, {
+                const response = await fetch('/api/chat/stream', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -3056,7 +3058,7 @@
 
                 // Check if we might be hitting quota - try to get usage info
                 try {
-                    const usageResponse = await fetch(`${API_BASE_URL}/api/usage`, {
+            const response = await fetch('/api/usage', {
                         credentials: 'include'
                     });
                     if (usageResponse.ok) {

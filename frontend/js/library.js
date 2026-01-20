@@ -12,7 +12,7 @@
 
 // ===== GLOBAL STATE =====
 
-const API_BASE_URL = 'https://ai.buddhakorea.com';  // Hetzner backend
+const API_BASE_URL = ''; // Relative path to work on both localhost and production
 const MAX_CACHED_CARDS = 1000;
 const CARDS_PER_PAGE = 100;
 const DEBOUNCE_DELAY = 300; // ms for search debouncing
