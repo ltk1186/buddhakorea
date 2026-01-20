@@ -3,6 +3,7 @@
  */
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1/pali';
+console.log('API_BASE_URL:', API_BASE_URL);
 
 export interface RequestOptions extends RequestInit {
   params?: Record<string, string | number | undefined>;
