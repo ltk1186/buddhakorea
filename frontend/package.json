@@ -4,17 +4,16 @@
   "description": "Buddha Korea Frontend E2E Tests",
   "main": "index.js",
   "scripts": {
-    "test": "playwright test",
-    "test:ui": "playwright test --ui",
-    "test:headed": "playwright test --headed",
-    "test:debug": "playwright test --debug",
-    "test:report": "playwright show-report"
+    "test": "../node_modules/.bin/playwright test -c ../playwright.config.ts",
+    "test:ui": "../node_modules/.bin/playwright test --ui -c ../playwright.config.ts",
+    "test:headed": "../node_modules/.bin/playwright test --headed -c ../playwright.config.ts",
+    "test:debug": "../node_modules/.bin/playwright test --debug -c ../playwright.config.ts",
+    "test:report": "../node_modules/.bin/playwright show-report"
   },
   "keywords": ["buddhism", "playwright", "e2e"],
   "author": "Buddha Korea",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.57.0",
     "@types/node": "^25.0.3",
     "typescript": "^5.9.3"
   }

@@ -233,3 +233,4 @@ test.describe('Chat History (로그인 필요)', () => {
     // storageState로 로그인된 상태 필요
   });
 });
+
