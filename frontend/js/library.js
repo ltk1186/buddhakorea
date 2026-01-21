@@ -12,7 +12,16 @@
 
 // ===== GLOBAL STATE =====
 
-const API_BASE_URL = ''; // Relative path to work on both localhost and production
+if (typeof window.API_BASE_URL === 'undefined') {
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') {
+        window.API_BASE_URL = 'http://localhost:8000';
+    } else if (host === 'ai.buddhakorea.com') {
+        window.API_BASE_URL = '';
+    } else {
+        window.API_BASE_URL = 'https://ai.buddhakorea.com';
+    }
+}
 const MAX_CACHED_CARDS = 1000;
 const CARDS_PER_PAGE = 100;
 const DEBOUNCE_DELAY = 300; // ms for search debouncing
@@ -255,7 +264,7 @@ async function loadInitialCards() {
             offset: 0
         });
 
-        const response = await fetch(`${API_BASE_URL}/api/sources?${params}`);
+        const response = await fetch(`${window.API_BASE_URL}/api/sources?${params}`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const data = await response.json();
@@ -297,7 +306,7 @@ async function loadMoreCards() {
             ...(libraryState.filters.theme && { theme: libraryState.filters.theme })
         });
 
-        const response = await fetch(`${API_BASE_URL}/api/sources?${params}`);
+        const response = await fetch(`${window.API_BASE_URL}/api/sources?${params}`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const data = await response.json();
@@ -417,7 +426,7 @@ async function refetchCards() {
         let data = getCachedResponse(cacheKey);
 
         if (!data) {
-            const response = await fetch(`${API_BASE_URL}/api/sources?${params}`);
+            const response = await fetch(`${window.API_BASE_URL}/api/sources?${params}`);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             data = await response.json();
             setCachedResponse(cacheKey, data);
@@ -797,7 +806,7 @@ async function showSourceDetail(sutraId) {
         modalState.currentSutraId = sutraId;
         console.log('Current index:', modalState.currentIndex);
 
-        const response = await fetch(`${API_BASE_URL}/api/sources/${sutraId}`);
+        const response = await fetch(`${window.API_BASE_URL}/api/sources/${sutraId}`);
         if (!response.ok) throw new Error('Failed to load source detail');
 
         const source = await response.json();
