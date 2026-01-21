@@ -113,6 +113,67 @@ jobs:
             echo "🔑 Generating GCP service account key..."
             if [ -n "$GCP_SERVICE_ACCOUNT_KEY" ]; then
               printf '%s' "$GCP_SERVICE_ACCOUNT_KEY" | tr -d '\r' > config/gcp-key.json
+              python3 - <<'PY'
+import json
+from pathlib import Path
+
+path = Path("config/gcp-key.json")
+text = path.read_text(encoding="utf-8", errors="replace")
+
+# Escape control characters inside JSON strings.
+out = []
+in_string = False
+escape = False
+for ch in text:
+    if in_string:
+        if escape:
+            out.append(ch)
+            escape = False
+            continue
+        if ch == "\\":
+            out.append(ch)
+            escape = True
+            continue
+        if ch == "\"":
+            in_string = False
+            out.append(ch)
+            continue
+        if ch == "\n":
+            out.append("\\n")
+            continue
+        if ch == "\r":
+            out.append("\\r")
+            continue
+        if ch == "\t":
+            out.append("\\t")
+            continue
+        if ord(ch) < 0x20:
+            out.append("\\u%04x" % ord(ch))
+            continue
+        out.append(ch)
+    else:
+        if ch == "\"":
+            in_string = True
+        out.append(ch)
+
+fixed = "".join(out)
+info = json.loads(fixed)
+
+private_key = info.get("private_key")
+if private_key:
+    compact = "".join(private_key.split())
+    header = "-----BEGINPRIVATEKEY-----"
+    footer = "-----ENDPRIVATEKEY-----"
+    start = compact.find(header)
+    end = compact.find(footer, start + len(header))
+    if start != -1 and end != -1:
+        body = compact[start + len(header):end]
+        lines = [body[i:i + 64] for i in range(0, len(body), 64)]
+        info["private_key"] = "-----BEGIN PRIVATE KEY-----\n" + "\n".join(lines) + "\n-----END PRIVATE KEY-----\n"
+
+path.write_text(json.dumps(info, indent=2), encoding="utf-8")
+print("✅ GCP key sanitized")
+PY
               chown 1000:1000 config/gcp-key.json
               chmod 600 config/gcp-key.json
               echo "✅ GCP key generated successfully"
