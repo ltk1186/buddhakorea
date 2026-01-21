@@ -2,7 +2,15 @@
  * API client configuration
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1/pali';
+const apiBaseFromEnv = import.meta.env.VITE_API_BASE_URL;
+const host = window.location.hostname;
+const isLocal = host === 'localhost' || host === '127.0.0.1';
+const isAiHost = host === 'ai.buddhakorea.com';
+
+const API_BASE_URL = apiBaseFromEnv
+  || (isLocal
+    ? 'http://localhost:8000/api/v1/pali'
+    : (isAiHost ? '/api/v1/pali' : 'https://ai.buddhakorea.com/api/v1/pali'));
 console.log('API_BASE_URL:', API_BASE_URL);
 
 export interface RequestOptions extends RequestInit {
