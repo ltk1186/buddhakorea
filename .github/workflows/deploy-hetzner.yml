@@ -112,7 +112,8 @@ jobs:
             # Generate GCP service account key from GitHub Secret
             echo "🔑 Generating GCP service account key..."
             if [ -n "$GCP_SERVICE_ACCOUNT_KEY" ]; then
-              echo "$GCP_SERVICE_ACCOUNT_KEY" > config/gcp-key.json
+              printf '%s' "$GCP_SERVICE_ACCOUNT_KEY" | tr -d '\r' > config/gcp-key.json
+              chown 1000:1000 config/gcp-key.json
               chmod 600 config/gcp-key.json
               echo "✅ GCP key generated successfully"
             else
