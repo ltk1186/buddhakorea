@@ -83,7 +83,7 @@ jobs:
               echo "CHROMA_COLLECTION_NAME=cbeta_sutras_gemini"
               echo "API_HOST=0.0.0.0"
               echo "API_PORT=8000"
-              echo "ALLOWED_ORIGINS=https://buddhakorea.com,https://www.buddhakorea.com,https://ai.buddhakorea.com"
+              echo "ALLOWED_ORIGINS=https://buddhakorea.com,https://www.buddhakorea.com"
               echo "RATE_LIMIT_PER_HOUR=100"
               echo "LOG_LEVEL=info"
               echo "TOP_K_RETRIEVAL=10"
@@ -230,7 +230,7 @@ PY
           sleep 10
 
           for i in {1..10}; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 https://ai.buddhakorea.com/api/health 2>/dev/null || echo "000")
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 https://buddhakorea.com/api/health 2>/dev/null || echo "000")
             if [ "$STATUS" = "200" ]; then
               echo "✅ Health check passed! (attempt $i)"
               exit 0
