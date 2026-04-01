@@ -16,10 +16,8 @@ if (typeof window.API_BASE_URL === 'undefined') {
     const host = window.location.hostname;
     if (host === 'localhost' || host === '127.0.0.1') {
         window.API_BASE_URL = 'http://localhost:8000';
-    } else if (host === 'ai.buddhakorea.com') {
-        window.API_BASE_URL = '';
     } else {
-        window.API_BASE_URL = 'https://ai.buddhakorea.com';
+        window.API_BASE_URL = '';
     }
 }
 const MAX_CACHED_CARDS = 1000;
