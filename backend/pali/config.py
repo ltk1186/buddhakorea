@@ -57,7 +57,6 @@ class Settings(BaseSettings):
     CORS_ORIGINS: list[str] = [
         "https://buddhakorea.com",
         "https://www.buddhakorea.com",
-        "https://ai.buddhakorea.com",
         "http://localhost:5173",
         "http://localhost:3000",
     ]
