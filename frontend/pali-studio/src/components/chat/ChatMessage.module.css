@@ -53,3 +53,10 @@
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+.timestamp {
+  display: block;
+  font-size: 0.75rem;
+  margin-top: var(--space-xs);
+  opacity: 0.7;
+}

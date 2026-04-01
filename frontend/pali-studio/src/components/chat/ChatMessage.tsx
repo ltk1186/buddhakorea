@@ -10,6 +10,22 @@ import type { ChatMessage as ChatMessageType } from '@/store';
 import { DpdCard } from './DpdCard';
 import styles from './ChatMessage.module.css';
 
+function formatRelativeTime(timestamp: Date): string {
+  const now = new Date();
+  const diff = Math.floor((now.getTime() - timestamp.getTime()) / 1000);
+
+  if (diff < 60) return '방금 전';
+  if (diff < 3600) return `${Math.floor(diff / 60)}분 전`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}시간 전`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}일 전`;
+
+  const date = timestamp.toLocaleDateString('ko-KR', {
+    month: 'numeric',
+    day: 'numeric',
+  });
+  return date;
+}
+
 interface ChatMessageProps {
   message: ChatMessageType;
 }
@@ -47,6 +63,9 @@ export function ChatMessage({ message }: ChatMessageProps) {
       </div>
       <div className={styles.content}>
         <p>{message.content}</p>
+        <time className={styles.timestamp} dateTime={message.timestamp.toISOString()}>
+          {formatRelativeTime(message.timestamp)}
+        </time>
       </div>
     </div>
   );

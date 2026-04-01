@@ -11,8 +11,47 @@
 3. [Docker 배포](#docker-배포)
 4. [프로덕션 설정](#프로덕션-설정)
 5. [롤백 절차](#롤백-절차)
+6. [최근 인프라 변경/장애 대응 (2026-01)](#최근-인프라-변경장애-대응-2026-01)
 
 ---
+
+## 최근 인프라 변경/장애 대응 (2026-01)
+
+### 증상
+- `ai.buddhakorea.com` API가 `ERR_CONNECTION_REFUSED`로 실패.
+- nginx 컨테이너가 `Created` 상태에서 기동되지 않음.
+- backend health check가 통과하지 못해 nginx가 올라오지 못함.
+
+### 원인
+- `/opt/buddha-korea/config/gcp-key.json` 손상 (제어문자/CRLF/PEM 줄 깨짐)으로 Vertex AI 인증 실패.
+- backend worker 부팅 실패 → health check 실패 → nginx 의존성 충족 실패.
+
+### 즉시 조치 (VM)
+```bash
+ssh prod
+
+# gcp-key.json 정상화 (키 내용은 절대 출력하지 않기)
+# - JSON 내부 제어문자 이스케이프
+# - private_key PEM 헤더/본문 재정렬
+# - 컨테이너 사용자 권한 설정
+chown 1000:1000 /opt/buddha-korea/config/gcp-key.json
+chmod 600 /opt/buddha-korea/config/gcp-key.json
+
+docker restart buddhakorea-backend
+docker start buddhakorea-nginx
+
+curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8000/api/health
+curl -s -o /dev/null -w "%{http_code}\n" https://ai.buddhakorea.com/api/health
+```
+
+### 예방 조치 (GitHub Actions)
+- `.github/workflows/deploy-hetzner.yml`에서 GCP 키 생성 절차 보강:
+  - `printf` 사용 + `\r` 제거로 JSON 손상 방지
+  - JSON 제어문자 이스케이프 및 `private_key` PEM 형식 정규화
+  - `chown 1000:1000` + `chmod 600`로 컨테이너 사용자 접근 보장
+
+### 참고
+- nginx는 backend health check 통과가 전제라, backend 실패 시 `Created` 상태로 남고 80/443이 응답하지 않음.
 
 # Buddha Korea RAG - Quick Start Guide 🚀
 

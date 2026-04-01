@@ -436,8 +436,13 @@ async def save_chat_to_db(
         )
         db.add(assistant_msg)
 
+        # Update ChatSession denormalization fields
+        chat_session.message_count = (chat_session.message_count or 0) + 2  # user + assistant messages
+        chat_session.last_message_at = datetime.now(timezone.utc)
+        chat_session.is_active = True
+
         await db.commit()
-        logger.debug(f"Saved chat to DB: session={session_uuid[:8]}..., user_id={user_id}")
+        logger.debug(f"Saved chat to DB: session={session_uuid[:8]}..., user_id={user_id}, message_count={chat_session.message_count}")
 
     except Exception as e:
         logger.error(f"Failed to save chat to DB: {e}")
@@ -944,10 +949,23 @@ Answer (한국어 또는 영어로 상세히 답변):"""
 
     logger.info("🚀 Buddhist AI Chatbot ready!")
 
+    # Initialize scheduler for background tasks
+    from .scheduler import scheduler
+    from .tasks import run_cleanup
+
+    scheduler.schedule_daily("cleanup_sessions", run_cleanup)
+    scheduler_task = asyncio.create_task(scheduler.start())
+
     yield
 
     # Cleanup
     logger.info("Shutting down...")
+    scheduler.stop()
+    try:
+        scheduler_task.cancel()
+        await scheduler_task
+    except asyncio.CancelledError:
+        pass
 
 
 # ============================================================================
@@ -1475,6 +1493,49 @@ async def delete_chat_session(
     await db.commit()
 
     return {"status": "deleted", "session_uuid": session_uuid}
+
+
+@app.post("/api/chat/sessions", response_model=dict)
+async def create_chat_session(
+    request: Request,
+    db: AsyncSession = Depends(database.get_db),
+    user: Optional[User] = Depends(get_current_user_optional)
+):
+    """
+    Create a new chat session (server-side UUID generation).
+
+    Returns:
+        {session_uuid: str, user_id: int|null}
+    """
+    # Generate server-side UUID
+    session_uuid = str(uuid.uuid4())
+
+    try:
+        # Create ChatSession in database
+        chat_session = ChatSession(
+            session_uuid=session_uuid,
+            user_id=user.id if user else None,
+            title="New conversation",
+            message_count=0,
+            is_active=True
+        )
+        db.add(chat_session)
+        await db.commit()
+
+        logger.debug(f"Created new session: {session_uuid[:8]}... for user_id={user.id if user else None}")
+
+        return {
+            "session_uuid": session_uuid,
+            "user_id": user.id if user else None
+        }
+
+    except Exception as e:
+        logger.error(f"Failed to create session: {e}")
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create session"
+        )
 
 
 # ============================================================================

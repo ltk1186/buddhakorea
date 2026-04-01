@@ -1,7 +1,7 @@
 /**
  * ChatInput component
  */
-import { useState, KeyboardEvent } from 'react';
+import { useState, KeyboardEvent, useRef, useEffect } from 'react';
 import { useChat } from '@/hooks';
 import { Button } from '@/components/common';
 import styles from './ChatInput.module.css';
@@ -12,6 +12,7 @@ interface ChatInputProps {
 
 export function ChatInput({ disabled = false }: ChatInputProps) {
   const [input, setInput] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { sendMessage, isStreaming } = useChat();
 
   const handleSubmit = async () => {
@@ -29,16 +30,26 @@ export function ChatInput({ disabled = false }: ChatInputProps) {
     }
   };
 
+  // Auto-resize textarea to fit content
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+  }, [input]);
+
   return (
     <div className={styles.container} role="search">
       <textarea
+        ref={textareaRef}
         className={styles.input}
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={disabled ? '세그먼트를 선택하세요...' : '질문을 입력하세요...'}
         disabled={disabled || isStreaming}
-        rows={2}
+        rows={1}
         aria-label="질문 입력"
         aria-describedby="chat-input-hint"
       />

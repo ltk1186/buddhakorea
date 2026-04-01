@@ -8,7 +8,7 @@ PII is automatically masked before logging.
 
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 from loguru import logger
@@ -111,7 +111,7 @@ def log_token_usage(
 
     # Create usage entry
     usage_entry = {
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "query": masked_query,
         "response_preview": masked_response,
         "mode": mode,
@@ -155,7 +155,7 @@ def analyze_usage_logs(days: int = 7) -> Dict:
         }
 
     # Calculate cutoff date
-    cutoff = datetime.now() - timedelta(days=days)
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
 
     # Read and filter logs
     stats = {
@@ -296,7 +296,7 @@ def export_usage_csv(output_file: str = "logs/usage_export.csv", days: int = 30)
 
     import csv
 
-    cutoff = datetime.now() - timedelta(days=days)
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
 
     try:
         with open(USAGE_LOG_FILE, "r", encoding="utf-8") as f_in:

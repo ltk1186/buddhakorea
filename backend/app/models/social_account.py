@@ -10,6 +10,7 @@ from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from ..database import Base
+from ..utils.encryption import encrypt_token, decrypt_token
 
 
 class SocialAccount(Base):
@@ -30,8 +31,10 @@ class SocialAccount(Base):
     provider_email = Column(String(255), nullable=True)  # Email from this specific provider
 
     # Optional: Store tokens for API calls on behalf of user (encrypted in production)
-    access_token = Column(Text, nullable=True)
-    refresh_token = Column(Text, nullable=True)
+    access_token = Column(Text, nullable=True)  # DEPRECATED: Use access_token_encrypted
+    refresh_token = Column(Text, nullable=True)  # DEPRECATED: Use refresh_token_encrypted
+    access_token_encrypted = Column(Text, nullable=True)
+    refresh_token_encrypted = Column(Text, nullable=True)
     token_expires_at = Column(DateTime(timezone=True), nullable=True)
 
     # Full profile from provider (for debugging/future use)
@@ -50,6 +53,32 @@ class SocialAccount(Base):
         # Each provider user ID is unique within that provider
         UniqueConstraint('provider', 'provider_user_id', name='uq_provider_user_id'),
     )
+
+    def set_access_token(self, token: str) -> None:
+        """Set access token with encryption."""
+        if token:
+            self.access_token_encrypted = encrypt_token(token)
+            self.access_token = None  # Clear plaintext for security
+
+    def get_access_token(self) -> str:
+        """Get access token with decryption."""
+        if self.access_token_encrypted:
+            return decrypt_token(self.access_token_encrypted)
+        # Fallback to plaintext for migration period
+        return self.access_token or ""
+
+    def set_refresh_token(self, token: str) -> None:
+        """Set refresh token with encryption."""
+        if token:
+            self.refresh_token_encrypted = encrypt_token(token)
+            self.refresh_token = None  # Clear plaintext for security
+
+    def get_refresh_token(self) -> str:
+        """Get refresh token with decryption."""
+        if self.refresh_token_encrypted:
+            return decrypt_token(self.refresh_token_encrypted)
+        # Fallback to plaintext for migration period
+        return self.refresh_token or ""
 
     def __repr__(self):
         return f"<SocialAccount(user_id={self.user_id}, provider={self.provider})>"
