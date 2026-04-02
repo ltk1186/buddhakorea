@@ -109,3 +109,47 @@ node_modules/
 # SENSITIVE DOCUMENTATION
 # ============================================
 docs/INFRASTRUCTURE.md
+
+# ============================================
+# LOCAL DEVELOPMENT / EXPERIMENT DIRECTORIES
+# ============================================
+
+# Backup directories (large, not needed in repo)
+buddhakorea/
+buddhakorea_backup_*/
+archive/
+
+# ML pipeline experiments (large datasets)
+embedding_pipeline/
+fine_tuning/
+reranking/
+surrealdb-benchmark/
+
+# One-off fix scripts and experiments
+t_number_fix/
+title_fixing_scripts/
+
+# Data mismatch reports
+korean_title_mismatches.txt
+title_mismatches.txt
+
+# Playwright test artifacts
+playwright-report/
+test-results/
+playwright.config.ts
+package-lock.json
+
+# Claude Code local config
+.claude/
+.mcp.json
+
+# GitHub Copilot agents
+.github/agents/
+.github/workflows/copilot-setup-steps.yml
+
+# AI assistant config docs (local only)
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+DEPLOYMENT_CHECKLIST.md
+VISION_AND_ROADMAP.md
