@@ -1,295 +1,113 @@
-# Buddha Korea - Deployment Quick Start
+# Buddha Korea - 배포 빠른 참조
 
-**Last Updated:** 2025-12-30
-
-This guide provides actionable steps for deploying Buddha Korea to production.
+**최종 업데이트:** 2026-04-02
 
 ---
 
-## Prerequisites Checklist
+## GitHub Secrets 목록 (16개)
 
-### Required GitHub Secrets (13 total)
+GitHub Repository → Settings → Secrets and variables → Actions
 
-Configure these in: **GitHub Repository → Settings → Secrets and variables → Actions**
-
-#### Server Access (3 secrets)
-- [ ] `HETZNER_HOST` - Server IP: `157.180.72.0`
-- [ ] `HETZNER_USERNAME` - SSH username
-- [ ] `HETZNER_SSH_KEY` - Private SSH key for authentication
-
-#### Application Secrets (2 secrets)
-- [ ] `SECRET_KEY` - Django secret key (generate with `python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"`)
-- [ ] `REDIS_PASSWORD` - Redis authentication password
-
-#### Database (1 secret)
-- [ ] `POSTGRES_PASSWORD` - PostgreSQL password (workflow auto-syncs with ALTER USER)
-
-#### Google Cloud Platform (3 secrets)
-- [ ] `GEMINI_API_KEY` - Gemini API key for general use
-- [ ] `PALI_GEMINI_API_KEY` - Gemini API key for Pali Canon
-- [ ] `GCP_PROJECT_ID` - Google Cloud project ID
-- [ ] `GCP_SERVICE_ACCOUNT_KEY` - Service account JSON key (workflow auto-generates credentials.json)
-
-#### OAuth Providers (6 secrets)
-- [ ] `GOOGLE_CLIENT_ID` - Google OAuth client ID
-- [ ] `GOOGLE_CLIENT_SECRET` - Google OAuth client secret
-- [ ] `NAVER_CLIENT_ID` - Naver OAuth client ID
-- [ ] `NAVER_CLIENT_SECRET` - Naver OAuth client secret
-- [ ] `KAKAO_CLIENT_ID` - Kakao OAuth client ID (REST API key)
-- [ ] `KAKAO_CLIENT_SECRET` - Kakao OAuth client secret
+| Secret | 설명 |
+|--------|------|
+| `HETZNER_HOST` | `157.180.72.0` |
+| `HETZNER_USERNAME` | SSH 사용자명 |
+| `HETZNER_SSH_KEY` | SSH 개인 키 |
+| `SECRET_KEY` | FastAPI 세션 키 |
+| `REDIS_PASSWORD` | Redis 비밀번호 |
+| `POSTGRES_PASSWORD` | PostgreSQL 비밀번호 |
+| `GEMINI_API_KEY` | Gemini API 키 |
+| `PALI_GEMINI_API_KEY` | Pali Studio Gemini 키 |
+| `GCP_PROJECT_ID` | GCP 프로젝트 ID |
+| `GCP_SERVICE_ACCOUNT_KEY` | GCP 서비스 계정 JSON |
+| `GOOGLE_CLIENT_ID` | Google OAuth ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth Secret |
+| `NAVER_CLIENT_ID` | Naver OAuth ID |
+| `NAVER_CLIENT_SECRET` | Naver OAuth Secret |
+| `KAKAO_CLIENT_ID` | Kakao REST API 키 |
+| `KAKAO_CLIENT_SECRET` | Kakao OAuth Secret |
 
 ---
 
-## One-Command Deployment (GitHub Actions)
+## 자동 배포
 
-### Automatic Deployment
+`main` 브랜치 push 시 아래 경로 변경이 감지되면 자동 배포:
 
-Pushes to `main` branch automatically deploy if changes affect:
-- `backend/**`
-- `config/**`
-- `Dockerfile`
-- `.github/workflows/deploy.yml`
+```
+backend/** | config/** | Dockerfile | .github/workflows/deploy-hetzner.yml
+```
 
-**Workflow:** `.github/workflows/deploy.yml`
+**워크플로우:** `.github/workflows/deploy-hetzner.yml`
 
-### Manual Deployment
-
-Trigger deployment manually via GitHub UI:
-
-1. Go to **Actions** tab in GitHub repository
-2. Select **Deploy to Hetzner** workflow
-3. Click **Run workflow** dropdown
-4. Select `main` branch
-5. Click **Run workflow** button
-
-**Health Check:** https://ai.buddhakorea.com/api/health
+**수동 트리거:** Actions 탭 → Deploy to Hetzner → Run workflow
 
 ---
 
-## Manual Deployment (SSH)
-
-### Quick Commands
+## 긴급 수동 배포 (SSH)
 
 ```bash
-# SSH into production server
-ssh prod
-# Or: ssh <username>@157.180.72.0
-
-# Navigate to project directory
+ssh root@157.180.72.0
 cd /opt/buddha-korea
-
-# Pull latest code
 git pull origin main
 
-# Rebuild and restart containers
-docker compose -f config/docker-compose.yml down
-docker compose -f config/docker-compose.yml up -d --build
+# 코드만 변경된 경우 (빠름)
+docker compose -f config/docker-compose.yml up -d --force-recreate
 
-# View logs
-docker compose -f config/docker-compose.yml logs -f
+# Dockerfile/requirements 변경 시 (느림)
+docker compose -f config/docker-compose.yml up -d --build
 ```
 
-### Container Management
+---
+
+## 배포 후 검증
 
 ```bash
-# View running containers (4 expected)
+# 컨테이너 4개 모두 Up 확인
 docker compose -f config/docker-compose.yml ps
 
-# Expected containers:
-# - buddhakorea-backend
-# - buddhakorea-nginx
-# - buddhakorea-redis
-# - buddhakorea-postgres
+# Health check
+curl https://buddhakorea.com/api/health
+# 예상: {"status": "healthy"}
 
-# Restart specific service
-docker compose -f config/docker-compose.yml restart backend
-
-# View logs for specific service
-docker compose -f config/docker-compose.yml logs -f backend
-
-# Execute commands in backend container
-docker compose -f config/docker-compose.yml exec backend python manage.py migrate
-docker compose -f config/docker-compose.yml exec backend python manage.py collectstatic --noinput
+# 백엔드 에러 확인
+docker logs buddhakorea-backend --tail 50 2>&1 | grep -i error
 ```
 
-### Environment File Updates
-
-```bash
-# Edit .env file on server
-cd /opt/buddha-korea
-nano .env
-
-# After editing, restart affected services
-docker compose -f config/docker-compose.yml restart backend
-```
+브라우저: https://buddhakorea.com/chat.html → 콘솔에서 404 없는지 확인
 
 ---
 
-## Troubleshooting Common Issues
+## 트러블슈팅 빠른 진단
 
-### 502 Bad Gateway
-
-**Cause:** Backend container not healthy or not responding
-
-**Solution:**
-```bash
-# Check backend container status
-docker compose -f config/docker-compose.yml ps backend
-
-# View backend logs
-docker compose -f config/docker-compose.yml logs -f backend
-
-# Restart backend
-docker compose -f config/docker-compose.yml restart backend
-
-# If still failing, rebuild
-docker compose -f config/docker-compose.yml up -d --build backend
-```
-
-### PostgreSQL Authentication Failed
-
-**Cause:** Password mismatch between .env and database user
-
-**Solution (Automatic):**
-The workflow now automatically syncs passwords using:
-```sql
-ALTER USER postgres WITH PASSWORD '<new-password>';
-```
-
-**Solution (Manual):**
-```bash
-# Connect to PostgreSQL container
-docker compose -f config/docker-compose.yml exec postgres psql -U postgres
-
-# Update password
-ALTER USER postgres WITH PASSWORD 'your-new-password';
-\q
-
-# Update .env file to match
-nano .env  # Update POSTGRES_PASSWORD
-
-# Restart backend
-docker compose -f config/docker-compose.yml restart backend
-```
-
-### GCP 401 Unauthenticated
-
-**Cause:** Invalid or missing GCP service account key
-
-**Solution:**
-```bash
-# Verify credentials.json exists on server
-ls -la /opt/buddha-korea/backend/credentials.json
-
-# Check file permissions
-chmod 600 /opt/buddha-korea/backend/credentials.json
-
-# Verify GCP_SERVICE_ACCOUNT_KEY secret in GitHub
-# Re-run deployment to regenerate credentials.json
-```
-
-### nginx Container Not Starting
-
-**Cause:** Missing or invalid SSL certificates
-
-**Solution:**
-```bash
-# Check SSL certificate files
-ls -la /opt/buddha-korea/config/ssl/
-
-# Expected files:
-# - fullchain.pem
-# - privkey.pem
-
-# Check nginx configuration
-docker compose -f config/docker-compose.yml exec nginx nginx -t
-
-# View nginx logs
-docker compose -f config/docker-compose.yml logs nginx
-```
-
-### Redis Connection Failed
-
-**Cause:** Redis password mismatch or service not running
-
-**Solution:**
-```bash
-# Check Redis container status
-docker compose -f config/docker-compose.yml ps redis
-
-# Test Redis connection
-docker compose -f config/docker-compose.yml exec redis redis-cli -a <REDIS_PASSWORD> ping
-# Expected: PONG
-
-# Restart Redis
-docker compose -f config/docker-compose.yml restart redis
-```
+| 증상 | 원인 | 해결 |
+|------|------|------|
+| 백엔드 컨테이너 unhealthy | 시작 시 초기화 실패 | `docker logs buddhakorea-backend` 확인 |
+| GCP 인증 에러 | gcp-key.json 손상 | GCP Secret 재등록 (base64 방식 권장) |
+| API 404 에러 | 백엔드 미실행 | 컨테이너 상태 확인 후 재시작 |
+| OAuth 로그인 실패 | 리다이렉트 URI 불일치 | OAuth 콘솔에서 `buddhakorea.com` URI 확인 |
+| nginx 502 에러 | 백엔드 연결 불가 | 백엔드 로그 확인 |
 
 ---
 
-## Verification Steps
-
-After deployment, verify all services:
+## GCP 키 등록 권장 방식
 
 ```bash
-# 1. Check all containers are running
-docker compose -f config/docker-compose.yml ps
-# All should show "Up" status
-
-# 2. Check health endpoint
-curl https://ai.buddhakorea.com/api/health
-# Expected: {"status": "healthy"}
-
-# 3. Check backend logs for errors
-docker compose -f config/docker-compose.yml logs backend | grep -i error
-
-# 4. Test static file serving
-curl -I https://ai.buddhakorea.com/static/admin/css/base.css
-# Expected: HTTP/1.1 200 OK
+# 로컬에서 base64 인코딩 후 Secret에 등록
+base64 -i config/gcp-key.json | pbcopy  # macOS
+# 출력값을 GCP_SERVICE_ACCOUNT_KEY Secret에 붙여넣기
 ```
 
----
-
-## Rollback Procedure
-
-If deployment fails:
-
-```bash
-# 1. View recent commits
-cd /opt/buddha-korea
-git log --oneline -5
-
-# 2. Rollback to previous commit
-git reset --hard <previous-commit-hash>
-
-# 3. Rebuild containers
-docker compose -f config/docker-compose.yml down
-docker compose -f config/docker-compose.yml up -d --build
-
-# 4. Verify health
-curl https://ai.buddhakorea.com/api/health
-```
+이렇게 하면 줄바꿈 문자 문제가 없어 별도 sanitize 스크립트 불필요.
 
 ---
 
-## Quick Reference
+## 주요 링크
 
-| Resource | Location |
-|----------|----------|
-| Server IP | 157.180.72.0 |
-| SSH Alias | `ssh prod` |
-| Project Path | `/opt/buddha-korea` |
-| Docker Compose | `config/docker-compose.yml` |
-| Environment File | `/opt/buddha-korea/.env` |
-| Health Check | https://ai.buddhakorea.com/api/health |
-| GitHub Workflow | `.github/workflows/deploy.yml` |
-
----
-
-## Support
-
-For additional help:
-1. Check GitHub Actions logs for deployment errors
-2. Review container logs: `docker compose -f config/docker-compose.yml logs -f`
-3. Verify all GitHub Secrets are configured correctly
-4. Ensure .env file on server matches required variables
+| 항목 | URL |
+|------|-----|
+| 사이트 | https://buddhakorea.com |
+| Health Check | https://buddhakorea.com/api/health |
+| API 문서 | https://buddhakorea.com/docs |
+| GitHub | https://github.com/ltk1186/buddhakorea |
+| 서버 IP | 157.180.72.0 |
+| 서버 경로 | `/opt/buddha-korea` |
