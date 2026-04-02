@@ -113,7 +113,7 @@ jobs:
             echo "🔑 Generating GCP service account key..."
             if [ -n "$GCP_SERVICE_ACCOUNT_KEY" ]; then
               printf '%s' "$GCP_SERVICE_ACCOUNT_KEY" | tr -d '\r' > config/gcp-key.json
-              python3 - <<'PY'
+              python3 <<'EOF'
 import json
 from pathlib import Path
 
@@ -173,7 +173,7 @@ if private_key:
 
 path.write_text(json.dumps(info, indent=2), encoding="utf-8")
 print("✅ GCP key sanitized")
-PY
+EOF
               chown 1000:1000 config/gcp-key.json
               chmod 600 config/gcp-key.json
               echo "✅ GCP key generated successfully"
