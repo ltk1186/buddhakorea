@@ -161,6 +161,12 @@ jobs:
             echo "📊 Container Status:"
             docker compose -f config/docker-compose.yml ps
 
+            echo "📋 Backend logs (last 50 lines):"
+            docker logs buddhakorea-backend --tail 50 2>&1 || true
+
+            echo "📋 Nginx logs (last 20 lines):"
+            docker logs buddhakorea-nginx --tail 20 2>&1 || true
+
             echo "✅ Deployment Complete!"
 
       - name: Health Check
