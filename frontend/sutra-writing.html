@@ -21,9 +21,11 @@
                 <span class="logo-text">Buddha Korea</span>
             </a>
             <nav class="header-nav">
-                <a href="index.html" class="nav-link">홈</a>
                 <a href="chat.html" class="nav-link">AI</a>
                 <a href="sutra-writing.html" class="nav-link">사경</a>
+                <span id="auth-container" style="margin-left: 10px;">
+                    <!-- Auth content injected by auth.js -->
+                </span>
             </nav>
         </div>
     </header>
@@ -278,7 +280,15 @@
             }
         });
     </script>
+    <!-- Shared Auth JS -->
+    <script src="js/auth.js"></script>
     <script type="module" src="js/sutra.js"></script>
     <script src="js/feedback.js"></script>
+    <script>
+        // Initialize auth UI
+        document.addEventListener('DOMContentLoaded', () => {
+            window.Auth.updateHeaderAuthUI('auth-container');
+        });
+    </script>
 </body>
 </html>

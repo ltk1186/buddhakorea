@@ -38,6 +38,11 @@ const dataLoadedPromise = loadTeachingData();
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('Teaching page initializing...');
 
+    // Update Auth UI
+    if (window.Auth && typeof window.Auth.updateHeaderAuthUI === 'function') {
+        window.Auth.updateHeaderAuthUI('auth-container');
+    }
+
     // Wait for data to load
     try {
         await dataLoadedPromise;

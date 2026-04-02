@@ -1233,40 +1233,79 @@
             left: 0;
             right: 0;
             height: var(--header-height);
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: var(--glass-blur);
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--glass-border);
             display: none;
             align-items: center;
             justify-content: space-between;
-            padding: 0 var(--space-xl);
+            padding: 0 24px;
             z-index: 1000;
+            position: relative;
+        }
+
+        .desktop-nav-home {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: var(--transition-fast);
+            white-space: nowrap;
+        }
+
+        .desktop-nav-home:hover {
+            color: var(--primary);
+            background: rgba(90, 154, 110, 0.08);
+        }
+
+        .desktop-nav-left {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            flex-shrink: 0;
+        }
+
+        .desktop-nav-divider {
+            color: var(--text-muted);
+            font-size: 1rem;
+            padding: 0 12px;
+            opacity: 0.35;
+            user-select: none;
         }
 
         .desktop-nav-brand {
             display: flex;
             align-items: center;
-            gap: var(--space-sm);
-            font-size: 1.125rem;
+            gap: 10px;
+            font-size: 1rem;
             font-weight: 600;
             color: var(--text-primary);
             cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
             transition: var(--transition-fast);
         }
 
-        .desktop-nav-brand:hover:not(:has(.sidebar-toggle-btn:hover)) {
-            color: var(--primary);
+        .desktop-nav-brand:hover {
+            background: rgba(90, 154, 110, 0.08);
         }
 
         .desktop-nav-links {
             display: flex;
-            gap: var(--space-sm);
-            margin-left: var(--space-lg);
+            gap: 4px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
         .desktop-nav-link {
-            padding: var(--space-sm) var(--space-lg);
-            border-radius: 8px;
+            padding: 6px 16px;
+            border-radius: 20px;
             font-size: 0.9375rem;
             font-weight: 500;
             color: var(--text-secondary);
@@ -1278,12 +1317,12 @@
         }
 
         .desktop-nav-link:hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(90, 154, 110, 0.1);
             color: var(--text-primary);
         }
 
         .desktop-nav-link.active {
-            background: rgba(90, 154, 110, 0.15);
+            background: rgba(90, 154, 110, 0.18);
             color: var(--primary);
         }
 
@@ -1291,7 +1330,7 @@
             display: flex;
             align-items: center;
             gap: var(--space-md);
-            margin-left: auto;
+            flex-shrink: 0;
         }
 
         .desktop-nav-auth a {
@@ -1307,22 +1346,32 @@
         }
 
         .desktop-nav-auth .user-link {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(90, 154, 110, 0.12);
+            border-radius: 20px;
+            padding: 6px 14px;
             color: var(--text-primary);
             font-weight: 500;
             font-size: 0.9375rem;
         }
 
+        .desktop-nav-auth .user-link:hover {
+            background: rgba(90, 154, 110, 0.18);
+            color: var(--primary);
+        }
+
         .desktop-nav-auth .logout-link {
             color: var(--text-muted);
             font-size: 0.875rem;
-            padding: var(--space-xs) var(--space-sm);
+            padding: 4px 8px;
             border-radius: 6px;
             transition: all var(--transition-fast);
         }
 
         .desktop-nav-auth .logout-link:hover {
-            background: rgba(0, 0, 0, 0.05);
-            color: var(--text-secondary);
+            color: var(--primary);
+            background: transparent;
         }
 
         /* ===== Responsive ===== */
@@ -1955,18 +2004,23 @@
 
     <!-- Desktop Navigation -->
     <nav class="desktop-nav" id="desktopNav">
-        <div class="desktop-nav-brand" onclick="goHome()">
-            <button class="sidebar-toggle-btn" onclick="event.stopPropagation(); toggleSidebar();" title="채팅 기록">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    <path d="M8 9h8M8 13h6"/>
-                </svg>
-            </button>
-            <span>&#x2638;</span>
-            <span>Ghosa AI</span>
+        <div class="desktop-nav-left">
+            <a href="/" class="desktop-nav-home" title="메인 사이트로">
+                <img src="assets/buddha-line.png" width="28" height="28" style="border-radius:6px;object-fit:cover;" alt="Buddha Korea">
+                <span>Buddha Korea</span>
+            </a>
+            <span class="desktop-nav-divider">|</span>
+            <div class="desktop-nav-brand" onclick="switchTab('chat');">
+                <button class="sidebar-toggle-btn" onclick="toggleSidebar(); event.stopPropagation();" title="채팅 기록">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        <path d="M8 9h8M8 13h6"/>
+                    </svg>
+                </button>
+                <span>Ghosa</span>
+            </div>
         </div>
         <div class="desktop-nav-links">
-            <button class="desktop-nav-link active" data-tab="chat" onclick="switchTab('chat')">채팅</button>
             <button class="desktop-nav-link" data-tab="library" onclick="switchTab('library')">라이브러리</button>
             <button class="desktop-nav-link" data-tab="methodology" onclick="switchTab('methodology')">방법론</button>
         </div>
@@ -2440,7 +2494,19 @@
         // Check if user is logged in
         async function checkAuthStatus() {
             try {
-                const response = await fetch(`${window.API_BASE_URL}/api/users/me`, { credentials: 'include' });
+                let response = await fetch(`${window.API_BASE_URL}/api/users/me`, { credentials: 'include' });
+
+                // Access token expired — try silent refresh
+                if (response.status === 401) {
+                    const refreshed = await fetch(`${window.API_BASE_URL}/auth/refresh`, {
+                        method: 'POST',
+                        credentials: 'include'
+                    });
+                    if (refreshed.ok) {
+                        response = await fetch(`${window.API_BASE_URL}/api/users/me`, { credentials: 'include' });
+                    }
+                }
+
                 if (response.ok) {
                     currentUser = await response.json();
                     isLoggedIn = true;

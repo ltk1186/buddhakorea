@@ -10,8 +10,10 @@
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 
     <!-- CSS -->
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/styles.css?v=2">
     <link rel="stylesheet" href="css/methodology.css">
+    <!-- Shared Auth JS -->
+    <script src="js/auth.js"></script>
 </head>
 <body>
     <!-- Header -->
@@ -23,14 +25,9 @@
             </a>
             <nav class="header-nav">
                 <a href="index.html" class="nav-link">홈</a>
-                <a href="methodology.html" class="nav-link active">방법론</a>
+                <a href="chat.html" class="header-btn">AI 채팅 시작</a>
                 <a href="sutra-writing.html" class="nav-link">사경</a>
-                <div class="nav-dropdown">
-                    <button class="nav-link dropdown-toggle" id="ai-nav-button">AI 도구</button>
-                    <div class="dropdown-menu">
-                        <a href="teaching.html" class="dropdown-item">맞춤형 법문</a>
-                    </div>
-                </div>
+                <span id="auth-container" style="margin-left: 10px;"></span>
             </nav>
         </div>
     </header>
@@ -158,5 +155,10 @@
 
     <!-- Scripts -->
     <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            window.Auth.updateHeaderAuthUI('auth-container');
+        });
+    </script>
 </body>
 </html>

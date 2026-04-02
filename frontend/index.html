@@ -28,7 +28,7 @@
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/styles.css?v=2">
 </head>
 <body>
     <!-- 고정 헤더 -->
@@ -42,11 +42,10 @@
 
             <!-- 네비게이션 -->
             <nav class="header-nav">
-                <a href="index.html" class="nav-link">홈</a>
-                <a href="chat.html" class="nav-link">AI</a>
+                <a href="chat.html" class="header-btn">AI 채팅 시작</a>
                 <a href="sutra-writing.html" class="nav-link">사경</a>
                 <span id="auth-container" style="margin-left: 10px;">
-                    <!-- Auth content injected by JS -->
+                    <!-- Auth content injected by auth.js -->
                 </span>
             </nav>
         </div>
@@ -245,7 +244,7 @@
             <div class="login-modal-title">로그인</div>
             <div class="login-modal-desc">소셜 계정으로 간편하게 시작하세요</div>
             <div class="login-modal-buttons">
-                <button class="login-prompt-btn login-google" onclick="window.location.href='https://ai.buddhakorea.com/auth/login/google'">
+                <button class="login-prompt-btn login-google" onclick="window.location.href='/auth/login/google'">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                         <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -254,13 +253,13 @@
                     </svg>
                     Google로 로그인
                 </button>
-                <button class="login-prompt-btn login-naver" onclick="window.location.href='https://ai.buddhakorea.com/auth/login/naver'">
+                <button class="login-prompt-btn login-naver" onclick="window.location.href='/auth/login/naver'">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/>
                     </svg>
                     네이버로 로그인
                 </button>
-                <button class="login-prompt-btn login-kakao" onclick="window.location.href='https://ai.buddhakorea.com/auth/login/kakao'">
+                <button class="login-prompt-btn login-kakao" onclick="window.location.href='/auth/login/kakao'">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 3C6.477 3 2 6.463 2 10.691c0 2.756 1.819 5.175 4.546 6.52-.148.538-.952 3.456-.982 3.678 0 0-.02.161.085.223.105.062.229.014.229.014.302-.042 3.501-2.282 4.055-2.675.675.098 1.376.149 2.067.149 5.523 0 10-3.463 10-7.909C22 6.463 17.523 3 12 3z"/>
                     </svg>
@@ -363,52 +362,45 @@
     </style>
 
     <!-- JavaScript -->
+    <!-- Shared Auth JS -->
+    <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
     <script>
-        const API_BASE_URL = '';  // Relative path
-
-        // Simple Auth Logic
-        async function checkAuth() {
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Shared Auth check
             try {
-                const response = await fetch(`${API_BASE_URL}/api/users/me`, {
-                    credentials: 'include'
-                });
-                const authContainer = document.getElementById('auth-container');
-
-                if (response.ok) {
-                    const user = await response.json();
-                    authContainer.innerHTML = `
-                        <a href="mypage.html" style="font-size: 0.9rem; margin-right: 8px; text-decoration: none; color: var(--color-text-primary);">${user.nickname}님</a>
-                        <a href="#" onclick="logout(); return false;" style="font-size: 0.85rem; color: #666; text-decoration: none;">로그아웃</a>
-                    `;
-                } else {
-                    authContainer.innerHTML = `
-                        <a href="#" onclick="showLoginModal(); return false;" style="font-size: 0.9rem; font-weight: 500; color: #444; text-decoration: none;">로그인</a>
-                    `;
+                await window.Auth.updateHeaderAuthUI('auth-container');
+            } catch (e) {
+                console.error('Auth UI update failed:', e);
+                // Fallback: create login button
+                const container = document.getElementById('auth-container');
+                if (container && container.children.length === 0) {
+                    const loginBtn = document.createElement('a');
+                    loginBtn.href = '#';
+                    loginBtn.textContent = '로그인';
+                    loginBtn.style.cssText = 'background: #5A9A6E; border-radius: 20px; padding: 8px 18px; color: white; font-weight: 600; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center;';
+                    loginBtn.onclick = (e) => { e.preventDefault(); showLoginModal(); };
+                    container.appendChild(loginBtn);
                 }
-            } catch (e) {
-                console.error("Auth check failed", e);
             }
-        }
 
-        async function logout() {
-            try {
-                await fetch('https://ai.buddhakorea.com/auth/logout', { method: 'POST', credentials: 'include' });
-                window.location.reload();
-            } catch (e) {
-                console.error("Logout failed", e);
+            // Check for showLogin=true in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('showLogin') === 'true') {
+                showLoginModal();
             }
-        }
-
-        document.addEventListener('DOMContentLoaded', checkAuth);
+        });
 
         // Login Modal Functions
         function showLoginModal() {
             document.getElementById('loginModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
         }
 
         function closeLoginModal() {
             document.getElementById('loginModal').classList.remove('active');
+            document.body.style.overflow = '';
         }
     </script>
 </body>

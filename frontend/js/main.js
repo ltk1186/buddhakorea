@@ -34,10 +34,25 @@ function initScrollReveal() {
     });
 }
 
+// --- Header Scroll Effect ---
+function initHeaderScroll() {
+    const header = document.querySelector('.site-header') || document.querySelector('.desktop-nav');
+    if (!header) return;
+
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 20) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
+}
+
 // --- Initialize All Features ---
 function init() {
     initInteractiveLight();
     initScrollReveal();
+    initHeaderScroll();
 }
 
 // Run when DOM is ready

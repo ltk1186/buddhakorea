@@ -21,7 +21,9 @@
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/styles.css?v=2">
+    <!-- Shared Auth JS -->
+    <script src="js/auth.js"></script>
     <style>
         /* Mypage Specific Styles */
         .mypage-container {
@@ -326,11 +328,9 @@
 
             <nav class="header-nav">
                 <a href="index.html" class="nav-link">홈</a>
-                <a href="chat.html" class="nav-link">AI</a>
+                <a href="chat.html" class="header-btn">AI 채팅 시작</a>
                 <a href="sutra-writing.html" class="nav-link">사경</a>
-                <span id="auth-container" style="margin-left: 10px;">
-                    <!-- Auth content injected by JS -->
-                </span>
+                <span id="auth-container" style="margin-left: 10px;"></span>
             </nav>
         </div>
     </header>
@@ -355,7 +355,7 @@
     </footer>
 
     <script>
-        const API_BASE_URL = '';  // Relative path
+        const API_BASE_URL = window.Auth.API_BASE_URL;
 
         async function loadMyPage() {
             const contentEl = document.getElementById('mypage-content');
@@ -372,9 +372,9 @@
                         <div class="mypage-card not-logged-in">
                             <h2>로그인이 필요합니다</h2>
                             <p>마이페이지를 이용하려면 로그인해 주세요.</p>
-                            <a href="${API_BASE_URL}/auth/login/google" class="btn-primary">
-                                Google로 로그인
-                            </a>
+                            <button onclick="window.Auth.showLoginModal()" class="btn-primary">
+                                로그인하기
+                            </button>
                         </div>
                     `;
                     return;
@@ -483,46 +483,14 @@
                     <h2>계정 관리</h2>
                     <div class="mypage-actions">
                         <a href="chat.html" class="action-btn">AI 채팅으로 이동</a>
-                        <button onclick="logout()" class="action-btn logout">로그아웃</button>
+                        <button onclick="window.Auth.logout()" class="action-btn logout">로그아웃</button>
                     </div>
                 </div>
             `;
         }
 
-        async function checkAuth() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/users/me`, {
-                    credentials: 'include'
-                });
-                const authContainer = document.getElementById('auth-container');
-
-                if (response.ok) {
-                    const user = await response.json();
-                    authContainer.innerHTML = `
-                        <a href="mypage.html" style="font-size: 0.9rem; margin-right: 8px; text-decoration: none; color: var(--color-text-primary);">${user.nickname}님</a>
-                        <a href="#" onclick="logout(); return false;" style="font-size: 0.85rem; color: #666; text-decoration: none;">로그아웃</a>
-                    `;
-                } else {
-                    authContainer.innerHTML = `
-                        <a href="${API_BASE_URL}/auth/login/google" style="font-size: 0.9rem; font-weight: 500; color: #444; text-decoration: none;">로그인</a>
-                    `;
-                }
-            } catch (e) {
-                console.error("Auth check failed", e);
-            }
-        }
-
-        async function logout() {
-            try {
-                await fetch('https://ai.buddhakorea.com/auth/logout', { method: 'POST', credentials: 'include' });
-                window.location.href = 'index.html';
-            } catch (e) {
-                console.error("Logout failed", e);
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
-            checkAuth();
+            window.Auth.updateHeaderAuthUI('auth-container');
             loadMyPage();
         });
     </script>

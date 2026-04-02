@@ -66,6 +66,9 @@ services:
       # 소스 코드 마운트 (Hot-reload)
       - ../backend:/app/backend:cached
       - ../frontend:/app/frontend:cached
+      - ../backend/pali:/app/pali:cached
+      - ../data:/app/data:cached
+      - ~/.config/gcloud:/root/.config/gcloud:ro
       # ChromaDB 데이터 유지
       - ../chroma_db:/app/chroma_db
       # 로그

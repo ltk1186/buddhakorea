@@ -6,6 +6,7 @@ Provides RAG-powered chat interface for Taishō Tripiṭaka and Pali Canon texts
 """
 
 import os
+import sys
 import json
 import time
 import uuid
@@ -1106,7 +1107,7 @@ async def auth_callback(
         # Validate CSRF state (skip if not provided for backwards compatibility)
         if state and not auth.validate_oauth_state(state):
             logger.warning(f"Invalid OAuth state for provider {provider}")
-            return RedirectResponse(url="/chat.html?auth_error=invalid_state")
+            return RedirectResponse(url="/?auth_error=invalid_state")
 
         client = auth.oauth.create_client(provider)
         token = await client.authorize_access_token(request)
@@ -1231,8 +1232,8 @@ async def auth_callback(
         # ========================================
         access_token, refresh_token = auth.create_token_pair(user.id, user.email)
 
-        # Redirect to frontend (stay on same domain to keep cookies working)
-        response = RedirectResponse(url="/chat.html", status_code=302)
+        # Redirect to main page after login
+        response = RedirectResponse(url="/", status_code=302)
 
         # Set cookies
         base_cookie_kwargs = get_cookie_settings(request)
@@ -1261,7 +1262,7 @@ async def auth_callback(
         logger.error(f"Auth callback error: {e}")
         import urllib.parse
         detail = urllib.parse.quote(str(e))
-        return RedirectResponse(url=f"/chat.html?auth_error=failed&detail={detail}")
+        return RedirectResponse(url=f"/?auth_error=failed&detail={detail}")
 
 @app.get("/api/users/me")
 async def get_current_user_info(request: Request, db: AsyncSession = Depends(database.get_db)):

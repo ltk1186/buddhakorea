@@ -189,6 +189,19 @@ body {
     transition: width 0.3s ease;
 }
 
+.header-btn {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+    position: relative;
+}
+
+.header-btn:hover {
+    color: var(--gradient-color-1);
+}
+
 .nav-link:hover::after {
     width: 100%;
 }
