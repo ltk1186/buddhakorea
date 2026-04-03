@@ -13,12 +13,8 @@
 // ===== GLOBAL STATE =====
 
 if (typeof window.API_BASE_URL === 'undefined') {
-    const host = window.location.hostname;
-    if (host === 'localhost' || host === '127.0.0.1') {
-        window.API_BASE_URL = 'http://localhost:8000';
-    } else {
-        window.API_BASE_URL = '';
-    }
+    // Always use same origin (let nginx handle routing to backend)
+    window.API_BASE_URL = '';
 }
 const MAX_CACHED_CARDS = 1000;
 const CARDS_PER_PAGE = 100;
