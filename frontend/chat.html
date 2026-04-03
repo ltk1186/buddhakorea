@@ -97,6 +97,12 @@
             -webkit-font-smoothing: antialiased;
         }
 
+        body.no-scroll {
+            overflow: hidden;
+            height: 100vh;
+            height: 100dvh;
+        }
+
         /* ===== Ambient Background ===== */
         .ambient-bg {
             position: fixed;
@@ -1241,7 +1247,6 @@
             justify-content: space-between;
             padding: 0 24px;
             z-index: 1000;
-            position: relative;
         }
 
         .desktop-nav-home {
@@ -2912,6 +2917,9 @@
             // Hide hero
             document.getElementById('hero').classList.add('hidden');
             isHeroVisible = false;
+
+            // Lock body scroll for single-page app feel
+            document.body.classList.add('no-scroll');
 
             // Update sections
             document.querySelectorAll('.chat-section, .library-section, .methodology-section').forEach(s => {

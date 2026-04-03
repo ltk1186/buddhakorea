@@ -355,14 +355,14 @@
     </footer>
 
     <script>
-        const API_BASE_URL = window.Auth.API_BASE_URL;
+        const mypageApiBase = window.Auth ? window.Auth.API_BASE_URL : '';
 
         async function loadMyPage() {
             const contentEl = document.getElementById('mypage-content');
             const loadingEl = document.getElementById('loading-state');
 
             try {
-                const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+                const response = await fetch(`${mypageApiBase}/api/users/me`, {
                     credentials: 'include'
                 });
 
