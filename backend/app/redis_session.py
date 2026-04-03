@@ -143,8 +143,13 @@ class RedisSessionManager:
                 logger.debug(f"Reusing session {session_id[:8]}...")
                 return session_id
 
-        # 새 세션 생성
-        new_id = str(uuid.uuid4())
+            # If session_id is provided but not in Redis (e.g. expired/evicted)
+            # we should reuse the provided session_id to maintain DB consistency
+            new_id = session_id
+        else:
+            # 새 세션 생성
+            new_id = str(uuid.uuid4())
+
         session_data = {
             'session_id': new_id,
             'created_at': datetime.now(),
@@ -155,7 +160,7 @@ class RedisSessionManager:
         }
 
         self._set_session(new_id, session_data)
-        logger.info(f"Created new session {new_id[:8]}...")
+        logger.info(f"Created/Recreated session {new_id[:8]}...")
         return new_id
 
     def _get_session(self, session_id: str) -> Optional[Dict[str, Any]]:

@@ -2294,6 +2294,20 @@ Answer:"""
 
             asyncio.create_task(save_to_db_and_usage())
 
+            # Update session with this exchange in Redis
+            update_session(
+                session_id=session_uuid,
+                user_message=request.query,
+                assistant_message=full_response,
+                context_chunks=docs,
+                metadata={
+                    "model": model_name,
+                    "response_mode": "detailed" if is_detailed else "normal",
+                    "latency_ms": latency_ms,
+                    "sources": sources
+                }
+            )
+
             # Send completion signal with session_id for follow-up
             yield f"data: {json.dumps({'type': 'done', 'latency_ms': latency_ms, 'model': model_name, 'session_id': session_uuid})}\n\n"
 
