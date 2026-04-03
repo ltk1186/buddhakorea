@@ -56,6 +56,12 @@ class User(Base):
         cascade="all, delete-orphan",
         lazy="selectin"
     )
+    saved_exchanges = relationship(
+        "SavedExchange",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        lazy="selectin"
+    )
 
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email}, nickname={self.nickname})>"

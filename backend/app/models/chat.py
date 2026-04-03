@@ -70,3 +70,27 @@ class ChatMessage(Base):
 
     def __repr__(self):
         return f"<ChatMessage(session_id={self.session_id}, role={self.role})>"
+
+
+class SavedExchange(Base):
+    """저장된 대화 - 유저가 명시적으로 저장한 질문/답변 페어"""
+    __tablename__ = "saved_exchanges"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    
+    question = Column(Text, nullable=False)
+    answer = Column(Text, nullable=False)
+    sources_json = Column(JSON, nullable=True)  # 참조 문헌 정보 저장
+    
+    # Metadata
+    model_used = Column(String(50), nullable=True)
+    response_mode = Column(String(20), nullable=True)
+    
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    # Relationships
+    user = relationship("User", back_populates="saved_exchanges")
+
+    def __repr__(self):
+        return f"<SavedExchange(id={self.id}, user_id={self.user_id})>"

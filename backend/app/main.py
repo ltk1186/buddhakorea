@@ -39,7 +39,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 # Internal modules
 from . import auth, database
 from .models.user import User
-from .models.chat import ChatSession, ChatMessage
+from .models.chat import ChatSession, ChatMessage, SavedExchange
 from .models.social_account import SocialAccount
 from .models.user_usage import UserUsage, AnonymousUsage
 
@@ -95,8 +95,8 @@ class AppConfig(BaseSettings):
     embedding_model: str = "BAAI/bge-m3"  # Better for Classical Chinese (75-80% vs 60-70%)
 
     # Vector Database
-    chroma_db_path: str = "./chroma_db"
-    chroma_collection_name: str = "buddhist_texts"
+    chroma_db_path: str = "buddhakorea/data/chroma_db"
+    chroma_collection_name: str = "cbeta_sutras_gemini"
 
     # Google Cloud Configuration (for Gemini embeddings)
     gcp_project_id: Optional[str] = None
@@ -135,6 +135,7 @@ class AppConfig(BaseSettings):
     class Config:
         env_file = "../.env"  # .env is in project root, not backend/
         case_sensitive = False
+        extra = "ignore"
 
 
 config = AppConfig()
@@ -248,6 +249,20 @@ class CachedResponseInfo(BaseModel):
     created_at: str
     hit_count: int
     last_hit: Optional[str]
+
+
+class UpdateSessionTitleRequest(BaseModel):
+    """Request model for updating session title."""
+    title: str = Field(..., min_length=1, max_length=200, description="New title for the session")
+
+
+class SaveExchangeRequest(BaseModel):
+    """Request model for saving a Q&A exchange."""
+    question: str = Field(..., description="The user's question")
+    answer: str = Field(..., description="The assistant's answer")
+    sources: Optional[List[Dict[str, Any]]] = Field(default=None, description="Source documents metadata")
+    model_used: Optional[str] = Field(default=None, description="LLM model used")
+    response_mode: Optional[str] = Field(default=None, description="Response mode used")
 
 
 # ============================================================================
@@ -1494,6 +1509,105 @@ async def delete_chat_session(
     await db.commit()
 
     return {"status": "deleted", "session_uuid": session_uuid}
+
+
+@app.patch("/api/chat/sessions/{session_uuid}")
+async def update_chat_session_title(
+    session_uuid: str,
+    payload: UpdateSessionTitleRequest,
+    db: AsyncSession = Depends(database.get_db),
+    user: User = Depends(get_current_user_required)
+):
+    """Update a chat session title."""
+    # Find the session
+    stmt = select(ChatSession).where(ChatSession.session_uuid == session_uuid)
+    result = await db.execute(stmt)
+    chat_session = result.scalar_one_or_none()
+
+    if not chat_session:
+        raise HTTPException(404, "Session not found")
+
+    if chat_session.user_id != user.id:
+        raise HTTPException(403, "Access denied")
+
+    # Update title
+    chat_session.title = payload.title
+    await db.commit()
+
+    return {"status": "updated", "session_uuid": session_uuid, "new_title": payload.title}
+
+
+@app.post("/api/chat/saved")
+async def save_exchange(
+    payload: SaveExchangeRequest,
+    db: AsyncSession = Depends(database.get_db),
+    user: User = Depends(get_current_user_required)
+):
+    """Save a Q&A exchange."""
+    # Create saved exchange
+    saved = SavedExchange(
+        user_id=user.id,
+        question=payload.question,
+        answer=payload.answer,
+        sources_json=payload.sources,
+        model_used=payload.model_used,
+        response_mode=payload.response_mode
+    )
+    db.add(saved)
+    await db.commit()
+    await db.refresh(saved)
+
+    return {"status": "saved", "id": saved.id}
+
+
+@app.get("/api/chat/saved")
+async def get_saved_exchanges(
+    db: AsyncSession = Depends(database.get_db),
+    user: User = Depends(get_current_user_required)
+):
+    """Get all saved exchanges for the current user."""
+    stmt = select(SavedExchange).where(SavedExchange.user_id == user.id).order_by(SavedExchange.created_at.desc())
+    result = await db.execute(stmt)
+    saved_items = result.scalars().all()
+
+    return {
+        "count": len(saved_items),
+        "items": [
+            {
+                "id": s.id,
+                "question": s.question,
+                "answer": s.answer,
+                "sources": s.sources_json,
+                "model_used": s.model_used,
+                "response_mode": s.response_mode,
+                "created_at": s.created_at.isoformat()
+            }
+            for s in saved_items
+        ]
+    }
+
+
+@app.delete("/api/chat/saved/{saved_id}")
+async def delete_saved_exchange(
+    saved_id: int,
+    db: AsyncSession = Depends(database.get_db),
+    user: User = Depends(get_current_user_required)
+):
+    """Delete a saved exchange."""
+    stmt = select(SavedExchange).where(SavedExchange.id == saved_id)
+    result = await db.execute(stmt)
+    saved = result.scalar_one_or_none()
+
+    if not saved:
+        raise HTTPException(404, "Saved item not found")
+
+    if saved.user_id != user.id:
+        raise HTTPException(403, "Access denied")
+
+    await db.delete(saved)
+    await db.commit()
+
+    return {"status": "deleted", "id": saved_id}
 
 
 @app.post("/api/chat/sessions", response_model=dict)

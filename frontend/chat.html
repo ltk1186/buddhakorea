@@ -1561,6 +1561,11 @@
             min-width: 0;
         }
 
+        .chat-history-item-title-container {
+            position: relative;
+            width: 100%;
+        }
+
         .chat-history-item-title {
             font-size: 0.875rem;
             font-weight: 500;
@@ -1570,13 +1575,35 @@
             text-overflow: ellipsis;
         }
 
+        .chat-history-item-title-input {
+            width: 100%;
+            background: var(--bg-dark);
+            border: 1px solid var(--primary);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            padding: 2px 4px;
+            outline: none;
+        }
+
         .chat-history-item-date {
             font-size: 0.75rem;
             color: var(--text-muted);
             margin-top: 2px;
         }
 
-        .chat-history-item-delete {
+        .chat-history-item-actions {
+            display: flex;
+            gap: 2px;
+            opacity: 0;
+            transition: var(--transition-fast);
+        }
+
+        .chat-history-item:hover .chat-history-item-actions {
+            opacity: 1;
+        }
+
+        .chat-history-item-edit, .chat-history-item-delete {
             width: 28px;
             height: 28px;
             border-radius: 6px;
@@ -1587,17 +1614,205 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            opacity: 0;
             transition: var(--transition-fast);
         }
 
-        .chat-history-item:hover .chat-history-item-delete {
-            opacity: 1;
+        .chat-history-item-edit:hover {
+            background: rgba(90, 154, 110, 0.1);
+            color: var(--primary);
         }
 
         .chat-history-item-delete:hover {
             background: rgba(255, 59, 48, 0.1);
             color: #ff3b30;
+        }
+
+        /* Saved Exchanges Section */
+        .sidebar-bottom {
+            padding: var(--space-md);
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .saved-chats-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-md);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .saved-chats-btn:hover {
+            background: rgba(90, 154, 110, 0.1);
+            border-color: var(--primary);
+        }
+
+        .saved-chats-btn svg {
+            color: var(--primary);
+        }
+
+        /* Save Button in Messages */
+        .message-save-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            margin-left: 8px;
+        }
+
+        .message-save-btn:hover {
+            color: var(--primary);
+            background: rgba(90, 154, 110, 0.1);
+        }
+
+        .message-save-btn.saved {
+            color: var(--primary);
+        }
+
+        /* Saved Exchanges Modal */
+        .saved-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-md);
+        }
+
+        .saved-modal.active {
+            display: flex;
+        }
+
+        .saved-modal-content {
+            background: var(--bg-medium);
+            width: 100%;
+            max-width: 600px;
+            max-height: 80vh;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .saved-modal-header {
+            padding: var(--space-lg);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .saved-modal-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .saved-modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .saved-modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--space-md);
+        }
+
+        .saved-item {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .saved-item:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .saved-item-question {
+            font-weight: 600;
+            font-size: 0.9375rem;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .saved-item-answer {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .saved-item-meta {
+            margin-top: 10px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .saved-detail-view {
+            padding: var(--space-lg);
+            display: none;
+        }
+
+        .saved-detail-view.active {
+            display: block;
+        }
+
+        .saved-detail-question {
+            background: rgba(90, 154, 110, 0.1);
+            padding: var(--space-md);
+            border-radius: 12px;
+            margin-bottom: var(--space-lg);
+            font-weight: 600;
+        }
+
+        .saved-detail-answer {
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .saved-back-btn {
+            background: transparent;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: var(--space-md);
+            font-weight: 500;
         }
 
         /* Login prompt in sidebar */
@@ -2047,6 +2262,14 @@
         </div>
         <div class="chat-history-list" id="chatHistoryList">
             <!-- Login prompt or history items will be rendered here -->
+        </div>
+        <div class="sidebar-bottom">
+            <button class="saved-chats-btn" onclick="openSavedExchanges()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                </svg>
+                저장된 대화
+            </button>
         </div>
     </aside>
 
@@ -2633,17 +2856,32 @@
             const itemsHtml = chatSessions.map(session => `
                 <div class="chat-history-item ${session.session_uuid === currentSessionUuid ? 'active' : ''}"
                      onclick="loadChatSession('${session.session_uuid}')"
-                     data-session-uuid="${session.session_uuid}">
+                     data-session-uuid="${session.session_uuid}"
+                     id="session-${session.session_uuid}">
                     <div class="chat-history-item-icon">&#x2638;</div>
                     <div class="chat-history-item-content">
-                        <div class="chat-history-item-title">${escapeHtml(session.title || '새 대화')}</div>
+                        <div class="chat-history-item-title-container">
+                            <div class="chat-history-item-title" id="title-text-${session.session_uuid}">${escapeHtml(session.title || '새 대화')}</div>
+                            <input type="text" class="chat-history-item-title-input hidden" 
+                                   id="title-input-${session.session_uuid}" 
+                                   value="${escapeHtml(session.title || '새 대화')}"
+                                   onclick="event.stopPropagation()"
+                                   onkeydown="if(event.key==='Enter') saveSessionTitle('${session.session_uuid}'); if(event.key==='Escape') cancelEditTitle('${session.session_uuid}');">
+                        </div>
                         <div class="chat-history-item-date">${formatRelativeTime(session.last_message_at)}</div>
                     </div>
-                    <button class="chat-history-item-delete" onclick="event.stopPropagation(); deleteChatSession('${session.session_uuid}')" title="삭제">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
-                        </svg>
-                    </button>
+                    <div class="chat-history-item-actions">
+                        <button class="chat-history-item-edit" onclick="event.stopPropagation(); editSessionTitle('${session.session_uuid}')" title="제목 수정">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                        </button>
+                        <button class="chat-history-item-delete" onclick="event.stopPropagation(); deleteChatSession('${session.session_uuid}')" title="삭제">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             `).join('');
 
@@ -2735,6 +2973,64 @@
             `;
 
             messages.insertAdjacentHTML('beforeend', html);
+        }
+
+        // --- Session Title Editing ---
+        function editSessionTitle(sessionUuid) {
+            const titleText = document.getElementById(`title-text-${sessionUuid}`);
+            const titleInput = document.getElementById(`title-input-${sessionUuid}`);
+            
+            if (titleText && titleInput) {
+                titleText.classList.add('hidden');
+                titleInput.classList.remove('hidden');
+                titleInput.focus();
+                titleInput.select();
+            }
+        }
+
+        function cancelEditTitle(sessionUuid) {
+            const titleText = document.getElementById(`title-text-${sessionUuid}`);
+            const titleInput = document.getElementById(`title-input-${sessionUuid}`);
+            
+            if (titleText && titleInput) {
+                titleText.classList.remove('hidden');
+                titleInput.classList.add('hidden');
+            }
+        }
+
+        async function saveSessionTitle(sessionUuid) {
+            const titleInput = document.getElementById(`title-input-${sessionUuid}`);
+            if (!titleInput) return;
+
+            const newTitle = titleInput.value.trim();
+            if (!newTitle) {
+                cancelEditTitle(sessionUuid);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${window.API_BASE_URL}/api/chat/sessions/${sessionUuid}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title: newTitle }),
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    // Update local data
+                    const session = chatSessions.find(s => s.session_uuid === sessionUuid);
+                    if (session) {
+                        session.title = newTitle;
+                    }
+                    renderChatHistory();
+                } else {
+                    console.error('Failed to update title');
+                    cancelEditTitle(sessionUuid);
+                }
+            } catch (e) {
+                console.error('Error saving title:', e);
+                cancelEditTitle(sessionUuid);
+            }
         }
 
         // Delete a chat session
@@ -2910,6 +3206,132 @@
             selectSutraForChat(textId, title);
             switchTab('chat');
             document.getElementById('chatInput').focus();
+        }
+    </script>
+
+    <!-- Saved Exchanges Modal -->
+    <div class="saved-modal" id="savedExchangesModal">
+        <div class="saved-modal-content">
+            <div class="saved-modal-header">
+                <h2>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    저장된 대화
+                </h2>
+                <button class="saved-modal-close" onclick="closeSavedExchanges()">&times;</button>
+            </div>
+            
+            <!-- List View -->
+            <div class="saved-modal-body" id="savedListBody">
+                <div id="savedItemsList">
+                    <!-- Saved items will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Detail View -->
+            <div class="saved-detail-view" id="savedDetailView">
+                <button class="saved-back-btn" onclick="showSavedList()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    목록으로 돌아가기
+                </button>
+                <div class="saved-detail-question" id="savedDetailQuestion" style="background: rgba(90, 154, 110, 0.1); padding: 15px; border-radius: 12px; margin-bottom: 20px; font-weight: 600;"></div>
+                <div class="saved-detail-answer" id="savedDetailAnswer" style="padding: 0 10px; line-height: 1.6; white-space: pre-wrap;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Saved Exchanges Logic ---
+        let savedExchanges = [];
+
+        async function openSavedExchanges() {
+            if (!isLoggedIn) {
+                showLoginModal();
+                return;
+            }
+            const modal = document.getElementById('savedExchangesModal');
+            modal.classList.add('active');
+            showSavedList();
+            await loadSavedExchanges();
+        }
+
+        function closeSavedExchanges() {
+            const modal = document.getElementById('savedExchangesModal');
+            modal.classList.remove('active');
+        }
+
+        async function loadSavedExchanges() {
+            const listEl = document.getElementById('savedItemsList');
+            listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);">불러오는 중...</div>';
+
+            try {
+                const response = await fetch(`${window.API_BASE_URL}/api/chat/saved`, { credentials: 'include' });
+                if (response.ok) {
+                    const data = await response.json();
+                    savedExchanges = data.items || [];
+                    renderSavedExchanges();
+                }
+            } catch (e) {
+                console.error('Failed to load saved exchanges:', e);
+                listEl.innerHTML = '<div style="text-align:center;padding:20px;color:#ff3b30;">불러오지 못했습니다</div>';
+            }
+        }
+
+        function renderSavedExchanges() {
+            const listEl = document.getElementById('savedItemsList');
+            if (savedExchanges.length === 0) {
+                listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">저장된 대화가 없습니다</div>';
+                return;
+            }
+
+            listEl.innerHTML = savedExchanges.map(item => `
+                <div class="saved-item" onclick="viewSavedDetail(${item.id})">
+                    <div class="saved-item-question">${escapeHtml(item.question)}</div>
+                    <div class="saved-item-answer">${item.answer.substring(0, 100)}...</div>
+                    <div class="saved-item-meta">
+                        <span>${new Date(item.created_at).toLocaleDateString()}</span>
+                        <button onclick="event.stopPropagation(); deleteSavedExchange(${item.id})" 
+                                style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.7rem;">삭제</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function viewSavedDetail(id) {
+            const item = savedExchanges.find(ex => ex.id === id);
+            if (!item) return;
+
+            document.getElementById('savedListBody').style.display = 'none';
+            const detailView = document.getElementById('savedDetailView');
+            detailView.classList.add('active');
+
+            document.getElementById('savedDetailQuestion').innerText = item.question;
+            document.getElementById('savedDetailAnswer').innerHTML = formatMessage(item.answer);
+        }
+
+        function showSavedList() {
+            document.getElementById('savedListBody').style.display = 'block';
+            document.getElementById('savedDetailView').classList.remove('active');
+        }
+
+        async function deleteSavedExchange(id) {
+            if (!confirm('저장된 대화를 삭제하시겠습니까?')) return;
+
+            try {
+                const response = await fetch(`${window.API_BASE_URL}/api/chat/saved/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    savedExchanges = savedExchanges.filter(ex => ex.id !== id);
+                    renderSavedExchanges();
+                }
+            } catch (e) {
+                console.error('Failed to delete saved exchange:', e);
+            }
         }
 
         // ===== Tab Navigation =====
@@ -3328,6 +3750,14 @@
             // Use raw HTML if isRawHtml is true, otherwise format the text
             const messageContent = isRawHtml ? text : formatMessage(text);
 
+            const saveBtnHtml = role === 'assistant' && isLoggedIn ? `
+                <button class="message-save-btn" title="대화 저장" onclick="saveExchange(this)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                    </svg>
+                </button>
+            ` : '';
+
             const html = `
                 <div class="message ${role}">
                     <div class="message-avatar">${role === 'user' ? '&#128100;' : '&#x2638;'}</div>
@@ -3335,6 +3765,7 @@
                         <div class="message-header">
                             <span class="message-sender">${role === 'user' ? '나' : 'Ghosa AI'}</span>
                             <span class="message-time">${time}</span>
+                            ${saveBtnHtml}
                         </div>
                         <div class="message-text">${messageContent}${sourceHtml}</div>
                     </div>
@@ -3343,6 +3774,48 @@
 
             messages.insertAdjacentHTML('beforeend', html);
             scrollToBottom({ immediate: true, alignStart: true, force: true });
+        }
+
+        async function saveExchange(btn) {
+            if (btn.classList.contains('saved')) return;
+
+            // Find the AI message and its preceding user message
+            const messageEl = btn.closest('.message');
+            const assistantText = messageEl.querySelector('.message-text').innerText;
+            
+            // The user message should be the previous element sibling
+            const userMessageEl = messageEl.previousElementSibling;
+            if (!userMessageEl || !userMessageEl.classList.contains('user')) {
+                console.error('Could not find corresponding user message');
+                return;
+            }
+            const userText = userMessageEl.querySelector('.message-text').innerText;
+
+            try {
+                const response = await fetch(`${window.API_BASE_URL}/api/chat/saved`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: userText,
+                        answer: assistantText,
+                        model_used: chatOptions.responseMode === 'detailed' ? 'gemini-2.5-pro' : 'gemini-2.5-flash',
+                        response_mode: chatOptions.responseMode
+                    }),
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    btn.classList.add('saved');
+                    btn.title = '저장됨';
+                    btn.innerHTML = `
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                        </svg>
+                    `;
+                }
+            } catch (e) {
+                console.error('Failed to save exchange:', e);
+            }
         }
 
         function formatMessage(text) {
