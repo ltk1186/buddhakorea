@@ -82,7 +82,8 @@ COPY --chown=buddha:buddha backend/source_explorer ./source_explorer/
 # Set environment variables
 ENV PATH="/opt/venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH="/app:$PYTHONPATH"
 
 # Switch to non-root user
 USER buddha
