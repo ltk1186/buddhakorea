@@ -2,102 +2,386 @@
 
 ## 개요
 
-이 문서는 Buddha Korea 프로젝트의 로컬 개발 환경 구성 방법을 설명합니다.
+이 문서는 Buddha Korea 프로젝트의 로컬 개발 환경 구성 방법을 설명합니다. Docker Compose를 사용하여 프론트엔드, 백엔드, 데이터베이스를 한번에 실행합니다.
 
 ## 아키텍처
 
+### 프로덕션 환경
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                 프론트엔드 (정적 호스팅)                      │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │  ./frontend/*  →  GitHub Pages  →  Cloudflare CDN   │   │
-│  │                    (buddhakorea.com)                 │   │
-│  └──────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
-                            │ API 호출
-                            ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Backend (Docker)                          │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
-│  │   FastAPI    │  │  PostgreSQL  │  │    Redis     │       │
-│  │    :8000     │  │    :5432     │  │    :6379     │       │
-│  │  (API Only)  │  │              │  │              │       │
-│  └──────────────┘  └──────────────┘  └──────────────┘       │
-│         │                                                    │
-│         ▼                                                    │
-│  ┌──────────────┐                                           │
-│  │   ChromaDB   │  (벡터 DB - ./chroma_db)                  │
-│  └──────────────┘                                           │
-└─────────────────────────────────────────────────────────────┘
+Cloudflare CDN (buddhakorea.com)
+         ↓
+    Nginx (포트 80, 443)
+    ├── 정적 파일 제공 (프론트엔드)
+    ├── SSL 인증서 (Let's Encrypt)
+    └── 백엔드로 프록시
+         ↓
+    FastAPI Backend (포트 8000)
+    ├── PostgreSQL
+    ├── Redis
+    └── ChromaDB
 ```
 
-**프로덕션 배포 구조**
-- 프론트엔드: GitHub Pages → Cloudflare CDN (www.buddhakorea.com)
-- 백엔드: GCP Cloud Run (API Only)
-
-### 로컬 개발 시: 백엔드에서 프론트엔드도 서빙
-
-로컬 개발 환경에서는 백엔드(FastAPI)가 프론트엔드도 함께 서빙합니다.
-
+### 로컬 개발 환경 (Docker Compose)
 ```
-localhost:8000
-├── /           → frontend/index.html
-├── /chat.html  → frontend/chat.html
-├── /css/*      → frontend/css/*
-├── /js/*       → frontend/js/*
-└── /api/*      → FastAPI 엔드포인트
+브라우저
+  │
+  ↓ http://localhost (포트 80)
+  │
+┌─────────────────────────────────────────────────────────┐
+│            Docker Network (내부)                          │
+│                                                          │
+│  ┌──────────────────────────────────────────────────┐   │
+│  │  Nginx (포트 80)                                  │   │
+│  │  ├── / → 프론트엔드 파일 제공                      │   │
+│  │  ├── /api/* → FastAPI로 프록시                    │   │
+│  │  ├── /auth/* → FastAPI로 프록시                   │   │
+│  │  └── /pali/* → FastAPI로 프록시                   │   │
+│  └──────────────────────────────────────────────────┘   │
+│           │                                              │
+│           ↓ (내부 통신 localhost:8000)                   │
+│  ┌──────────────────────────────────────────────────┐   │
+│  │  FastAPI Backend (포트 8000)                      │   │
+│  │  ├── /api/* 엔드포인트                            │   │
+│  │  ├── /auth/* OAuth 콜백                          │   │
+│  │  └── 정적 파일 제공 (프론트엔드 fallback)         │   │
+│  └──────────────────────────────────────────────────┘   │
+│           │                                              │
+│           ├─→ PostgreSQL (포트 5432)                     │
+│           ├─→ Redis (포트 6379)                          │
+│           └─→ ChromaDB (벡터 데이터베이스)               │
+│                                                          │
+└─────────────────────────────────────────────────────────┘
 ```
 
-**왜 이렇게 하는가?**
+## 핵심 개념: Nginx 프록시와 CORS 해결
 
-| 분리 개발 | 통합 개발 (현재) |
-|-----------|------------------|
-| 서버 2개 실행 필요 | `make dev` 하나로 전부 실행 |
-| CORS 설정 필요 | 같은 origin이라 CORS 불필요 |
-| 포트 2개 관리 | localhost:8000 하나로 통합 |
+### 왜 Nginx가 필요한가?
 
-프론트엔드가 프로덕션(GitHub Pages)과 개발(백엔드 서빙)에 중복 배포되지만, **개발 편의성이 훨씬 좋습니다**.
+#### ❌ 포트가 다른 경우 (이전 방식)
+```
+브라우저: http://localhost:3000 (프론트엔드)
+백엔드:  http://localhost:8000 (API)
+                    ↓
+              CORS 에러!
+        (다른 포트 = 다른 도메인 취급)
+```
 
-- 정적 파일(HTML/CSS/JS)이라 Hot-reload도 잘 동작
-- API 호출 시 상대 경로(`/api/chat`) 사용 가능
-- 프로덕션과 동일한 코드베이스 유지
+#### ✅ 같은 포트 (현재 방식)
+```
+브라우저: http://localhost (Nginx)
+  ↓
+Nginx이 요청을 분류
+├── / → 프론트엔드 파일 제공
+├── /api/ → 내부적으로 localhost:8000으로 프록시
+└── /auth/ → 내부적으로 localhost:8000으로 프록시
+                    ↓
+              CORS 없음! (같은 origin)
+```
+
+### 프론트엔드 개발에서의 영향
+
+**API 호출 방식:**
+
+```javascript
+// ❌ 포트 지정 (CORS 에러)
+fetch('http://localhost:8000/api/chat')
+
+// ✅ 포트 없음 (Nginx 경유)
+fetch('/api/chat')
+// 또는
+fetch(`${window.location.origin}/api/chat`)
+```
+
+**설정 위치:** `frontend/js/library.js`
+```javascript
+if (typeof window.API_BASE_URL === 'undefined') {
+    // 항상 같은 origin 사용 (Nginx가 라우팅 처리)
+    window.API_BASE_URL = '';
+}
+```
+
+### OAuth 설정
+
+로컬과 프로덕션에서 **redirect URL이 정확히 일치**해야 OAuth가 작동합니다.
+
+**로컬 개발:**
+- Google: `http://localhost/auth/callback/google`
+- Naver: `http://localhost/auth/callback/naver`
+- Kakao: `http://localhost/auth/callback/kakao`
+
+**프로덕션:**
+- Google: `https://buddhakorea.com/auth/callback/google`
+- Naver: `https://buddhakorea.com/auth/callback/naver`
+- Kakao: `https://buddhakorea.com/auth/callback/kakao`
 
 ## 사전 요구사항
 
-- Docker Desktop 설치
-- Docker Compose v2 이상
-- (선택) Make 설치 (`brew install make`)
+- **Docker Desktop** 설치 및 실행 중
+- **Docker Compose** v2 이상
+- **.env 파일** (프로젝트 루트에 존재)
 
 ## 빠른 시작
 
-### 1. 환경 변수 설정
+### 1. Docker 시작 확인
 
 ```bash
-# .env.example을 복사하여 .env 생성
-cp .env.example .env
-
-# .env 파일을 열어 API 키 설정
-# 최소 OPENAI_API_KEY 또는 ANTHROPIC_API_KEY 필요
+docker ps  # Docker daemon이 실행 중인지 확인
 ```
 
-### 2. 개발 서버 시작
+Docker Desktop이 시작되지 않았으면:
+```bash
+open -a Docker  # macOS
+```
+
+### 2. 환경 변수 복사
 
 ```bash
-# 방법 1: Make 사용 (권장)
-make dev
-
-# 방법 2: 스크립트 직접 실행
-./scripts/dev.sh start
-
-# 방법 3: Docker Compose 직접 실행
-docker-compose -f config/docker-compose.dev.yml up -d --build
+cd ~/Desktop/buddhakorea/config
+cp ../.env .env  # .env를 config 폴더에 복사 (docker-compose 실행용)
 ```
 
-### 3. 접속
+### 3. Docker Compose 실행
 
-- **웹 앱**: http://localhost:8000 (프론트엔드 + API 통합)
-- **API 문서 (Swagger)**: http://localhost:8000/docs
-- **PostgreSQL**: localhost:5432 (user: postgres, db: buddhakorea)
+```bash
+cd ~/Desktop/buddhakorea/config
+
+# 모든 컨테이너 시작 (처음 한 번만 --build 사용)
+docker compose --env-file .env up -d --build
+
+# 또는 기존 이미지 사용 (다시 실행할 때)
+docker compose --env-file .env up -d
+```
+
+### 4. 상태 확인
+
+```bash
+docker ps --format "table {{.Names}}\t{{.Status}}"
+
+# 예상 출력:
+# buddhakorea-nginx      Up (healthy)
+# buddhakorea-backend    Up (healthy)
+# buddhakorea-postgres   Up (healthy)
+# buddhakorea-redis      Up (healthy)
+```
+
+### 5. API 테스트
+
+```bash
+curl http://localhost/api/health
+# {"status":"healthy","version":"0.1.0","chroma_connected":true,"llm_configured":true}
+```
+
+### 6. 웹 접속
+
+- **메인 페이지**: http://localhost/
+- **채팅 페이지**: http://localhost/chat.html
+- **라이브러리**: 채팅 페이지 내 "라이브러리" 탭
+
+## 컨테이너 관리
+
+### 로그 확인
+
+```bash
+# 특정 컨테이너 로그
+docker logs buddhakorea-backend
+
+# 실시간 로그
+docker logs -f buddhakorea-backend
+
+# 최근 50줄
+docker logs buddhakorea-backend | tail -50
+```
+
+### 컨테이너 재시작
+
+```bash
+# 모든 컨테이너 재시작
+docker compose --env-file .env restart
+
+# 특정 컨테이너만 재시작
+docker compose --env-file .env restart backend
+```
+
+### 컨테이너 종료
+
+```bash
+# 모든 컨테이너 종료 (데이터 유지)
+docker compose --env-file .env down
+
+# 볼륨까지 삭제 (초기화)
+docker compose --env-file .env down -v
+```
+
+## 데이터베이스 접근
+
+### PostgreSQL에 접속
+
+```bash
+# psql 명령어로 접속
+docker exec -it buddhakorea-postgres psql -U postgres -d buddhakorea
+
+# 테이블 확인
+\dt
+
+# 사용자 조회
+SELECT * FROM users;
+
+# 나가기
+\q
+```
+
+### Redis 데이터 확인
+
+```bash
+docker exec -it buddhakorea-redis redis-cli
+
+# 모든 키 조회
+keys *
+
+# 특정 키 값 확인
+get session:xxxxx
+
+# 종료
+exit
+```
+
+## 개발 중 변경사항 반영
+
+### 프론트엔드 변경 (HTML/CSS/JS)
+
+```bash
+# Nginx 컨테이너는 자동으로 최신 파일 제공
+# 브라우저에서 F5 또는 Cmd+Shift+R (하드 새로고침)
+```
+
+### 백엔드 변경 (Python)
+
+```bash
+# 컨테이너 재빌드 및 재시작
+docker compose --env-file .env down
+docker compose --env-file .env up -d --build
+```
+
+### 설정 파일 변경 (nginx.conf, docker-compose.yml)
+
+```bash
+# 컨테이너 재시작
+docker compose --env-file .env down
+docker compose --env-file .env up -d
+```
+
+## 문제 해결
+
+### CORS 에러
+
+**증상**: `Access to fetch at 'http://localhost:8000/api/...' from origin 'http://localhost' has been blocked by CORS policy`
+
+**원인**: 프론트엔드가 직접 포트 8000으로 API 호출
+
+**해결**:
+1. `frontend/js/library.js` 확인: `window.API_BASE_URL = ''` (포트 없음)
+2. API 호출: `fetch('/api/...')` (상대 경로)
+3. 브라우저 캐시 삭제 (F12 → Application → Clear site data)
+
+### OAuth redirect_uri_mismatch
+
+**증상**: "Access blocked: This app's request is invalid"
+
+**원인**: Google/Naver/Kakao 콘솔의 redirect URI와 실제 호출 URL이 불일치
+
+**해결**: 각 OAuth 콘솔에 로컬 redirect URL 추가
+- [Google Cloud Console](#google-oauth-설정)
+- [Naver Developer Console](#naver-oauth-설정)
+- [Kakao Developers](#kakao-oauth-설정)
+
+### 포트 이미 사용 중
+
+**증상**: `bind: address already in use`
+
+**해결**:
+```bash
+# 포트 80을 사용하는 프로세스 확인 (macOS)
+lsof -i :80
+
+# 프로세스 종료
+kill -9 <PID>
+
+# 또는 Docker 전체 재시작
+docker compose --env-file .env restart
+```
+
+### 데이터베이스 연결 에러
+
+**증상**: `psycopg2.OperationalError: could not connect to server`
+
+**해결**:
+```bash
+# PostgreSQL 컨테이너가 healthy 상태 확인
+docker ps
+
+# healthy가 아니면 로그 확인
+docker logs buddhakorea-postgres
+
+# 컨테이너 재시작
+docker compose --env-file .env restart postgres
+```
+
+## OAuth 설정 가이드
+
+### Google OAuth 설정
+
+1. **Google Cloud Console** 접속: https://console.cloud.google.com
+2. 프로젝트 선택
+3. **APIs & Services** → **Credentials**
+4. OAuth 2.0 Client ID 클릭
+5. **Authorized redirect URIs** 섹션 수정:
+   ```
+   로컬:       http://localhost/auth/callback/google
+   프로덕션:   https://buddhakorea.com/auth/callback/google
+   ```
+6. **저장**
+
+### Naver OAuth 설정
+
+1. **Naver Developers** 접속: https://developers.naver.com
+2. 내 애플리케이션 → 애플리케이션 수정
+3. **API 권한 관리** → OAuth 2.0 설정
+4. **Authorized Redirect URI** 수정:
+   ```
+   로컬:       http://localhost/auth/callback/naver
+   프로덕션:   https://buddhakorea.com/auth/callback/naver
+   ```
+5. **저장**
+
+### Kakao OAuth 설정
+
+1. **Kakao Developers** 접속: https://developers.kakao.com
+2. 내 애플리케이션 → 기본 정보
+3. **Redirect URI** 섹션 수정:
+   ```
+   로컬:       http://localhost/auth/callback/kakao
+   프로덕션:   https://buddhakorea.com/auth/callback/kakao
+   ```
+4. **저장**
+
+## 프로덕션 배포
+
+로컬 개발이 완료되면 Hetzner 서버에 배포:
+
+```bash
+# 변경사항 커밋
+git add .
+git commit -m "feature: ..."
+git push origin main
+
+# Hetzner 서버에서 (SSH)
+cd /opt/buddha-korea/config
+git pull origin main
+docker compose --env-file .env down
+docker compose --env-file .env up -d
+```
+
+자세한 배포 방법은 `docs/DEPLOYMENT.md` 참고.
 - **Redis**: localhost:6379
 
 ## 주요 명령어
