@@ -1402,6 +1402,24 @@
             .chat-input-container {
                 bottom: 0;
             }
+
+            .chat-filter-toggle {
+                display: none;
+            }
+            /* Restore chat-options to default flex on desktop */
+            .chat-options {
+                display: flex !important;
+                position: static;
+                background: transparent;
+                border: none;
+                border-radius: 0;
+                padding: 0;
+                box-shadow: none;
+                margin-bottom: var(--space-md);
+                flex-direction: row;
+                gap: var(--space-sm);
+                flex-wrap: wrap;
+            }
         }
 
         @media (max-width: 767px) {
@@ -1440,6 +1458,99 @@
             .chat-option-group {
                 width: 100%;
                 justify-content: flex-start;
+            }
+
+            /* === Mobile: Library section scroll fix === */
+            .library-section {
+                height: calc(100dvh - var(--tab-bar-height));
+                overflow-y: auto;
+                min-height: unset;
+                padding-bottom: 0;
+            }
+
+            /* === Mobile: Methodology section scroll fix === */
+            .methodology-section {
+                height: calc(100dvh - var(--tab-bar-height));
+                overflow-y: auto;
+                min-height: unset;
+                padding-bottom: var(--space-xl);
+                justify-content: flex-start;
+            }
+
+            /* === Mobile: collapsible filter panel === */
+            .chat-filter-toggle {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 6px 12px;
+                background: var(--glass-bg);
+                border: 1px solid var(--glass-border);
+                border-radius: 100px;
+                font-size: 0.8125rem;
+                color: var(--text-secondary);
+                cursor: pointer;
+                font-family: inherit;
+                white-space: nowrap;
+                margin-bottom: var(--space-sm);
+                transition: var(--transition-fast);
+            }
+
+            .chat-filter-toggle:hover,
+            .chat-filter-toggle.active {
+                background: rgba(90, 154, 110, 0.1);
+                border-color: var(--primary);
+                color: var(--primary);
+            }
+
+            .chat-filter-toggle-badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 16px;
+                height: 16px;
+                padding: 0 4px;
+                background: var(--primary);
+                color: white;
+                border-radius: 8px;
+                font-size: 10px;
+                font-weight: 600;
+            }
+
+            .chat-filter-chevron {
+                transition: transform var(--transition-fast);
+                width: 12px;
+                height: 12px;
+            }
+
+            .chat-filter-toggle.active .chat-filter-chevron {
+                transform: rotate(180deg);
+            }
+
+            /* Hide default stacked chips; replaced by collapsible */
+            .chat-options {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                bottom: 100%;
+                left: 0;
+                right: 0;
+                background: var(--bg-card);
+                border: 1px solid var(--glass-border);
+                border-radius: 16px 16px 0 0;
+                padding: var(--space-md);
+                gap: var(--space-sm);
+                z-index: 200;
+                box-shadow: 0 -8px 32px rgba(0,0,0,0.1);
+                margin-bottom: 0;
+            }
+
+            .chat-options.open {
+                display: flex;
+            }
+
+            .chat-option-group {
+                width: 100%;
+                flex-wrap: wrap;
             }
         }
 
@@ -1679,6 +1790,53 @@
 
         .message-save-btn.saved {
             color: var(--primary);
+        }
+
+        /* ===== Message Action Buttons ===== */
+        .message-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 6px;
+            padding-left: 2px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+
+        .message:hover .message-actions {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .msg-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.72rem;
+            font-family: inherit;
+            padding: 3px 8px;
+            transition: all 0.2s;
+            line-height: 1.4;
+            white-space: nowrap;
+        }
+
+        .msg-action-btn:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: rgba(90, 154, 110, 0.08);
+        }
+
+        .msg-action-btn.copied,
+        .msg-action-btn.saved {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: rgba(90, 154, 110, 0.12);
         }
 
         /* Saved Exchanges Modal */
@@ -2388,8 +2546,16 @@
 
             <div class="chat-input-container">
                 <div class="chat-input-wrapper">
+                    <!-- Mobile Filter Toggle (hidden on desktop via CSS) -->
+                    <button class="chat-filter-toggle" id="chatFilterToggle" onclick="toggleChatFilters()">
+                        <svg class="chat-filter-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M2 4l4 4 4-4"/>
+                        </svg>
+                        필터
+                        <span class="chat-filter-toggle-badge" id="chatFilterBadge" style="display:none;"></span>
+                    </button>
                     <!-- Chat Options (Chips) -->
-                    <div class="chat-options">
+                    <div class="chat-options" id="chatOptions">
                         <div class="chat-option-group">
                             <span class="chat-option-label">응답</span>
                             <button class="chat-chip active" data-mode="normal" onclick="setResponseMode('normal')">일반</button>
@@ -2968,6 +3134,7 @@
                             <span class="message-time">${time}</span>
                         </div>
                         <div class="message-text">${formatMessage(content)}${sourceHtml}</div>
+                        ${createMessageActions(role === 'assistant', isLoggedIn)}
                     </div>
                 </div>
             `;
@@ -3157,6 +3324,8 @@
             document.querySelectorAll('.chat-chip[data-mode]').forEach(chip => {
                 chip.classList.toggle('active', chip.dataset.mode === mode);
             });
+            updateFilterToggleBadge();
+            if (window.innerWidth < 768) closeChatFilters();
         }
 
         function setTraditionFilter(tradition) {
@@ -3169,6 +3338,8 @@
             if (tradition !== 'all' && chatOptions.selectedSutra) {
                 clearSelectedSutra();
             }
+            updateFilterToggleBadge();
+            if (window.innerWidth < 768) closeChatFilters();
         }
 
         function selectSutraForChat(textId, title) {
@@ -3176,11 +3347,14 @@
             updateSutraSelectUI();
             // Clear tradition filter when specific sutra selected
             setTraditionFilter('all');
+            updateFilterToggleBadge();
+            if (window.innerWidth < 768) closeChatFilters();
         }
 
         function clearSelectedSutra() {
             chatOptions.selectedSutra = null;
             updateSutraSelectUI();
+            updateFilterToggleBadge();
         }
 
         function updateSutraSelectUI() {
@@ -3207,6 +3381,62 @@
             switchTab('chat');
             document.getElementById('chatInput').focus();
         }
+
+        // ===== Mobile Filter Toggle Functions =====
+        function toggleChatFilters() {
+            const panel = document.getElementById('chatOptions');
+            const toggle = document.getElementById('chatFilterToggle');
+            const isOpen = panel.classList.contains('open');
+            if (isOpen) {
+                closeChatFilters();
+            } else {
+                panel.classList.add('open');
+                toggle.classList.add('active');
+            }
+        }
+
+        function closeChatFilters() {
+            const panel = document.getElementById('chatOptions');
+            const toggle = document.getElementById('chatFilterToggle');
+            panel.classList.remove('open');
+            toggle.classList.remove('active');
+        }
+
+        function updateFilterToggleBadge() {
+            // Only runs on mobile; badge shows count of non-default selections
+            const badge = document.getElementById('chatFilterBadge');
+            if (!badge) return;
+            let count = 0;
+            // Check response mode (default: 'normal')
+            const activeMode = document.querySelector('.chat-chip[data-mode].active');
+            if (activeMode && activeMode.dataset.mode !== 'normal') count++;
+            // Check tradition (default: 'all')
+            const activeTradition = document.querySelector('.chat-chip[data-tradition].active');
+            if (activeTradition && activeTradition.dataset.tradition !== 'all') count++;
+            // Check sutra selection
+            if (document.getElementById('sutraSelectChip')?.classList.contains('has-selection')) count++;
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'inline-flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        // Close filter panel on outside click
+        document.addEventListener('click', function(e) {
+            const panel = document.getElementById('chatOptions');
+            const toggle = document.getElementById('chatFilterToggle');
+            if (!panel || !panel.classList.contains('open')) return;
+            if (!panel.contains(e.target) && !toggle.contains(e.target)) {
+                closeChatFilters();
+            }
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeChatFilters();
+        });
     </script>
 
     <!-- Saved Exchanges Modal -->
@@ -3498,6 +3728,11 @@
                                         if (sources.length > 0) {
                                             addSourcesToMessage(messageContainer, sources);
                                         }
+                                        // Inject action buttons after streaming completes
+                                        const messageContent = messageContainer.querySelector('.message-content');
+                                        if (messageContent && !messageContent.querySelector('.message-actions')) {
+                                            messageContent.insertAdjacentHTML('beforeend', createMessageActions(true, isLoggedIn));
+                                        }
                                         // Final scroll after streaming completes
                                         setTimeout(() => scrollToBottom({ immediate: true, alignStart: true, force: true }), 100);
                                         // Update current session UUID from response
@@ -3750,14 +3985,6 @@
             // Use raw HTML if isRawHtml is true, otherwise format the text
             const messageContent = isRawHtml ? text : formatMessage(text);
 
-            const saveBtnHtml = role === 'assistant' && isLoggedIn ? `
-                <button class="message-save-btn" title="대화 저장" onclick="saveExchange(this)">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-                    </svg>
-                </button>
-            ` : '';
-
             const html = `
                 <div class="message ${role}">
                     <div class="message-avatar">${role === 'user' ? '&#128100;' : '&#x2638;'}</div>
@@ -3765,15 +3992,71 @@
                         <div class="message-header">
                             <span class="message-sender">${role === 'user' ? '나' : 'Ghosa AI'}</span>
                             <span class="message-time">${time}</span>
-                            ${saveBtnHtml}
                         </div>
                         <div class="message-text">${messageContent}${sourceHtml}</div>
+                        ${createMessageActions(role === 'assistant', isLoggedIn)}
                     </div>
                 </div>
             `;
 
             messages.insertAdjacentHTML('beforeend', html);
             scrollToBottom({ immediate: true, alignStart: true, force: true });
+        }
+
+        function createMessageActions(isAssistant, isLoggedIn) {
+            if (!isAssistant) return '';
+
+            const saveBtnHtml = isLoggedIn ? `
+                <button class="msg-action-btn save-btn" title="대화 저장" onclick="saveExchange(this)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    저장
+                </button>` : '';
+
+            return `
+                <div class="message-actions">
+                    ${saveBtnHtml}
+                    <button class="msg-action-btn copy-btn" title="텍스트 복사" onclick="copyMessage(this)">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                        </svg>
+                        복사
+                    </button>
+                    <button class="msg-action-btn followup-btn" title="추가 질문하기" onclick="insertFollowup(this)">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        추가질문
+                    </button>
+                </div>`;
+        }
+
+        async function copyMessage(btn) {
+            const messageEl = btn.closest('.message');
+            const messageText = messageEl.querySelector('.message-text');
+            const text = messageText.innerText;
+
+            try {
+                await navigator.clipboard.writeText(text);
+                btn.classList.add('copied');
+                const originalHTML = btn.innerHTML;
+                const checkmarkSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+                btn.innerHTML = checkmarkSvg + '복사됨';
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = originalHTML;
+                }, 1500);
+            } catch (e) {
+                console.error('Failed to copy:', e);
+            }
+        }
+
+        function insertFollowup(btn) {
+            switchTab('chat');
+            const input = document.getElementById('chatInput');
+            input.focus();
         }
 
         async function saveExchange(btn) {
