@@ -1530,18 +1530,20 @@
             .chat-options {
                 display: none;
                 flex-direction: column;
-                position: absolute;
-                bottom: 100%;
-                left: 0;
-                right: 0;
+                position: fixed;
+                bottom: calc(var(--tab-bar-height) + 140px);
+                left: var(--space-md);
+                right: var(--space-md);
                 background: var(--bg-card);
                 border: 1px solid var(--glass-border);
-                border-radius: 16px 16px 0 0;
+                border-radius: 16px;
                 padding: var(--space-md);
                 gap: var(--space-sm);
                 z-index: 200;
-                box-shadow: 0 -8px 32px rgba(0,0,0,0.1);
+                box-shadow: 0 -8px 32px rgba(0,0,0,0.15);
                 margin-bottom: 0;
+                max-height: 60vh;
+                overflow-y: auto;
             }
 
             .chat-options.open {

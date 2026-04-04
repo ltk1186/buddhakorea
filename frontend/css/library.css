@@ -200,7 +200,6 @@
 .library-search-bar input {
     width: 100%;
     padding: 16px 24px;
-    padding-left: 48px;
     font-size: 16px;
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
@@ -212,15 +211,8 @@
 }
 
 .library-search-bar::before {
-    content: '🔍';
-    position: absolute;
-    left: 18px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 16px;
-    opacity: 0.5;
-    pointer-events: none;
-    z-index: 1;
+    content: '';
+    display: none;
 }
 
 .library-search-bar input::placeholder {
@@ -791,7 +783,7 @@
 
 @media (max-width: 480px) {
     .library-header {
-        padding: 16px 12px;
+        padding: 12px 12px;
     }
 
     .library-header h2 {
