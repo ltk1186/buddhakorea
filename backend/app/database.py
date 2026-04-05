@@ -35,6 +35,7 @@ async def init_db():
     """Create tables if they don't exist."""
     # Import models here to ensure they are registered with Base.metadata
     from .models.user import User
+    from .models.admin_audit_log import AdminAuditLog
     from .models.chat import ChatSession, ChatMessage, SavedExchange
     from .models.social_account import SocialAccount
     from .models.user_usage import UserUsage, AnonymousUsage

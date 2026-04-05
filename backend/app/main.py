@@ -11,6 +11,8 @@ import json
 import time
 import uuid
 import asyncio
+import hmac
+import hashlib
 from pathlib import Path
 from datetime import datetime, timedelta, timezone, date
 from typing import List, Optional, Dict, Any
@@ -57,6 +59,7 @@ from .tradition_normalizer import normalize_tradition, get_normalized_traditions
 # Pali Studio API (integrated from nikaya_gemini)
 # Use absolute import since pali is a sibling package at container root (/app)
 from pali.api import router as pali_router
+from .admin import router as admin_router
 from pali.db.database import Base as PaliBase, engine as pali_engine, SessionLocal as PaliSessionLocal
 from pali.db import models as pali_models  # Ensure models are registered
 
@@ -83,6 +86,11 @@ class AppConfig(BaseSettings):
     naver_client_secret: Optional[str] = None
     kakao_client_id: Optional[str] = None
     kakao_client_secret: Optional[str] = None
+
+    # Admin Login (optional, enables password-based admin access)
+    admin_email: Optional[str] = None
+    admin_password: Optional[str] = None
+    admin_password_hash: Optional[str] = None  # sha256 hex of password
     
     # Database Configuration
     postgres_user: Optional[str] = None
@@ -263,6 +271,12 @@ class SaveExchangeRequest(BaseModel):
     sources: Optional[List[Dict[str, Any]]] = Field(default=None, description="Source documents metadata")
     model_used: Optional[str] = Field(default=None, description="LLM model used")
     response_mode: Optional[str] = Field(default=None, description="Response mode used")
+
+
+class AdminLoginRequest(BaseModel):
+    """Request model for admin password login."""
+    email: str = Field(..., description="Admin email")
+    password: str = Field(..., min_length=1, description="Admin password")
 
 
 # ============================================================================
@@ -1022,6 +1036,9 @@ app.add_middleware(
 # Mount Pali Studio API router
 app.include_router(pali_router, prefix="/api/v1/pali")
 
+# Mount Admin API router
+app.include_router(admin_router)
+
 # Mount static files for frontend
 # Docker: /app/frontend, Local: ../../frontend relative to backend/app/
 FRONTEND_DIR = Path(__file__).parent.parent / "frontend"  # /app/app/../frontend = /app/frontend
@@ -1033,6 +1050,7 @@ if FRONTEND_DIR.exists():
     app.mount("/js", StaticFiles(directory=str(FRONTEND_DIR / "js")), name="js")
     app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIR / "assets")), name="assets")
     app.mount("/data", StaticFiles(directory=str(FRONTEND_DIR / "data")), name="data")
+    app.mount("/admin", StaticFiles(directory=str(FRONTEND_DIR / "admin"), html=True), name="admin")
 
     # Mount Pali Studio SPA (React)
     PALI_DIR = FRONTEND_DIR / "pali"
@@ -1093,6 +1111,86 @@ def get_cookie_settings(request: Request) -> Dict[str, Any]:
         cookie_kwargs["domain"] = config.cookie_domain
 
     return cookie_kwargs
+
+
+def _hash_admin_password(password: str) -> str:
+    """Hash admin password using SHA-256 (hex)."""
+    return hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+
+def _verify_admin_credentials(email: str, password: str) -> bool:
+    """Verify admin email + password against environment settings."""
+    if not config.admin_email:
+        return False
+
+    if email.strip().lower() != config.admin_email.strip().lower():
+        return False
+
+    if config.admin_password_hash:
+        hashed_input = _hash_admin_password(password)
+        return hmac.compare_digest(hashed_input, config.admin_password_hash)
+
+    if config.admin_password:
+        return hmac.compare_digest(password, config.admin_password)
+
+    return False
+
+
+@app.post("/api/admin/login")
+async def admin_password_login(
+    payload: AdminLoginRequest,
+    request: Request,
+    db: AsyncSession = Depends(database.get_db)
+):
+    """Password-based admin login (uses ADMIN_EMAIL + ADMIN_PASSWORD[_HASH])."""
+    if not config.admin_email or not (config.admin_password or config.admin_password_hash):
+        raise HTTPException(status_code=500, detail="Admin login not configured")
+
+    if not _verify_admin_credentials(payload.email, payload.password):
+        raise HTTPException(status_code=401, detail="Invalid admin credentials")
+
+    stmt = select(User).where(User.email == payload.email)
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+
+    if not user:
+        nickname = payload.email.split("@")[0] if "@" in payload.email else "Admin"
+        user = User(
+            email=payload.email,
+            nickname=nickname,
+            role="admin",
+            is_active=True
+        )
+        db.add(user)
+        await db.flush()
+    else:
+        user.role = "admin"
+        user.is_active = True
+
+    user.last_login = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(user)
+
+    access_token, refresh_token = auth.create_token_pair(user.id, user.email)
+    response = JSONResponse({"status": "ok", "user_id": user.id, "role": user.role})
+
+    base_cookie_kwargs = get_cookie_settings(request)
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        max_age=60 * 15,
+        path="/",
+        **base_cookie_kwargs
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        max_age=60 * 60 * 24 * 7,
+        path="/auth",
+        **base_cookie_kwargs
+    )
+
+    return response
 
 @app.get("/auth/login/{provider}")
 async def login(provider: str, request: Request):
@@ -3146,5 +3244,3 @@ if __name__ == "__main__":
         reload=True,
         log_level=config.log_level.lower()
     )
-
-

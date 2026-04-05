@@ -84,6 +84,7 @@ open http://localhost:8000/docs
 
 - **[USAGE_GUIDE.md](USAGE_GUIDE.md)** - Comprehensive usage guide with examples, configuration, and troubleshooting
 - **[README_RAG.md](README_RAG.md)** - TDD implementation plan and architecture details
+- **[ADMIN_PANEL.md](ADMIN_PANEL.md)** - Admin console overview, endpoints, and operations
 
 ---
 

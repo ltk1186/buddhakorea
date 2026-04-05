@@ -41,6 +41,9 @@ SSH → Hetzner VM
 | `NAVER_CLIENT_SECRET` | Naver OAuth |
 | `KAKAO_CLIENT_ID` | Kakao OAuth |
 | `KAKAO_CLIENT_SECRET` | Kakao OAuth |
+| `ADMIN_EMAIL` | Admin password login email (optional) |
+| `ADMIN_PASSWORD` | Admin password login (optional) |
+| `ADMIN_PASSWORD_HASH` | Admin password SHA-256 (optional) |
 
 ---
 

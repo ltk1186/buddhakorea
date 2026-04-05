@@ -8,7 +8,8 @@
     "test:ui": "../node_modules/.bin/playwright test --ui -c ../playwright.config.ts",
     "test:headed": "../node_modules/.bin/playwright test --headed -c ../playwright.config.ts",
     "test:debug": "../node_modules/.bin/playwright test --debug -c ../playwright.config.ts",
-    "test:report": "../node_modules/.bin/playwright show-report"
+    "test:report": "../node_modules/.bin/playwright show-report",
+    "test:admin": "PLAYWRIGHT_BASE_URL=http://localhost:8000 ../node_modules/.bin/playwright test -c ../playwright.config.ts --grep admin"
   },
   "keywords": ["buddhism", "playwright", "e2e"],
   "author": "Buddha Korea",

@@ -15,6 +15,8 @@ from . import auth
 from .database import get_db
 from .models.user import User
 
+ADMIN_ROLES = {"admin", "ops", "support", "curator", "analyst"}
+
 
 async def get_current_user_optional(
     request: Request,
@@ -92,6 +94,28 @@ async def get_admin_user(
             detail="Admin access required."
         )
     return user
+
+
+def require_roles(allowed_roles):
+    """
+    Dependency factory for role-based access control.
+
+    Args:
+        allowed_roles: Iterable of allowed role strings
+    """
+    allowed_roles_set = set(allowed_roles)
+
+    async def _require_roles(
+        user: User = Depends(get_current_user_required)
+    ) -> User:
+        if user.role not in allowed_roles_set:
+            raise HTTPException(
+                status_code=403,
+                detail="Insufficient role permissions."
+            )
+        return user
+
+    return _require_roles
 
 
 class TokenInfo:

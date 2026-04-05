@@ -5,6 +5,7 @@ All SQLAlchemy ORM models for the application.
 """
 
 from .user import User
+from .admin_audit_log import AdminAuditLog
 from .chat import ChatSession, ChatMessage, SavedExchange
 from .social_account import SocialAccount
 from .user_usage import (
@@ -18,6 +19,7 @@ from .user_usage import (
 
 __all__ = [
     "User",
+    "AdminAuditLog",
     "ChatSession",
     "ChatMessage",
     "SavedExchange",

@@ -3572,8 +3572,8 @@
             document.getElementById('hero').classList.add('hidden');
             isHeroVisible = false;
 
-            // Lock body scroll for single-page app feel
-            document.body.classList.add('no-scroll');
+            // Lock body scroll only for chat; allow scrolling in library/methodology
+            document.body.classList.toggle('no-scroll', tab === 'chat');
 
             // Update sections
             document.querySelectorAll('.chat-section, .library-section, .methodology-section').forEach(s => {

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buddha Korea Admin</title>
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="admin-shell">
+        <aside class="admin-sidebar">
+            <div class="brand">
+                <div class="brand-mark">BK</div>
+                <div class="brand-text">
+                    <span class="brand-title">Buddha Korea</span>
+                    <span class="brand-subtitle">Admin Console</span>
+                </div>
+            </div>
+            <nav class="nav">
+                <button class="nav-link is-active" data-section="dashboard">Dashboard</button>
+                <button class="nav-link" data-section="usage">Usage & Costs</button>
+                <button class="nav-link" data-section="users">Users</button>
+                <button class="nav-link" data-section="queries">Queries</button>
+                <button class="nav-link" data-section="audit">Audit Logs</button>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="status-indicator" id="authStatus">Checking access...</div>
+                <button class="ghost-button" id="refreshAll">Refresh All</button>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <div>
+                    <h1>Operations Console</h1>
+                    <p class="subtitle">Operational visibility for Buddha Korea RAG.</p>
+                </div>
+                <div class="header-user" id="adminUser">Not signed in</div>
+            </header>
+
+            <div class="notice-banner" id="noticeBanner">
+                <span class="notice-title">Access Required</span>
+                <span class="notice-text">Sign in with an admin account to view data.</span>
+                <div class="notice-actions">
+                    <a class="primary-button" href="/auth/login/google">Login with Google</a>
+                    <a class="ghost-button" href="/auth/login/naver">Naver</a>
+                    <a class="ghost-button" href="/auth/login/kakao">Kakao</a>
+                </div>
+                <form class="admin-login" id="adminLoginForm">
+                    <input type="email" id="adminEmail" placeholder="Admin email" required>
+                    <input type="password" id="adminPassword" placeholder="Admin password" required>
+                    <button class="primary-button" type="submit">Admin Login</button>
+                    <span class="login-status" id="adminLoginStatus"></span>
+                </form>
+            </div>
+
+            <section class="admin-section is-active" id="section-dashboard">
+                <div class="section-header">
+                    <h2>Dashboard</h2>
+                    <button class="ghost-button" data-action="refresh-dashboard">Refresh</button>
+                </div>
+                <div class="card-grid" id="dashboardCards">
+                    <div class="card">
+                        <div class="card-label">Users</div>
+                        <div class="card-value" id="metricUsers">-</div>
+                        <div class="card-meta" id="metricUsersMeta">-</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Queries Today</div>
+                        <div class="card-value" id="metricQueries">-</div>
+                        <div class="card-meta" id="metricQueriesMeta">-</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Tokens Today</div>
+                        <div class="card-value" id="metricTokens">-</div>
+                        <div class="card-meta">Logged-in usage</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Messages (24h)</div>
+                        <div class="card-value" id="metricMessages">-</div>
+                        <div class="card-meta">Chat messages across sessions</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">7-Day Cost</div>
+                        <div class="card-value" id="metricCost">-</div>
+                        <div class="card-meta">From usage logs</div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Usage Breakdown (7 Days)</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table-scroll">
+                            <table class="data-table" id="usageByModelTable">
+                                <thead>
+                                    <tr>
+                                        <th>Model</th>
+                                        <th>Queries</th>
+                                        <th>Tokens</th>
+                                        <th>Cost (USD)</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="admin-section" id="section-usage">
+                <div class="section-header">
+                    <h2>Usage & Costs</h2>
+                    <div class="actions">
+                        <label class="field-inline">
+                            Days
+                            <input type="number" id="usageDays" value="7" min="1" max="90">
+                        </label>
+                        <button class="primary-button" data-action="refresh-usage">Load</button>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-body">
+                        <div class="metric-row">
+                            <div>
+                                <div class="metric-label">Total Queries</div>
+                                <div class="metric-value" id="usageTotalQueries">-</div>
+                            </div>
+                            <div>
+                                <div class="metric-label">Total Tokens</div>
+                                <div class="metric-value" id="usageTotalTokens">-</div>
+                            </div>
+                            <div>
+                                <div class="metric-label">Total Cost</div>
+                                <div class="metric-value" id="usageTotalCost">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>By Day</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table-scroll">
+                            <table class="data-table" id="usageByDayTable">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Queries</th>
+                                        <th>Tokens</th>
+                                        <th>Cost (USD)</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="admin-section" id="section-users">
+                <div class="section-header">
+                    <h2>Users</h2>
+                    <div class="actions">
+                        <input type="text" id="userSearch" placeholder="Search email or nickname">
+                        <select id="userStatus">
+                            <option value="">All</option>
+                            <option value="active">Active</option>
+                            <option value="suspended">Suspended</option>
+                        </select>
+                        <button class="primary-button" data-action="refresh-users">Search</button>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-body">
+                        <div class="table-scroll">
+                            <table class="data-table" id="usersTable">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nickname</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Daily Limit</th>
+                                        <th>Today</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div class="table-footnote">Updates are audited and may require elevated role.</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="admin-section" id="section-queries">
+                <div class="section-header">
+                    <h2>Query Monitor</h2>
+                    <div class="actions">
+                        <select id="queryRole">
+                            <option value="">All Roles</option>
+                            <option value="user">User</option>
+                            <option value="assistant">Assistant</option>
+                        </select>
+                        <input type="text" id="querySession" placeholder="Session UUID">
+                        <input type="number" id="queryUserId" placeholder="User ID">
+                        <button class="primary-button" data-action="refresh-queries">Filter</button>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-body">
+                        <div class="table-scroll">
+                            <table class="data-table" id="queriesTable">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Role</th>
+                                        <th>Session</th>
+                                        <th>User</th>
+                                        <th>Content</th>
+                                        <th>Model</th>
+                                        <th>Sources</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div class="table-footnote">Query content is PII-masked.</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="admin-section" id="section-audit">
+                <div class="section-header">
+                    <h2>Audit Logs</h2>
+                    <button class="ghost-button" data-action="refresh-audit">Refresh</button>
+                </div>
+                <div class="panel">
+                    <div class="panel-body">
+                        <div class="table-scroll">
+                            <table class="data-table" id="auditTable">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Admin</th>
+                                        <th>Action</th>
+                                        <th>Target</th>
+                                        <th>Before</th>
+                                        <th>After</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>

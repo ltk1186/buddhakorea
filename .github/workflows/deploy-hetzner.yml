@@ -33,13 +33,16 @@ jobs:
           NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
           KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
           KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          ADMIN_PASSWORD_HASH: ${{ secrets.ADMIN_PASSWORD_HASH }}
         with:
           host: ${{ secrets.HETZNER_HOST }}
           username: ${{ secrets.HETZNER_USERNAME }}
           key: ${{ secrets.HETZNER_SSH_KEY }}
           port: 22
           command_timeout: 30m
-          envs: SECRET_KEY,REDIS_PASSWORD,POSTGRES_PASSWORD,GEMINI_API_KEY,PALI_GEMINI_API_KEY,GCP_PROJECT_ID,GCP_SERVICE_ACCOUNT_KEY,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,NAVER_CLIENT_ID,NAVER_CLIENT_SECRET,KAKAO_CLIENT_ID,KAKAO_CLIENT_SECRET
+          envs: SECRET_KEY,REDIS_PASSWORD,POSTGRES_PASSWORD,GEMINI_API_KEY,PALI_GEMINI_API_KEY,GCP_PROJECT_ID,GCP_SERVICE_ACCOUNT_KEY,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,NAVER_CLIENT_ID,NAVER_CLIENT_SECRET,KAKAO_CLIENT_ID,KAKAO_CLIENT_SECRET,ADMIN_EMAIL,ADMIN_PASSWORD,ADMIN_PASSWORD_HASH
           script: |
             echo "🎉 Connecting to Hetzner Server..."
             cd /opt/buddha-korea
@@ -101,6 +104,9 @@ jobs:
               echo "NAVER_CLIENT_SECRET=${NAVER_CLIENT_SECRET}"
               echo "KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}"
               echo "KAKAO_CLIENT_SECRET=${KAKAO_CLIENT_SECRET}"
+              echo "ADMIN_EMAIL=${ADMIN_EMAIL}"
+              echo "ADMIN_PASSWORD=${ADMIN_PASSWORD}"
+              echo "ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH}"
               echo "POSTGRES_USER=postgres"
               echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}"
               echo "POSTGRES_DB=buddhakorea"
