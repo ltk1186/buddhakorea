@@ -701,7 +701,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: buddhakorea-redis
-    command: redis-server /usr/local/etc/redis/redis.conf
+    command: /bin/sh -c 'exec redis-server /usr/local/etc/redis/redis.conf --requirepass "$$REDIS_PASSWORD"'
     volumes:
       - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
       - ./redis-data:/data
