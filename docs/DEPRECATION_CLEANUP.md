@@ -148,6 +148,13 @@ branches. This reduces the risk of a future `ChatVertexAI` replacement because
 the migration target is now one factory function instead of several scattered
 call sites.
 
+### Completed: LangChain Chain Invocation Cleanup
+
+`backend/app/main.py` now calls RetrievalQA chains with `.invoke({"query": ...})`
+instead of the deprecated `chain({"query": ...})` shorthand. This removes the
+runtime `Chain.__call__` deprecation warning without changing the request or
+response shape.
+
 Some non-runtime source explorer/evaluation scripts still use direct Vertex AI
 SDK imports:
 

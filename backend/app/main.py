@@ -2001,7 +2001,7 @@ Answer:"""
                 chain_type_kwargs={"prompt": PROMPT}
             )
 
-            result = filtered_qa_chain({"query": query})
+            result = filtered_qa_chain.invoke({"query": query})
             logger.info(f"Filtered query completed for sutra: {request.sutra_filter}")
         elif tradition_sutra_ids and len(tradition_sutra_ids) > 0:
             # Tradition filter active - search only within matching sutras
@@ -2067,7 +2067,7 @@ Answer:""".replace("{tradition}", tradition_filter_normalized)
                 chain_type_kwargs={"prompt": PROMPT}
             )
 
-            result = tradition_qa_chain({"query": query})
+            result = tradition_qa_chain.invoke({"query": query})
             logger.info(f"Tradition-filtered query completed: {tradition_filter_normalized}")
         elif request.detailed_mode:
             # Detailed mode without sutra filter
@@ -2111,11 +2111,11 @@ Answer:"""
                 chain_type_kwargs={"prompt": PROMPT}
             )
 
-            result = detailed_qa_chain({"query": query})
+            result = detailed_qa_chain.invoke({"query": query})
             logger.info("Detailed query completed")
         else:
             # Use default QA chain (no filtering, no detailed mode)
-            result = app_state.qa_chain({"query": query})
+            result = app_state.qa_chain.invoke({"query": query})
 
         # Format response
         response_text = result["result"]
