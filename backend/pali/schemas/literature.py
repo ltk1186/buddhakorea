@@ -1,7 +1,7 @@
 """Pydantic schemas for literature-related endpoints."""
 from typing import Optional, List, Dict, Any
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from .common import PaginationMeta
 
@@ -31,8 +31,7 @@ class LiteratureResponse(LiteratureBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class LiteratureListResponse(BaseModel):
@@ -62,8 +61,7 @@ class SegmentResponse(SegmentBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SegmentListResponse(BaseModel):

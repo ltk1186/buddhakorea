@@ -5,7 +5,7 @@ Loads settings from environment variables with sensible defaults.
 import os
 from pathlib import Path
 from typing import Optional
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 
 # Dynamic path resolution for DPD database
@@ -79,11 +79,12 @@ class Settings(BaseSettings):
     TRANSLATION_MAX_RETRIES: int = 2  # Increased for reliability
     EXPLANATION_MAX_SENTENCES: int = 3
 
-    class Config:
-        env_prefix = "PALI_"  # Allow PALI_ prefixed env vars
-        env_file = ".env"
-        case_sensitive = True
-        extra = "ignore"  # Ignore extra environment variables
+    model_config = SettingsConfigDict(
+        env_prefix="PALI_",  # Allow PALI_ prefixed env vars
+        env_file=".env",
+        case_sensitive=True,
+        extra="ignore",  # Ignore extra environment variables
+    )
 
 
 @lru_cache()

@@ -48,14 +48,25 @@ Script files changed:
 - `backend/scripts/run_normalization.py`
 - `backend/scripts/convert_detailed_style.py`
 
+### Completed: Low-Risk Warning Hygiene
+
+Non-behavioral deprecation cleanup has also been applied:
+
+- Pydantic settings and response schemas now use Pydantic v2 `model_config`.
+- Pali database setup now imports `declarative_base` from `sqlalchemy.orm`.
+- Backend pytest config now sets `asyncio_default_fixture_loop_scope`.
+
 ## Verification Commands
 
 Compile changed files:
 
 ```bash
 python3 -m compileall \
+  backend/app/main.py \
   backend/pali/services/gemini_client.py \
   backend/pali/config.py \
+  backend/pali/schemas/literature.py \
+  backend/pali/db/database.py \
   backend/app/gemini_query_embedder.py \
   backend/scripts/run_normalization.py \
   backend/scripts/convert_detailed_style.py
@@ -64,8 +75,8 @@ python3 -m compileall \
 Run backend admin tests in the dev container:
 
 ```bash
-docker exec -e PYTHONPATH=/app/backend:/app buddhakorea-dev-backend \
-  pytest /app/backend/tests -q
+docker exec -w /app/backend -e PYTHONPATH=/app/backend:/app buddhakorea-dev-backend \
+  pytest tests -q
 ```
 
 Smoke-test Google GenAI imports and adapters in the dev container:

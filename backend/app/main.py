@@ -24,7 +24,7 @@ from fastapi.responses import JSONResponse, HTMLResponse, StreamingResponse, Red
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from pydantic import BaseModel, Field
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from loguru import logger
 import chromadb
 from chromadb.config import Settings as ChromaSettings
@@ -140,10 +140,11 @@ class AppConfig(BaseSettings):
     max_workers: int = 4
     batch_size: int = 32
 
-    class Config:
-        env_file = "../.env"  # .env is in project root, not backend/
-        case_sensitive = False
-        extra = "ignore"
+    model_config = SettingsConfigDict(
+        env_file="../.env",  # .env is in project root, not backend/
+        case_sensitive=False,
+        extra="ignore",
+    )
 
 
 config = AppConfig()
