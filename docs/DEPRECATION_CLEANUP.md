@@ -158,6 +158,14 @@ and module startup also suppress that exact internal warning by message. This is
 intentionally scoped and should be removed when `RetrievalQA` is replaced with a
 newer LCEL-style retrieval chain.
 
+### Deployment Note: Backend Rebuild Required
+
+Backend source files are copied into the production Docker image. A plain
+`docker compose up -d --force-recreate` does not update `/app/app/main.py`
+inside the running backend image. The Hetzner GitHub Actions workflow now
+rebuilds the image when `backend/**`, `requirements.txt`, `pyproject.toml`,
+`Dockerfile`, or `frontend/pali-studio/**` changes.
+
 Some non-runtime source explorer/evaluation scripts still use direct Vertex AI
 SDK imports:
 

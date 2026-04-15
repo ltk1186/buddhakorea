@@ -1869,6 +1869,27 @@ docker exec -it buddhakorea-backend /bin/bash
 docker system prune -af
 ```
 
+### GitHub Actions Rebuild Rules
+
+The Hetzner deploy workflow must rebuild the Docker image whenever files copied
+by `Dockerfile` change. A service recreate alone is not enough for backend code,
+because production does not bind-mount `backend/app` into the backend container.
+
+Rebuild-required changes:
+
+- `Dockerfile`
+- `requirements.txt`
+- `pyproject.toml`
+- `backend/**`
+- `frontend/pali-studio/**`
+
+No-image-rebuild changes:
+
+- `config/**`: pull and recreate services.
+- `scripts/**`: pull and recreate services.
+- regular `frontend/**`: pull and recreate; nginx serves the frontend from the
+  host bind mount.
+
 ---
 
 > **문서 작성**: Claude Code

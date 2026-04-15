@@ -6,8 +6,11 @@ on:
     paths:
       - 'backend/**'
       - 'config/**'
+      - 'frontend/**'
       - 'scripts/**'
       - 'Dockerfile'
+      - 'requirements.txt'
+      - 'pyproject.toml'
       - '.github/workflows/deploy-hetzner.yml'
   workflow_dispatch:  # 수동 배포 허용
 
@@ -137,12 +140,13 @@ jobs:
               echo "ℹ️ PostgreSQL container not running yet, password will be set on first start"
             fi
 
-            # Dockerfile 또는 requirements.txt 변경 시에만 빌드
-            if echo "$CHANGED_FILES" | grep -qE "(Dockerfile|requirements\.txt)"; then
-              echo "🐳 Dockerfile/requirements changed - Full rebuild..."
+            # Rebuild whenever files copied into the backend image change.
+            # Plain frontend changes are pulled for the nginx bind mount; Pali Studio is baked into the image.
+            if echo "$CHANGED_FILES" | grep -qE "^(Dockerfile|requirements\.txt|pyproject\.toml|backend/|frontend/pali-studio/|\.github/workflows/deploy-hetzner\.yml)"; then
+              echo "🐳 Image source changed - rebuilding backend image..."
               docker compose -f config/docker-compose.yml up -d --build
             else
-              echo "🔄 Code only changed - Quick restart..."
+              echo "🔄 No image rebuild required - recreating services..."
               docker compose -f config/docker-compose.yml up -d --force-recreate
             fi
 
