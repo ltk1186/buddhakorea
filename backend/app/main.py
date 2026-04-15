@@ -64,6 +64,9 @@ from .admin import router as admin_router
 from pali.db.database import Base as PaliBase, engine as pali_engine, SessionLocal as PaliSessionLocal
 from pali.db import models as pali_models  # Ensure models are registered
 
+LANGCHAIN_CHAIN_CALL_WARNING = r"The method `Chain\.__call__` was deprecated.*"
+warnings.filterwarnings("ignore", message=LANGCHAIN_CHAIN_CALL_WARNING)
+
 
 # ============================================================================
 # Configuration
@@ -811,7 +814,7 @@ def invoke_retrieval_qa(chain: RetrievalQA, query: str) -> Dict[str, Any]:
     with warnings.catch_warnings():
         warnings.filterwarnings(
             "ignore",
-            message=r"The method `Chain\.__call__` was deprecated.*",
+            message=LANGCHAIN_CHAIN_CALL_WARNING,
         )
         return chain.invoke({"query": query})
 
