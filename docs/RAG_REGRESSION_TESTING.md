@@ -114,6 +114,46 @@ Before changing the LLM adapter or RetrievalQA path:
 6. Run health-only first, then one full production case.
 7. Run the full production set if the one-case smoke check is clean.
 
+## Production Baseline
+
+### 2026-04-15: Pre-Migration Baseline
+
+Baseline target:
+
+- Environment: production, `https://buddhakorea.com`
+- Git commit: `92088fb`
+- Main model reported by `/api/chat`: `gemini-2.5-pro`
+- Current answer-generation path: `langchain_google_vertexai.ChatVertexAI`
+- Execution mode: admin login, full golden set
+- Result: passed `3`, skipped `0`
+
+Command:
+
+```bash
+ADMIN_EMAIL="..." ADMIN_PASSWORD="..." \
+python3 scripts/rag_regression_check.py \
+  --base-url https://buddhakorea.com \
+  --login
+```
+
+Observed results:
+
+| Case | Result | API Latency | Wall Time | Sources | Model |
+| --- | --- | ---: | ---: | ---: | --- |
+| `normal_four_noble_truths_ko` | pass | 50,375 ms | 50,844 ms | 3 | `gemini-2.5-pro` |
+| `normal_impermanence_ko` | pass | 45,773 ms | 46,235 ms | 5 | `gemini-2.5-pro` |
+| `sutra_filter_agama_ko` | pass | 37,242 ms | 38,476 ms | 1 | `gemini-2.5-pro` |
+
+Interpretation:
+
+- This is the rollback comparison point for any future LLM/RAG migration.
+- A replacement path should match the schema contract and citation behavior
+  before it is considered production-safe.
+- Latency can improve or regress, but regressions above the current 120 second
+  smoke ceiling should block deployment.
+- If wording changes but these coarse checks pass, do a manual answer-quality
+  review before accepting the migration.
+
 ## Rollback Rule
 
 If any case fails after an LLM/RAG migration and the failure is not an expected

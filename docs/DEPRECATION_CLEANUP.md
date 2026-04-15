@@ -134,6 +134,10 @@ Before replacing this path, run the RAG golden-query checks documented in
 - `backend/app/rag_golden_queries.json`
 - `scripts/rag_regression_check.py`
 
+A production pre-migration baseline was captured on 2026-04-15 at commit
+`92088fb`; see `docs/RAG_REGRESSION_TESTING.md` for the recorded latencies,
+source counts, and pass/fail results.
+
 Some non-runtime source explorer/evaluation scripts still use direct Vertex AI
 SDK imports:
 
