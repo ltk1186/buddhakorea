@@ -38,6 +38,7 @@ class Settings(BaseSettings):
 
     # Google Cloud / Vertex AI
     GCP_PROJECT_ID: Optional[str] = None
+    GCP_LOCATION: str = "us-central1"
     GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = None
     GEMINI_MODEL: str = "gemini-2.5-pro"
 

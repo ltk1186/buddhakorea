@@ -5,12 +5,12 @@ Uses existing normalized file as base (tradition/period + brief_summary already 
 """
 
 import json
+import os
 import re
 import time
 from pathlib import Path
 
-import vertexai
-from vertexai.generative_models import GenerativeModel
+from google import genai
 
 # Config
 INPUT_FILE = "source_explorer/source_data/source_summaries_ko_normalized.json"
@@ -25,9 +25,10 @@ PROMPT_TEMPLATE = """다음 텍스트의 문체를 '합니다/습니다'체에�
 {text}"""
 
 def main():
-    # Initialize Vertex AI
-    vertexai.init(project='gen-lang-client-0324154376', location='us-central1')
-    model = GenerativeModel("gemini-2.0-flash")
+    project_id = os.getenv('GCP_PROJECT_ID', 'gen-lang-client-0324154376')
+    location = os.getenv('GCP_LOCATION', 'us-central1')
+    model_name = os.getenv('GEMINI_MODEL', 'gemini-2.0-flash')
+    client = genai.Client(vertexai=True, project=project_id, location=location)
 
     # Load data
     print(f"Loading {INPUT_FILE}...")
@@ -56,7 +57,10 @@ def main():
 
             # Convert
             prompt = PROMPT_TEMPLATE.format(text=text)
-            response = model.generate_content(prompt)
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+            )
 
             if response.text:
                 converted = response.text.strip()

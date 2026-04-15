@@ -10,7 +10,7 @@ itsdangerous>=2.1.2
 # LLM & AI
 openai==1.54.3
 anthropic==0.39.0
-google-generativeai>=0.3.0  # For Pali Studio translation
+google-genai>=1.2.0  # For Pali Studio translation and Gemini embeddings
 
 # RAG & Vector Database
 langchain==0.3.7

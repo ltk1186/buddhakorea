@@ -27,20 +27,12 @@ from typing import Optional
 
 # Optional imports for style normalization
 try:
-    import vertexai
-    from vertexai.generative_models import GenerativeModel
+    from google import genai
     from dotenv import load_dotenv
     GENAI_AVAILABLE = True
 except ImportError:
-    try:
-        import google.generativeai as genai
-        from dotenv import load_dotenv
-        GENAI_AVAILABLE = True
-        vertexai = None
-    except ImportError:
-        GENAI_AVAILABLE = False
-        vertexai = None
-        genai = None
+    GENAI_AVAILABLE = False
+    genai = None
 
 
 class TripitakaNormalizer:
@@ -153,12 +145,11 @@ class TripitakaNormalizer:
             # Rate limiting: wait 0.5 second between API calls
             time.sleep(0.5)
 
-            # Use Vertex AI or google.generativeai
-            if vertexai and hasattr(self, '_vertex_model'):
-                response = self._vertex_model.generate_content(prompt)
-            elif genai:
-                model = genai.GenerativeModel(self.style_rules['api_config']['model'])
-                response = model.generate_content(prompt)
+            if hasattr(self, '_genai_client'):
+                response = self._genai_client.models.generate_content(
+                    model=self.style_rules['api_config']['model'],
+                    contents=prompt,
+                )
             else:
                 return text, False
 
@@ -262,27 +253,30 @@ class TripitakaNormalizer:
             else:
                 load_dotenv()
 
-                # Try Vertex AI first (GCP ADC)
-                if vertexai:
+                api_key = os.getenv('GOOGLE_API_KEY') or os.getenv('GEMINI_API_KEY')
+                project_id = os.getenv('GCP_PROJECT_ID', 'gen-lang-client-0324154376')
+                location = os.getenv('GCP_LOCATION', 'us-central1')
+
+                if project_id:
                     try:
-                        project_id = os.getenv('GCP_PROJECT_ID', 'gen-lang-client-0324154376')
-                        location = os.getenv('GCP_LOCATION', 'us-central1')
-                        vertexai.init(project=project_id, location=location)
-                        self._vertex_model = GenerativeModel("gemini-2.5-flash")
-                        print(f"Vertex AI configured (project={project_id}, location={location})")
+                        self._genai_client = genai.Client(
+                            vertexai=True,
+                            project=project_id,
+                            location=location,
+                        )
+                        print(f"Google GenAI Vertex configured (project={project_id}, location={location})")
                     except Exception as e:
-                        print(f"Vertex AI init failed: {e}")
-                        skip_style = True
-                # Fallback to google.generativeai with API key
-                elif genai:
-                    api_key = os.getenv('GOOGLE_API_KEY') or os.getenv('GEMINI_API_KEY')
-                    if api_key:
-                        genai.configure(api_key=api_key)
-                        print("Gemini API configured for style normalization")
-                    else:
-                        print("Warning: No API key found. Skipping style normalization.")
-                        skip_style = True
+                        if api_key:
+                            self._genai_client = genai.Client(api_key=api_key)
+                            print("Gemini API configured for style normalization")
+                        else:
+                            print(f"Google GenAI init failed: {e}")
+                            skip_style = True
+                elif api_key:
+                    self._genai_client = genai.Client(api_key=api_key)
+                    print("Gemini API configured for style normalization")
                 else:
+                    print("Warning: No Google AI credentials found. Skipping style normalization.")
                     skip_style = True
 
         # Process each record

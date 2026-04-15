@@ -7,7 +7,8 @@ import re
 import logging
 from typing import AsyncGenerator, Optional, List, Tuple
 from pydantic import ValidationError
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 from ..config import settings
 from ..schemas.translate import TranslationResult
@@ -150,36 +151,71 @@ class GeminiClient:
 
     def __init__(self):
         """Initialize the Gemini client."""
+        self.client = self._create_client()
+        self.model_name = settings.GEMINI_MODEL
+
+        self.generation_config = types.GenerateContentConfig(
+            temperature=settings.TEMPERATURE,
+            max_output_tokens=32768,
+        )
+        self.json_generation_config = types.GenerateContentConfig(
+            temperature=settings.TEMPERATURE,
+            max_output_tokens=32768,
+            response_mime_type="application/json",
+        )
+
+    def _create_client(self) -> genai.Client:
+        """Create a google-genai client using API key first, then Vertex AI."""
         if settings.GEMINI_API_KEY:
-            genai.configure(api_key=settings.GEMINI_API_KEY)
+            return genai.Client(api_key=settings.GEMINI_API_KEY)
 
-        # Standard model (for streaming - no JSON mime type)
-        self.model = genai.GenerativeModel(
-            model_name=settings.GEMINI_MODEL,
-            generation_config={
-                "temperature": settings.TEMPERATURE,
-                "max_output_tokens": 32768,  # Increased for long translations
-            }
+        if settings.GCP_PROJECT_ID:
+            return genai.Client(
+                vertexai=True,
+                project=settings.GCP_PROJECT_ID,
+                location=settings.GCP_LOCATION,
+            )
+
+        return genai.Client()
+
+    async def _generate_content(
+        self,
+        prompt: str,
+        config: Optional[types.GenerateContentConfig] = None,
+    ):
+        """Generate non-streaming content with the configured Gemini model."""
+        return await self.client.aio.models.generate_content(
+            model=self.model_name,
+            contents=prompt,
+            config=config or self.generation_config,
         )
 
-        # JSON-enforced model (for non-streaming with validation)
-        self.json_model = genai.GenerativeModel(
-            model_name=settings.GEMINI_MODEL,
-            generation_config={
-                "temperature": settings.TEMPERATURE,
-                "max_output_tokens": 32768,  # Increased for long translations
-                "response_mime_type": "application/json",
-            }
+    async def _generate_content_stream(
+        self,
+        prompt: str,
+        config: Optional[types.GenerateContentConfig] = None,
+    ):
+        """Generate streaming content with the configured Gemini model."""
+        return await self.client.aio.models.generate_content_stream(
+            model=self.model_name,
+            contents=prompt,
+            config=config or self.generation_config,
         )
 
-        # Batch model with higher token limit (for batch translation)
-        self.batch_model = genai.GenerativeModel(
-            model_name=settings.GEMINI_MODEL,
-            generation_config={
-                "temperature": settings.TEMPERATURE,
-                "max_output_tokens": 32768,  # Higher limit for batch
-            }
-        )
+    def _chunk_text(self, chunk) -> str:
+        """Safely extract text from a streaming Gemini chunk."""
+        try:
+            text = getattr(chunk, "text", None)
+            if text:
+                return text
+        except (AttributeError, ValueError):
+            pass
+
+        try:
+            parts = chunk.candidates[0].content.parts
+            return "".join(getattr(part, "text", "") or "" for part in parts)
+        except (AttributeError, IndexError, TypeError):
+            return ""
 
     def _clean_json_response(self, text: str) -> str:
         """Clean up JSON response (remove markdown code blocks)."""
@@ -258,16 +294,14 @@ class GeminiClient:
         prompt = TRANSLATION_PROMPT.format(text=pali_text)
 
         try:
-            response = await self.model.generate_content_async(
-                prompt,
-                stream=True
-            )
+            response = await self._generate_content_stream(prompt)
 
             full_response = ""
             async for chunk in response:
-                if chunk.text:
-                    full_response += chunk.text
-                    yield {"type": "token", "content": chunk.text}
+                text = self._chunk_text(chunk)
+                if text:
+                    full_response += text
+                    yield {"type": "token", "content": text}
 
             # Parse the complete JSON response
             try:
@@ -288,8 +322,8 @@ class GeminiClient:
         prompt = TRANSLATION_PROMPT.format(text=pali_text)
 
         try:
-            response = await self.model.generate_content_async(prompt)
-            result = self._validate_response(response.text)
+            response = await self._generate_content(prompt)
+            result = self._validate_response(self._get_response_text(response))
             return result.model_dump()
         except Exception as e:
             logger.error(f"Translation error: {e}")
@@ -317,16 +351,14 @@ class GeminiClient:
         prompt = self._build_enhanced_prompt(pali_text, grammar_hints)
 
         try:
-            response = await self.model.generate_content_async(
-                prompt,
-                stream=True
-            )
+            response = await self._generate_content_stream(prompt)
 
             full_response = ""
             async for chunk in response:
-                if chunk.text:
-                    full_response += chunk.text
-                    yield {"type": "token", "content": chunk.text}
+                text = self._chunk_text(chunk)
+                if text:
+                    full_response += text
+                    yield {"type": "token", "content": text}
 
             # Validate and parse
             try:
@@ -354,19 +386,29 @@ class GeminiClient:
         try:
             # Check if response has candidates
             if not response.candidates:
+                text = getattr(response, "text", None)
+                if text:
+                    return text
                 raise TranslationParseError("No response candidates available")
 
             candidate = response.candidates[0]
 
             # Check finish_reason (2 = SAFETY, 3 = RECITATION, 4 = OTHER)
-            if hasattr(candidate, 'finish_reason') and candidate.finish_reason in [2, 3, 4]:
+            finish_reason = getattr(candidate, "finish_reason", None)
+            finish_reason_value = getattr(finish_reason, "value", finish_reason)
+            if finish_reason_value in [2, 3, 4, "SAFETY", "RECITATION", "OTHER"]:
                 reason_names = {2: "SAFETY", 3: "RECITATION", 4: "OTHER"}
-                reason = reason_names.get(candidate.finish_reason, str(candidate.finish_reason))
+                reason = reason_names.get(finish_reason_value, str(finish_reason_value))
                 raise TranslationParseError(f"Response blocked: finish_reason={reason}")
 
             # Try to get text
             if hasattr(candidate, 'content') and candidate.content and candidate.content.parts:
-                return candidate.content.parts[0].text
+                text = "".join(
+                    getattr(part, "text", "") or ""
+                    for part in candidate.content.parts
+                )
+                if text:
+                    return text
 
             # Fallback to response.text
             return response.text
@@ -384,7 +426,10 @@ class GeminiClient:
 
         for attempt in range(settings.TRANSLATION_MAX_RETRIES + 1):
             try:
-                response = await self.json_model.generate_content_async(prompt)
+                response = await self._generate_content(
+                    prompt,
+                    config=self.json_generation_config,
+                )
                 text = self._get_response_text(response)
                 return self._validate_response(text)
             except TranslationParseError as e:
@@ -408,7 +453,10 @@ class GeminiClient:
 
         for attempt in range(settings.TRANSLATION_MAX_RETRIES + 1):
             try:
-                response = await self.json_model.generate_content_async(prompt)
+                response = await self._generate_content(
+                    prompt,
+                    config=self.json_generation_config,
+                )
                 text = self._get_response_text(response)
                 result = self._validate_response(text)
                 return result.model_dump()
@@ -448,22 +496,14 @@ class GeminiClient:
 
         try:
             # Use batch_model with higher token limit
-            response = await self.batch_model.generate_content_async(
-                prompt,
-                stream=True
-            )
+            response = await self._generate_content_stream(prompt)
 
             full_response = ""
             async for chunk in response:
-                try:
-                    if chunk.text:
-                        full_response += chunk.text
-                        yield {"type": "token", "content": chunk.text}
-                except ValueError as e:
-                    # chunk.text raises ValueError when no valid Part exists
-                    # This can happen due to content filtering or empty responses
-                    logger.warning(f"Empty chunk in batch translation: {e}")
-                    continue
+                text = self._chunk_text(chunk)
+                if text:
+                    full_response += text
+                    yield {"type": "token", "content": text}
 
             # Signal parsing phase
             yield {"type": "parse_complete", "status": "parsing"}
@@ -628,14 +668,12 @@ class GeminiClient:
         )
 
         try:
-            response = await self.model.generate_content_async(
-                prompt,
-                stream=True
-            )
+            response = await self._generate_content_stream(prompt)
 
             async for chunk in response:
-                if chunk.text:
-                    yield {"type": "token", "content": chunk.text}
+                text = self._chunk_text(chunk)
+                if text:
+                    yield {"type": "token", "content": text}
 
             yield {"type": "done"}
 
@@ -661,8 +699,8 @@ class GeminiClient:
         )
 
         try:
-            response = await self.model.generate_content_async(prompt)
-            return response.text
+            response = await self._generate_content(prompt)
+            return self._get_response_text(response)
         except Exception as e:
             logger.error(f"Chat error: {e}")
             return None

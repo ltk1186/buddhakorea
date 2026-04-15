@@ -5,8 +5,8 @@ Provides query embedding using Google's Gemini API to match document embeddings
 
 import os
 from typing import List, Union
-import vertexai
-from vertexai.language_models import TextEmbeddingModel, TextEmbeddingInput
+from google import genai
+from google.genai import types
 
 
 class GeminiQueryEmbedder:
@@ -39,9 +39,11 @@ class GeminiQueryEmbedder:
                 "GCP_PROJECT_ID environment variable"
             )
 
-        # Initialize Vertex AI
-        vertexai.init(project=self.project_id, location=self.location)
-        self.model = TextEmbeddingModel.from_pretrained(model_name)
+        self.client = genai.Client(
+            vertexai=True,
+            project=self.project_id,
+            location=self.location,
+        )
 
         print(f"✅ Gemini Query Embedder initialized")
         print(f"   Project: {self.project_id}")
@@ -72,17 +74,14 @@ class GeminiQueryEmbedder:
         if isinstance(sentences, str):
             sentences = [sentences]
 
-        # Create TextEmbeddingInput objects
-        inputs = [
-            TextEmbeddingInput(text=text, task_type=task_type)
-            for text in sentences
-        ]
-
-        # Get embeddings
-        embeddings = self.model.get_embeddings(inputs)
+        response = self.client.models.embed_content(
+            model=self.model_name,
+            contents=sentences,
+            config=types.EmbedContentConfig(task_type=task_type),
+        )
 
         # Extract values
-        return [emb.values for emb in embeddings]
+        return [embedding.values for embedding in response.embeddings]
 
     def embed_query(self, query: str) -> List[float]:
         """

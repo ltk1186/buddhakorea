@@ -130,7 +130,7 @@ cmd_psql() {
 
 # 명령어: test
 cmd_test() {
-    docker-compose -f "$COMPOSE_FILE" exec backend pytest "${@:-tests/}"
+    docker-compose -f "$COMPOSE_FILE" exec backend pytest "${@:-/app/backend/tests}"
 }
 
 # 메인
