@@ -692,8 +692,6 @@ docker-compose.yml (Dev)        docker-compose.production.yml (Prod)
 # ChromaDB: 파일 기반 (./chroma_db)
 # 마지막 업데이트: 2025-12-09
 
-version: '3.8'
-
 services:
   # ──────────────────────────────────────────────────────────
   # Redis: 세션 저장소 + LLM 응답 캐시 + 분석 데이터
