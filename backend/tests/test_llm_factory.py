@@ -1,4 +1,3 @@
-import warnings
 from unittest.mock import Mock
 
 from backend.app import main
@@ -124,29 +123,56 @@ def test_create_chat_llm_routes_openai_when_key_is_configured(monkeypatch):
     )
 
 
-def test_invoke_retrieval_qa_uses_invoke_payload():
+def test_create_rag_chain_uses_lcel_factories(monkeypatch):
+    llm = object()
+    retriever = object()
+    prompt = object()
+    document_chain = object()
+    rag_chain = object()
+    create_stuff_documents_chain = Mock(return_value=document_chain)
+    create_retrieval_chain = Mock(return_value=rag_chain)
+    monkeypatch.setattr(
+        main,
+        "create_stuff_documents_chain",
+        create_stuff_documents_chain,
+    )
+    monkeypatch.setattr(main, "create_retrieval_chain", create_retrieval_chain)
+
+    result = main.create_rag_chain(llm, retriever, prompt)
+
+    assert result is rag_chain
+    create_stuff_documents_chain.assert_called_once_with(llm, prompt)
+    create_retrieval_chain.assert_called_once_with(retriever, document_chain)
+
+
+def test_invoke_rag_chain_uses_lcel_payload_and_preserves_response_shape():
+    source_documents = [object()]
     chain = Mock()
-    chain.invoke.return_value = {"result": "ok", "source_documents": []}
+    chain.invoke.return_value = {
+        "answer": "ok",
+        "context": source_documents,
+        "input": "사성제란 무엇입니까?",
+    }
 
-    result = main.invoke_retrieval_qa(chain, "사성제란 무엇입니까?")
+    result = main.invoke_rag_chain(chain, "사성제란 무엇입니까?")
 
-    assert result == {"result": "ok", "source_documents": []}
-    chain.invoke.assert_called_once_with({"query": "사성제란 무엇입니까?"})
+    assert result == {"result": "ok", "source_documents": source_documents}
+    chain.invoke.assert_called_once_with(
+        {
+            "input": "사성제란 무엇입니까?",
+            "question": "사성제란 무엇입니까?",
+        }
+    )
 
 
-def test_invoke_retrieval_qa_suppresses_known_langchain_call_warning():
-    class WarningChain:
-        def invoke(self, payload):
-            warnings.warn(
-                "The method `Chain.__call__` was deprecated in langchain 0.1.0 "
-                "and will be removed in 1.0. Use :meth:`~invoke` instead.",
-                DeprecationWarning,
-            )
-            return {"result": payload["query"], "source_documents": []}
+def test_invoke_rag_chain_accepts_legacy_result_keys():
+    source_documents = [object()]
+    chain = Mock()
+    chain.invoke.return_value = {
+        "result": "legacy ok",
+        "source_documents": source_documents,
+    }
 
-    with warnings.catch_warnings(record=True) as caught:
-        warnings.simplefilter("always")
-        result = main.invoke_retrieval_qa(WarningChain(), "무상")
+    result = main.invoke_rag_chain(chain, "무상")
 
-    assert result == {"result": "무상", "source_documents": []}
-    assert caught == []
+    assert result == {"result": "legacy ok", "source_documents": source_documents}

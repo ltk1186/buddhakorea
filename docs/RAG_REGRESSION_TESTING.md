@@ -102,9 +102,9 @@ python3 scripts/rag_regression_check.py \
   --login
 ```
 
-## Required Before ChatVertexAI Migration
+## Required Before Provider Migration
 
-Before changing the LLM adapter or RetrievalQA path:
+Before changing the LLM provider adapter:
 
 1. Run the full golden set against the current production behavior.
 2. Save the output in the deployment notes or PR summary.
@@ -117,7 +117,7 @@ Before changing the LLM adapter or RetrievalQA path:
 ## Unit-Level Safety Coverage
 
 `backend/tests/test_llm_factory.py` protects the provider-routing layer that was
-introduced before the `ChatVertexAI` migration.
+introduced before the provider migration, plus the LCEL RAG invocation wrapper.
 
 Covered contracts:
 
@@ -128,9 +128,11 @@ Covered contracts:
   when configured.
 - OpenAI fallback model names require `OPENAI_API_KEY` and route to
   `ChatOpenAI` when configured.
-- `invoke_retrieval_qa` always calls `chain.invoke({"query": query})`.
-- The narrowly scoped internal LangChain `Chain.__call__` warning suppression is
-  covered without hiding unrelated warnings.
+- `create_rag_chain` builds the LCEL path with `create_stuff_documents_chain`
+  and `create_retrieval_chain`.
+- `invoke_rag_chain` calls chains with both `input` and `question` keys, then
+  maps LCEL output (`answer`, `context`) back to the legacy API shape
+  (`result`, `source_documents`).
 
 Run these tests locally inside the backend container:
 
@@ -148,7 +150,8 @@ Baseline target:
 - Environment: production, `https://buddhakorea.com`
 - Git commit: `92088fb`
 - Main model reported by `/api/chat`: `gemini-2.5-pro`
-- Current answer-generation path: `langchain_google_vertexai.ChatVertexAI`
+- Current answer-generation path at baseline:
+  `langchain_google_vertexai.ChatVertexAI` with legacy `RetrievalQA`
 - Execution mode: admin login, full golden set
 - Result: passed `3`, skipped `0`
 

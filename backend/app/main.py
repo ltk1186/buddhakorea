@@ -13,7 +13,6 @@ import uuid
 import asyncio
 import hmac
 import hashlib
-import warnings
 from pathlib import Path
 from datetime import datetime, timedelta, timezone, date
 from typing import List, Optional, Dict, Any
@@ -33,7 +32,8 @@ from langchain_anthropic import ChatAnthropic
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_google_vertexai import ChatVertexAI
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain.chains import RetrievalQA
+from langchain.chains import create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import PromptTemplate
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -63,9 +63,6 @@ from pali.api import router as pali_router
 from .admin import router as admin_router
 from pali.db.database import Base as PaliBase, engine as pali_engine, SessionLocal as PaliSessionLocal
 from pali.db import models as pali_models  # Ensure models are registered
-
-LANGCHAIN_CHAIN_CALL_WARNING = r"The method `Chain\.__call__` was deprecated.*"
-warnings.filterwarnings("ignore", message=LANGCHAIN_CHAIN_CALL_WARNING)
 
 
 # ============================================================================
@@ -369,7 +366,7 @@ class AppState:
         self.vectorstore: Optional[ChromaCompat] = None
         self.llm: Optional[Any] = None  # For detailed/academic modes
         self.llm_fast: Optional[Any] = None  # For normal mode (faster)
-        self.qa_chain: Optional[RetrievalQA] = None
+        self.qa_chain: Optional[Any] = None
         self.embeddings: Optional[Any] = None
         self.hyde_expander: Optional[Any] = None
 
@@ -808,15 +805,21 @@ def create_chat_llm(
     )
 
 
-def invoke_retrieval_qa(chain: RetrievalQA, query: str) -> Dict[str, Any]:
-    """Invoke RetrievalQA while suppressing LangChain's internal __call__ warning."""
+def create_rag_chain(llm: Any, retriever: Any, prompt: PromptTemplate) -> Any:
+    """Create the LCEL RAG chain used by the chat endpoints."""
 
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore",
-            message=LANGCHAIN_CHAIN_CALL_WARNING,
-        )
-        return chain.invoke({"query": query})
+    document_chain = create_stuff_documents_chain(llm, prompt)
+    return create_retrieval_chain(retriever, document_chain)
+
+
+def invoke_rag_chain(chain: Any, query: str) -> Dict[str, Any]:
+    """Invoke an LCEL RAG chain while preserving the legacy response shape."""
+
+    result = chain.invoke({"input": query, "question": query})
+    return {
+        "result": result.get("answer", result.get("result", "")),
+        "source_documents": result.get("context", result.get("source_documents", [])),
+    }
 
 
 # ============================================================================
@@ -985,16 +988,14 @@ Answer (한국어 또는 영어로 상세히 답변):"""
             input_variables=["context", "question"]
         )
 
-        app_state.qa_chain = RetrievalQA.from_chain_type(
-            llm=app_state.llm,
-            chain_type="stuff",
-            retriever=app_state.vectorstore.as_retriever(
+        app_state.qa_chain = create_rag_chain(
+            app_state.llm,
+            app_state.vectorstore.as_retriever(
                 search_kwargs={"k": config.top_k_retrieval}
             ),
-            return_source_documents=True,
-            chain_type_kwargs={"prompt": PROMPT}
+            PROMPT,
         )
-        logger.info("✓ RAG chain created")
+        logger.info("✓ LCEL RAG chain created")
 
     logger.info("🚀 Buddhist AI Chatbot ready!")
 
@@ -2008,15 +2009,13 @@ Answer:"""
             )
 
             # Create temporary QA chain with filtered retriever
-            filtered_qa_chain = RetrievalQA.from_chain_type(
-                llm=detailed_llm if detailed_llm else app_state.llm,
-                chain_type="stuff",
-                retriever=filtered_retriever,
-                return_source_documents=True,
-                chain_type_kwargs={"prompt": PROMPT}
+            filtered_qa_chain = create_rag_chain(
+                detailed_llm if detailed_llm else app_state.llm,
+                filtered_retriever,
+                PROMPT,
             )
 
-            result = invoke_retrieval_qa(filtered_qa_chain, query)
+            result = invoke_rag_chain(filtered_qa_chain, query)
             logger.info(f"Filtered query completed for sutra: {request.sutra_filter}")
         elif tradition_sutra_ids and len(tradition_sutra_ids) > 0:
             # Tradition filter active - search only within matching sutras
@@ -2074,15 +2073,13 @@ Answer:""".replace("{tradition}", tradition_filter_normalized)
             )
 
             # Create QA chain with tradition filter
-            tradition_qa_chain = RetrievalQA.from_chain_type(
-                llm=detailed_llm if detailed_llm else app_state.llm,
-                chain_type="stuff",
-                retriever=filtered_retriever,
-                return_source_documents=True,
-                chain_type_kwargs={"prompt": PROMPT}
+            tradition_qa_chain = create_rag_chain(
+                detailed_llm if detailed_llm else app_state.llm,
+                filtered_retriever,
+                PROMPT,
             )
 
-            result = invoke_retrieval_qa(tradition_qa_chain, query)
+            result = invoke_rag_chain(tradition_qa_chain, query)
             logger.info(f"Tradition-filtered query completed: {tradition_filter_normalized}")
         elif request.detailed_mode:
             # Detailed mode without sutra filter
@@ -2118,19 +2115,17 @@ Answer:"""
             )
 
             # Create detailed QA chain
-            detailed_qa_chain = RetrievalQA.from_chain_type(
-                llm=detailed_llm,
-                chain_type="stuff",
-                retriever=detailed_retriever,
-                return_source_documents=True,
-                chain_type_kwargs={"prompt": PROMPT}
+            detailed_qa_chain = create_rag_chain(
+                detailed_llm,
+                detailed_retriever,
+                PROMPT,
             )
 
-            result = invoke_retrieval_qa(detailed_qa_chain, query)
+            result = invoke_rag_chain(detailed_qa_chain, query)
             logger.info("Detailed query completed")
         else:
             # Use default QA chain (no filtering, no detailed mode)
-            result = invoke_retrieval_qa(app_state.qa_chain, query)
+            result = invoke_rag_chain(app_state.qa_chain, query)
 
         # Format response
         response_text = result["result"]

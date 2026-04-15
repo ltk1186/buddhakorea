@@ -148,15 +148,31 @@ branches. This reduces the risk of a future `ChatVertexAI` replacement because
 the migration target is now one factory function instead of several scattered
 call sites.
 
-### Completed: LangChain Chain Invocation Cleanup
+### Completed: LangChain LCEL Retrieval Chain
 
-`backend/app/main.py` now calls RetrievalQA chains through
-`invoke_retrieval_qa`, which uses `.invoke({"query": ...})` instead of the
-deprecated `chain({"query": ...})` shorthand. LangChain 0.3.7 can still emit the
-same `Chain.__call__` warning from inside `RetrievalQA.invoke`, so the helper
-and module startup also suppress that exact internal warning by message. This is
-intentionally scoped and should be removed when `RetrievalQA` is replaced with a
-newer LCEL-style retrieval chain.
+`backend/app/main.py` no longer uses the deprecated `RetrievalQA` chain for the
+runtime chat path. It now builds the RAG path with LangChain Expression Language
+helpers:
+
+- `create_stuff_documents_chain`
+- `create_retrieval_chain`
+
+The local wrapper functions preserve the public API response contract:
+
+- `create_rag_chain` constructs the LCEL retrieval chain.
+- `invoke_rag_chain` invokes the chain with both `input` and `question` keys.
+- LCEL output (`answer`, `context`) is mapped back to the existing response shape
+  (`result`, `source_documents`) used by the chat endpoint, token estimation,
+  logging, and citation formatting.
+
+Because `RetrievalQA` has been removed from the runtime path, the previous
+`Chain.__call__` warning suppression was also removed.
+
+References checked before this migration:
+
+- LangChain Retrieval docs: https://docs.langchain.com/oss/python/langchain/retrieval
+- LangChain `create_retrieval_chain` / `create_stuff_documents_chain` APIs as
+  installed in the pinned `langchain==0.3.7` dev container.
 
 ### Deployment Note: Backend Rebuild Required
 
@@ -174,8 +190,23 @@ factory layer before any provider migration:
 - Gemini routes to `ChatVertexAI`.
 - Claude and OpenAI require their API keys before construction.
 - Streaming arguments are preserved for the fast model.
-- `invoke_retrieval_qa` calls `.invoke({"query": ...})` and suppresses only the
-  known internal LangChain `Chain.__call__` warning.
+- `create_rag_chain` uses the LCEL chain factories.
+- `invoke_rag_chain` preserves the legacy response shape expected by the chat
+  endpoint.
+
+### Remaining: Google Provider Adapter Review
+
+The Gemini runtime path still uses `langchain_google_vertexai.ChatVertexAI`.
+The latest LangChain Google GenAI documentation now documents
+`langchain_google_genai.ChatGoogleGenerativeAI` for Gemini and Vertex AI usage.
+That migration is intentionally left as a separate step because it changes
+dependencies, credential semantics, model output metadata, and potentially
+streaming behavior.
+
+Reference:
+
+- LangChain Google Generative AI integration:
+  https://docs.langchain.com/oss/python/integrations/chat/google_generative_ai
 
 Some non-runtime source explorer/evaluation scripts still use direct Vertex AI
 SDK imports:
