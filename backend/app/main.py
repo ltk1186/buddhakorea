@@ -757,6 +757,53 @@ def extract_token_usage(result: Dict[str, Any], query: str, model: str) -> Dict[
     }
 
 
+def create_chat_llm(
+    model: str,
+    *,
+    temperature: float,
+    max_tokens: int,
+    streaming: bool = False,
+) -> Optional[Any]:
+    """Create a chat LLM using the currently supported provider routing."""
+
+    model_lower = model.lower()
+    streaming_kwargs = {"streaming": True} if streaming else {}
+
+    if "claude" in model_lower:
+        if not config.anthropic_api_key:
+            logger.warning("Anthropic API key not found - LLM features will be disabled")
+            return None
+        return ChatAnthropic(
+            model=model,
+            anthropic_api_key=config.anthropic_api_key,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            **streaming_kwargs,
+        )
+
+    if "gemini" in model_lower:
+        logger.info("Using Vertex AI for Gemini model")
+        return ChatVertexAI(
+            model=model,
+            project=config.gcp_project_id,
+            location=config.gcp_location,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            **streaming_kwargs,
+        )
+
+    if not config.openai_api_key:
+        logger.warning("OpenAI API key not found - LLM features will be disabled")
+        return None
+    return ChatOpenAI(
+        model=model,
+        openai_api_key=config.openai_api_key,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        **streaming_kwargs,
+    )
+
+
 # ============================================================================
 # Startup & Shutdown
 # ============================================================================
@@ -859,38 +906,12 @@ async def lifespan(app: FastAPI):
     # Initialize LLM
     try:
         logger.info(f"Initializing LLM: {config.llm_model}")
-        if "claude" in config.llm_model:
-            if not config.anthropic_api_key:
-                logger.warning("Anthropic API key not found - LLM features will be disabled")
-                app_state.llm = None
-            else:
-                app_state.llm = ChatAnthropic(
-                    model=config.llm_model,
-                    anthropic_api_key=config.anthropic_api_key,
-                    temperature=0.3,
-                    max_tokens=2000
-                )
-        elif "gemini" in config.llm_model:
-            # Gemini models via Vertex AI
-            logger.info(f"Using Vertex AI for Gemini model")
-            app_state.llm = ChatVertexAI(
-                model=config.llm_model,
-                project=config.gcp_project_id,
-                location=config.gcp_location,
-                temperature=0.3,
-                max_tokens=8192
-            )
-        else:
-            if not config.openai_api_key:
-                logger.warning("OpenAI API key not found - LLM features will be disabled")
-                app_state.llm = None
-            else:
-                app_state.llm = ChatOpenAI(
-                    model=config.llm_model,
-                    openai_api_key=config.openai_api_key,
-                    temperature=0.3,
-                    max_tokens=2000
-                )
+        main_max_tokens = 8192 if "gemini" in config.llm_model.lower() else 2000
+        app_state.llm = create_chat_llm(
+            config.llm_model,
+            temperature=0.3,
+            max_tokens=main_max_tokens,
+        )
         
         if app_state.llm:
             logger.info("✓ LLM initialized")
@@ -898,32 +919,14 @@ async def lifespan(app: FastAPI):
         # Initialize Fast LLM
         if app_state.llm:  # Only if main LLM succeeded
             logger.info(f"Initializing Fast LLM: {config.llm_model_fast}")
-            if "gemini" in config.llm_model_fast:
-                app_state.llm_fast = ChatVertexAI(
-                    model=config.llm_model_fast,
-                    project=config.gcp_project_id,
-                    location=config.gcp_location,
-                    temperature=0.3,
-                    max_tokens=8192,
-                    streaming=True
-                )
-            elif "claude" in config.llm_model_fast:
-                app_state.llm_fast = ChatAnthropic(
-                    model=config.llm_model_fast,
-                    anthropic_api_key=config.anthropic_api_key,
-                    temperature=0.3,
-                    max_tokens=8192,
-                    streaming=True
-                )
-            else:
-                app_state.llm_fast = ChatOpenAI(
-                    model=config.llm_model_fast,
-                    openai_api_key=config.openai_api_key,
-                    temperature=0.3,
-                    max_tokens=8192,
-                    streaming=True
-                )
-            logger.info("✓ Fast LLM initialized")
+            app_state.llm_fast = create_chat_llm(
+                config.llm_model_fast,
+                temperature=0.3,
+                max_tokens=8192,
+                streaming=True,
+            )
+            if app_state.llm_fast:
+                logger.info("✓ Fast LLM initialized")
     except Exception as e:
         logger.warning(f"LLM initialization failed: {e} - Chat features disabled")
         app_state.llm = None
@@ -1900,31 +1903,12 @@ async def chat(
         if request.detailed_mode:
             logger.info("Detailed mode activated - using extended configuration")
             # Create LLM with higher max_tokens for detailed responses
-            if "gemini" in config.llm_model:
-                from langchain_google_vertexai import ChatVertexAI
-                detailed_llm = ChatVertexAI(
-                    model=config.llm_model,
-                    project=config.gcp_project_id,
-                    location=config.gcp_location,
-                    temperature=0.3,
-                    max_tokens=8192  # 4x normal for comprehensive answers
-                )
-            elif "claude" in config.llm_model:
-                from langchain_anthropic import ChatAnthropic
-                detailed_llm = ChatAnthropic(
-                    model=config.llm_model,
-                    anthropic_api_key=config.anthropic_api_key,
-                    temperature=0.3,
-                    max_tokens=8000  # 4x normal
-                )
-            else:
-                from langchain_openai import ChatOpenAI
-                detailed_llm = ChatOpenAI(
-                    model=config.llm_model,
-                    openai_api_key=config.openai_api_key,
-                    temperature=0.3,
-                    max_tokens=8000  # 4x normal
-                )
+            detailed_max_tokens = 8192 if "gemini" in config.llm_model.lower() else 8000
+            detailed_llm = create_chat_llm(
+                config.llm_model,
+                temperature=0.3,
+                max_tokens=detailed_max_tokens,
+            )
 
         # Normalize tradition filter if provided (e.g., "선불교" -> "선종")
         tradition_filter_normalized = None

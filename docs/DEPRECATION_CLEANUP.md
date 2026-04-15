@@ -138,6 +138,16 @@ A production pre-migration baseline was captured on 2026-04-15 at commit
 `92088fb`; see `docs/RAG_REGRESSION_TESTING.md` for the recorded latencies,
 source counts, and pass/fail results.
 
+### Completed: LLM Factory Preparation
+
+`backend/app/main.py` now routes chat model creation through `create_chat_llm`.
+This is intentionally behavior-preserving: it keeps the current
+`ChatVertexAI`/Claude/OpenAI provider routing, model names, token limits,
+temperature, and streaming settings, but removes duplicated initialization
+branches. This reduces the risk of a future `ChatVertexAI` replacement because
+the migration target is now one factory function instead of several scattered
+call sites.
+
 Some non-runtime source explorer/evaluation scripts still use direct Vertex AI
 SDK imports:
 
