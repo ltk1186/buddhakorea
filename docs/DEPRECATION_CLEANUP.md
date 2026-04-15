@@ -96,6 +96,19 @@ curl -fsS https://buddhakorea.com/api/health
 Use a full image rebuild when dependency versions change or when the current
 production image does not already include `google-genai`.
 
+### Torch Dependency Pin
+
+`requirements.txt` pins CPU-only Torch:
+
+```txt
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.5.1+cpu
+```
+
+Do not loosen this back to `torch>=2.0.0` for production. On Hetzner, an
+unbounded Torch install can resolve to CUDA wheels, causing very large images,
+slow exports, and disk-pressure failures during deploy.
+
 ## Remaining Cleanup
 
 `backend/app/main.py` still uses `langchain_google_vertexai.ChatVertexAI` for the

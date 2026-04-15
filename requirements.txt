@@ -33,7 +33,8 @@ markdown==3.7
 # Embeddings & Tokenization
 tiktoken==0.8.0
 transformers==4.46.3
-torch>=2.0.0  # Required for BAAI/bge-m3
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.5.1+cpu  # Required for BAAI/bge-m3; CPU-only avoids huge CUDA wheels on Hetzner
 
 # Data & Utilities
 pydantic==2.10.2
