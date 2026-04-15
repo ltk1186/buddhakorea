@@ -13,6 +13,7 @@ import uuid
 import asyncio
 import hmac
 import hashlib
+import warnings
 from pathlib import Path
 from datetime import datetime, timedelta, timezone, date
 from typing import List, Optional, Dict, Any
@@ -802,6 +803,17 @@ def create_chat_llm(
         max_tokens=max_tokens,
         **streaming_kwargs,
     )
+
+
+def invoke_retrieval_qa(chain: RetrievalQA, query: str) -> Dict[str, Any]:
+    """Invoke RetrievalQA while suppressing LangChain's internal __call__ warning."""
+
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=r"The method `Chain\.__call__` was deprecated.*",
+        )
+        return chain.invoke({"query": query})
 
 
 # ============================================================================
@@ -2001,7 +2013,7 @@ Answer:"""
                 chain_type_kwargs={"prompt": PROMPT}
             )
 
-            result = filtered_qa_chain.invoke({"query": query})
+            result = invoke_retrieval_qa(filtered_qa_chain, query)
             logger.info(f"Filtered query completed for sutra: {request.sutra_filter}")
         elif tradition_sutra_ids and len(tradition_sutra_ids) > 0:
             # Tradition filter active - search only within matching sutras
@@ -2067,7 +2079,7 @@ Answer:""".replace("{tradition}", tradition_filter_normalized)
                 chain_type_kwargs={"prompt": PROMPT}
             )
 
-            result = tradition_qa_chain.invoke({"query": query})
+            result = invoke_retrieval_qa(tradition_qa_chain, query)
             logger.info(f"Tradition-filtered query completed: {tradition_filter_normalized}")
         elif request.detailed_mode:
             # Detailed mode without sutra filter
@@ -2111,11 +2123,11 @@ Answer:"""
                 chain_type_kwargs={"prompt": PROMPT}
             )
 
-            result = detailed_qa_chain.invoke({"query": query})
+            result = invoke_retrieval_qa(detailed_qa_chain, query)
             logger.info("Detailed query completed")
         else:
             # Use default QA chain (no filtering, no detailed mode)
-            result = app_state.qa_chain.invoke({"query": query})
+            result = invoke_retrieval_qa(app_state.qa_chain, query)
 
         # Format response
         response_text = result["result"]

@@ -150,10 +150,13 @@ call sites.
 
 ### Completed: LangChain Chain Invocation Cleanup
 
-`backend/app/main.py` now calls RetrievalQA chains with `.invoke({"query": ...})`
-instead of the deprecated `chain({"query": ...})` shorthand. This removes the
-runtime `Chain.__call__` deprecation warning without changing the request or
-response shape.
+`backend/app/main.py` now calls RetrievalQA chains through
+`invoke_retrieval_qa`, which uses `.invoke({"query": ...})` instead of the
+deprecated `chain({"query": ...})` shorthand. LangChain 0.3.7 can still emit the
+same `Chain.__call__` warning from inside `RetrievalQA.invoke`, so the helper
+also suppresses that exact internal warning. This is intentionally scoped and
+should be removed when `RetrievalQA` is replaced with a newer LCEL-style
+retrieval chain.
 
 Some non-runtime source explorer/evaluation scripts still use direct Vertex AI
 SDK imports:
