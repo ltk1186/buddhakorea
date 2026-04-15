@@ -114,6 +114,31 @@ Before changing the LLM adapter or RetrievalQA path:
 6. Run health-only first, then one full production case.
 7. Run the full production set if the one-case smoke check is clean.
 
+## Unit-Level Safety Coverage
+
+`backend/tests/test_llm_factory.py` protects the provider-routing layer that was
+introduced before the `ChatVertexAI` migration.
+
+Covered contracts:
+
+- Gemini model names route to `ChatVertexAI` with GCP project, location,
+  temperature, and token limit preserved.
+- Fast Gemini streaming mode passes `streaming=True`.
+- Claude model names require `ANTHROPIC_API_KEY` and route to `ChatAnthropic`
+  when configured.
+- OpenAI fallback model names require `OPENAI_API_KEY` and route to
+  `ChatOpenAI` when configured.
+- `invoke_retrieval_qa` always calls `chain.invoke({"query": query})`.
+- The narrowly scoped internal LangChain `Chain.__call__` warning suppression is
+  covered without hiding unrelated warnings.
+
+Run these tests locally inside the backend container:
+
+```bash
+docker exec -w /app/backend -e PYTHONPATH=/app/backend:/app buddhakorea-dev-backend \
+  pytest tests/test_llm_factory.py -q
+```
+
 ## Production Baseline
 
 ### 2026-04-15: Pre-Migration Baseline

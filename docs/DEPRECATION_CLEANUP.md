@@ -166,6 +166,17 @@ inside the running backend image. The Hetzner GitHub Actions workflow now
 rebuilds the image when `backend/**`, `requirements.txt`, `pyproject.toml`,
 `Dockerfile`, or `frontend/pali-studio/**` changes.
 
+### Completed: LLM Factory Unit Coverage
+
+`backend/tests/test_llm_factory.py` now locks down the behavior-preserving LLM
+factory layer before any provider migration:
+
+- Gemini routes to `ChatVertexAI`.
+- Claude and OpenAI require their API keys before construction.
+- Streaming arguments are preserved for the fast model.
+- `invoke_retrieval_qa` calls `.invoke({"query": ...})` and suppresses only the
+  known internal LangChain `Chain.__call__` warning.
+
 Some non-runtime source explorer/evaluation scripts still use direct Vertex AI
 SDK imports:
 
