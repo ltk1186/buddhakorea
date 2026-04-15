@@ -6,6 +6,7 @@ on:
     paths:
       - 'backend/**'
       - 'config/**'
+      - 'scripts/**'
       - 'Dockerfile'
       - '.github/workflows/deploy-hetzner.yml'
   workflow_dispatch:  # 수동 배포 허용

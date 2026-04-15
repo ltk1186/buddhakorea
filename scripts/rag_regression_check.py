@@ -17,6 +17,7 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
+DEFAULT_USER_AGENT = "BuddhaKorea-RAG-Regression/1.0 (+https://buddhakorea.com)"
 
 from backend.app.rag_regression import (  # noqa: E402
     DEFAULT_GOLDEN_CASES_PATH,
@@ -34,7 +35,10 @@ def _request_json(
     timeout: int = 30,
 ) -> tuple[int, dict[str, Any]]:
     body = None
-    headers = {"Accept": "application/json"}
+    headers = {
+        "Accept": "application/json",
+        "User-Agent": DEFAULT_USER_AGENT,
+    }
     if payload is not None:
         body = json.dumps(payload).encode("utf-8")
         headers["Content-Type"] = "application/json"
