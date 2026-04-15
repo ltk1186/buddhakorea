@@ -21,10 +21,15 @@ from chromadb.config import Settings as ChromaSettings
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_openai import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import Chroma
 from langchain.schema import Document
 from dotenv import load_dotenv
 from loguru import logger
+
+ROOT_DIR = Path(__file__).resolve().parents[2]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+from backend.app.chroma_compat import ChromaCompat
 
 # Load environment variables
 load_dotenv()
@@ -274,7 +279,7 @@ def embed_and_store(
     # Process documents in batches
     logger.info(f"Embedding {len(documents)} document chunks in batches of {batch_size}")
 
-    vectorstore = Chroma(
+    vectorstore = ChromaCompat(
         client=client,
         collection_name=collection_name,
         embedding_function=embeddings

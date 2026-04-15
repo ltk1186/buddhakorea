@@ -31,7 +31,6 @@ from chromadb.config import Settings as ChromaSettings
 from langchain_anthropic import ChatAnthropic
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_google_vertexai import ChatVertexAI
-from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA
 from langchain_core.prompts import PromptTemplate
@@ -48,6 +47,7 @@ from .models.user_usage import UserUsage, AnonymousUsage
 # Auth dependencies and quota management
 from .dependencies import get_current_user_optional, get_current_user_required
 from .quota import check_quota, increment_usage, get_usage_info, get_client_ip
+from .chroma_compat import ChromaCompat
 
 # Usage tracking
 from .usage_tracker import log_token_usage, analyze_usage_logs, get_recent_queries, export_usage_csv
@@ -361,7 +361,7 @@ class AppState:
     """Global application state."""
     def __init__(self):
         self.chroma_client: Optional[chromadb.Client] = None
-        self.vectorstore: Optional[Chroma] = None
+        self.vectorstore: Optional[ChromaCompat] = None
         self.llm: Optional[Any] = None  # For detailed/academic modes
         self.llm_fast: Optional[Any] = None  # For normal mode (faster)
         self.qa_chain: Optional[RetrievalQA] = None
@@ -846,7 +846,7 @@ async def lifespan(app: FastAPI):
             collection = None
 
         if collection:
-            app_state.vectorstore = Chroma(
+            app_state.vectorstore = ChromaCompat(
                 client=app_state.chroma_client,
                 collection_name=config.chroma_collection_name,
                 embedding_function=app_state.embeddings
