@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "description": "Coarse RAG regression smoke cases for Buddha Korea /api/chat. These are not exact-answer tests; they check response shape, citations, latency, and weak quality signals before risky LLM/RAG migrations.",
+  "cases": [
+    {
+      "id": "normal_four_noble_truths_ko",
+      "description": "Normal Korean query should return a cited Buddhist answer about the Four Noble Truths.",
+      "request": {
+        "query": "사성제란 무엇입니까?",
+        "language": "ko",
+        "collection": "all",
+        "max_sources": 5,
+        "detailed_mode": false
+      },
+      "expect": {
+        "min_response_chars": 80,
+        "min_sources": 1,
+        "required_any_terms": ["사성제", "고성제", "집성제", "멸성제", "도성제", "고", "집", "멸", "도"],
+        "forbid_markdown_headers": true,
+        "max_latency_ms": 120000
+      }
+    },
+    {
+      "id": "normal_impermanence_ko",
+      "description": "Normal Korean query should answer impermanence with at least one citation.",
+      "request": {
+        "query": "무상에 대해 불교 경전에서는 어떻게 설명합니까?",
+        "language": "ko",
+        "collection": "all",
+        "max_sources": 5,
+        "detailed_mode": false
+      },
+      "expect": {
+        "min_response_chars": 80,
+        "min_sources": 1,
+        "required_any_terms": ["무상", "변화", "생멸", "덧없", "anicca"],
+        "forbid_markdown_headers": true,
+        "max_latency_ms": 120000
+      }
+    },
+    {
+      "id": "sutra_filter_agama_ko",
+      "description": "Sutra-filtered query should keep citations inside the selected Taisho text when retrieval returns sources.",
+      "request": {
+        "query": "장아함경에서 수행과 계율은 어떻게 설명됩니까?",
+        "language": "ko",
+        "collection": "all",
+        "max_sources": 5,
+        "sutra_filter": "T01n0001",
+        "detailed_mode": false
+      },
+      "expect": {
+        "min_response_chars": 60,
+        "min_sources": 1,
+        "expected_source_text_ids": ["T01n0001"],
+        "forbid_markdown_headers": true,
+        "max_latency_ms": 120000
+      }
+    }
+  ]
+}

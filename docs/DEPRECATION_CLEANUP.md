@@ -127,6 +127,13 @@ main RAG LLM path. Replacing it should be handled as a separate migration
 because it affects answer generation behavior, credentials, streaming semantics,
 and LangChain integration.
 
+Before replacing this path, run the RAG golden-query checks documented in
+`docs/RAG_REGRESSION_TESTING.md`. The current safety harness lives in:
+
+- `backend/app/rag_regression.py`
+- `backend/app/rag_golden_queries.json`
+- `scripts/rag_regression_check.py`
+
 Some non-runtime source explorer/evaluation scripts still use direct Vertex AI
 SDK imports:
 
