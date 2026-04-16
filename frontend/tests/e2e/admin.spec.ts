@@ -17,6 +17,18 @@ test.describe('Admin Panel E2E Tests', () => {
       });
     });
 
+    await page.route('**/api/health', async (route) => {
+      await route.fulfill({
+        status: 200,
+        json: {
+          status: 'healthy',
+          version: '0.1.0',
+          chroma_connected: true,
+          llm_configured: true
+        }
+      });
+    });
+
     // Mock summary API
     await page.route('**/api/admin/summary', async (route) => {
       await route.fulfill({
@@ -43,6 +55,41 @@ test.describe('Admin Panel E2E Tests', () => {
           tokens: { total: 1000000 },
           total_cost_usd: 15.5,
           by_day: {}
+        }
+      });
+    });
+
+    await page.route('**/api/admin/observability*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        json: {
+          window_days: 7,
+          total_queries: 120,
+          queries_with_latency: 100,
+          cache_hit_rate: 25,
+          avg_cost_per_query_usd: 0.012345,
+          avg_latency_ms: 1800,
+          p50_latency_ms: 1400,
+          p95_latency_ms: 4200,
+          slow_query_threshold_ms: 30000,
+          slow_queries: 3,
+          answers_last_24h: 12,
+          zero_source_answers_24h: 2,
+          zero_source_rate_24h: 16.67,
+          avg_sources_per_answer_24h: 3.4,
+          rate_limited_users_today: 4,
+          rate_limited_anonymous_today: 1,
+          daily: [
+            {
+              date: '2026-04-16',
+              queries: 20,
+              cost_usd: 0.4,
+              cached_queries: 5,
+              cache_hit_rate: 25,
+              avg_latency_ms: 1700,
+              p95_latency_ms: 3500
+            }
+          ]
         }
       });
     });
@@ -226,6 +273,22 @@ test.describe('Admin Panel E2E Tests', () => {
     await expect(page.locator('#queriesTable tbody tr').first()).toContainText('This is a test query');
   });
 
+  test('should display reliability metrics and daily trend', async ({ page }) => {
+    await page.goto('/admin/');
+
+    await page.click('button[data-section="reliability"]');
+    await expect(page.locator('#section-reliability')).toHaveClass(/is-active/);
+
+    await expect(page.locator('#reliabilityHealth')).toHaveText('healthy');
+    await expect(page.locator('#reliabilityP95')).toHaveText('4,200 ms');
+    await expect(page.locator('#reliabilityCacheRate')).toHaveText('25.0%');
+    await expect(page.locator('#reliabilityZeroSource')).toHaveText('16.7%');
+    await expect(page.locator('#reliabilityRateLimits')).toHaveText('5');
+    await expect(page.locator('#reliabilityDailyTable tbody tr')).toHaveCount(1);
+    await expect(page.locator('#reliabilityDailyTable tbody tr').first()).toContainText('2026-04-16');
+    await expect(page.locator('#reliabilityDailyTable tbody tr').first()).toContainText('$0.4000');
+  });
+
   test('should open query investigation detail with trace metadata', async ({ page }) => {
     await page.goto('/admin/');
 
@@ -283,9 +346,41 @@ test.describe('Admin Panel RBAC UI Tests', () => {
     await page.route('**/api/admin/summary', async (route) => {
       await route.fulfill({ status: 200, json: { usage_last_7_days: {} } });
     });
+
+    await page.route('**/api/health', async (route) => {
+      await route.fulfill({
+        status: 200,
+        json: { status: 'healthy', chroma_connected: true, llm_configured: true }
+      });
+    });
     
     await page.route('**/api/admin/usage-stats*', async (route) => {
       await route.fulfill({ status: 200, json: { tokens: {} } });
+    });
+
+    await page.route('**/api/admin/observability*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        json: {
+          window_days: 7,
+          total_queries: 0,
+          queries_with_latency: 0,
+          cache_hit_rate: 0,
+          avg_cost_per_query_usd: 0,
+          avg_latency_ms: null,
+          p50_latency_ms: null,
+          p95_latency_ms: null,
+          slow_query_threshold_ms: 30000,
+          slow_queries: 0,
+          answers_last_24h: 0,
+          zero_source_answers_24h: 0,
+          zero_source_rate_24h: 0,
+          avg_sources_per_answer_24h: 0,
+          rate_limited_users_today: 0,
+          rate_limited_anonymous_today: 0,
+          daily: []
+        }
+      });
     });
 
     await page.route('**/api/admin/queries*', async (route) => {

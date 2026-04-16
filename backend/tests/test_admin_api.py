@@ -146,3 +146,58 @@ def test_admin_api_query_detail_returns_trace_and_sources():
     assert payload["answer"]["model_used"] == "gemini-2.5-pro"
     assert payload["answer"]["sources_count"] == 3
     assert payload["answer"]["trace_json"]["prompt"]["id"] == "normal_v1"
+
+
+@patch("backend.app.admin.analyze_observability_logs")
+def test_admin_api_observability_returns_reliability_metrics(mock_analyze_observability):
+    """Test reliability-focused observability aggregation response."""
+    app.dependency_overrides[get_current_user_required] = override_get_current_user_required_admin
+    client = TestClient(app)
+
+    mock_analyze_observability.return_value = {
+        "window_days": 7,
+        "total_queries": 120,
+        "queries_with_latency": 100,
+        "cache_hit_rate": 25.0,
+        "avg_cost_per_query_usd": 0.012345,
+        "avg_latency_ms": 1800,
+        "p50_latency_ms": 1400,
+        "p95_latency_ms": 4200,
+        "slow_query_threshold_ms": 30000,
+        "slow_queries": 3,
+        "by_day": {
+            "2026-04-16": {
+                "queries": 20,
+                "cost_usd": 0.4,
+                "cached_queries": 5,
+                "cache_hit_rate": 25.0,
+                "avg_latency_ms": 1700,
+                "p95_latency_ms": 3500
+            }
+        }
+    }
+
+    mock_db = AsyncMock()
+    answers_result = Mock()
+    answers_result.one.return_value = (10, 2, 3.4)
+    user_limits_result = Mock()
+    user_limits_result.scalar_one.return_value = 4
+    anon_limits_result = Mock()
+    anon_limits_result.scalar_one.return_value = 7
+    mock_db.execute.side_effect = [answers_result, user_limits_result, anon_limits_result]
+    app.dependency_overrides[get_db] = lambda: mock_db
+
+    response = client.get("/api/admin/observability?days=7")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["window_days"] == 7
+    assert payload["total_queries"] == 120
+    assert payload["cache_hit_rate"] == 25.0
+    assert payload["p95_latency_ms"] == 4200
+    assert payload["zero_source_answers_24h"] == 2
+    assert payload["zero_source_rate_24h"] == 20.0
+    assert payload["avg_sources_per_answer_24h"] == 3.4
+    assert payload["rate_limited_users_today"] == 4
+    assert payload["rate_limited_anonymous_today"] == 7
+    assert payload["daily"][0]["date"] == "2026-04-16"

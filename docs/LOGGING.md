@@ -77,6 +77,25 @@ Current trace fields include:
 - model name
 - resolved provider route
 
+Phase 7 adds a reliability-oriented aggregation path on top of the same
+structured usage logs:
+
+- latency sample size
+- average latency
+- P50 / P95 latency
+- slow-query count by threshold
+- cache-hit rate
+- average cost per query
+- daily trend rows for query volume, cost, cache, and latency
+
+The admin panel combines that usage-log view with persisted `chat_messages`
+data to show source-quality proxies such as:
+
+- answers in the last 24 hours
+- zero-source answers in the last 24 hours
+- zero-source rate
+- average sources per answer
+
 The runtime chat persistence layer now also stores this trace on assistant
 messages in PostgreSQL:
 

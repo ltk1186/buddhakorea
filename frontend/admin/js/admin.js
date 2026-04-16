@@ -12,6 +12,7 @@ const elements = {
     noticeBanner: document.getElementById("noticeBanner"),
     refreshAll: document.getElementById("refreshAll"),
     usageDays: document.getElementById("usageDays"),
+    reliabilityDays: document.getElementById("reliabilityDays"),
     userSearch: document.getElementById("userSearch"),
     userStatus: document.getElementById("userStatus"),
     queryRole: document.getElementById("queryRole"),
@@ -43,6 +44,13 @@ function formatCost(value) {
         return "-";
     }
     return `$${Number(value).toFixed(4)}`;
+}
+
+function formatPercentage(value) {
+    if (value === null || value === undefined || Number.isNaN(Number(value))) {
+        return "-";
+    }
+    return `${Number(value).toFixed(1)}%`;
 }
 
 function escapeHtml(value) {
@@ -171,6 +179,44 @@ async function loadUsage() {
             <td>${formatCost(entry.cost_usd)}</td>
         `;
         tableBody.appendChild(row);
+    });
+}
+
+async function loadReliability() {
+    const days = Number(elements.reliabilityDays?.value || 7);
+    const [health, data] = await Promise.all([
+        apiFetch("/api/health"),
+        apiFetch(`/api/admin/observability?days=${days}`)
+    ]);
+
+    document.getElementById("reliabilityHealth").textContent = health.status || "-";
+    document.getElementById("reliabilityHealthMeta").textContent = `Chroma ${health.chroma_connected ? "connected" : "disconnected"} / LLM ${health.llm_configured ? "configured" : "missing"}`;
+    document.getElementById("reliabilityP95").textContent = data.p95_latency_ms ? `${formatNumber(data.p95_latency_ms)} ms` : "-";
+    document.getElementById("reliabilityLatencyMeta").textContent = `P50 ${data.p50_latency_ms ? `${formatNumber(data.p50_latency_ms)} ms` : "-"} / Avg ${data.avg_latency_ms ? `${formatNumber(data.avg_latency_ms)} ms` : "-"}`;
+    document.getElementById("reliabilityCacheRate").textContent = formatPercentage(data.cache_hit_rate);
+    document.getElementById("reliabilityCacheMeta").textContent = `${formatNumber(data.total_queries)} queries / ${formatNumber(data.queries_with_latency)} with latency`;
+    document.getElementById("reliabilityZeroSource").textContent = formatPercentage(data.zero_source_rate_24h);
+    document.getElementById("reliabilitySourceMeta").textContent = `${formatNumber(data.zero_source_answers_24h)} zero-source of ${formatNumber(data.answers_last_24h)} answers`;
+    document.getElementById("reliabilitySlowQueries").textContent = formatNumber(data.slow_queries);
+    document.getElementById("reliabilitySlowMeta").textContent = `Threshold ${formatNumber(data.slow_query_threshold_ms)} ms`;
+    document.getElementById("reliabilityRateLimits").textContent = formatNumber(data.rate_limited_users_today + data.rate_limited_anonymous_today);
+    document.getElementById("reliabilityRateLimitMeta").textContent = `${formatNumber(data.rate_limited_users_today)} users / ${formatNumber(data.rate_limited_anonymous_today)} anonymous`;
+
+    const tbody = document.querySelector("#reliabilityDailyTable tbody");
+    tbody.innerHTML = "";
+
+    (data.daily || []).forEach(entry => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td class="mono">${escapeHtml(entry.date)}</td>
+            <td>${formatNumber(entry.queries)}</td>
+            <td>${formatCost(entry.cost_usd)}</td>
+            <td>${formatNumber(entry.cached_queries)}</td>
+            <td>${formatPercentage(entry.cache_hit_rate)}</td>
+            <td>${entry.avg_latency_ms ? `${formatNumber(entry.avg_latency_ms)} ms` : "-"}</td>
+            <td>${entry.p95_latency_ms ? `${formatNumber(entry.p95_latency_ms)} ms` : "-"}</td>
+        `;
+        tbody.appendChild(row);
     });
 }
 
@@ -468,6 +514,9 @@ function bindEvents() {
         if (action === "refresh-usage") {
             loadUsage();
         }
+        if (action === "refresh-reliability") {
+            loadReliability();
+        }
         if (action === "refresh-users") {
             loadUsers();
         }
@@ -489,7 +538,7 @@ function bindEvents() {
     });
 
     elements.refreshAll.addEventListener("click", async () => {
-        await Promise.all([loadSummary(), loadUsage(), loadUsers(), loadQueries(), loadAudit()]);
+        await Promise.all([loadSummary(), loadUsage(), loadReliability(), loadUsers(), loadQueries(), loadAudit()]);
     });
 
     if (elements.adminLoginForm) {
@@ -528,6 +577,7 @@ async function bootstrap() {
     }
     await loadSummary();
     await loadUsage();
+    await loadReliability();
     await loadUsers();
     await loadQueries();
     await loadAudit();

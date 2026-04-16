@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buddha Korea Admin</title>
-    <link rel="stylesheet" href="css/admin.css?v=20260416a">
+    <link rel="stylesheet" href="css/admin.css?v=20260416b">
 </head>
 <body>
     <div class="admin-shell">
@@ -19,6 +19,7 @@
             <nav class="nav">
                 <button class="nav-link is-active" data-section="dashboard">Dashboard</button>
                 <button class="nav-link" data-section="usage">Usage & Costs</button>
+                <button class="nav-link" data-section="reliability">Reliability</button>
                 <button class="nav-link" data-section="users">Users</button>
                 <button class="nav-link" data-section="queries">Queries</button>
                 <button class="nav-link" data-section="audit">Audit Logs</button>
@@ -159,6 +160,75 @@
                 </div>
             </section>
 
+            <section class="admin-section" id="section-reliability">
+                <div class="section-header">
+                    <h2>Reliability</h2>
+                    <div class="actions">
+                        <label class="field-inline">
+                            Days
+                            <input type="number" id="reliabilityDays" value="7" min="1" max="30">
+                        </label>
+                        <button class="primary-button" data-action="refresh-reliability">Load</button>
+                    </div>
+                </div>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-label">API Health</div>
+                        <div class="card-value" id="reliabilityHealth">-</div>
+                        <div class="card-meta" id="reliabilityHealthMeta">-</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">P95 Latency</div>
+                        <div class="card-value" id="reliabilityP95">-</div>
+                        <div class="card-meta" id="reliabilityLatencyMeta">-</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Cache Hit Rate</div>
+                        <div class="card-value" id="reliabilityCacheRate">-</div>
+                        <div class="card-meta" id="reliabilityCacheMeta">-</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Zero-Source Rate (24h)</div>
+                        <div class="card-value" id="reliabilityZeroSource">-</div>
+                        <div class="card-meta" id="reliabilitySourceMeta">-</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Slow Queries</div>
+                        <div class="card-value" id="reliabilitySlowQueries">-</div>
+                        <div class="card-meta" id="reliabilitySlowMeta">-</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Rate Limit Hits Today</div>
+                        <div class="card-value" id="reliabilityRateLimits">-</div>
+                        <div class="card-meta" id="reliabilityRateLimitMeta">-</div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Daily Reliability Trend</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table-scroll">
+                            <table class="data-table" id="reliabilityDailyTable">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Queries</th>
+                                        <th>Cost (USD)</th>
+                                        <th>Cached</th>
+                                        <th>Cache Rate</th>
+                                        <th>Avg Latency</th>
+                                        <th>P95 Latency</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div class="table-footnote">Derived from structured usage logs and persisted assistant messages.</div>
+                    </div>
+                </div>
+            </section>
+
             <section class="admin-section" id="section-users">
                 <div class="section-header">
                     <h2>Users</h2>
@@ -279,6 +349,6 @@
         </main>
     </div>
 
-    <script src="js/admin.js?v=20260416a"></script>
+    <script src="js/admin.js?v=20260416b"></script>
 </body>
 </html>

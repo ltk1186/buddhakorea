@@ -249,6 +249,125 @@ def analyze_usage_logs(days: int = 7) -> Dict:
     return stats
 
 
+def _calculate_percentile(values: List[int], percentile: float) -> Optional[int]:
+    """Return a rounded percentile from a list of integer values."""
+    if not values:
+        return None
+    ordered = sorted(values)
+    if len(ordered) == 1:
+        return ordered[0]
+    rank = (len(ordered) - 1) * percentile
+    lower_index = int(rank)
+    upper_index = min(lower_index + 1, len(ordered) - 1)
+    lower_value = ordered[lower_index]
+    upper_value = ordered[upper_index]
+    if lower_index == upper_index:
+        return lower_value
+    weight = rank - lower_index
+    return int(round(lower_value + (upper_value - lower_value) * weight))
+
+
+def analyze_observability_logs(days: int = 7, slow_query_ms: int = 30000) -> Dict:
+    """
+    Compute reliability-focused metrics from usage logs.
+
+    This is intentionally read-only and derived from the same structured
+    usage.jsonl records already used for cost analytics.
+    """
+    base = {
+        "window_days": days,
+        "total_queries": 0,
+        "queries_with_latency": 0,
+        "cache_hit_rate": 0.0,
+        "avg_cost_per_query_usd": 0.0,
+        "avg_latency_ms": None,
+        "p50_latency_ms": None,
+        "p95_latency_ms": None,
+        "slow_query_threshold_ms": slow_query_ms,
+        "slow_queries": 0,
+        "by_day": {}
+    }
+
+    if not USAGE_LOG_FILE.exists():
+        return base
+
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    latencies: List[int] = []
+    cached_queries = 0
+    total_cost = 0.0
+
+    try:
+        with open(USAGE_LOG_FILE, "r", encoding="utf-8") as f:
+            for line in f:
+                try:
+                    entry = json.loads(line.strip())
+                    timestamp = datetime.fromisoformat(entry["timestamp"])
+                    if timestamp < cutoff:
+                        continue
+
+                    day = timestamp.date().isoformat()
+                    if day not in base["by_day"]:
+                        base["by_day"][day] = {
+                            "queries": 0,
+                            "cost_usd": 0.0,
+                            "cached_queries": 0,
+                            "cache_hit_rate": 0.0,
+                            "avg_latency_ms": None,
+                            "p95_latency_ms": None
+                        }
+                    day_bucket = base["by_day"][day]
+
+                    base["total_queries"] += 1
+                    day_bucket["queries"] += 1
+
+                    cost = float(entry.get("cost_usd", 0.0) or 0.0)
+                    total_cost += cost
+                    day_bucket["cost_usd"] += cost
+
+                    if entry.get("from_cache", False):
+                        cached_queries += 1
+                        day_bucket["cached_queries"] += 1
+
+                    latency_ms = entry.get("latency_ms")
+                    if isinstance(latency_ms, (int, float)) and latency_ms >= 0:
+                        latency_value = int(latency_ms)
+                        latencies.append(latency_value)
+                        base["queries_with_latency"] += 1
+                        if latency_value >= slow_query_ms:
+                            base["slow_queries"] += 1
+
+                        day_bucket.setdefault("_latencies", []).append(latency_value)
+
+                except json.JSONDecodeError:
+                    continue
+                except Exception as e:
+                    logger.error(f"Error parsing observability usage entry: {e}")
+                    continue
+    except Exception as e:
+        logger.error(f"Error reading observability usage logs: {e}")
+        return base
+
+    if base["total_queries"] > 0:
+        base["cache_hit_rate"] = round((cached_queries / base["total_queries"]) * 100, 2)
+        base["avg_cost_per_query_usd"] = round(total_cost / base["total_queries"], 6)
+
+    if latencies:
+        base["avg_latency_ms"] = int(round(sum(latencies) / len(latencies)))
+        base["p50_latency_ms"] = _calculate_percentile(latencies, 0.50)
+        base["p95_latency_ms"] = _calculate_percentile(latencies, 0.95)
+
+    for day_entry in base["by_day"].values():
+        if day_entry["queries"] > 0:
+            day_entry["cache_hit_rate"] = round((day_entry["cached_queries"] / day_entry["queries"]) * 100, 2)
+        day_latencies = day_entry.pop("_latencies", [])
+        if day_latencies:
+            day_entry["avg_latency_ms"] = int(round(sum(day_latencies) / len(day_latencies)))
+            day_entry["p95_latency_ms"] = _calculate_percentile(day_latencies, 0.95)
+        day_entry["cost_usd"] = round(day_entry["cost_usd"], 6)
+
+    return base
+
+
 def get_recent_queries(limit: int = 10) -> List[Dict]:
     """
     Get recent queries from usage logs.

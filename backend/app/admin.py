@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select, or_
+from sqlalchemy import func, select, or_, case
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .database import get_db
@@ -17,10 +17,10 @@ from .dependencies import require_roles
 from .models.admin_audit_log import AdminAuditLog
 from .models.chat import ChatMessage, ChatSession
 from .models.user import User
-from .models.user_usage import UserUsage, AnonymousUsage
+from .models.user_usage import UserUsage, AnonymousUsage, ANONYMOUS_DAILY_LIMIT
 from .privacy import mask_pii
 from .quota import get_client_ip, hash_ip
-from .usage_tracker import analyze_usage_logs, get_recent_queries
+from .usage_tracker import analyze_usage_logs, analyze_observability_logs, get_recent_queries
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -117,6 +117,36 @@ class AdminAuditEntry(BaseModel):
     after_state: Optional[Dict[str, Any]]
     context: Optional[Dict[str, Any]]
     created_at: str
+
+
+class AdminReliabilityDayEntry(BaseModel):
+    date: str
+    queries: int
+    cost_usd: float
+    cached_queries: int
+    cache_hit_rate: float
+    avg_latency_ms: Optional[int]
+    p95_latency_ms: Optional[int]
+
+
+class AdminReliabilityResponse(BaseModel):
+    window_days: int
+    total_queries: int
+    queries_with_latency: int
+    cache_hit_rate: float
+    avg_cost_per_query_usd: float
+    avg_latency_ms: Optional[int]
+    p50_latency_ms: Optional[int]
+    p95_latency_ms: Optional[int]
+    slow_query_threshold_ms: int
+    slow_queries: int
+    answers_last_24h: int
+    zero_source_answers_24h: int
+    zero_source_rate_24h: float
+    avg_sources_per_answer_24h: float
+    rate_limited_users_today: int
+    rate_limited_anonymous_today: int
+    daily: List[AdminReliabilityDayEntry]
 
 
 def _mask_email(email: Optional[str]) -> Optional[str]:
@@ -536,6 +566,84 @@ async def get_admin_recent_usage(
 ) -> List[Dict[str, Any]]:
     limit = min(max(limit, 1), 100)
     return get_recent_queries(limit=limit)
+
+
+@router.get("/observability", response_model=AdminReliabilityResponse)
+async def get_admin_observability(
+    days: int = 7,
+    db: AsyncSession = Depends(get_db),
+    admin_user: User = Depends(require_roles(READ_ROLES))
+) -> AdminReliabilityResponse:
+    days = min(max(1, days), 30)
+    reliability = analyze_observability_logs(days=days)
+
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
+
+    answers_stmt = select(
+        func.count(ChatMessage.id),
+        func.coalesce(func.sum(case((ChatMessage.sources_count == 0, 1), else_=0)), 0),
+        func.coalesce(func.avg(ChatMessage.sources_count), 0.0),
+    ).where(
+        ChatMessage.role == "assistant",
+        ChatMessage.created_at >= cutoff,
+    )
+    answers_result = await db.execute(answers_stmt)
+    answers_last_24h, zero_source_answers_24h, avg_sources_per_answer_24h = answers_result.one()
+
+    today = date.today()
+    rate_limited_users_stmt = select(func.count(UserUsage.id)).join(
+        User,
+        UserUsage.user_id == User.id
+    ).where(
+        UserUsage.usage_date == today,
+        UserUsage.chat_count >= User.daily_chat_limit,
+    )
+    rate_limited_users_result = await db.execute(rate_limited_users_stmt)
+    rate_limited_users_today = int(rate_limited_users_result.scalar_one() or 0)
+
+    rate_limited_anonymous_stmt = select(func.count(AnonymousUsage.id)).where(
+        AnonymousUsage.usage_date == today,
+        AnonymousUsage.chat_count >= ANONYMOUS_DAILY_LIMIT,
+    )
+    rate_limited_anonymous_result = await db.execute(rate_limited_anonymous_stmt)
+    rate_limited_anonymous_today = int(rate_limited_anonymous_result.scalar_one() or 0)
+
+    answers_count = int(answers_last_24h or 0)
+    zero_source_count = int(zero_source_answers_24h or 0)
+    zero_source_rate = round((zero_source_count / answers_count) * 100, 2) if answers_count > 0 else 0.0
+
+    daily_entries = [
+        AdminReliabilityDayEntry(
+            date=day,
+            queries=entry["queries"],
+            cost_usd=round(float(entry["cost_usd"]), 6),
+            cached_queries=entry["cached_queries"],
+            cache_hit_rate=float(entry["cache_hit_rate"]),
+            avg_latency_ms=entry["avg_latency_ms"],
+            p95_latency_ms=entry["p95_latency_ms"],
+        )
+        for day, entry in sorted(reliability.get("by_day", {}).items(), reverse=True)
+    ]
+
+    return AdminReliabilityResponse(
+        window_days=reliability["window_days"],
+        total_queries=reliability["total_queries"],
+        queries_with_latency=reliability["queries_with_latency"],
+        cache_hit_rate=float(reliability["cache_hit_rate"]),
+        avg_cost_per_query_usd=float(reliability["avg_cost_per_query_usd"]),
+        avg_latency_ms=reliability["avg_latency_ms"],
+        p50_latency_ms=reliability["p50_latency_ms"],
+        p95_latency_ms=reliability["p95_latency_ms"],
+        slow_query_threshold_ms=reliability["slow_query_threshold_ms"],
+        slow_queries=reliability["slow_queries"],
+        answers_last_24h=answers_count,
+        zero_source_answers_24h=zero_source_count,
+        zero_source_rate_24h=zero_source_rate,
+        avg_sources_per_answer_24h=round(float(avg_sources_per_answer_24h or 0.0), 2),
+        rate_limited_users_today=rate_limited_users_today,
+        rate_limited_anonymous_today=rate_limited_anonymous_today,
+        daily=daily_entries,
+    )
 
 
 @router.get("/audit-logs", response_model=List[AdminAuditEntry])

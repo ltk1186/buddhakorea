@@ -5,6 +5,7 @@ This document describes the MVP admin/backoffice implementation for Buddha Korea
 ## Scope (MVP)
 The admin panel focuses on:
 - Operational visibility (health, usage, cost)
+- Reliability visibility (latency, cache rate, zero-source answers, rate-limit pressure)
 - User support (quota + status)
 - Query monitoring (PII-masked)
 - Query investigation detail (prompt/retrieval/provider trace)
@@ -109,6 +110,17 @@ Usage + cost stats from `logs/usage.jsonl` via `usage_tracker.analyze_usage_logs
 ### GET /api/admin/usage/recent
 Recent usage entries from `logs/usage.jsonl` (PII masked).
 
+### GET /api/admin/observability
+Read-only reliability metrics for operators:
+- latency sample count, average latency, P50, P95
+- slow-query count using a fixed threshold
+- cache hit rate
+- average cost per query
+- zero-source answer count/rate over the last 24 hours
+- average sources per answer over the last 24 hours
+- rate-limited logged-in and anonymous users for today
+- daily trend rows for query volume, cost, cache rate, and latency
+
 ### GET /api/admin/audit-logs
 Admin action history from `admin_audit_logs`.
 
@@ -144,6 +156,12 @@ alembic upgrade head
 
 `chat_messages.trace_json` now stores the structured query trace used by the admin investigation panel. The trace is write-on-response and read-only in the admin UI.
 
+Reliability metrics intentionally mix two sources:
+- `logs/usage.jsonl` for latency, cache-hit, and cost distributions
+- `chat_messages` for source-count quality proxies such as zero-source answers
+
+This keeps the admin panel grounded in already collected runtime data without exposing raw server internals or requiring SSH access.
+
 ## Local Development
 1) Start dev stack:
    - `make dev`
@@ -168,3 +186,4 @@ Note: Admin UI uses the same auth cookies as the public site.
 - Feedback management workflow
 - Re-embedding triggers and config diffing
 - Incident management and site notices
+- Deeper auth/session failure tracking once explicit login-failure metrics are collected
