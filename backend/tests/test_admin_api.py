@@ -156,6 +156,7 @@ def test_admin_api_observability_returns_reliability_metrics(mock_analyze_observ
 
     mock_analyze_observability.return_value = {
         "window_days": 7,
+        "usage_log_available": True,
         "total_queries": 120,
         "queries_with_latency": 100,
         "cache_hit_rate": 25.0,
@@ -192,6 +193,7 @@ def test_admin_api_observability_returns_reliability_metrics(mock_analyze_observ
     assert response.status_code == 200
     payload = response.json()
     assert payload["window_days"] == 7
+    assert payload["usage_log_available"] == True
     assert payload["total_queries"] == 120
     assert payload["cache_hit_rate"] == 25.0
     assert payload["p95_latency_ms"] == 4200

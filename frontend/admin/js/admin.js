@@ -188,17 +188,22 @@ async function loadReliability() {
         apiFetch("/api/health"),
         apiFetch(`/api/admin/observability?days=${days}`)
     ]);
+    const hasUsageLogMetrics = Boolean(data.usage_log_available);
 
     document.getElementById("reliabilityHealth").textContent = health.status || "-";
-    document.getElementById("reliabilityHealthMeta").textContent = `Chroma ${health.chroma_connected ? "connected" : "disconnected"} / LLM ${health.llm_configured ? "configured" : "missing"}`;
-    document.getElementById("reliabilityP95").textContent = data.p95_latency_ms ? `${formatNumber(data.p95_latency_ms)} ms` : "-";
-    document.getElementById("reliabilityLatencyMeta").textContent = `P50 ${data.p50_latency_ms ? `${formatNumber(data.p50_latency_ms)} ms` : "-"} / Avg ${data.avg_latency_ms ? `${formatNumber(data.avg_latency_ms)} ms` : "-"}`;
-    document.getElementById("reliabilityCacheRate").textContent = formatPercentage(data.cache_hit_rate);
-    document.getElementById("reliabilityCacheMeta").textContent = `${formatNumber(data.total_queries)} queries / ${formatNumber(data.queries_with_latency)} with latency`;
+    document.getElementById("reliabilityHealthMeta").textContent = `Chroma ${health.chroma_connected ? "connected" : "disconnected"} / LLM ${health.llm_configured ? "configured" : "missing"} / Usage log ${hasUsageLogMetrics ? "available" : "missing"}`;
+    document.getElementById("reliabilityP95").textContent = hasUsageLogMetrics && data.p95_latency_ms ? `${formatNumber(data.p95_latency_ms)} ms` : "-";
+    document.getElementById("reliabilityLatencyMeta").textContent = hasUsageLogMetrics
+        ? `P50 ${data.p50_latency_ms ? `${formatNumber(data.p50_latency_ms)} ms` : "-"} / Avg ${data.avg_latency_ms ? `${formatNumber(data.avg_latency_ms)} ms` : "-"}`
+        : "Usage log metrics unavailable";
+    document.getElementById("reliabilityCacheRate").textContent = hasUsageLogMetrics ? formatPercentage(data.cache_hit_rate) : "-";
+    document.getElementById("reliabilityCacheMeta").textContent = hasUsageLogMetrics
+        ? `${formatNumber(data.total_queries)} queries / ${formatNumber(data.queries_with_latency)} with latency`
+        : "No usage log sample on this environment";
     document.getElementById("reliabilityZeroSource").textContent = formatPercentage(data.zero_source_rate_24h);
     document.getElementById("reliabilitySourceMeta").textContent = `${formatNumber(data.zero_source_answers_24h)} zero-source of ${formatNumber(data.answers_last_24h)} answers`;
-    document.getElementById("reliabilitySlowQueries").textContent = formatNumber(data.slow_queries);
-    document.getElementById("reliabilitySlowMeta").textContent = `Threshold ${formatNumber(data.slow_query_threshold_ms)} ms`;
+    document.getElementById("reliabilitySlowQueries").textContent = hasUsageLogMetrics ? formatNumber(data.slow_queries) : "-";
+    document.getElementById("reliabilitySlowMeta").textContent = hasUsageLogMetrics ? `Threshold ${formatNumber(data.slow_query_threshold_ms)} ms` : "Usage log metrics unavailable";
     document.getElementById("reliabilityRateLimits").textContent = formatNumber(data.rate_limited_users_today + data.rate_limited_anonymous_today);
     document.getElementById("reliabilityRateLimitMeta").textContent = `${formatNumber(data.rate_limited_users_today)} users / ${formatNumber(data.rate_limited_anonymous_today)} anonymous`;
 

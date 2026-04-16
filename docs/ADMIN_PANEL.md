@@ -112,6 +112,7 @@ Recent usage entries from `logs/usage.jsonl` (PII masked).
 
 ### GET /api/admin/observability
 Read-only reliability metrics for operators:
+- `usage_log_available` indicates whether file-based usage metrics exist on the current environment
 - latency sample count, average latency, P50, P95
 - slow-query count using a fixed threshold
 - cache hit rate
@@ -161,6 +162,8 @@ Reliability metrics intentionally mix two sources:
 - `chat_messages` for source-count quality proxies such as zero-source answers
 
 This keeps the admin panel grounded in already collected runtime data without exposing raw server internals or requiring SSH access.
+
+If `logs/usage.jsonl` is not present in a given environment, the admin UI shows usage-log metrics as unavailable rather than presenting misleading zero values.
 
 ## Local Development
 1) Start dev stack:

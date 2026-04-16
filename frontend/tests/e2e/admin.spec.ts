@@ -64,6 +64,7 @@ test.describe('Admin Panel E2E Tests', () => {
         status: 200,
         json: {
           window_days: 7,
+          usage_log_available: true,
           total_queries: 120,
           queries_with_latency: 100,
           cache_hit_rate: 25,
@@ -363,6 +364,7 @@ test.describe('Admin Panel RBAC UI Tests', () => {
         status: 200,
         json: {
           window_days: 7,
+          usage_log_available: false,
           total_queries: 0,
           queries_with_latency: 0,
           cache_hit_rate: 0,

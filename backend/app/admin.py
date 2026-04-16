@@ -131,6 +131,7 @@ class AdminReliabilityDayEntry(BaseModel):
 
 class AdminReliabilityResponse(BaseModel):
     window_days: int
+    usage_log_available: bool
     total_queries: int
     queries_with_latency: int
     cache_hit_rate: float
@@ -627,6 +628,7 @@ async def get_admin_observability(
 
     return AdminReliabilityResponse(
         window_days=reliability["window_days"],
+        usage_log_available=bool(reliability.get("usage_log_available", False)),
         total_queries=reliability["total_queries"],
         queries_with_latency=reliability["queries_with_latency"],
         cache_hit_rate=float(reliability["cache_hit_rate"]),

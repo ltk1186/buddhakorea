@@ -96,6 +96,10 @@ data to show source-quality proxies such as:
 - zero-source rate
 - average sources per answer
 
+When `usage.jsonl` is absent in a runtime environment, the admin observability
+API reports that file-based metrics are unavailable so the UI can avoid showing
+false zeroes for latency, cache-hit, and cost-derived reliability signals.
+
 The runtime chat persistence layer now also stores this trace on assistant
 messages in PostgreSQL:
 

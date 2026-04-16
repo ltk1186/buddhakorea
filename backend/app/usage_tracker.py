@@ -276,6 +276,7 @@ def analyze_observability_logs(days: int = 7, slow_query_ms: int = 30000) -> Dic
     """
     base = {
         "window_days": days,
+        "usage_log_available": USAGE_LOG_FILE.exists(),
         "total_queries": 0,
         "queries_with_latency": 0,
         "cache_hit_rate": 0.0,
