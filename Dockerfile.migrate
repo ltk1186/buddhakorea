@@ -1,0 +1,29 @@
+FROM python:3.11-slim
+
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
+        "sqlalchemy>=2.0.0" \
+        "asyncpg>=0.29.0" \
+        "alembic>=1.13.0" \
+        "cryptography>=44.0.0" \
+        "loguru>=0.7.0"
+
+COPY backend/alembic.ini /app/backend/alembic.ini
+COPY backend/alembic /app/backend/alembic
+COPY backend/app /app/backend/app
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app/backend
+
+WORKDIR /app/backend
+
+ENTRYPOINT ["alembic", "-c", "alembic.ini"]
+CMD ["upgrade", "head"]

@@ -9,6 +9,7 @@ on:
       - 'frontend/**'
       - 'scripts/**'
       - 'Dockerfile'
+      - 'Dockerfile.migrate'
       - 'requirements.txt'
       - 'pyproject.toml'
       - '.github/workflows/deploy-hetzner.yml'

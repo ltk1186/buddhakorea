@@ -1,6 +1,6 @@
 # Secrets Management Guide
 
-> 최종 업데이트: 2026-04-02
+> 최종 업데이트: 2026-04-16
 
 GitHub Actions Secrets → Hetzner 서버로 시크릿이 흐르는 방식을 설명합니다.
 
@@ -18,6 +18,9 @@ SSH → Hetzner VM
       ├─ config/gcp-key.json 생성 (GCP 인증용)
       └─ docker compose up (컨테이너에 환경변수 주입)
 ```
+
+`.env`는 production의 source of truth가 아니라 GitHub Secrets의 출력물이다.
+서버에서 수동 편집하지 않는다. 다음 배포 때 덮어써진다.
 
 ---
 
@@ -52,6 +55,12 @@ SSH → Hetzner VM
 ### 1. .env 파일 자동 생성
 
 배포 시 워크플로우가 서버의 `/opt/buddha-korea/.env`를 자동 생성합니다. 수동 편집 금지 — 다음 배포 시 덮어씌워집니다.
+
+이 `.env`는 일반 runtime 서비스뿐 아니라 migration runner에서도 같이 사용됩니다:
+
+```bash
+./scripts/migrate.sh <alembic args>
+```
 
 ### 2. GCP 서비스 계정 키
 
@@ -157,3 +166,9 @@ docker compose -f /opt/buddha-korea/config/docker-compose.yml restart backend
 ```
 
 **주의:** 수동 변경은 다음 자동 배포 시 덮어씌워집니다.
+
+## 관련 문서
+
+- [PRODUCTION_RUNBOOK.md](./PRODUCTION_RUNBOOK.md)
+- [MIGRATIONS_AND_SCHEMA.md](./MIGRATIONS_AND_SCHEMA.md)
+- [DEPLOYMENT_QUICKSTART.md](./DEPLOYMENT_QUICKSTART.md)

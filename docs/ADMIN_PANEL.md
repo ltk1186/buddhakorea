@@ -146,8 +146,8 @@ Query investigation detail adds stored trace metadata on chat messages:
 
 Apply in production:
 ```bash
-cd /opt/buddha-korea/backend
-alembic upgrade head
+cd /opt/buddha-korea
+./scripts/migrate.sh upgrade head
 ```
 
 ## Data Sources
@@ -178,7 +178,7 @@ Note: Admin UI uses the same auth cookies as the public site.
 ## Production Deployment Notes
 - Nginx serves `/admin/` as static content (see `config/nginx.conf`).
 - If CSS/JS changes, use cache-busting query strings or restart nginx to refresh mounts.
-- If Alembic revisions changed, run `alembic upgrade head` after deploy before validating admin query detail.
+- If Alembic revisions changed, run `./scripts/migrate.sh upgrade head` after deploy before validating admin query detail.
 - After deployment, verify:
   - `/admin/` loads
   - `/api/admin/summary` returns 200 for admin users

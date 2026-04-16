@@ -158,6 +158,26 @@ services:
         max-file: "5"
 
   # ──────────────────────────────────────────────────────────
+  # Migration Runner: Alembic schema operations (manual only)
+  # ──────────────────────────────────────────────────────────
+  migrate:
+    build:
+      context: ..
+      dockerfile: Dockerfile.migrate
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ../.env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-buddhakorea}
+      - TOKEN_ENCRYPTION_KEY=${TOKEN_ENCRYPTION_KEY:-migration-placeholder-key}
+    networks:
+      - buddhist-ai-network
+    profiles:
+      - tools
+
+  # ──────────────────────────────────────────────────────────
   # Nginx: 리버스 프록시 + SSL + Rate Limiting
   # ──────────────────────────────────────────────────────────
   nginx:

@@ -1,6 +1,14 @@
 # Buddha Korea 개발 및 배포 가이드
 
-> 최종 업데이트: 2026-04-02
+> 최종 업데이트: 2026-04-16
+>
+> 현재 production 운영 기준 문서는 아래 두 파일이다.
+>
+> - [PRODUCTION_RUNBOOK.md](./PRODUCTION_RUNBOOK.md)
+> - [MIGRATIONS_AND_SCHEMA.md](./MIGRATIONS_AND_SCHEMA.md)
+>
+> 이 문서는 더 넓은 배경 설명용으로 유지한다. 실제 배포, 롤백, 마이그레이션
+> 절차는 위 문서를 우선한다.
 
 ## 목차
 1. [인프라 구조](#1-인프라-구조)
@@ -114,7 +122,12 @@ Google Cloud Console에서 승인된 리디렉션 URI에 추가:
 |------------|-----------|
 | `backend/**` | `.github/workflows/deploy-hetzner.yml` |
 | `config/**` | 위와 동일 |
+| `frontend/**` | 위와 동일 |
+| `scripts/**` | 위와 동일 |
 | `Dockerfile` | 위와 동일 |
+| `Dockerfile.migrate` | 위와 동일 |
+| `requirements.txt` | 위와 동일 |
+| `pyproject.toml` | 위와 동일 |
 | `.github/workflows/deploy-hetzner.yml` | 위와 동일 |
 
 ### 3.2 자동 배포 흐름
@@ -147,15 +160,25 @@ ssh root@157.180.72.0
 cd /opt/buddha-korea
 git pull origin main
 
-# 컨테이너 재시작 (코드 변경만)
-docker compose -f config/docker-compose.yml up -d --force-recreate
-
 # 이미지 재빌드 포함
 docker compose -f config/docker-compose.yml up -d --build
+
+# 코드만 다시 읽어도 되는 경우에만
+docker compose -f config/docker-compose.yml up -d --force-recreate
 
 # 로그 확인
 docker logs buddhakorea-backend -f
 ```
+
+Schema migration이 포함된 배포라면 별도 canonical runner를 사용합니다:
+
+```bash
+./scripts/migrate.sh current
+./scripts/migrate.sh upgrade head
+```
+
+첫 production normalization은 무조건 `upgrade head`가 아닙니다. 자세한 기준은
+[MIGRATIONS_AND_SCHEMA.md](./MIGRATIONS_AND_SCHEMA.md)를 따릅니다.
 
 ### 3.4 GCP 서비스 계정 키 관리 (중요)
 
