@@ -117,7 +117,9 @@ Before changing the LLM provider adapter:
 ## Unit-Level Safety Coverage
 
 `backend/tests/test_llm_factory.py` protects the provider-routing layer that was
-introduced before the provider migration, plus the LCEL RAG invocation wrapper.
+introduced before the provider migration. The RAG chain and prompt registry
+contracts are covered separately by `backend/tests/test_rag_chains.py` and
+`backend/tests/test_rag_prompts.py`.
 
 Covered contracts:
 
@@ -133,15 +135,55 @@ Covered contracts:
 - `invoke_rag_chain` calls chains with both `input` and `question` keys, then
   maps LCEL output (`answer`, `context`) back to the legacy API shape
   (`result`, `source_documents`).
+- `build_prompt` formats registry-managed prompts with stable ids and versions,
+  including tradition and streaming prompt variants.
 
 Run these tests locally inside the backend container:
 
 ```bash
 docker exec -w /app/backend -e PYTHONPATH=/app/backend:/app buddhakorea-dev-backend \
-  pytest tests/test_llm_factory.py -q
+  pytest tests/test_llm_factory.py tests/test_rag_chains.py tests/test_rag_prompts.py -q
 ```
 
 ## Production Baseline
+
+### 2026-04-16: LCEL Post-Migration Baseline
+
+Baseline target:
+
+- Environment: production, `https://buddhakorea.com`
+- Git commit: `720c8fd`
+- Main model reported by `/api/chat`: `gemini-2.5-pro`
+- Current answer-generation path:
+  `langchain_google_vertexai.ChatVertexAI` with LCEL
+  `create_retrieval_chain`
+- Execution mode: admin login, full golden set
+- Result: passed `3`, skipped `0`
+
+Command:
+
+```bash
+ADMIN_EMAIL="..." ADMIN_PASSWORD="..." \
+python3 scripts/rag_regression_check.py \
+  --base-url https://buddhakorea.com \
+  --login
+```
+
+Observed results:
+
+| Case | Result | API Latency | Wall Time | Sources | Model |
+| --- | --- | ---: | ---: | ---: | --- |
+| `normal_four_noble_truths_ko` | pass | 59,206 ms | 59,888 ms | 3 | `gemini-2.5-pro` |
+| `normal_impermanence_ko` | pass | 46,965 ms | 47,618 ms | 5 | `gemini-2.5-pro` |
+| `sutra_filter_agama_ko` | pass | 36,632 ms | 37,787 ms | 1 | `gemini-2.5-pro` |
+
+Interpretation:
+
+- This is the rollback comparison point for the service-layer and prompt
+  registry refactors that follow the LCEL migration.
+- Source counts match the earlier legacy `RetrievalQA` baseline for the current
+  golden set.
+- Latency remains within the current 120 second smoke ceiling.
 
 ### 2026-04-15: Pre-Migration Baseline
 

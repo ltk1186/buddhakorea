@@ -33,6 +33,48 @@ A retrieval-augmented generation (RAG) system for the Taishō Canon (CBETA T/ fo
 └─────────────────────────────────────────────────────────┘
 ```
 
+## Current Production Runtime
+
+The legacy planning layout above is still useful background, but the deployed
+FastAPI app now uses the following runtime modules:
+
+```text
+backend/app/main.py
+  Public chat endpoints, auth/quota/session orchestration, response formatting.
+
+backend/app/rag/chains.py
+  LangChain LCEL helpers for creating and invoking retrieval chains.
+
+backend/app/rag/prompts.py
+  Code-owned prompt registry with stable prompt ids and versions.
+
+backend/app/chroma_compat.py
+  Minimal ChromaDB VectorStore adapter that avoids the deprecated
+  langchain_community Chroma wrapper.
+```
+
+Current answer-generation flow:
+
+```text
+/api/chat
+  -> choose retriever/filter mode
+  -> build_prompt(prompt_id)
+  -> create_rag_chain(llm, retriever, prompt)
+  -> invoke_rag_chain(chain, query)
+  -> map LCEL answer/context to existing result/source_documents contract
+  -> format citations, log usage, persist Q&A trace
+```
+
+Commercial readiness direction:
+
+- Keep `main.py` focused on FastAPI request orchestration.
+- Move RAG execution, prompts, source formatting, retrieval config, and provider
+  adapters into focused modules.
+- Treat prompt ids, retrieval config, model/provider, source ids, latency, token
+  usage, and cost as operational trace data.
+- Require RAG regression checks before changing prompts, provider adapters,
+  retrieval settings, or embedding/vector store behavior.
+
 ## Implementation Order (TDD Flow)
 
 ### Phase 1: Chunker Module

@@ -1,6 +1,6 @@
 # Buddha Korea - 배포 빠른 참조
 
-**최종 업데이트:** 2026-04-02
+**최종 업데이트:** 2026-04-16
 
 ---
 
@@ -34,7 +34,8 @@ GitHub Repository → Settings → Secrets and variables → Actions
 `main` 브랜치 push 시 아래 경로 변경이 감지되면 자동 배포:
 
 ```
-backend/** | config/** | Dockerfile | .github/workflows/deploy-hetzner.yml
+backend/** | config/** | frontend/** | scripts/** | Dockerfile |
+requirements.txt | pyproject.toml | .github/workflows/deploy-hetzner.yml
 ```
 
 **워크플로우:** `.github/workflows/deploy-hetzner.yml`
@@ -74,6 +75,25 @@ docker logs buddhakorea-backend --tail 50 2>&1 | grep -i error
 ```
 
 브라우저: https://buddhakorea.com/chat.html → 콘솔에서 404 없는지 확인
+
+RAG/provider/prompt/runtime 변경 후에는 health만으로 충분하지 않다. 최소
+한 건의 production RAG smoke를 실행한다.
+
+```bash
+ADMIN_EMAIL="..." ADMIN_PASSWORD="..." \
+python3 scripts/rag_regression_check.py \
+  --base-url https://buddhakorea.com \
+  --login \
+  --max-cases 1
+```
+
+LCEL chain 또는 prompt registry 변경 후에는 backend 로그에서 아래 패턴이
+없는지도 확인한다.
+
+```bash
+docker logs --timestamps buddhakorea-backend --since 5m 2>&1 | \
+  grep -Ei 'RetrievalQA|Chain\.__call__|LangChainDeprecationWarning|Traceback|ERROR'
+```
 
 ---
 

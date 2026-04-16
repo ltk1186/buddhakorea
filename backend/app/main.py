@@ -32,9 +32,6 @@ from langchain_anthropic import ChatAnthropic
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_google_vertexai import ChatVertexAI
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain.chains import create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain_core.prompts import PromptTemplate
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -49,6 +46,18 @@ from .models.user_usage import UserUsage, AnonymousUsage
 from .dependencies import get_current_user_optional, get_current_user_required
 from .quota import check_quota, increment_usage, get_usage_info, get_client_ip
 from .chroma_compat import ChromaCompat
+from .rag.chains import create_rag_chain, invoke_rag_chain
+from .rag.prompts import (
+    DETAILED_PROMPT_ID,
+    NORMAL_PROMPT_ID,
+    STREAMING_DETAILED_PROMPT_ID,
+    STREAMING_NORMAL_PROMPT_ID,
+    SUTRA_FILTER_DETAILED_PROMPT_ID,
+    SUTRA_FILTER_PROMPT_ID,
+    TRADITION_FILTER_DETAILED_PROMPT_ID,
+    TRADITION_FILTER_PROMPT_ID,
+    build_prompt,
+)
 
 # Usage tracking
 from .usage_tracker import log_token_usage, analyze_usage_logs, get_recent_queries, export_usage_csv
@@ -805,23 +814,6 @@ def create_chat_llm(
     )
 
 
-def create_rag_chain(llm: Any, retriever: Any, prompt: PromptTemplate) -> Any:
-    """Create the LCEL RAG chain used by the chat endpoints."""
-
-    document_chain = create_stuff_documents_chain(llm, prompt)
-    return create_retrieval_chain(retriever, document_chain)
-
-
-def invoke_rag_chain(chain: Any, query: str) -> Dict[str, Any]:
-    """Invoke an LCEL RAG chain while preserving the legacy response shape."""
-
-    result = chain.invoke({"input": query, "question": query})
-    return {
-        "result": result.get("answer", result.get("result", "")),
-        "source_documents": result.get("context", result.get("source_documents", [])),
-    }
-
-
 # ============================================================================
 # Startup & Shutdown
 # ============================================================================
@@ -967,33 +959,12 @@ async def lifespan(app: FastAPI):
 
     # Create RAG chain if vectorstore exists
     if app_state.vectorstore:
-        prompt_template = """아래 제공된 불교 문헌 내용을 참고하여 질문에 상세하게 답변하세요.
-
-**답변 지침:**
-- 문헌의 내용을 기반으로 정확하고 명확하게 설명하세요
-- 여러 전통(초기불교, 대승불교 등)의 관점이 다를 수 있다면 각 관점을 소개하세요
-- 문헌 내용을 인용할 때는 인용 표시를 하세요
-- 마크다운 헤더(#, ##, ###)를 사용하지 말고 일반 텍스트로 작성하세요
-- 자기소개나 서두 없이 바로 본론으로 시작하세요
-
-참고 문헌:
-{context}
-
-Question: {question}
-
-Answer (한국어 또는 영어로 상세히 답변):"""
-
-        PROMPT = PromptTemplate(
-            template=prompt_template,
-            input_variables=["context", "question"]
-        )
-
         app_state.qa_chain = create_rag_chain(
             app_state.llm,
             app_state.vectorstore.as_retriever(
                 search_kwargs={"k": config.top_k_retrieval}
             ),
-            PROMPT,
+            build_prompt(NORMAL_PROMPT_ID),
         )
         logger.info("✓ LCEL RAG chain created")
 
@@ -1964,55 +1935,17 @@ async def chat(
                 }
             )
 
-            # Select prompt template based on detailed mode
-            if request.detailed_mode:
-                prompt_template = """아래 문헌 내용을 바탕으로 **가능한 한 상세하고 포괄적으로** 답변하세요.
-
-**답변 지침:**
-1. 문헌에 제공된 모든 관련 내용을 최대한 활용하여 **깊이 있게** 설명하세요
-2. 여러 관점과 해석이 있다면 모두 소개하세요
-3. 문헌 원문을 인용할 때는 인용 표시를 하고, 그 의미를 자세히 풀어 설명하세요
-4. 역사적 배경, 맥락, 다른 가르침과의 연결고리를 포함하여 종합적으로 설명하세요
-5. 다른 문헌이나 일반적인 불교 지식은 언급하지 마세요 (오직 이 문헌의 내용만)
-6. 문헌에 전혀 관련이 없는 질문이라면, "이 문헌에서는 해당 주제를 다루지 않습니다"라고 답변하세요
-7. **마크다운 헤더(#, ##, ###)를 절대 사용하지 마세요**
-8. **자기소개나 서두 없이 바로 본론으로 시작하세요**
-
-참고 문헌:
-{context}
-
-Question: {question}
-
-Answer:"""
-            else:
-                prompt_template = """아래 문헌 내용을 바탕으로 답변하세요.
-
-**답변 지침:**
-1. 문헌에 제공된 내용을 최대한 활용하여 답변하세요
-2. 직접적인 언급이 없더라도 문헌에 관련된 내용이 있다면 그것을 바탕으로 설명하세요
-3. 문헌의 내용을 인용할 때는 인용 표시를 하세요
-4. 다른 문헌이나 일반적인 불교 지식은 언급하지 마세요 (오직 이 문헌의 내용만)
-5. 문헌에 전혀 관련이 없는 질문이라면, "이 문헌에서는 해당 주제를 다루지 않습니다"라고 답변하세요
-6. 마크다운 헤더(#, ##, ###)를 사용하지 말고 일반 텍스트로 작성하세요
-7. 자기소개나 서두 없이 바로 본론으로 시작하세요
-
-참고 문헌:
-{context}
-
-Question: {question}
-
-Answer:"""
-
-            PROMPT = PromptTemplate(
-                template=prompt_template,
-                input_variables=["context", "question"]
+            prompt_id = (
+                SUTRA_FILTER_DETAILED_PROMPT_ID
+                if request.detailed_mode
+                else SUTRA_FILTER_PROMPT_ID
             )
 
             # Create temporary QA chain with filtered retriever
             filtered_qa_chain = create_rag_chain(
                 detailed_llm if detailed_llm else app_state.llm,
                 filtered_retriever,
-                PROMPT,
+                build_prompt(prompt_id),
             )
 
             result = invoke_rag_chain(filtered_qa_chain, query)
@@ -2032,51 +1965,17 @@ Answer:"""
                 }
             )
 
-            # Select prompt template based on detailed mode
-            if request.detailed_mode:
-                prompt_template = """아래 {tradition} 문헌 내용을 바탕으로 **가능한 한 상세하고 포괄적으로** 답변하세요.
-
-**답변 지침:**
-1. 문헌에 제공된 모든 관련 내용을 최대한 활용하여 **깊이 있게** 설명하세요
-2. {tradition}의 관점과 해석을 중심으로 답변하세요
-3. 문헌 원문을 인용할 때는 인용 표시를 하고, 그 의미를 자세히 풀어 설명하세요
-4. 역사적 배경, 맥락을 포함하여 종합적으로 설명하세요
-5. **마크다운 헤더(#, ##, ###)를 절대 사용하지 마세요**
-6. **자기소개나 서두 없이 바로 본론으로 시작하세요**
-
-참고 문헌:
-{{context}}
-
-Question: {{question}}
-
-Answer:""".replace("{tradition}", tradition_filter_normalized)
-            else:
-                prompt_template = """아래 {tradition} 문헌 내용을 바탕으로 답변하세요.
-
-**답변 지침:**
-1. 문헌에 제공된 내용을 최대한 활용하여 답변하세요
-2. {tradition}의 관점에서 설명하세요
-3. 문헌의 내용을 인용할 때는 인용 표시를 하세요
-4. 마크다운 헤더(#, ##, ###)를 사용하지 말고 일반 텍스트로 작성하세요
-5. 자기소개나 서두 없이 바로 본론으로 시작하세요
-
-참고 문헌:
-{{context}}
-
-Question: {{question}}
-
-Answer:""".replace("{tradition}", tradition_filter_normalized)
-
-            PROMPT = PromptTemplate(
-                template=prompt_template,
-                input_variables=["context", "question"]
+            prompt_id = (
+                TRADITION_FILTER_DETAILED_PROMPT_ID
+                if request.detailed_mode
+                else TRADITION_FILTER_PROMPT_ID
             )
 
             # Create QA chain with tradition filter
             tradition_qa_chain = create_rag_chain(
                 detailed_llm if detailed_llm else app_state.llm,
                 filtered_retriever,
-                PROMPT,
+                build_prompt(prompt_id, tradition=tradition_filter_normalized),
             )
 
             result = invoke_rag_chain(tradition_qa_chain, query)
@@ -2090,35 +1989,11 @@ Answer:""".replace("{tradition}", tradition_filter_normalized)
                 search_kwargs={"k": detailed_k}
             )
 
-            # Create detailed prompt
-            prompt_template = """아래 제공된 불교 문헌 내용을 참고하여 **가능한 한 상세하고 포괄적으로** 답변하세요.
-
-**답변 지침:**
-1. 문헌에 제공된 모든 관련 내용을 최대한 활용하여 **깊이 있게** 설명하세요
-2. 여러 전통(초기불교, 대승불교 등)의 관점이 다를 수 있다면 각 관점을 자세히 소개하세요
-3. 문헌 원문을 인용할 때는 인용 표시를 하고, 그 의미를 자세히 풀어 설명하세요
-4. 역사적 배경, 맥락, 다른 가르침과의 연결고리를 포함하여 종합적으로 설명하세요
-5. 가능한 한 구체적인 예시와 비유를 들어 설명하세요
-6. **마크다운 헤더(#, ##, ###)를 절대 사용하지 마세요**
-7. **자기소개나 서두 없이 바로 본론으로 시작하세요**
-
-참고 문헌:
-{context}
-
-Question: {question}
-
-Answer:"""
-
-            PROMPT = PromptTemplate(
-                template=prompt_template,
-                input_variables=["context", "question"]
-            )
-
             # Create detailed QA chain
             detailed_qa_chain = create_rag_chain(
                 detailed_llm,
                 detailed_retriever,
-                PROMPT,
+                build_prompt(DETAILED_PROMPT_ID),
             )
 
             result = invoke_rag_chain(detailed_qa_chain, query)
@@ -2406,41 +2281,15 @@ async def chat_stream(
             yield f"data: {json.dumps({'type': 'stage', 'stage': 'generating', 'message': '답변 작성 중...'})}\n\n"
             await asyncio.sleep(0.1)
 
-            # Build prompt
-            if is_detailed:
-                prompt_template = """아래 문헌 내용을 바탕으로 **가능한 한 상세하고 포괄적으로** 답변하세요.
-
-**답변 지침:**
-1. 문헌에 제공된 모든 관련 내용을 최대한 활용하여 **깊이 있게** 설명하세요
-2. 여러 관점과 해석이 있다면 모두 소개하세요
-3. 문헌 원문을 인용할 때는 인용 표시를 하고, 그 의미를 자세히 풀어 설명하세요
-4. **마크다운 헤더(#, ##, ###)를 절대 사용하지 마세요**
-5. **자기소개나 서두 없이 바로 본론으로 시작하세요**
-
-참고 문헌:
-{context}
-
-Question: {question}
-
-Answer:"""
-            else:
-                prompt_template = """아래 제공된 불교 문헌 내용을 참고하여 질문에 상세하게 답변하세요.
-
-**답변 지침:**
-- 문헌의 내용을 기반으로 정확하고 명확하게 설명하세요
-- 여러 전통(초기불교, 대승불교 등)의 관점이 다를 수 있다면 각 관점을 소개하세요
-- 문헌 내용을 인용할 때는 인용 표시를 하세요
-- 마크다운 헤더(#, ##, ###)를 사용하지 말고 일반 텍스트로 작성하세요
-- 자기소개나 서두 없이 바로 본론으로 시작하세요
-
-참고 문헌:
-{context}
-
-Question: {question}
-
-Answer:"""
-
-            prompt = prompt_template.format(context=context, question=request.query)
+            prompt_id = (
+                STREAMING_DETAILED_PROMPT_ID
+                if is_detailed
+                else STREAMING_NORMAL_PROMPT_ID
+            )
+            prompt = build_prompt(prompt_id).format(
+                context=context,
+                question=request.query,
+            )
 
             # Stream response from LLM
             full_response = ""

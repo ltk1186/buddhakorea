@@ -151,8 +151,9 @@ call sites.
 ### Completed: LangChain LCEL Retrieval Chain
 
 `backend/app/main.py` no longer uses the deprecated `RetrievalQA` chain for the
-runtime chat path. It now builds the RAG path with LangChain Expression Language
-helpers:
+runtime chat path. The RAG chain helpers now live in
+`backend/app/rag/chains.py` and build the runtime path with LangChain Expression
+Language helpers:
 
 - `create_stuff_documents_chain`
 - `create_retrieval_chain`
@@ -167,6 +168,31 @@ The local wrapper functions preserve the public API response contract:
 
 Because `RetrievalQA` has been removed from the runtime path, the previous
 `Chain.__call__` warning suppression was also removed.
+
+### Completed: Code-Owned Prompt Registry
+
+Runtime chat prompts have been moved out of `backend/app/main.py` and into
+`backend/app/rag/prompts.py`.
+
+The registry currently covers:
+
+- normal chat
+- detailed chat
+- sutra-filtered chat
+- detailed sutra-filtered chat
+- tradition-filtered chat
+- detailed tradition-filtered chat
+- streaming normal chat
+- streaming detailed chat
+
+Prompt entries have stable ids and versions such as `normal_v1` and
+`sutra_filter_detailed_v1`. They are still code-owned and are not editable from
+the admin UI. This is intentional for the current phase: prompt changes should
+remain reviewable, testable, rollbackable code changes until query tracing,
+admin audit logging, and prompt change governance are stronger.
+
+The tradition-filtered prompt path now uses the registry renderer so `tradition`,
+`context`, and `question` are all formatted explicitly.
 
 References checked before this migration:
 
@@ -193,6 +219,8 @@ factory layer before any provider migration:
 - `create_rag_chain` uses the LCEL chain factories.
 - `invoke_rag_chain` preserves the legacy response shape expected by the chat
   endpoint.
+- `build_prompt` preserves prompt formatting for normal, tradition-filtered,
+  and streaming prompt variants.
 
 ### Remaining: Google Provider Adapter Review
 
