@@ -52,6 +52,10 @@ backend/app/rag/trace.py
   Structured retrieval and prompt trace payloads for logs and future admin
   investigation views.
 
+backend/app/llm/
+  Provider adapter layer for Gemini-on-Vertex, Anthropic, and OpenAI chat
+  model construction. `main.py` no longer imports provider SDKs directly.
+
 backend/app/chroma_compat.py
   Minimal ChromaDB VectorStore adapter that avoids the deprecated
   langchain_community Chroma wrapper.
@@ -63,7 +67,8 @@ Current answer-generation flow:
 /api/chat
   -> choose retriever/filter mode
   -> build_prompt(prompt_id)
-  -> build_query_trace(prompt, retrieval, response_mode, model)
+  -> resolve provider adapter from model name
+  -> build_query_trace(prompt, retrieval, response_mode, model, provider)
   -> create_rag_chain(llm, retriever, prompt)
   -> invoke_rag_chain(chain, query)
   -> map LCEL answer/context to existing result/source_documents contract
@@ -86,6 +91,7 @@ Current structured query trace fields:
 - `response_mode`
 - `streaming`
 - `model`
+- `provider`
 
 Commercial readiness direction:
 
@@ -96,6 +102,36 @@ Commercial readiness direction:
   usage, and cost as operational trace data.
 - Require RAG regression checks before changing prompts, provider adapters,
   retrieval settings, or embedding/vector store behavior.
+
+## Current Provider Adapter Layer
+
+Runtime chat-model construction is now isolated behind:
+
+```text
+backend/app/llm/
+  base.py
+  types.py
+  factory.py
+  gemini_vertex.py
+  anthropic.py
+  openai.py
+```
+
+Current routing policy:
+
+- models containing `gemini` -> `gemini_vertex`
+- models containing `claude` -> `anthropic`
+- everything else -> `openai`
+
+This phase is intentionally behavior-preserving:
+
+- Gemini still uses `langchain_google_vertexai.ChatVertexAI`
+- Claude still uses `langchain_anthropic.ChatAnthropic`
+- OpenAI still uses `langchain_openai.ChatOpenAI`
+- API-key checks and streaming kwargs are preserved
+
+The gain is architectural, not behavioral: future provider migration work is now
+confined to adapter modules instead of being spread across `main.py`.
 
 ## Implementation Order (TDD Flow)
 

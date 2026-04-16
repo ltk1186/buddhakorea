@@ -20,6 +20,7 @@ def test_build_query_trace_includes_prompt_and_retrieval_metadata():
         response_mode="detailed",
         streaming=False,
         model="gemini-2.5-pro",
+        provider="gemini_vertex",
     )
 
     assert trace["prompt"]["id"] == "normal_v1"
@@ -30,4 +31,4 @@ def test_build_query_trace_includes_prompt_and_retrieval_metadata():
     assert trace["response_mode"] == "detailed"
     assert trace["streaming"] is False
     assert trace["model"] == "gemini-2.5-pro"
-
+    assert trace["provider"] == "gemini_vertex"

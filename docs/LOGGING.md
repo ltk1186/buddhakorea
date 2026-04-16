@@ -75,6 +75,7 @@ Current trace fields include:
 - response mode
 - streaming flag
 - model name
+- resolved provider route
 
 **Manual Usage:**
 ```python

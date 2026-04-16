@@ -47,6 +47,7 @@ def build_query_trace(
     response_mode: str,
     streaming: bool,
     model: str,
+    provider: str,
 ) -> Dict[str, Any]:
     """Build the structured query trace payload shared across logs."""
 
@@ -56,4 +57,5 @@ def build_query_trace(
         "response_mode": response_mode,
         "streaming": streaming,
         "model": model,
+        "provider": provider,
     }

@@ -28,9 +28,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from loguru import logger
 import chromadb
 from chromadb.config import Settings as ChromaSettings
-from langchain_anthropic import ChatAnthropic
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain_google_vertexai import ChatVertexAI
+from langchain_openai import OpenAIEmbeddings
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -46,6 +44,12 @@ from .models.user_usage import UserUsage, AnonymousUsage
 from .dependencies import get_current_user_optional, get_current_user_required
 from .quota import check_quota, increment_usage, get_usage_info, get_client_ip
 from .chroma_compat import ChromaCompat
+from .llm import (
+    ChatModelRequest,
+    LLMProviderConfig,
+    create_chat_llm as create_provider_chat_llm,
+    get_provider_for_model,
+)
 from .rag.chains import create_rag_chain, invoke_rag_chain
 from .rag.prompts import (
     DETAILED_PROMPT_ID,
@@ -775,43 +779,21 @@ def create_chat_llm(
     max_tokens: int,
     streaming: bool = False,
 ) -> Optional[Any]:
-    """Create a chat LLM using the currently supported provider routing."""
+    """Create a chat LLM through the provider adapter layer."""
 
-    model_lower = model.lower()
-    streaming_kwargs = {"streaming": True} if streaming else {}
-
-    if "claude" in model_lower:
-        if not config.anthropic_api_key:
-            logger.warning("Anthropic API key not found - LLM features will be disabled")
-            return None
-        return ChatAnthropic(
+    return create_provider_chat_llm(
+        ChatModelRequest(
             model=model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            streaming=streaming,
+        ),
+        LLMProviderConfig(
+            openai_api_key=config.openai_api_key,
             anthropic_api_key=config.anthropic_api_key,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            **streaming_kwargs,
-        )
-
-    if "gemini" in model_lower:
-        logger.info("Using Vertex AI for Gemini model")
-        return ChatVertexAI(
-            model=model,
-            project=config.gcp_project_id,
-            location=config.gcp_location,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            **streaming_kwargs,
-        )
-
-    if not config.openai_api_key:
-        logger.warning("OpenAI API key not found - LLM features will be disabled")
-        return None
-    return ChatOpenAI(
-        model=model,
-        openai_api_key=config.openai_api_key,
-        temperature=temperature,
-        max_tokens=max_tokens,
-        **streaming_kwargs,
+            gcp_project_id=config.gcp_project_id,
+            gcp_location=config.gcp_location,
+        ),
     )
 
 
@@ -1849,6 +1831,7 @@ async def chat(
                 response_mode="cached",
                 streaming=False,
                 model=cached_response.get('model', config.llm_model),
+                provider=get_provider_for_model(cached_response.get('model', config.llm_model)),
             )
 
             # Log cached query (no tokens used)
@@ -2065,6 +2048,7 @@ async def chat(
             response_mode=response_mode,
             streaming=False,
             model=config.llm_model,
+            provider=get_provider_for_model(config.llm_model),
         )
 
         # Format response
@@ -2398,6 +2382,7 @@ async def chat_stream(
                 response_mode="detailed" if is_detailed else "normal",
                 streaming=True,
                 model=model_name,
+                provider=get_provider_for_model(model_name),
             )
 
             # Stream response from LLM

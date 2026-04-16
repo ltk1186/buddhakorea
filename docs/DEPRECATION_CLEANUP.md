@@ -120,33 +120,25 @@ Do not loosen this back to `torch>=2.0.0` for production. On Hetzner, an
 unbounded Torch install can resolve to CUDA wheels, causing very large images,
 slow exports, and disk-pressure failures during deploy.
 
-## Remaining Cleanup
-
-`backend/app/main.py` still uses `langchain_google_vertexai.ChatVertexAI` for the
-main RAG LLM path. Replacing it should be handled as a separate migration
-because it affects answer generation behavior, credentials, streaming semantics,
-and LangChain integration.
-
-Before replacing this path, run the RAG golden-query checks documented in
-`docs/RAG_REGRESSION_TESTING.md`. The current safety harness lives in:
-
-- `backend/app/rag_regression.py`
-- `backend/app/rag_golden_queries.json`
-- `scripts/rag_regression_check.py`
-
-A production pre-migration baseline was captured on 2026-04-15 at commit
-`92088fb`; see `docs/RAG_REGRESSION_TESTING.md` for the recorded latencies,
-source counts, and pass/fail results.
-
 ### Completed: LLM Factory Preparation
 
-`backend/app/main.py` now routes chat model creation through `create_chat_llm`.
-This is intentionally behavior-preserving: it keeps the current
-`ChatVertexAI`/Claude/OpenAI provider routing, model names, token limits,
-temperature, and streaming settings, but removes duplicated initialization
-branches. This reduces the risk of a future `ChatVertexAI` replacement because
-the migration target is now one factory function instead of several scattered
-call sites.
+`backend/app/main.py` no longer imports provider SDKs directly for the runtime
+chat path. Chat model creation now flows through a provider adapter layer in:
+
+- `backend/app/llm/factory.py`
+- `backend/app/llm/gemini_vertex.py`
+- `backend/app/llm/anthropic.py`
+- `backend/app/llm/openai.py`
+
+This is intentionally behavior-preserving:
+
+- Gemini still routes to `ChatVertexAI`
+- Claude still routes to `ChatAnthropic`
+- OpenAI fallback still routes to `ChatOpenAI`
+- API-key gating, token limits, temperatures, and streaming kwargs are preserved
+
+This reduces migration risk because a future Gemini adapter replacement no
+longer requires edits inside the FastAPI request/runtime module.
 
 ### Completed: LangChain LCEL Retrieval Chain
 
@@ -211,16 +203,47 @@ rebuilds the image when `backend/**`, `requirements.txt`, `pyproject.toml`,
 ### Completed: LLM Factory Unit Coverage
 
 `backend/tests/test_llm_factory.py` now locks down the behavior-preserving LLM
-factory layer before any provider migration:
+provider adapter layer before any provider migration:
 
 - Gemini routes to `ChatVertexAI`.
 - Claude and OpenAI require their API keys before construction.
 - Streaming arguments are preserved for the fast model.
-- `create_rag_chain` uses the LCEL chain factories.
-- `invoke_rag_chain` preserves the legacy response shape expected by the chat
-  endpoint.
-- `build_prompt` preserves prompt formatting for normal, tradition-filtered,
-  and streaming prompt variants.
+- `main.py` delegates to the provider factory instead of importing SDKs
+  directly.
+
+### Completed: Provider Metadata in Query Trace
+
+Structured query traces now include both the requested model name and the
+resolved provider route, for example:
+
+- `model = gemini-2.5-pro`
+- `provider = gemini_vertex`
+
+This keeps future provider migration analysis grounded in real production logs.
+
+## Remaining Cleanup
+
+The remaining provider work is no longer about architecture isolation. It is a
+runtime migration decision:
+
+- keep `backend/app/llm/gemini_vertex.py` on `ChatVertexAI`, or
+- replace it with a `ChatGoogleGenerativeAI`-style adapter after comparative
+  regression testing
+
+That decision should still be handled as a separate migration because it affects
+answer generation behavior, credentials, streaming semantics, usage metadata,
+and LangChain integration.
+
+Before replacing this path, run the RAG golden-query checks documented in
+`docs/RAG_REGRESSION_TESTING.md`. The current safety harness lives in:
+
+- `backend/app/rag_regression.py`
+- `backend/app/rag_golden_queries.json`
+- `scripts/rag_regression_check.py`
+
+A production pre-migration baseline was captured on 2026-04-15 at commit
+`92088fb`; see `docs/RAG_REGRESSION_TESTING.md` for the recorded latencies,
+source counts, and pass/fail results.
 
 ### Remaining: Google Provider Adapter Review
 
