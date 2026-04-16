@@ -75,6 +75,37 @@ class AdminQueryEntry(BaseModel):
     sources_json: Optional[Any]
 
 
+class AdminQueryMessageDetail(BaseModel):
+    id: int
+    role: str
+    content: str
+    created_at: str
+
+
+class AdminQueryAnswerDetail(BaseModel):
+    id: int
+    content: str
+    created_at: str
+    model_used: Optional[str]
+    provider: Optional[str]
+    response_mode: Optional[str]
+    tokens_used: Optional[int]
+    latency_ms: Optional[int]
+    sources_count: int
+    sources_json: Optional[Any]
+    trace_json: Optional[Any]
+
+
+class AdminQueryDetailResponse(BaseModel):
+    selected_message_id: int
+    session_uuid: Optional[str]
+    user_id: Optional[int]
+    user_nickname: Optional[str]
+    user_email: Optional[str]
+    query: Optional[AdminQueryMessageDetail]
+    answer: Optional[AdminQueryAnswerDetail]
+
+
 class AdminAuditEntry(BaseModel):
     id: int
     admin_user_id: Optional[int]
@@ -379,6 +410,99 @@ async def list_queries(
         )
 
     return response_entries
+
+
+@router.get("/queries/{message_id}", response_model=AdminQueryDetailResponse)
+async def get_query_detail(
+    message_id: int,
+    db: AsyncSession = Depends(get_db),
+    admin_user: User = Depends(require_roles(READ_ROLES))
+) -> AdminQueryDetailResponse:
+    stmt = select(ChatMessage, ChatSession, User).join(
+        ChatSession,
+        ChatMessage.session_id == ChatSession.id
+    ).outerjoin(
+        User,
+        ChatSession.user_id == User.id
+    ).where(ChatMessage.id == message_id)
+
+    result = await db.execute(stmt)
+    row = result.one_or_none()
+    if not row:
+        raise HTTPException(status_code=404, detail="Query message not found")
+
+    selected_message, session, user = row
+
+    can_view_email = admin_user.role in {"admin", "ops", "support"}
+    email = user.email if (user and can_view_email) else _mask_email(user.email if user else None)
+
+    query_message: Optional[ChatMessage] = None
+    answer_message: Optional[ChatMessage] = None
+
+    if selected_message.role == "assistant":
+        answer_message = selected_message
+        query_stmt = (
+            select(ChatMessage)
+            .where(
+                ChatMessage.session_id == selected_message.session_id,
+                ChatMessage.role == "user",
+                ChatMessage.created_at <= selected_message.created_at,
+            )
+            .order_by(ChatMessage.created_at.desc(), ChatMessage.id.desc())
+            .limit(1)
+        )
+        query_result = await db.execute(query_stmt)
+        query_message = query_result.scalar_one_or_none()
+    else:
+        query_message = selected_message
+        answer_stmt = (
+            select(ChatMessage)
+            .where(
+                ChatMessage.session_id == selected_message.session_id,
+                ChatMessage.role == "assistant",
+                ChatMessage.created_at >= selected_message.created_at,
+            )
+            .order_by(ChatMessage.created_at.asc(), ChatMessage.id.asc())
+            .limit(1)
+        )
+        answer_result = await db.execute(answer_stmt)
+        answer_message = answer_result.scalar_one_or_none()
+
+    query_detail = None
+    if query_message:
+        query_detail = AdminQueryMessageDetail(
+            id=query_message.id,
+            role=query_message.role,
+            content=mask_pii(query_message.content),
+            created_at=query_message.created_at.isoformat() if query_message.created_at else "",
+        )
+
+    answer_detail = None
+    if answer_message:
+        trace = answer_message.trace_json or {}
+        answer_detail = AdminQueryAnswerDetail(
+            id=answer_message.id,
+            content=mask_pii(answer_message.content),
+            created_at=answer_message.created_at.isoformat() if answer_message.created_at else "",
+            model_used=answer_message.model_used,
+            provider=trace.get("provider"),
+            response_mode=answer_message.response_mode,
+            tokens_used=answer_message.tokens_used,
+            latency_ms=answer_message.latency_ms,
+            sources_count=answer_message.sources_count or 0,
+            sources_json=answer_message.sources_json,
+            trace_json=trace or None,
+        )
+
+    return AdminQueryDetailResponse(
+        selected_message_id=selected_message.id,
+        session_uuid=session.session_uuid if session else None,
+        user_id=user.id if user else None,
+        user_nickname=user.nickname if user else None,
+        user_email=email,
+        query=query_detail,
+        answer=answer_detail,
+    )
 
 
 @router.get("/usage-stats")

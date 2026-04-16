@@ -2,7 +2,8 @@
 
 const state = {
     adminUser: null,
-    canEditUsers: false
+    canEditUsers: false,
+    selectedQueryId: null
 };
 
 const elements = {
@@ -16,6 +17,11 @@ const elements = {
     queryRole: document.getElementById("queryRole"),
     querySession: document.getElementById("querySession"),
     queryUserId: document.getElementById("queryUserId"),
+    queryDetailPanel: document.getElementById("queryDetailPanel"),
+    queryDetailTitle: document.getElementById("queryDetailTitle"),
+    queryDetailSummary: document.getElementById("queryDetailSummary"),
+    queryDetailEmpty: document.getElementById("queryDetailEmpty"),
+    queryDetailContent: document.getElementById("queryDetailContent"),
     adminLoginForm: document.getElementById("adminLoginForm"),
     adminEmail: document.getElementById("adminEmail"),
     adminPassword: document.getElementById("adminPassword"),
@@ -49,6 +55,32 @@ function escapeHtml(value) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+}
+
+function formatTimestamp(value) {
+    if (!value) {
+        return "-";
+    }
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+        return value;
+    }
+    return parsed.toLocaleString("en-US", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+    });
+}
+
+function prettyJson(value) {
+    if (value === null || value === undefined) {
+        return "-";
+    }
+    return JSON.stringify(value, null, 2);
 }
 
 async function apiFetch(path, options = {}) {
@@ -206,6 +238,10 @@ async function loadQueries() {
 
     data.forEach(entry => {
         const row = document.createElement("tr");
+        row.dataset.messageId = String(entry.id);
+        if (state.selectedQueryId === entry.id) {
+            row.classList.add("is-selected");
+        }
         row.innerHTML = `
             <td class="mono">${escapeHtml(entry.created_at)}</td>
             <td>${escapeHtml(entry.role)}</td>
@@ -214,9 +250,157 @@ async function loadQueries() {
             <td>${escapeHtml(entry.content)}</td>
             <td class="mono">${escapeHtml(entry.model_used || "-")}</td>
             <td>${formatNumber(entry.sources_count)}</td>
+            <td><button class="ghost-button" data-action="view-query-detail" data-message-id="${entry.id}">Inspect</button></td>
         `;
         tbody.appendChild(row);
     });
+}
+
+function setSelectedQueryRow(messageId) {
+    document.querySelectorAll("#queriesTable tbody tr").forEach(row => {
+        row.classList.toggle("is-selected", row.dataset.messageId === String(messageId));
+    });
+}
+
+function closeQueryDetail() {
+    state.selectedQueryId = null;
+    if (elements.queryDetailPanel) {
+        elements.queryDetailPanel.classList.remove("is-open");
+    }
+    if (elements.queryDetailTitle) {
+        elements.queryDetailTitle.textContent = "Investigation Detail";
+    }
+    if (elements.queryDetailSummary) {
+        elements.queryDetailSummary.textContent = "Select a query or answer row to inspect trace metadata.";
+    }
+    if (elements.queryDetailEmpty) {
+        elements.queryDetailEmpty.hidden = false;
+    }
+    if (elements.queryDetailContent) {
+        elements.queryDetailContent.hidden = true;
+        elements.queryDetailContent.innerHTML = "";
+    }
+    setSelectedQueryRow(null);
+}
+
+function renderQueryDetail(data) {
+    if (!elements.queryDetailPanel || !elements.queryDetailContent || !elements.queryDetailEmpty) {
+        return;
+    }
+
+    const answer = data.answer || {};
+    const query = data.query || {};
+
+    elements.queryDetailPanel.classList.add("is-open");
+    elements.queryDetailTitle.textContent = `Session ${data.session_uuid || "-"}`;
+    elements.queryDetailSummary.textContent = `Selected message ${data.selected_message_id} • provider ${answer.provider || "-"}`;
+    elements.queryDetailEmpty.hidden = true;
+    elements.queryDetailContent.hidden = false;
+    elements.queryDetailContent.innerHTML = `
+        <div class="detail-meta-grid">
+            <div class="detail-meta-item">
+                <span class="detail-label">User</span>
+                <span>${escapeHtml(data.user_nickname || "-")}</span>
+                <span class="muted">${escapeHtml(data.user_email || "-")}</span>
+            </div>
+            <div class="detail-meta-item">
+                <span class="detail-label">Model</span>
+                <span class="mono">${escapeHtml(answer.model_used || "-")}</span>
+            </div>
+            <div class="detail-meta-item">
+                <span class="detail-label">Provider</span>
+                <span class="mono">${escapeHtml(answer.provider || "-")}</span>
+            </div>
+            <div class="detail-meta-item">
+                <span class="detail-label">Response Mode</span>
+                <span>${escapeHtml(answer.response_mode || "-")}</span>
+            </div>
+            <div class="detail-meta-item">
+                <span class="detail-label">Latency</span>
+                <span>${formatNumber(answer.latency_ms)} ms</span>
+            </div>
+            <div class="detail-meta-item">
+                <span class="detail-label">Tokens</span>
+                <span>${formatNumber(answer.tokens_used)}</span>
+            </div>
+            <div class="detail-meta-item">
+                <span class="detail-label">Sources</span>
+                <span>${formatNumber(answer.sources_count)}</span>
+            </div>
+            <div class="detail-meta-item">
+                <span class="detail-label">Answer Time</span>
+                <span class="mono">${escapeHtml(formatTimestamp(answer.created_at))}</span>
+            </div>
+        </div>
+        <div class="detail-section">
+            <h4>Query</h4>
+            <div class="detail-block">
+                <div class="detail-block-meta mono">${escapeHtml(formatTimestamp(query.created_at))}</div>
+                <pre class="detail-pre">${escapeHtml(query.content || "-")}</pre>
+            </div>
+        </div>
+        <div class="detail-section">
+            <h4>Answer</h4>
+            <div class="detail-block">
+                <pre class="detail-pre">${escapeHtml(answer.content || "-")}</pre>
+            </div>
+        </div>
+        <div class="detail-section">
+            <h4>Trace</h4>
+            <div class="detail-block">
+                <pre class="detail-pre detail-json">${escapeHtml(prettyJson(answer.trace_json))}</pre>
+            </div>
+        </div>
+        <div class="detail-section">
+            <h4>Sources</h4>
+            <div class="detail-block">
+                <pre class="detail-pre detail-json">${escapeHtml(prettyJson(answer.sources_json))}</pre>
+            </div>
+        </div>
+    `;
+}
+
+async function loadQueryDetail(messageId) {
+    state.selectedQueryId = Number(messageId);
+    setSelectedQueryRow(messageId);
+    if (elements.queryDetailPanel) {
+        elements.queryDetailPanel.classList.add("is-open");
+    }
+    if (elements.queryDetailTitle) {
+        elements.queryDetailTitle.textContent = "Loading detail...";
+    }
+    if (elements.queryDetailSummary) {
+        elements.queryDetailSummary.textContent = `Fetching investigation detail for message ${messageId}`;
+    }
+    if (elements.queryDetailEmpty) {
+        elements.queryDetailEmpty.hidden = false;
+        elements.queryDetailEmpty.textContent = "Loading...";
+    }
+    if (elements.queryDetailContent) {
+        elements.queryDetailContent.hidden = true;
+        elements.queryDetailContent.innerHTML = "";
+    }
+
+    try {
+        const data = await apiFetch(`/api/admin/queries/${messageId}`);
+        renderQueryDetail(data);
+        setSelectedQueryRow(messageId);
+    } catch (error) {
+        if (elements.queryDetailTitle) {
+            elements.queryDetailTitle.textContent = "Investigation Detail";
+        }
+        if (elements.queryDetailSummary) {
+            elements.queryDetailSummary.textContent = "Failed to load query detail.";
+        }
+        if (elements.queryDetailEmpty) {
+            elements.queryDetailEmpty.hidden = false;
+            elements.queryDetailEmpty.textContent = "Failed to load detail.";
+        }
+        if (elements.queryDetailContent) {
+            elements.queryDetailContent.hidden = true;
+            elements.queryDetailContent.innerHTML = "";
+        }
+    }
 }
 
 async function loadAudit() {
@@ -289,6 +473,12 @@ function bindEvents() {
         }
         if (action === "refresh-queries") {
             loadQueries();
+        }
+        if (action === "view-query-detail") {
+            loadQueryDetail(target.dataset.messageId);
+        }
+        if (action === "close-query-detail") {
+            closeQueryDetail();
         }
         if (action === "refresh-audit") {
             loadAudit();

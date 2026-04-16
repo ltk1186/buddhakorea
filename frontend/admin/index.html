@@ -210,26 +210,44 @@
                         <button class="primary-button" data-action="refresh-queries">Filter</button>
                     </div>
                 </div>
-                <div class="panel">
-                    <div class="panel-body">
-                        <div class="table-scroll">
-                            <table class="data-table" id="queriesTable">
-                                <thead>
-                                    <tr>
-                                        <th>Time</th>
-                                        <th>Role</th>
-                                        <th>Session</th>
-                                        <th>User</th>
-                                        <th>Content</th>
-                                        <th>Model</th>
-                                        <th>Sources</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
+                <div class="query-monitor-layout">
+                    <div class="panel">
+                        <div class="panel-body">
+                            <div class="table-scroll">
+                                <table class="data-table" id="queriesTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Time</th>
+                                            <th>Role</th>
+                                            <th>Session</th>
+                                            <th>User</th>
+                                            <th>Content</th>
+                                            <th>Model</th>
+                                            <th>Sources</th>
+                                            <th>Inspect</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                            <div class="table-footnote">Query content is PII-masked.</div>
                         </div>
-                        <div class="table-footnote">Query content is PII-masked.</div>
                     </div>
+                    <aside class="panel detail-panel" id="queryDetailPanel">
+                        <div class="panel-header detail-panel-header">
+                            <div>
+                                <h3 id="queryDetailTitle">Investigation Detail</h3>
+                                <p class="detail-subtitle" id="queryDetailSummary">Select a query or answer row to inspect trace metadata.</p>
+                            </div>
+                            <button class="ghost-button" data-action="close-query-detail" id="closeQueryDetail">Close</button>
+                        </div>
+                        <div class="panel-body detail-body" id="queryDetailBody">
+                            <div class="detail-empty" id="queryDetailEmpty">
+                                No query selected.
+                            </div>
+                            <div class="detail-content" id="queryDetailContent" hidden></div>
+                        </div>
+                    </aside>
                 </div>
             </section>
 

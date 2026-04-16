@@ -446,6 +446,18 @@ async def save_chat_to_db(
         metadata: Additional metadata (model, sources_count, etc.)
     """
     try:
+        raw_sources = metadata.get("sources")
+        serialized_sources = None
+        if isinstance(raw_sources, list):
+            serialized_sources = []
+            for item in raw_sources:
+                if hasattr(item, "model_dump"):
+                    serialized_sources.append(item.model_dump())
+                elif isinstance(item, dict):
+                    serialized_sources.append(item)
+                else:
+                    serialized_sources.append({"value": str(item)})
+
         # Find or create ChatSession
         stmt = select(ChatSession).where(ChatSession.session_uuid == session_uuid)
         result = await db.execute(stmt)
@@ -479,8 +491,11 @@ async def save_chat_to_db(
             content=assistant_message,
             model_used=metadata.get("model"),
             sources_count=metadata.get("sources_count", 0),
-            sources_json=metadata.get("sources"),
-            response_mode=metadata.get("response_mode")
+            sources_json=serialized_sources,
+            trace_json=metadata.get("query_trace"),
+            response_mode=metadata.get("response_mode"),
+            tokens_used=metadata.get("tokens_used"),
+            latency_ms=metadata.get("latency_ms"),
         )
         db.add(assistant_msg)
 
@@ -2164,6 +2179,23 @@ async def chat(
         # Increment usage quota after successful response
         total_tokens = token_usage["input_tokens"] + token_usage["output_tokens"]
         await increment_usage(db, http_request, user, tokens=total_tokens)
+
+        await save_chat_to_db(
+            db=db,
+            session_uuid=session_id,
+            user_id=user.id if user else None,
+            user_message=request.query,
+            assistant_message=response_text,
+            metadata={
+                "model": config.llm_model,
+                "sources_count": len(sources),
+                "sources": sources,
+                "response_mode": response_mode,
+                "latency_ms": latency_ms,
+                "tokens_used": total_tokens,
+                "query_trace": query_trace,
+            }
+        )
 
         return ChatResponse(
             response=response_text,

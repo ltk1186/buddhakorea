@@ -265,6 +265,117 @@ body {
     padding: 16px 20px 20px;
 }
 
+.query-monitor-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(320px, 0.95fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.detail-panel {
+    min-height: 100%;
+}
+
+.detail-panel-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.detail-subtitle {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.detail-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 640px;
+}
+
+.detail-empty {
+    display: grid;
+    place-items: center;
+    min-height: 220px;
+    color: var(--muted);
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.45);
+}
+
+.detail-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.detail-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.detail-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.55);
+}
+
+.detail-label {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.detail-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.detail-section h4 {
+    margin: 0;
+    font-size: 14px;
+}
+
+.detail-block {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.55);
+    overflow: hidden;
+}
+
+.detail-block-meta {
+    padding: 10px 12px 0;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.detail-pre {
+    margin: 0;
+    padding: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 260px;
+    overflow: auto;
+    font-family: "IBM Plex Sans", "Noto Sans KR", sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.detail-json {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+}
+
 .table-scroll {
     overflow-x: auto;
 }
@@ -289,6 +400,10 @@ body {
     text-transform: uppercase;
     font-size: 11px;
     letter-spacing: 0.06em;
+}
+
+.data-table tbody tr.is-selected {
+    background: rgba(15, 111, 104, 0.08);
 }
 
 .table-footnote {
@@ -430,5 +545,13 @@ input[type="number"] {
         flex-direction: row;
         align-items: center;
         flex-wrap: wrap;
+    }
+
+    .query-monitor-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-meta-grid {
+        grid-template-columns: 1fr;
     }
 }

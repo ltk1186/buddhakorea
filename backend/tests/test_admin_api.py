@@ -1,10 +1,12 @@
 import pytest
+from datetime import datetime, timezone
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from unittest.mock import AsyncMock, Mock, patch
 
 from backend.app.admin import router
 from backend.app.dependencies import get_current_user_required, require_roles, get_db
+from backend.app.models.chat import ChatMessage, ChatSession
 from backend.app.models.user import User
 
 app = FastAPI()
@@ -97,3 +99,50 @@ def test_admin_api_update_user_forbidden_for_analyst():
     response = client.patch("/api/admin/users/42", json=payload)
     
     assert response.status_code == 403
+
+
+def test_admin_api_query_detail_returns_trace_and_sources():
+    """Test read-only query investigation detail response."""
+    app.dependency_overrides[get_current_user_required] = override_get_current_user_required_admin
+    client = TestClient(app)
+
+    mock_db = AsyncMock()
+    now = datetime.now(timezone.utc)
+    session = ChatSession(id=7, session_uuid="session-123", user_id=2, created_at=now)
+    user = User(id=2, role="user", email="testuser@example.com", nickname="TestUser", is_active=True, daily_chat_limit=20)
+    query_message = ChatMessage(id=101, session_id=7, role="user", content="What is the Four Noble Truths?", created_at=now)
+    answer_message = ChatMessage(
+        id=102,
+        session_id=7,
+        role="assistant",
+        content="The Four Noble Truths explain suffering.",
+        model_used="gemini-2.5-pro",
+        response_mode="normal",
+        sources_count=3,
+        sources_json=[{"title": "Saṃyutta Nikāya", "chunk_id": "sn-1"}],
+        tokens_used=240,
+        latency_ms=4200,
+        trace_json={"provider": "gemini_vertex", "prompt": {"id": "normal_v1"}},
+        created_at=now,
+    )
+
+    selected_result = Mock()
+    selected_result.one_or_none.return_value = (query_message, session, user)
+    answer_result = Mock()
+    answer_result.scalar_one_or_none.return_value = answer_message
+    mock_db.execute.side_effect = [selected_result, answer_result]
+    app.dependency_overrides[get_db] = lambda: mock_db
+
+    response = client.get("/api/admin/queries/101")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["selected_message_id"] == 101
+    assert payload["session_uuid"] == "session-123"
+    assert payload["user_nickname"] == "TestUser"
+    assert payload["query"]["id"] == 101
+    assert payload["answer"]["id"] == 102
+    assert payload["answer"]["provider"] == "gemini_vertex"
+    assert payload["answer"]["model_used"] == "gemini-2.5-pro"
+    assert payload["answer"]["sources_count"] == 3
+    assert payload["answer"]["trace_json"]["prompt"]["id"] == "normal_v1"

@@ -77,6 +77,23 @@ Current trace fields include:
 - model name
 - resolved provider route
 
+The runtime chat persistence layer now also stores this trace on assistant
+messages in PostgreSQL:
+
+- `chat_messages.trace_json`
+
+That gives the admin console a read-only investigation path without requiring
+operators to inspect raw JSONL files directly. For the persisted answer message,
+the database row can now carry:
+
+- `sources_json`
+- `tokens_used`
+- `latency_ms`
+- `trace_json`
+
+The admin query investigation view joins the selected session/user/message and
+renders this trace alongside the masked query and answer pair.
+
 **Manual Usage:**
 ```python
 from privacy import mask_pii, anonymize_ip

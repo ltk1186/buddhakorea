@@ -7,6 +7,7 @@ The admin panel focuses on:
 - Operational visibility (health, usage, cost)
 - User support (quota + status)
 - Query monitoring (PII-masked)
+- Query investigation detail (prompt/retrieval/provider trace)
 - Audit logging of admin actions
 
 It does not include corpus editing, re-embedding triggers, or advanced configuration controls yet.
@@ -86,6 +87,22 @@ Query monitoring (PII-masked):
 - Returns chat messages with session/user context
 - Content is PII-masked and truncated to 400 chars for list views
 
+### GET /api/admin/queries/{message_id}
+Read-only investigation detail for a selected query or answer row:
+- Resolves the selected message plus its paired query/answer in the same session
+- Returns masked query/answer content, session/user context, source payload, and stored trace metadata
+- Intended for operator investigation, not editing
+
+Returned investigation fields include:
+- `answer.model_used`
+- `answer.provider`
+- `answer.response_mode`
+- `answer.tokens_used`
+- `answer.latency_ms`
+- `answer.sources_count`
+- `answer.sources_json`
+- `answer.trace_json`
+
 ### GET /api/admin/usage-stats
 Usage + cost stats from `logs/usage.jsonl` via `usage_tracker.analyze_usage_logs`.
 
@@ -111,6 +128,9 @@ PII is minimized by storing IP hashes (SHA-256) instead of raw IPs.
 The admin audit log table is created via Alembic:
 - `backend/alembic/versions/008_add_admin_audit_logs.py`
 
+Query investigation detail adds stored trace metadata on chat messages:
+- `backend/alembic/versions/009_add_chat_message_trace.py`
+
 Apply in production:
 ```bash
 cd /opt/buddha-korea/backend
@@ -121,6 +141,8 @@ alembic upgrade head
 - Users / sessions / chat: PostgreSQL
 - Usage stats: `logs/usage.jsonl`
 - Q&A logs (if needed): `logs/qa_pairs.jsonl` (PII masked)
+
+`chat_messages.trace_json` now stores the structured query trace used by the admin investigation panel. The trace is write-on-response and read-only in the admin UI.
 
 ## Local Development
 1) Start dev stack:
@@ -135,9 +157,11 @@ Note: Admin UI uses the same auth cookies as the public site.
 ## Production Deployment Notes
 - Nginx serves `/admin/` as static content (see `config/nginx.conf`).
 - If CSS/JS changes, use cache-busting query strings or restart nginx to refresh mounts.
+- If Alembic revisions changed, run `alembic upgrade head` after deploy before validating admin query detail.
 - After deployment, verify:
   - `/admin/` loads
   - `/api/admin/summary` returns 200 for admin users
+  - `/api/admin/queries/{message_id}` returns 200 for a fresh traced message
 
 ## Future Phases (Planned)
 - Corpus metadata editing + translation progress

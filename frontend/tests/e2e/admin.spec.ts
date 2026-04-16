@@ -90,6 +90,42 @@ test.describe('Admin Panel E2E Tests', () => {
       }
     });
 
+    await page.route('**/api/admin/queries/*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        json: {
+          selected_message_id: 101,
+          session_uuid: 'session-123',
+          user_id: 2,
+          user_nickname: 'TestUser',
+          user_email: 'testuser@example.com',
+          query: {
+            id: 101,
+            role: 'user',
+            content: 'This is a test query',
+            created_at: '2025-01-01T12:00:00Z'
+          },
+          answer: {
+            id: 102,
+            content: 'This is a traced answer',
+            created_at: '2025-01-01T12:00:02Z',
+            model_used: 'gemini-2.5-pro',
+            provider: 'gemini_vertex',
+            response_mode: 'normal',
+            tokens_used: 150,
+            latency_ms: 1200,
+            sources_count: 3,
+            sources_json: [{ title: 'Saṃyutta Nikāya', chunk_id: 'sn-1' }],
+            trace_json: {
+              provider: 'gemini_vertex',
+              prompt: { id: 'normal_v1', version: 'v1' },
+              retrieval: { mode: 'default', top_k: 3 }
+            }
+          }
+        }
+      });
+    });
+
     // Mock query logs
     await page.route('**/api/admin/queries*', async (route) => {
       await route.fulfill({
@@ -188,6 +224,28 @@ test.describe('Admin Panel E2E Tests', () => {
     // Verify query is displayed
     await expect(page.locator('#queriesTable tbody tr')).toHaveCount(1);
     await expect(page.locator('#queriesTable tbody tr').first()).toContainText('This is a test query');
+  });
+
+  test('should open query investigation detail with trace metadata', async ({ page }) => {
+    await page.goto('/admin/');
+
+    await page.click('button[data-section="queries"]');
+    await expect(page.locator('#section-queries')).toHaveClass(/is-active/);
+    await expect(page.locator('#queriesTable tbody tr')).toHaveCount(1);
+    await expect(page.locator('button[data-action="view-query-detail"]')).toHaveCount(1);
+
+    const requestPromise = page.waitForRequest((request) => {
+      return request.url().includes('/api/admin/queries/101') && request.method() === 'GET';
+    });
+
+    await page.click('button[data-action="view-query-detail"]');
+    await requestPromise;
+
+    await expect(page.locator('#queryDetailTitle')).toContainText('session-123');
+    await expect(page.locator('#queryDetailSummary')).toContainText('gemini_vertex');
+    await expect(page.locator('#queryDetailContent')).toContainText('This is a traced answer');
+    await expect(page.locator('#queryDetailContent')).toContainText('normal_v1');
+    await expect(page.locator('#queryDetailContent')).toContainText('Saṃyutta Nikāya');
   });
 
   test('should display audit logs', async ({ page }) => {

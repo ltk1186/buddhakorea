@@ -95,6 +95,16 @@ docker logs --timestamps buddhakorea-backend --since 5m 2>&1 | \
   grep -Ei 'RetrievalQA|Chain\.__call__|LangChainDeprecationWarning|Traceback|ERROR'
 ```
 
+Alembic revision이 추가된 배포라면 서버에서 schema migration도 바로 적용한다.
+
+```bash
+cd /opt/buddha-korea/backend
+alembic upgrade head
+```
+
+이번 admin investigation 단계부터는 `chat_messages.trace_json` 컬럼이 필요하므로,
+배포 후 `/api/admin/queries/{message_id}` 검증 전에 migration이 먼저 적용되어야 한다.
+
 ---
 
 ## 트러블슈팅 빠른 진단

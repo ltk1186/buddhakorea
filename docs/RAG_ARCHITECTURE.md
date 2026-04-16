@@ -95,6 +95,21 @@ Current structured query trace fields:
 - `model`
 - `provider`
 
+Current persistence path for admin investigation:
+
+```text
+/api/chat or /api/chat/stream
+  -> build_query_trace(...)
+  -> log usage + qa records
+  -> persist assistant ChatMessage with sources_json/tokens_used/latency_ms/trace_json
+  -> admin GET /api/admin/queries/{message_id}
+  -> read-only investigation detail view
+```
+
+This keeps the operator-facing query detail grounded in the same response
+metadata used for runtime logging, while avoiding direct exposure of Redis,
+Docker, or raw provider internals in the admin UI.
+
 Commercial readiness direction:
 
 - Keep `main.py` focused on FastAPI request orchestration.

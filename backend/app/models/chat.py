@@ -56,6 +56,7 @@ class ChatMessage(Base):
     model_used = Column(String(50), nullable=True)  # 'gemini-2.5-pro', 'gemini-2.5-flash'
     sources_count = Column(Integer, default=0)  # 참조된 문헌 수
     sources_json = Column(JSON, nullable=True)  # Store source references for replay
+    trace_json = Column(JSON, nullable=True)  # Prompt/retrieval/provider trace for admin investigation
     response_mode = Column(String(20), nullable=True)  # 'normal', 'detailed', 'academic'
 
     # Performance & Analytics
