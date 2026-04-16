@@ -60,6 +60,22 @@ Lightweight regex-based PII masking for Korean language data. **Automatically in
 - `usage_tracker.py` - Masks query and response_preview before logging
 - `qa_logger.py` - Masks full query and response before logging
 
+Both loggers now also accept a structured `trace` payload for operational
+investigation. The trace is intended to support future admin/backoffice query
+detail views without exposing raw infrastructure internals.
+
+Current trace fields include:
+
+- prompt id/version/mode
+- retrieval mode
+- retrieval top-k
+- retrieval filter type/value
+- max source count
+- whether HyDE was applied
+- response mode
+- streaming flag
+- model name
+
 **Manual Usage:**
 ```python
 from privacy import mask_pii, anonymize_ip

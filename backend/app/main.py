@@ -58,6 +58,7 @@ from .rag.prompts import (
     TRADITION_FILTER_PROMPT_ID,
     build_prompt,
 )
+from .rag.trace import RetrievalConfigTrace, build_query_trace
 
 # Usage tracking
 from .usage_tracker import log_token_usage, analyze_usage_logs, get_recent_queries, export_usage_csv
@@ -1836,6 +1837,20 @@ async def chat(
             # Increment usage quota (even for cached responses)
             await increment_usage(db, http_request, user, tokens=0)
 
+            cached_trace = build_query_trace(
+                prompt_id=NORMAL_PROMPT_ID,
+                retrieval=RetrievalConfigTrace(
+                    mode="cache",
+                    top_k=0,
+                    max_sources=request.max_sources,
+                    detailed_mode=False,
+                    collection=request.collection,
+                ),
+                response_mode="cached",
+                streaming=False,
+                model=cached_response.get('model', config.llm_model),
+            )
+
             # Log cached query (no tokens used)
             log_token_usage(
                 query=request.query,
@@ -1846,7 +1861,8 @@ async def chat(
                 mode="cached",
                 session_id=session_id,
                 latency_ms=latency_ms,
-                from_cache=True
+                from_cache=True,
+                trace=cached_trace,
             )
 
             return ChatResponse(
@@ -1920,6 +1936,7 @@ async def chat(
                 tradition_sutra_ids = None
 
         # Run RAG query with optional sutra filtering and detailed mode
+        response_mode = "detailed" if request.detailed_mode else "normal"
         if request.sutra_filter:
             # User specified a sutra filter (e.g., "/장아함경" -> "T01n0001")
             logger.info(f"Applying sutra filter: {request.sutra_filter}")
@@ -1939,6 +1956,16 @@ async def chat(
                 SUTRA_FILTER_DETAILED_PROMPT_ID
                 if request.detailed_mode
                 else SUTRA_FILTER_PROMPT_ID
+            )
+            retrieval_trace = RetrievalConfigTrace(
+                mode="sutra_filter",
+                top_k=retrieval_k,
+                max_sources=request.max_sources,
+                detailed_mode=request.detailed_mode,
+                collection=request.collection,
+                filter_type="sutra_id",
+                filter_value=request.sutra_filter,
+                hyde_applied=bool(app_state.hyde_expander),
             )
 
             # Create temporary QA chain with filtered retriever
@@ -1970,6 +1997,17 @@ async def chat(
                 if request.detailed_mode
                 else TRADITION_FILTER_PROMPT_ID
             )
+            retrieval_trace = RetrievalConfigTrace(
+                mode="tradition_filter",
+                top_k=retrieval_k,
+                max_sources=request.max_sources,
+                detailed_mode=request.detailed_mode,
+                collection=request.collection,
+                filter_type="tradition",
+                filter_value=tradition_filter_normalized,
+                filter_sutra_count=len(tradition_sutra_ids),
+                hyde_applied=bool(app_state.hyde_expander),
+            )
 
             # Create QA chain with tradition filter
             tradition_qa_chain = create_rag_chain(
@@ -1989,18 +2027,45 @@ async def chat(
                 search_kwargs={"k": detailed_k}
             )
 
+            prompt_id = DETAILED_PROMPT_ID
+            retrieval_trace = RetrievalConfigTrace(
+                mode="detailed",
+                top_k=detailed_k,
+                max_sources=request.max_sources,
+                detailed_mode=True,
+                collection=request.collection,
+                hyde_applied=bool(app_state.hyde_expander),
+            )
+
             # Create detailed QA chain
             detailed_qa_chain = create_rag_chain(
                 detailed_llm,
                 detailed_retriever,
-                build_prompt(DETAILED_PROMPT_ID),
+                build_prompt(prompt_id),
             )
 
             result = invoke_rag_chain(detailed_qa_chain, query)
             logger.info("Detailed query completed")
         else:
             # Use default QA chain (no filtering, no detailed mode)
+            prompt_id = NORMAL_PROMPT_ID
+            retrieval_trace = RetrievalConfigTrace(
+                mode="default",
+                top_k=config.top_k_retrieval,
+                max_sources=request.max_sources,
+                detailed_mode=False,
+                collection=request.collection,
+                hyde_applied=bool(app_state.hyde_expander),
+            )
             result = invoke_rag_chain(app_state.qa_chain, query)
+
+        query_trace = build_query_trace(
+            prompt_id=prompt_id,
+            retrieval=retrieval_trace,
+            response_mode=response_mode,
+            streaming=False,
+            model=config.llm_model,
+        )
 
         # Format response
         response_text = result["result"]
@@ -2049,7 +2114,9 @@ async def chat(
             metadata={
                 'detailed_mode': request.detailed_mode,
                 'sutra_filter': request.sutra_filter,
-                'is_followup': is_followup
+                'tradition_filter': tradition_filter_normalized,
+                'is_followup': is_followup,
+                'query_trace': query_trace,
             }
         )
 
@@ -2067,10 +2134,11 @@ async def chat(
             input_tokens=token_usage["input_tokens"],
             output_tokens=token_usage["output_tokens"],
             model=config.llm_model,
-            mode="detailed" if request.detailed_mode else "normal",
+            mode=response_mode,
             session_id=session_id,
             latency_ms=latency_ms,
-            from_cache=False
+            from_cache=False,
+            trace=query_trace,
         )
 
         # Log complete Q&A pair
@@ -2095,7 +2163,8 @@ async def chat(
             input_tokens=token_usage["input_tokens"],
             output_tokens=token_usage["output_tokens"],
             latency_ms=latency_ms,
-            from_cache=False
+            from_cache=False,
+            trace=query_trace,
         )
 
         # Increment usage quota after successful response
@@ -2286,9 +2355,49 @@ async def chat_stream(
                 if is_detailed
                 else STREAMING_NORMAL_PROMPT_ID
             )
+            retrieval_trace = RetrievalConfigTrace(
+                mode=(
+                    "stream_sutra_filter"
+                    if request.sutra_filter
+                    else "stream_tradition_filter"
+                    if tradition_sutra_ids and len(tradition_sutra_ids) > 0
+                    else "stream_detailed"
+                    if is_detailed
+                    else "stream_default"
+                ),
+                top_k=retrieval_k,
+                max_sources=request.max_sources,
+                detailed_mode=is_detailed,
+                collection=request.collection,
+                filter_type=(
+                    "sutra_id"
+                    if request.sutra_filter
+                    else "tradition"
+                    if tradition_sutra_ids and len(tradition_sutra_ids) > 0
+                    else None
+                ),
+                filter_value=(
+                    request.sutra_filter
+                    if request.sutra_filter
+                    else tradition_filter_normalized
+                ),
+                filter_sutra_count=(
+                    len(tradition_sutra_ids)
+                    if tradition_sutra_ids and len(tradition_sutra_ids) > 0
+                    else None
+                ),
+                hyde_applied=bool(app_state.hyde_expander and not is_detailed),
+            )
             prompt = build_prompt(prompt_id).format(
                 context=context,
                 question=request.query,
+            )
+            query_trace = build_query_trace(
+                prompt_id=prompt_id,
+                retrieval=retrieval_trace,
+                response_mode="detailed" if is_detailed else "normal",
+                streaming=True,
+                model=model_name,
             )
 
             # Stream response from LLM
@@ -2315,7 +2424,8 @@ async def chat_stream(
                 mode="stream_detailed" if is_detailed else "stream_normal",
                 session_id=session_uuid,
                 latency_ms=latency_ms,
-                from_cache=False
+                from_cache=False,
+                trace=query_trace,
             )
 
             # Save to database and increment usage (background task)
@@ -2333,7 +2443,8 @@ async def chat_stream(
                                 "sources_count": len(sources),
                                 "sources": sources,
                                 "response_mode": "detailed" if is_detailed else "normal",
-                                "latency_ms": latency_ms
+                                "latency_ms": latency_ms,
+                                "query_trace": query_trace,
                             }
                         )
                         # Increment usage quota
@@ -2360,7 +2471,8 @@ async def chat_stream(
                     "model": model_name,
                     "response_mode": "detailed" if is_detailed else "normal",
                     "latency_ms": latency_ms,
-                    "sources": sources
+                    "sources": sources,
+                    "query_trace": query_trace,
                 }
             )
 

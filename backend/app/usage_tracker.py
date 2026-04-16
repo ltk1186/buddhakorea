@@ -86,7 +86,8 @@ def log_token_usage(
     mode: str = "normal",
     session_id: Optional[str] = None,
     latency_ms: Optional[int] = None,
-    from_cache: bool = False
+    from_cache: bool = False,
+    trace: Optional[Dict] = None
 ) -> None:
     """
     Log token usage to JSONL file.
@@ -101,6 +102,7 @@ def log_token_usage(
         session_id: Session ID (optional)
         latency_ms: Response latency in milliseconds (optional)
         from_cache: Whether response was from cache
+        trace: Structured prompt/retrieval metadata for this query
     """
     # Calculate cost
     cost = calculate_cost(input_tokens, output_tokens, model)
@@ -124,7 +126,8 @@ def log_token_usage(
         "cost_usd": round(cost, 6),
         "from_cache": from_cache,
         "session_id": session_id,
-        "latency_ms": latency_ms
+        "latency_ms": latency_ms,
+        "trace": trace or {}
     }
 
     # Log the structured data using loguru (this will go to stdout as JSON)

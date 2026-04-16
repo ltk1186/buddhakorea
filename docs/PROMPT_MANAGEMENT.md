@@ -54,11 +54,28 @@ docker exec -w /app/backend -e PYTHONPATH=/app/backend:/app buddhakorea-dev-back
 
 The next maturity step is not admin-editable prompts. The safer sequence is:
 
-1. Store `prompt_id` and `prompt_version` in query traces.
-2. Show prompt metadata read-only in the admin query detail view.
-3. Add prompt diff history and audit logging.
-4. Add approval/rollback controls for prompt changes.
-5. Only then consider limited admin-editable prompt configuration.
+1. Show prompt metadata read-only in the admin query detail view.
+2. Add prompt diff history and audit logging.
+3. Add approval/rollback controls for prompt changes.
+4. Only then consider limited admin-editable prompt configuration.
 
 This keeps answer-quality changes visible, reviewable, and reversible as the
 platform grows commercially.
+
+## Current Trace Integration
+
+Prompt metadata is now written into structured query traces through:
+
+```text
+backend/app/rag/trace.py
+```
+
+The current trace payload records:
+
+- prompt registry key such as `normal_v1`
+- prompt family id such as `normal`
+- prompt version such as `v1`
+- prompt mode such as `tradition_filter_detailed`
+
+These fields are now attached to `usage_tracker` and `qa_logger` entries so
+future admin tooling can inspect which prompt version produced a response.

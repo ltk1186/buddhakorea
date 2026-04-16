@@ -48,6 +48,10 @@ backend/app/rag/chains.py
 backend/app/rag/prompts.py
   Code-owned prompt registry with stable prompt ids and versions.
 
+backend/app/rag/trace.py
+  Structured retrieval and prompt trace payloads for logs and future admin
+  investigation views.
+
 backend/app/chroma_compat.py
   Minimal ChromaDB VectorStore adapter that avoids the deprecated
   langchain_community Chroma wrapper.
@@ -59,11 +63,29 @@ Current answer-generation flow:
 /api/chat
   -> choose retriever/filter mode
   -> build_prompt(prompt_id)
+  -> build_query_trace(prompt, retrieval, response_mode, model)
   -> create_rag_chain(llm, retriever, prompt)
   -> invoke_rag_chain(chain, query)
   -> map LCEL answer/context to existing result/source_documents contract
   -> format citations, log usage, persist Q&A trace
 ```
+
+Current structured query trace fields:
+
+- `prompt.id`
+- `prompt.prompt_id`
+- `prompt.version`
+- `prompt.mode`
+- `retrieval.mode`
+- `retrieval.top_k`
+- `retrieval.max_sources`
+- `retrieval.filter_type`
+- `retrieval.filter_value`
+- `retrieval.filter_sutra_count`
+- `retrieval.hyde_applied`
+- `response_mode`
+- `streaming`
+- `model`
 
 Commercial readiness direction:
 

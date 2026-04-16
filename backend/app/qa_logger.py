@@ -31,7 +31,8 @@ def log_qa_pair(
     input_tokens: int = 0,
     output_tokens: int = 0,
     latency_ms: Optional[int] = None,
-    from_cache: bool = False
+    from_cache: bool = False,
+    trace: Optional[Dict] = None
 ) -> None:
     """
     Log a complete Q&A pair to JSONL file.
@@ -48,6 +49,7 @@ def log_qa_pair(
         output_tokens: Number of output tokens
         latency_ms: Response latency in milliseconds
         from_cache: Whether response was from cache
+        trace: Structured prompt/retrieval metadata for this query
     """
     # Mask PII before logging
     masked_query = mask_pii(query)
@@ -69,7 +71,8 @@ def log_qa_pair(
             "total": input_tokens + output_tokens
         },
         "latency_ms": latency_ms,
-        "from_cache": from_cache
+        "from_cache": from_cache,
+        "trace": trace or {}
     }
 
     # Log the structured data using loguru (this will go to stdout as JSON)

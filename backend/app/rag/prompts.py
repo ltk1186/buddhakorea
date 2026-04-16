@@ -230,3 +230,9 @@ def build_prompt(prompt_id: str, **template_vars: str) -> PromptTemplate:
     """Build a LangChain prompt from a registry key."""
 
     return PROMPT_REGISTRY[prompt_id].to_prompt(**template_vars)
+
+
+def get_prompt_spec(prompt_id: str) -> PromptSpec:
+    """Return the prompt spec for a stable registry key."""
+
+    return PROMPT_REGISTRY[prompt_id]
