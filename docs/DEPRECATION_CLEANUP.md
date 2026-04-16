@@ -221,6 +221,35 @@ resolved provider route, for example:
 
 This keeps future provider migration analysis grounded in real production logs.
 
+### Completed: Phase 5 Google Provider Migration Spike
+
+An opt-in `langchain-google-genai` adapter has been added without changing the
+production default route.
+
+- Added dependency pin: `langchain-google-genai==2.0.11`
+- Added runtime adapter: `backend/app/llm/gemini_google_genai.py`
+- Added config knob: `GEMINI_PROVIDER=vertex|google_genai`
+- Default remains `vertex`
+
+Why this shape:
+
+- `langchain-google-genai` 2.0.11 is the newest line that fits the current
+  `langchain==0.3.7` / `langchain-core==0.3.x` stack without forcing a larger
+  LangChain upgrade.
+- The compatible 2.0.x line still centers on Google API key semantics and does
+  not offer a clean Vertex-project/location constructor matching the current
+  `ChatVertexAI` path.
+- Buddha Korea production currently runs on Vertex/service-account credentials,
+  so switching the default route now would change both the wrapper and the
+  backend API surface at once.
+
+Result:
+
+- Production keeps using `ChatVertexAI`
+- The migration path is now testable in code
+- A future switch can compare `gemini_vertex` vs `gemini_google_genai` with the
+  golden-query harness before any default change
+
 ## Remaining Cleanup
 
 The remaining provider work is no longer about architecture isolation. It is a
@@ -250,9 +279,9 @@ source counts, and pass/fail results.
 The Gemini runtime path still uses `langchain_google_vertexai.ChatVertexAI`.
 The latest LangChain Google GenAI documentation now documents
 `langchain_google_genai.ChatGoogleGenerativeAI` for Gemini and Vertex AI usage.
-That migration is intentionally left as a separate step because it changes
-dependencies, credential semantics, model output metadata, and potentially
-streaming behavior.
+That migration is still intentionally left as a separate default-switch step
+because it changes credential semantics, model output metadata, and potentially
+streaming behavior even though the experimental adapter now exists in-tree.
 
 Reference:
 

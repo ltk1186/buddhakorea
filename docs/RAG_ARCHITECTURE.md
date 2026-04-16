@@ -55,6 +55,8 @@ backend/app/rag/trace.py
 backend/app/llm/
   Provider adapter layer for Gemini-on-Vertex, Anthropic, and OpenAI chat
   model construction. `main.py` no longer imports provider SDKs directly.
+  It now also includes an opt-in `gemini_google_genai` adapter for Phase 5
+  migration testing while keeping the production default on Vertex.
 
 backend/app/chroma_compat.py
   Minimal ChromaDB VectorStore adapter that avoids the deprecated
@@ -119,13 +121,17 @@ backend/app/llm/
 
 Current routing policy:
 
-- models containing `gemini` -> `gemini_vertex`
+- models containing `gemini` -> `gemini_vertex` by default
+- models containing `gemini` -> `gemini_google_genai` only when
+  `GEMINI_PROVIDER=google_genai`
 - models containing `claude` -> `anthropic`
 - everything else -> `openai`
 
 This phase is intentionally behavior-preserving:
 
 - Gemini still uses `langchain_google_vertexai.ChatVertexAI`
+- `langchain_google_genai.ChatGoogleGenerativeAI` is available as an
+  experimental adapter behind configuration, not the production default
 - Claude still uses `langchain_anthropic.ChatAnthropic`
 - OpenAI still uses `langchain_openai.ChatOpenAI`
 - API-key checks and streaming kwargs are preserved

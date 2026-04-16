@@ -4,6 +4,11 @@ This document defines the safe verification layer to run before changing the
 main RAG answer-generation path, especially before replacing
 `langchain_google_vertexai.ChatVertexAI`.
 
+As of the Phase 5 migration spike, the codebase also contains an experimental
+`gemini_google_genai` adapter behind `GEMINI_PROVIDER=google_genai`, but the
+default production route remains `gemini_vertex`. Any future default switch
+must be compared against these baselines.
+
 ## Purpose
 
 The golden-query checks are not exact-answer tests. LLM wording changes between

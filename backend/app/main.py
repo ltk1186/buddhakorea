@@ -89,6 +89,7 @@ class AppConfig(BaseSettings):
     # API Keys
     openai_api_key: Optional[str] = None
     anthropic_api_key: Optional[str] = None
+    gemini_api_key: Optional[str] = None
     
     # Auth & Security
     secret_key: str = "your-secret-key-please-change"
@@ -122,6 +123,7 @@ class AppConfig(BaseSettings):
     chroma_collection_name: str = "cbeta_sutras_gemini"
 
     # Google Cloud Configuration (for Gemini embeddings)
+    gemini_provider: str = "vertex"
     gcp_project_id: Optional[str] = None
     gcp_location: str = "us-central1"
     use_gemini_for_queries: bool = False
@@ -791,6 +793,8 @@ def create_chat_llm(
         LLMProviderConfig(
             openai_api_key=config.openai_api_key,
             anthropic_api_key=config.anthropic_api_key,
+            gemini_api_key=config.gemini_api_key,
+            gemini_provider=config.gemini_provider,
             gcp_project_id=config.gcp_project_id,
             gcp_location=config.gcp_location,
         ),
@@ -1831,7 +1835,10 @@ async def chat(
                 response_mode="cached",
                 streaming=False,
                 model=cached_response.get('model', config.llm_model),
-                provider=get_provider_for_model(cached_response.get('model', config.llm_model)),
+                provider=get_provider_for_model(
+                    cached_response.get('model', config.llm_model),
+                    gemini_provider=config.gemini_provider,
+                ),
             )
 
             # Log cached query (no tokens used)
@@ -2048,7 +2055,10 @@ async def chat(
             response_mode=response_mode,
             streaming=False,
             model=config.llm_model,
-            provider=get_provider_for_model(config.llm_model),
+            provider=get_provider_for_model(
+                config.llm_model,
+                gemini_provider=config.gemini_provider,
+            ),
         )
 
         # Format response
@@ -2382,7 +2392,10 @@ async def chat_stream(
                 response_mode="detailed" if is_detailed else "normal",
                 streaming=True,
                 model=model_name,
-                provider=get_provider_for_model(model_name),
+                provider=get_provider_for_model(
+                    model_name,
+                    gemini_provider=config.gemini_provider,
+                ),
             )
 
             # Stream response from LLM

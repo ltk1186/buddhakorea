@@ -9,6 +9,16 @@ def test_get_provider_for_model_routes_gemini_to_vertex():
     assert factory.get_provider_for_model("gemini-2.5-pro") == "gemini_vertex"
 
 
+def test_get_provider_for_model_routes_gemini_to_google_genai_when_selected():
+    assert (
+        factory.get_provider_for_model(
+            "gemini-2.5-pro",
+            gemini_provider="google_genai",
+        )
+        == "gemini_google_genai"
+    )
+
+
 def test_get_provider_for_model_routes_claude_to_anthropic():
     assert factory.get_provider_for_model("claude-3-5-sonnet-20241022") == "anthropic"
 
@@ -71,6 +81,57 @@ def test_create_chat_llm_routes_streaming_fast_gemini(monkeypatch):
         max_tokens=8192,
         streaming=True,
     )
+
+
+def test_create_chat_llm_routes_gemini_to_google_genai_when_selected(monkeypatch):
+    created = object()
+    chat_genai = Mock(return_value=created)
+    monkeypatch.setattr(
+        "backend.app.llm.gemini_google_genai.ChatGoogleGenerativeAI",
+        chat_genai,
+    )
+
+    result = factory.create_chat_llm(
+        ChatModelRequest(
+            model="gemini-2.5-pro",
+            temperature=0.3,
+            max_tokens=4096,
+            streaming=True,
+        ),
+        LLMProviderConfig(
+            gemini_api_key="gemini-key",
+            gemini_provider="google_genai",
+        ),
+    )
+
+    assert result is created
+    chat_genai.assert_called_once_with(
+        model="gemini-2.5-pro",
+        google_api_key="gemini-key",
+        temperature=0.3,
+        max_tokens=4096,
+        streaming=True,
+    )
+
+
+def test_create_chat_llm_requires_gemini_key_for_google_genai_route(monkeypatch):
+    chat_genai = Mock()
+    monkeypatch.setattr(
+        "backend.app.llm.gemini_google_genai.ChatGoogleGenerativeAI",
+        chat_genai,
+    )
+
+    result = factory.create_chat_llm(
+        ChatModelRequest(
+            model="gemini-2.5-pro",
+            temperature=0.3,
+            max_tokens=4096,
+        ),
+        LLMProviderConfig(gemini_provider="google_genai"),
+    )
+
+    assert result is None
+    chat_genai.assert_not_called()
 
 
 def test_create_chat_llm_requires_anthropic_key_for_claude(monkeypatch):
@@ -159,6 +220,8 @@ def test_main_create_chat_llm_delegates_to_provider_factory(monkeypatch):
     monkeypatch.setattr(main, "create_provider_chat_llm", delegated)
     monkeypatch.setattr(main.config, "openai_api_key", "openai-key")
     monkeypatch.setattr(main.config, "anthropic_api_key", "anthropic-key")
+    monkeypatch.setattr(main.config, "gemini_api_key", "gemini-key")
+    monkeypatch.setattr(main.config, "gemini_provider", "google_genai")
     monkeypatch.setattr(main.config, "gcp_project_id", "project-123")
     monkeypatch.setattr(main.config, "gcp_location", "asia-northeast3")
 
@@ -180,6 +243,8 @@ def test_main_create_chat_llm_delegates_to_provider_factory(monkeypatch):
         LLMProviderConfig(
             openai_api_key="openai-key",
             anthropic_api_key="anthropic-key",
+            gemini_api_key="gemini-key",
+            gemini_provider="google_genai",
             gcp_project_id="project-123",
             gcp_location="asia-northeast3",
         ),

@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Literal, Optional
+
+
+GeminiProvider = Literal["vertex", "google_genai"]
 
 
 @dataclass(frozen=True)
@@ -22,6 +25,8 @@ class LLMProviderConfig:
 
     openai_api_key: Optional[str] = None
     anthropic_api_key: Optional[str] = None
+    gemini_api_key: Optional[str] = None
+    gemini_provider: GeminiProvider = "vertex"
     gcp_project_id: Optional[str] = None
     gcp_location: str = "us-central1"
 

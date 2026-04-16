@@ -79,6 +79,7 @@ jobs:
             {
               echo "# Auto-generated from GitHub Secrets - DO NOT EDIT MANUALLY"
               echo "GEMINI_API_KEY=${GEMINI_API_KEY}"
+              echo "GEMINI_PROVIDER=vertex"
               echo "PALI_GEMINI_API_KEY=${PALI_GEMINI_API_KEY}"
               echo "GCP_PROJECT_ID=${GCP_PROJECT_ID}"
               echo "GCP_LOCATION=us-central1"
