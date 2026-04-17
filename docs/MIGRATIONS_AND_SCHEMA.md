@@ -43,6 +43,7 @@ Runner properties:
 - not part of normal app startup
 - uses the same `.env` database target as production
 - keeps migration concerns separate from runtime app startup
+- PostgreSQL runtime startup must not create new tables implicitly; schema changes go through Alembic only
 
 ## Common Commands
 

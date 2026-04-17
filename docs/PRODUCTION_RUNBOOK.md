@@ -67,6 +67,9 @@ If production schema is already aligned but `alembic_version` is missing, follow
 [MIGRATIONS_AND_SCHEMA.md](./MIGRATIONS_AND_SCHEMA.md) and stamp the matching
 revision instead of blindly upgrading.
 
+Do not rely on app startup to create PostgreSQL tables. Runtime startup should
+not substitute for Alembic.
+
 ## Post-Deploy Verification
 
 Run these checks after every production deploy.

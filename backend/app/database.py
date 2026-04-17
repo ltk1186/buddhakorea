@@ -32,7 +32,13 @@ async def get_db():
         yield session
 
 async def init_db():
-    """Create tables if they don't exist."""
+    """Initialize local SQLite DBs only.
+
+    Production PostgreSQL schema is managed exclusively through Alembic.
+    """
+    if "sqlite" not in DATABASE_URL:
+        return
+
     # Import models here to ensure they are registered with Base.metadata
     from .models.user import User
     from .models.admin_audit_log import AdminAuditLog
