@@ -21,6 +21,8 @@ This file is the shortest current-state snapshot for Buddha Korea production.
 - User support controls
 - Query monitor
 - Query investigation detail
+- Query review workflow
+- Read-only data explorer
 - Audit logs
 
 Admin entrypoint:

@@ -3,7 +3,12 @@
 const state = {
     adminUser: null,
     canEditUsers: false,
-    selectedQueryId: null
+    canReviewQueries: false,
+    canViewAudit: false,
+    selectedQueryId: null,
+    selectedUserId: null,
+    selectedDataTable: null,
+    eventsBound: false
 };
 
 const elements = {
@@ -15,14 +20,27 @@ const elements = {
     reliabilityDays: document.getElementById("reliabilityDays"),
     userSearch: document.getElementById("userSearch"),
     userStatus: document.getElementById("userStatus"),
+    userDetailPanel: document.getElementById("userDetailPanel"),
+    userDetailTitle: document.getElementById("userDetailTitle"),
+    userDetailSummary: document.getElementById("userDetailSummary"),
+    userDetailEmpty: document.getElementById("userDetailEmpty"),
+    userDetailContent: document.getElementById("userDetailContent"),
     queryRole: document.getElementById("queryRole"),
     querySession: document.getElementById("querySession"),
     queryUserId: document.getElementById("queryUserId"),
+    queryReviewStatus: document.getElementById("queryReviewStatus"),
     queryDetailPanel: document.getElementById("queryDetailPanel"),
     queryDetailTitle: document.getElementById("queryDetailTitle"),
     queryDetailSummary: document.getElementById("queryDetailSummary"),
     queryDetailEmpty: document.getElementById("queryDetailEmpty"),
     queryDetailContent: document.getElementById("queryDetailContent"),
+    dataTableSelect: document.getElementById("dataTableSelect"),
+    dataSearch: document.getElementById("dataSearch"),
+    dataTableLabel: document.getElementById("dataTableLabel"),
+    dataRowsMeta: document.getElementById("dataRowsMeta"),
+    dataDetailTitle: document.getElementById("dataDetailTitle"),
+    dataDetailSummary: document.getElementById("dataDetailSummary"),
+    dataDetailContent: document.getElementById("dataDetailContent"),
     adminLoginForm: document.getElementById("adminLoginForm"),
     adminEmail: document.getElementById("adminEmail"),
     adminPassword: document.getElementById("adminPassword"),
@@ -33,14 +51,14 @@ const sections = Array.from(document.querySelectorAll(".admin-section"));
 const navLinks = Array.from(document.querySelectorAll(".nav-link"));
 
 function formatNumber(value) {
-    if (value === null || value === undefined) {
+    if (value === null || value === undefined || value === "") {
         return "-";
     }
     return Number(value).toLocaleString("en-US");
 }
 
 function formatCost(value) {
-    if (value === null || value === undefined) {
+    if (value === null || value === undefined || value === "") {
         return "-";
     }
     return `$${Number(value).toFixed(4)}`;
@@ -65,6 +83,13 @@ function escapeHtml(value) {
         .replace(/'/g, "&#039;");
 }
 
+function prettyJson(value) {
+    if (value === null || value === undefined) {
+        return "-";
+    }
+    return JSON.stringify(value, null, 2);
+}
+
 function formatTimestamp(value) {
     if (!value) {
         return "-";
@@ -84,11 +109,12 @@ function formatTimestamp(value) {
     });
 }
 
-function prettyJson(value) {
-    if (value === null || value === undefined) {
-        return "-";
+function reviewPill(status) {
+    if (!status) {
+        return '<span class="pill">Unreviewed</span>';
     }
-    return JSON.stringify(value, null, 2);
+    const modifier = status === "resolved" ? "is-active" : status === "ignored" ? "is-muted" : "is-warning";
+    return `<span class="pill ${modifier}">${escapeHtml(status)}</span>`;
 }
 
 async function apiFetch(path, options = {}) {
@@ -121,12 +147,66 @@ function switchSection(sectionId) {
     });
 }
 
+function openDetail(panel, titleEl, summaryEl, emptyEl, contentEl, title, summary) {
+    if (panel) {
+        panel.classList.add("is-open");
+    }
+    if (titleEl) {
+        titleEl.textContent = title;
+    }
+    if (summaryEl) {
+        summaryEl.textContent = summary;
+    }
+    if (emptyEl) {
+        emptyEl.hidden = false;
+        emptyEl.textContent = "Loading...";
+    }
+    if (contentEl) {
+        contentEl.hidden = true;
+        contentEl.innerHTML = "";
+    }
+}
+
+function closeUserDetail() {
+    state.selectedUserId = null;
+    if (elements.userDetailPanel) {
+        elements.userDetailPanel.classList.remove("is-open");
+    }
+    elements.userDetailTitle.textContent = "User Detail";
+    elements.userDetailSummary.textContent = "Select a user to inspect identities, sessions, usage, and audit history.";
+    elements.userDetailEmpty.hidden = false;
+    elements.userDetailEmpty.textContent = "No user selected.";
+    elements.userDetailContent.hidden = true;
+    elements.userDetailContent.innerHTML = "";
+    document.querySelectorAll("#usersTable tbody tr").forEach(row => row.classList.remove("is-selected"));
+}
+
+function closeQueryDetail() {
+    state.selectedQueryId = null;
+    if (elements.queryDetailPanel) {
+        elements.queryDetailPanel.classList.remove("is-open");
+    }
+    elements.queryDetailTitle.textContent = "Investigation Detail";
+    elements.queryDetailSummary.textContent = "Select a query or answer row to inspect trace metadata.";
+    elements.queryDetailEmpty.hidden = false;
+    elements.queryDetailEmpty.textContent = "No query selected.";
+    elements.queryDetailContent.hidden = true;
+    elements.queryDetailContent.innerHTML = "";
+    setSelectedQueryRow(null);
+}
+
 async function loadAdminUser() {
     try {
         const data = await apiFetch("/api/admin/me");
         state.adminUser = data;
         state.canEditUsers = ["admin", "ops", "support"].includes(data.role);
+        state.canReviewQueries = ["admin", "ops", "support"].includes(data.role);
+        state.canViewAudit = ["admin", "ops"].includes(data.role);
         elements.adminUser.textContent = `${data.nickname} (${data.role})`;
+        const auditNav = document.querySelector('button[data-section="audit"]');
+        if (auditNav) {
+            auditNav.hidden = !state.canViewAudit;
+        }
         setAuthState(true);
         return true;
     } catch (error) {
@@ -209,7 +289,6 @@ async function loadReliability() {
 
     const tbody = document.querySelector("#reliabilityDailyTable tbody");
     tbody.innerHTML = "";
-
     (data.daily || []).forEach(entry => {
         const row = document.createElement("tr");
         row.innerHTML = `
@@ -241,32 +320,127 @@ async function loadUsers() {
 
     data.forEach(user => {
         const row = document.createElement("tr");
-        const statusLabel = user.is_active ? "Active" : "Suspended";
+        row.dataset.userId = String(user.id);
+        if (state.selectedUserId === user.id) {
+            row.classList.add("is-selected");
+        }
         row.innerHTML = `
             <td class="mono">${user.id}</td>
             <td>${escapeHtml(user.nickname)}</td>
             <td>${escapeHtml(user.email || "-")}</td>
             <td>${escapeHtml(user.role)}</td>
-            <td><span class="pill ${user.is_active ? "is-active" : "is-suspended"}">${statusLabel}</span></td>
-            <td>
-                <input type="number" min="0" max="1000" value="${user.daily_chat_limit}" data-field="limit">
-            </td>
+            <td><span class="pill ${user.is_active ? "is-active" : "is-suspended"}">${user.is_active ? "Active" : "Suspended"}</span></td>
+            <td><input type="number" min="0" max="1000" value="${user.daily_chat_limit}" data-field="limit"></td>
             <td>${formatNumber(user.today_usage)}</td>
             <td>
-                <label class="field-inline">
-                    <input type="checkbox" data-field="active" ${user.is_active ? "checked" : ""}>
-                    Active
-                </label>
-                <button class="ghost-button" data-action="save-user" data-user-id="${user.id}">
-                    Save
-                </button>
+                <div class="button-row">
+                    <button class="ghost-button" data-action="inspect-user" data-user-id="${user.id}">Inspect</button>
+                    <label class="field-inline">
+                        <input type="checkbox" data-field="active" ${user.is_active ? "checked" : ""}>
+                        Active
+                    </label>
+                    <button class="ghost-button" data-action="save-user" data-user-id="${user.id}">Save</button>
+                </div>
             </td>
         `;
         if (!state.canEditUsers) {
             row.querySelector('[data-action="save-user"]').disabled = true;
+            row.querySelector('[data-field="active"]').disabled = true;
+            row.querySelector('[data-field="limit"]').disabled = true;
         }
         tbody.appendChild(row);
     });
+}
+
+function setSelectedUserRow(userId) {
+    document.querySelectorAll("#usersTable tbody tr").forEach(row => {
+        row.classList.toggle("is-selected", row.dataset.userId === String(userId));
+    });
+}
+
+function renderUserDetail(data) {
+    elements.userDetailPanel.classList.add("is-open");
+    elements.userDetailTitle.textContent = `${data.user.nickname} (#${data.user.id})`;
+    elements.userDetailSummary.textContent = `${data.user.role} • ${data.user.is_active ? "active" : "suspended"} • limit ${data.user.daily_chat_limit}`;
+    elements.userDetailEmpty.hidden = true;
+    elements.userDetailContent.hidden = false;
+
+    const identities = (data.social_accounts || []).map(identity => `
+        <tr>
+            <td>${escapeHtml(identity.provider)}</td>
+            <td class="mono">${escapeHtml(identity.provider_user_id)}</td>
+            <td>${escapeHtml(identity.provider_email || "-")}</td>
+            <td class="mono">${escapeHtml(formatTimestamp(identity.last_used_at))}</td>
+        </tr>
+    `).join("");
+
+    const sessions = (data.recent_sessions || []).map(session => `
+        <tr>
+            <td><button class="link-button" data-action="inspect-session" data-session-uuid="${escapeHtml(session.session_uuid)}">${escapeHtml(session.session_uuid)}</button></td>
+            <td>${escapeHtml(session.title || "-")}</td>
+            <td>${formatNumber(session.message_count)}</td>
+            <td class="mono">${escapeHtml(formatTimestamp(session.last_message_at))}</td>
+        </tr>
+    `).join("");
+
+    const usage = (data.recent_usage || []).map(entry => `
+        <tr>
+            <td class="mono">${escapeHtml(entry.usage_date)}</td>
+            <td>${formatNumber(entry.chat_count)}</td>
+            <td>${formatNumber(entry.tokens_used)}</td>
+        </tr>
+    `).join("");
+
+    const audit = (data.recent_audit || []).map(entry => `
+        <tr>
+            <td class="mono">${escapeHtml(formatTimestamp(entry.created_at))}</td>
+            <td>${escapeHtml(entry.admin_email || "-")}</td>
+            <td>${escapeHtml(entry.action)}</td>
+        </tr>
+    `).join("");
+
+    elements.userDetailContent.innerHTML = `
+        <div class="detail-meta-grid">
+            <div class="detail-meta-item"><span class="detail-label">Email</span><span>${escapeHtml(data.user.email || "-")}</span></div>
+            <div class="detail-meta-item"><span class="detail-label">Today Usage</span><span>${formatNumber(data.user.today_usage)}</span></div>
+            <div class="detail-meta-item"><span class="detail-label">Last Login</span><span class="mono">${escapeHtml(formatTimestamp(data.user.last_login))}</span></div>
+            <div class="detail-meta-item"><span class="detail-label">Created</span><span class="mono">${escapeHtml(formatTimestamp(data.user.created_at))}</span></div>
+        </div>
+        <div class="detail-section">
+            <h4>Linked Identities</h4>
+            <div class="table-scroll"><table class="data-table compact-table"><thead><tr><th>Provider</th><th>User ID</th><th>Email</th><th>Last Used</th></tr></thead><tbody>${identities || '<tr><td colspan="4" class="muted">No linked identities.</td></tr>'}</tbody></table></div>
+        </div>
+        <div class="detail-section">
+            <h4>Recent Sessions</h4>
+            <div class="table-scroll"><table class="data-table compact-table"><thead><tr><th>Session</th><th>Title</th><th>Messages</th><th>Last Message</th></tr></thead><tbody>${sessions || '<tr><td colspan="4" class="muted">No recent sessions.</td></tr>'}</tbody></table></div>
+        </div>
+        <div class="detail-section">
+            <h4>Usage (14d)</h4>
+            <div class="table-scroll"><table class="data-table compact-table"><thead><tr><th>Date</th><th>Chats</th><th>Tokens</th></tr></thead><tbody>${usage || '<tr><td colspan="3" class="muted">No usage rows.</td></tr>'}</tbody></table></div>
+        </div>
+        <div class="detail-section">
+            <h4>Recent Audit</h4>
+            <div class="table-scroll"><table class="data-table compact-table"><thead><tr><th>Time</th><th>Admin</th><th>Action</th></tr></thead><tbody>${audit || '<tr><td colspan="3" class="muted">No audit rows.</td></tr>'}</tbody></table></div>
+        </div>
+    `;
+}
+
+async function loadUserDetail(userId) {
+    state.selectedUserId = Number(userId);
+    setSelectedUserRow(userId);
+    openDetail(elements.userDetailPanel, elements.userDetailTitle, elements.userDetailSummary, elements.userDetailEmpty, elements.userDetailContent, "Loading user...", `Fetching user ${userId}`);
+    try {
+        const data = await apiFetch(`/api/admin/users/${userId}`);
+        renderUserDetail(data);
+        setSelectedUserRow(userId);
+    } catch (error) {
+        elements.userDetailTitle.textContent = "User Detail";
+        elements.userDetailSummary.textContent = "Failed to load user detail.";
+        elements.userDetailEmpty.hidden = false;
+        elements.userDetailEmpty.textContent = "Failed to load detail.";
+        elements.userDetailContent.hidden = true;
+        elements.userDetailContent.innerHTML = "";
+    }
 }
 
 async function loadQueries() {
@@ -274,6 +448,7 @@ async function loadQueries() {
     const role = elements.queryRole.value;
     const session = elements.querySession.value.trim();
     const userId = elements.queryUserId.value.trim();
+    const reviewStatus = elements.queryReviewStatus.value;
     if (role) {
         params.append("role", role);
     }
@@ -282,6 +457,9 @@ async function loadQueries() {
     }
     if (userId) {
         params.append("user_id", userId);
+    }
+    if (reviewStatus) {
+        params.append("review_status", reviewStatus);
     }
     const data = await apiFetch(`/api/admin/queries?${params.toString()}`);
     const tbody = document.querySelector("#queriesTable tbody");
@@ -294,13 +472,14 @@ async function loadQueries() {
             row.classList.add("is-selected");
         }
         row.innerHTML = `
-            <td class="mono">${escapeHtml(entry.created_at)}</td>
+            <td class="mono">${escapeHtml(formatTimestamp(entry.created_at))}</td>
             <td>${escapeHtml(entry.role)}</td>
             <td class="mono">${escapeHtml(entry.session_uuid || "-")}</td>
             <td>${escapeHtml(entry.user_nickname || "-")}<br><span class="muted">${escapeHtml(entry.user_email || "-")}</span></td>
             <td>${escapeHtml(entry.content)}</td>
             <td class="mono">${escapeHtml(entry.model_used || "-")}</td>
             <td>${formatNumber(entry.sources_count)}</td>
+            <td>${reviewPill(entry.review_status)}</td>
             <td><button class="ghost-button" data-action="view-query-detail" data-message-id="${entry.id}">Inspect</button></td>
         `;
         tbody.appendChild(row);
@@ -313,46 +492,89 @@ function setSelectedQueryRow(messageId) {
     });
 }
 
-function closeQueryDetail() {
-    state.selectedQueryId = null;
-    if (elements.queryDetailPanel) {
-        elements.queryDetailPanel.classList.remove("is-open");
+function renderSessionTimeline(session) {
+    if (!session) {
+        return '<div class="muted">No session timeline.</div>';
     }
-    if (elements.queryDetailTitle) {
-        elements.queryDetailTitle.textContent = "Investigation Detail";
-    }
-    if (elements.queryDetailSummary) {
-        elements.queryDetailSummary.textContent = "Select a query or answer row to inspect trace metadata.";
-    }
-    if (elements.queryDetailEmpty) {
-        elements.queryDetailEmpty.hidden = false;
-    }
-    if (elements.queryDetailContent) {
-        elements.queryDetailContent.hidden = true;
-        elements.queryDetailContent.innerHTML = "";
-    }
-    setSelectedQueryRow(null);
+    const rows = (session.messages || []).map(message => `
+        <tr>
+            <td class="mono">${escapeHtml(formatTimestamp(message.created_at))}</td>
+            <td>${escapeHtml(message.role)}</td>
+            <td>${escapeHtml(message.content)}</td>
+            <td class="mono">${escapeHtml(message.provider || "-")}</td>
+            <td>${reviewPill(message.review_status)}</td>
+        </tr>
+    `).join("");
+    return `
+        <div class="detail-block">
+            <div class="detail-block-meta mono">${escapeHtml(session.session_uuid)} • ${formatNumber(session.message_count)} messages</div>
+            <div class="table-scroll">
+                <table class="data-table compact-table">
+                    <thead>
+                        <tr><th>Time</th><th>Role</th><th>Content</th><th>Provider</th><th>Review</th></tr>
+                    </thead>
+                    <tbody>${rows || '<tr><td colspan="5" class="muted">No session messages.</td></tr>'}</tbody>
+                </table>
+            </div>
+        </div>
+    `;
 }
 
-function renderQueryDetail(data) {
-    if (!elements.queryDetailPanel || !elements.queryDetailContent || !elements.queryDetailEmpty) {
-        return;
-    }
+function renderReviewEditor(detail) {
+    const review = detail.review || {};
+    const targetId = detail.review_target_message_id;
+    const disabled = state.canReviewQueries ? "" : "disabled";
+    return `
+        <div class="detail-block">
+            <div class="detail-form-grid">
+                <label>
+                    <span class="detail-label">Status</span>
+                    <select id="queryReviewEditorStatus" ${disabled}>
+                        <option value="open" ${review.status === "open" ? "selected" : ""}>Open</option>
+                        <option value="resolved" ${review.status === "resolved" ? "selected" : ""}>Resolved</option>
+                        <option value="ignored" ${review.status === "ignored" ? "selected" : ""}>Ignored</option>
+                    </select>
+                </label>
+                <label>
+                    <span class="detail-label">Reason</span>
+                    <select id="queryReviewEditorReason" ${disabled}>
+                        <option value="">None</option>
+                        <option value="bad_answer" ${review.reason === "bad_answer" ? "selected" : ""}>bad_answer</option>
+                        <option value="hallucination" ${review.reason === "hallucination" ? "selected" : ""}>hallucination</option>
+                        <option value="missing_source" ${review.reason === "missing_source" ? "selected" : ""}>missing_source</option>
+                        <option value="bad_source" ${review.reason === "bad_source" ? "selected" : ""}>bad_source</option>
+                        <option value="abuse" ${review.reason === "abuse" ? "selected" : ""}>abuse</option>
+                        <option value="other" ${review.reason === "other" ? "selected" : ""}>other</option>
+                    </select>
+                </label>
+                <label class="detail-span-2">
+                    <span class="detail-label">Note</span>
+                    <textarea id="queryReviewEditorNote" rows="4" ${disabled}>${escapeHtml(review.note || "")}</textarea>
+                </label>
+            </div>
+            <div class="button-row top-gap">
+                <button class="primary-button" data-action="save-query-review" data-message-id="${targetId}" ${disabled}>Save Review</button>
+                <span class="muted">Target message ${escapeHtml(String(targetId || "-"))}</span>
+            </div>
+        </div>
+    `;
+}
 
-    const answer = data.answer || {};
-    const query = data.query || {};
+function renderQueryDetail(detail, sessionDetail) {
+    const answer = detail.answer || {};
+    const query = detail.query || {};
 
     elements.queryDetailPanel.classList.add("is-open");
-    elements.queryDetailTitle.textContent = `Session ${data.session_uuid || "-"}`;
-    elements.queryDetailSummary.textContent = `Selected message ${data.selected_message_id} • provider ${answer.provider || "-"}`;
+    elements.queryDetailTitle.textContent = `Session ${detail.session_uuid || "-"}`;
+    elements.queryDetailSummary.textContent = `Selected message ${detail.selected_message_id} • provider ${answer.provider || "-"} • review target ${detail.review_target_message_id || "-"}`;
     elements.queryDetailEmpty.hidden = true;
     elements.queryDetailContent.hidden = false;
     elements.queryDetailContent.innerHTML = `
         <div class="detail-meta-grid">
             <div class="detail-meta-item">
                 <span class="detail-label">User</span>
-                <span>${escapeHtml(data.user_nickname || "-")}</span>
-                <span class="muted">${escapeHtml(data.user_email || "-")}</span>
+                <span>${escapeHtml(detail.user_nickname || "-")}</span>
+                <span class="muted">${escapeHtml(detail.user_email || "-")}</span>
             </div>
             <div class="detail-meta-item">
                 <span class="detail-label">Model</span>
@@ -379,8 +601,8 @@ function renderQueryDetail(data) {
                 <span>${formatNumber(answer.sources_count)}</span>
             </div>
             <div class="detail-meta-item">
-                <span class="detail-label">Answer Time</span>
-                <span class="mono">${escapeHtml(formatTimestamp(answer.created_at))}</span>
+                <span class="detail-label">Review</span>
+                <span>${detail.review ? reviewPill(detail.review.status) : reviewPill(null)}</span>
             </div>
         </div>
         <div class="detail-section">
@@ -397,16 +619,20 @@ function renderQueryDetail(data) {
             </div>
         </div>
         <div class="detail-section">
+            <h4>Review</h4>
+            ${renderReviewEditor(detail)}
+        </div>
+        <div class="detail-section">
+            <h4>Session Timeline</h4>
+            ${renderSessionTimeline(sessionDetail)}
+        </div>
+        <div class="detail-section">
             <h4>Trace</h4>
-            <div class="detail-block">
-                <pre class="detail-pre detail-json">${escapeHtml(prettyJson(answer.trace_json))}</pre>
-            </div>
+            <div class="detail-block"><pre class="detail-pre detail-json">${escapeHtml(prettyJson(answer.trace_json))}</pre></div>
         </div>
         <div class="detail-section">
             <h4>Sources</h4>
-            <div class="detail-block">
-                <pre class="detail-pre detail-json">${escapeHtml(prettyJson(answer.sources_json))}</pre>
-            </div>
+            <div class="detail-block"><pre class="detail-pre detail-json">${escapeHtml(prettyJson(answer.sources_json))}</pre></div>
         </div>
     `;
 }
@@ -414,55 +640,52 @@ function renderQueryDetail(data) {
 async function loadQueryDetail(messageId) {
     state.selectedQueryId = Number(messageId);
     setSelectedQueryRow(messageId);
-    if (elements.queryDetailPanel) {
-        elements.queryDetailPanel.classList.add("is-open");
-    }
-    if (elements.queryDetailTitle) {
-        elements.queryDetailTitle.textContent = "Loading detail...";
-    }
-    if (elements.queryDetailSummary) {
-        elements.queryDetailSummary.textContent = `Fetching investigation detail for message ${messageId}`;
-    }
-    if (elements.queryDetailEmpty) {
+    openDetail(elements.queryDetailPanel, elements.queryDetailTitle, elements.queryDetailSummary, elements.queryDetailEmpty, elements.queryDetailContent, "Loading detail...", `Fetching investigation detail for message ${messageId}`);
+
+    try {
+        const detail = await apiFetch(`/api/admin/queries/${messageId}`);
+        let sessionDetail = null;
+        if (detail.session_uuid) {
+            sessionDetail = await apiFetch(`/api/admin/sessions/${detail.session_uuid}`);
+        }
+        renderQueryDetail(detail, sessionDetail);
+        setSelectedQueryRow(messageId);
+    } catch (error) {
+        elements.queryDetailTitle.textContent = "Investigation Detail";
+        elements.queryDetailSummary.textContent = "Failed to load query detail.";
         elements.queryDetailEmpty.hidden = false;
-        elements.queryDetailEmpty.textContent = "Loading...";
-    }
-    if (elements.queryDetailContent) {
+        elements.queryDetailEmpty.textContent = "Failed to load detail.";
         elements.queryDetailContent.hidden = true;
         elements.queryDetailContent.innerHTML = "";
     }
+}
 
-    try {
-        const data = await apiFetch(`/api/admin/queries/${messageId}`);
-        renderQueryDetail(data);
-        setSelectedQueryRow(messageId);
-    } catch (error) {
-        if (elements.queryDetailTitle) {
-            elements.queryDetailTitle.textContent = "Investigation Detail";
-        }
-        if (elements.queryDetailSummary) {
-            elements.queryDetailSummary.textContent = "Failed to load query detail.";
-        }
-        if (elements.queryDetailEmpty) {
-            elements.queryDetailEmpty.hidden = false;
-            elements.queryDetailEmpty.textContent = "Failed to load detail.";
-        }
-        if (elements.queryDetailContent) {
-            elements.queryDetailContent.hidden = true;
-            elements.queryDetailContent.innerHTML = "";
-        }
+async function saveQueryReview(messageId) {
+    const statusEl = document.getElementById("queryReviewEditorStatus");
+    const reasonEl = document.getElementById("queryReviewEditorReason");
+    const noteEl = document.getElementById("queryReviewEditorNote");
+    if (!statusEl || !reasonEl || !noteEl) {
+        return;
     }
+    await apiFetch(`/api/admin/queries/${messageId}/review`, {
+        method: "PATCH",
+        body: JSON.stringify({
+            status: statusEl.value,
+            reason: reasonEl.value || null,
+            note: noteEl.value.trim() || null
+        })
+    });
+    await Promise.all([loadQueries(), loadQueryDetail(state.selectedQueryId || messageId), loadAudit()]);
 }
 
 async function loadAudit() {
     const data = await apiFetch("/api/admin/audit-logs");
     const tbody = document.querySelector("#auditTable tbody");
     tbody.innerHTML = "";
-
     data.forEach(entry => {
         const row = document.createElement("tr");
         row.innerHTML = `
-            <td class="mono">${escapeHtml(entry.created_at)}</td>
+            <td class="mono">${escapeHtml(formatTimestamp(entry.created_at))}</td>
             <td>${escapeHtml(entry.admin_email || "-")}</td>
             <td class="mono">${escapeHtml(entry.action)}</td>
             <td>${escapeHtml(entry.target_type)} ${escapeHtml(entry.target_id || "")}</td>
@@ -473,6 +696,83 @@ async function loadAudit() {
     });
 }
 
+async function loadDataTables() {
+    const tables = await apiFetch("/api/admin/data/tables");
+    elements.dataTableSelect.innerHTML = "";
+    tables.forEach(table => {
+        const option = document.createElement("option");
+        option.value = table.name;
+        option.textContent = table.label;
+        elements.dataTableSelect.appendChild(option);
+    });
+    if (!state.selectedDataTable && tables.length > 0) {
+        state.selectedDataTable = tables[0].name;
+        elements.dataTableSelect.value = state.selectedDataTable;
+    }
+}
+
+function renderDataRows(data) {
+    const thead = document.querySelector("#dataRowsTable thead");
+    const tbody = document.querySelector("#dataRowsTable tbody");
+    const rows = data.rows || [];
+    const headers = rows[0] ? Object.keys(rows[0]) : [];
+    thead.innerHTML = `<tr>${headers.map(header => `<th>${escapeHtml(header)}</th>`).join("")}</tr>`;
+    tbody.innerHTML = rows.map(row => `
+        <tr>${headers.map(header => {
+            const value = row[header];
+            if (value && typeof value === "object") {
+                return `<td class="mono">${escapeHtml(JSON.stringify(value))}</td>`;
+            }
+            return `<td>${escapeHtml(String(value ?? "-"))}</td>`;
+        }).join("")}</tr>
+    `).join("") || `<tr><td class="muted" colspan="${Math.max(headers.length, 1)}">No rows.</td></tr>`;
+}
+
+function renderDataSchema(data) {
+    const rows = (data.columns || []).map(column => `
+        <tr>
+            <td class="mono">${escapeHtml(column.name)}</td>
+            <td>${escapeHtml(column.type)}</td>
+            <td>${column.nullable ? "yes" : "no"}</td>
+            <td>${column.primary_key ? "yes" : "no"}</td>
+        </tr>
+    `).join("");
+    elements.dataDetailTitle.textContent = data.table.label;
+    elements.dataDetailSummary.textContent = data.table.description;
+    elements.dataDetailContent.innerHTML = `
+        <div class="detail-section">
+            <h4>Schema</h4>
+            <div class="table-scroll">
+                <table class="data-table compact-table">
+                    <thead><tr><th>Name</th><th>Type</th><th>Nullable</th><th>PK</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
+        </div>
+        <div class="detail-section">
+            <h4>Searchable Columns</h4>
+            <div class="detail-block"><pre class="detail-pre detail-json">${escapeHtml(prettyJson(data.table.searchable_columns))}</pre></div>
+        </div>
+    `;
+}
+
+async function loadDataExplorer() {
+    const table = elements.dataTableSelect.value || state.selectedDataTable;
+    if (!table) {
+        return;
+    }
+    state.selectedDataTable = table;
+    const search = elements.dataSearch.value.trim();
+    const [schema, rows] = await Promise.all([
+        apiFetch(`/api/admin/data/tables/${table}/schema`),
+        apiFetch(`/api/admin/data/tables/${table}/rows?${new URLSearchParams(search ? { search } : {}).toString()}`)
+    ]);
+    elements.dataTableLabel.textContent = `${schema.table.label} Rows`;
+    elements.dataRowsMeta.textContent = `${formatNumber(rows.total)} matching rows • read-only whitelist explorer`;
+    renderDataSchema(schema);
+    renderDataRows(rows);
+}
+
 async function handleUserSave(button) {
     const row = button.closest("tr");
     if (!row) {
@@ -481,18 +781,19 @@ async function handleUserSave(button) {
     const userId = button.dataset.userId;
     const limitInput = row.querySelector('[data-field="limit"]');
     const activeInput = row.querySelector('[data-field="active"]');
-    const payload = {
-        daily_chat_limit: Number(limitInput.value),
-        is_active: activeInput.checked
-    };
-
     try {
         button.disabled = true;
         await apiFetch(`/api/admin/users/${userId}`, {
             method: "PATCH",
-            body: JSON.stringify(payload)
+            body: JSON.stringify({
+                daily_chat_limit: Number(limitInput.value),
+                is_active: activeInput.checked
+            })
         });
-        await loadUsers();
+        await Promise.all([loadUsers(), loadAudit()]);
+        if (state.selectedUserId === Number(userId)) {
+            await loadUserDetail(userId);
+        }
     } catch (error) {
         alert("Failed to update user. Check permissions.");
     } finally {
@@ -501,53 +802,71 @@ async function handleUserSave(button) {
 }
 
 function bindEvents() {
+    if (state.eventsBound) {
+        return;
+    }
+    state.eventsBound = true;
+
     navLinks.forEach(link => {
         link.addEventListener("click", () => {
             switchSection(link.dataset.section);
         });
     });
 
-    document.body.addEventListener("click", event => {
+    document.body.addEventListener("click", async event => {
         const target = event.target;
         if (!(target instanceof HTMLElement)) {
             return;
         }
         const action = target.dataset.action;
         if (action === "refresh-dashboard") {
-            loadSummary();
-        }
-        if (action === "refresh-usage") {
-            loadUsage();
-        }
-        if (action === "refresh-reliability") {
-            loadReliability();
-        }
-        if (action === "refresh-users") {
-            loadUsers();
-        }
-        if (action === "refresh-queries") {
-            loadQueries();
-        }
-        if (action === "view-query-detail") {
-            loadQueryDetail(target.dataset.messageId);
-        }
-        if (action === "close-query-detail") {
+            await loadSummary();
+        } else if (action === "refresh-usage") {
+            await loadUsage();
+        } else if (action === "refresh-reliability") {
+            await loadReliability();
+        } else if (action === "refresh-users") {
+            await loadUsers();
+        } else if (action === "inspect-user") {
+            await loadUserDetail(target.dataset.userId);
+        } else if (action === "close-user-detail") {
+            closeUserDetail();
+        } else if (action === "refresh-queries") {
+            await loadQueries();
+        } else if (action === "view-query-detail") {
+            await loadQueryDetail(target.dataset.messageId);
+        } else if (action === "close-query-detail") {
             closeQueryDetail();
-        }
-        if (action === "refresh-audit") {
-            loadAudit();
-        }
-        if (action === "save-user") {
-            handleUserSave(target);
+        } else if (action === "save-query-review") {
+            await saveQueryReview(target.dataset.messageId);
+        } else if (action === "refresh-audit") {
+            await loadAudit();
+        } else if (action === "save-user") {
+            await handleUserSave(target);
+        } else if (action === "inspect-session") {
+            switchSection("queries");
+            elements.querySession.value = target.dataset.sessionUuid || "";
+            await loadQueries();
+        } else if (action === "refresh-data") {
+            await loadDataExplorer();
         }
     });
 
     elements.refreshAll.addEventListener("click", async () => {
-        await Promise.all([loadSummary(), loadUsage(), loadReliability(), loadUsers(), loadQueries(), loadAudit()]);
+        const tasks = [loadSummary(), loadUsage(), loadReliability(), loadUsers(), loadQueries(), loadDataExplorer()];
+        if (state.canViewAudit) {
+            tasks.push(loadAudit());
+        }
+        await Promise.all(tasks);
+    });
+
+    elements.dataTableSelect?.addEventListener("change", async () => {
+        state.selectedDataTable = elements.dataTableSelect.value;
+        await loadDataExplorer();
     });
 
     if (elements.adminLoginForm) {
-        elements.adminLoginForm.addEventListener("submit", async (event) => {
+        elements.adminLoginForm.addEventListener("submit", async event => {
             event.preventDefault();
             if (!elements.adminEmail || !elements.adminPassword) {
                 return;
@@ -580,12 +899,16 @@ async function bootstrap() {
     if (!ok) {
         return;
     }
+    await loadDataTables();
     await loadSummary();
     await loadUsage();
     await loadReliability();
     await loadUsers();
     await loadQueries();
-    await loadAudit();
+    await loadDataExplorer();
+    if (state.canViewAudit) {
+        await loadAudit();
+    }
 }
 
 bootstrap();

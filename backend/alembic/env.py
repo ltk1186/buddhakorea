@@ -18,6 +18,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import all models so Alembic can detect them
 from app.database import Base
+from app.models.admin_audit_log import AdminAuditLog
+from app.models.admin_query_review import AdminQueryReview
 from app.models.user import User
 from app.models.chat import ChatSession, ChatMessage
 from app.models.social_account import SocialAccount

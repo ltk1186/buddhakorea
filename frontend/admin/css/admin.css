@@ -312,6 +312,17 @@ body {
     gap: 16px;
 }
 
+.button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.top-gap {
+    margin-top: 12px;
+}
+
 .detail-meta-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -376,6 +387,42 @@ body {
     font-size: 12px;
 }
 
+.detail-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    padding: 12px;
+}
+
+.detail-form-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.detail-span-2 {
+    grid-column: span 2;
+}
+
+.compact-table th,
+.compact-table td {
+    padding: 8px 10px;
+}
+
+.link-button {
+    border: none;
+    background: transparent;
+    color: var(--accent);
+    cursor: pointer;
+    padding: 0;
+    font: inherit;
+    text-align: left;
+}
+
+.link-button:hover {
+    color: var(--accent-strong);
+}
+
 .table-scroll {
     overflow-x: auto;
 }
@@ -438,13 +485,19 @@ body {
 }
 
 input,
-select {
+select,
+textarea {
     padding: 8px 10px;
     border-radius: 10px;
     border: 1px solid var(--border);
     background: #fff;
     font-family: inherit;
     font-size: 13px;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 96px;
 }
 
 input[type="number"] {
@@ -532,6 +585,18 @@ input[type="number"] {
     border-color: rgba(154, 42, 42, 0.25);
 }
 
+.pill.is-warning {
+    background: rgba(180, 118, 12, 0.14);
+    color: #8a5b09;
+    border-color: rgba(180, 118, 12, 0.24);
+}
+
+.pill.is-muted {
+    background: rgba(107, 98, 87, 0.12);
+    color: var(--muted);
+    border-color: rgba(107, 98, 87, 0.22);
+}
+
 .mono {
     font-family: "IBM Plex Mono", monospace;
 }
@@ -553,5 +618,13 @@ input[type="number"] {
 
     .detail-meta-grid {
         grid-template-columns: 1fr;
+    }
+
+    .detail-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-span-2 {
+        grid-column: auto;
     }
 }

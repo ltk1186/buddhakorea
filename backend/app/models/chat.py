@@ -68,6 +68,7 @@ class ChatMessage(Base):
 
     # Relationships
     session = relationship("ChatSession", back_populates="messages")
+    admin_review = relationship("AdminQueryReview", back_populates="message", uselist=False, cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<ChatMessage(session_id={self.session_id}, role={self.role})>"

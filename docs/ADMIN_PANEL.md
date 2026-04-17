@@ -9,6 +9,9 @@ The admin panel focuses on:
 - User support (quota + status)
 - Query monitoring (PII-masked)
 - Query investigation detail (prompt/retrieval/provider trace)
+- Session timeline investigation
+- Query review workflow
+- Read-only data explorer
 - Audit logging of admin actions
 
 It does not include corpus editing, re-embedding triggers, or advanced configuration controls yet.
@@ -75,6 +78,19 @@ List users with optional filters:
 
 Includes today’s usage for each user (from `user_usage`).
 
+### GET /api/admin/users/{user_id}
+User support detail:
+- linked OAuth identities
+- recent sessions
+- recent usage
+- recent admin audit related to that user
+
+### GET /api/admin/users/{user_id}/sessions
+Recent sessions for one user.
+
+### GET /api/admin/users/{user_id}/usage
+Recent daily usage rows for one user.
+
 ### PATCH /api/admin/users/{user_id}
 Update user controls:
 - `daily_chat_limit`
@@ -103,6 +119,33 @@ Returned investigation fields include:
 - `answer.sources_count`
 - `answer.sources_json`
 - `answer.trace_json`
+- `review_target_message_id`
+- `review`
+
+### PATCH /api/admin/queries/{message_id}/review
+Create or update operator review state for one target message.
+
+Supported statuses:
+- `open`
+- `resolved`
+- `ignored`
+
+Supported reasons:
+- `bad_answer`
+- `hallucination`
+- `missing_source`
+- `bad_source`
+- `abuse`
+- `other`
+
+This action is audited.
+
+### GET /api/admin/sessions/{session_uuid}
+Session investigation detail:
+- session metadata
+- masked timeline of user/assistant turns
+- provider and response metadata
+- review status per message
 
 ### GET /api/admin/usage-stats
 Usage + cost stats from `logs/usage.jsonl` via `usage_tracker.analyze_usage_logs`.
@@ -125,6 +168,20 @@ Read-only reliability metrics for operators:
 ### GET /api/admin/audit-logs
 Admin action history from `admin_audit_logs`.
 
+### GET /api/admin/data/tables
+List whitelist-based read-only explorer tables.
+
+### GET /api/admin/data/tables/{table_name}/schema
+Return visible schema metadata for one allowed table.
+
+### GET /api/admin/data/tables/{table_name}/rows
+Return paginated rows for one allowed table with optional search.
+
+This is intentionally:
+- read-only
+- whitelist-based
+- not a SQL console
+
 ## Audit Logging
 Admin write operations insert rows into `admin_audit_logs`.
 
@@ -144,6 +201,9 @@ The admin audit log table is created via Alembic:
 Query investigation detail adds stored trace metadata on chat messages:
 - `backend/alembic/versions/009_add_chat_message_trace.py`
 
+Query review workflow adds:
+- `backend/alembic/versions/010_add_admin_query_reviews.py`
+
 Apply in production:
 ```bash
 cd /opt/buddha-korea
@@ -156,6 +216,8 @@ cd /opt/buddha-korea
 - Q&A logs (if needed): `logs/qa_pairs.jsonl` (PII masked)
 
 `chat_messages.trace_json` now stores the structured query trace used by the admin investigation panel. The trace is write-on-response and read-only in the admin UI.
+
+`admin_query_reviews` stores operator review state separately from chat runtime data.
 
 Reliability metrics intentionally mix two sources:
 - `logs/usage.jsonl` for latency, cache-hit, and cost distributions
@@ -190,3 +252,4 @@ Note: Admin UI uses the same auth cookies as the public site.
 - Re-embedding triggers and config diffing
 - Incident management and site notices
 - Deeper auth/session failure tracking once explicit login-failure metrics are collected
+- APIRouter-level backend split to reduce `main.py` footprint further

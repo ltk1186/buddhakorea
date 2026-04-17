@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buddha Korea Admin</title>
-    <link rel="stylesheet" href="css/admin.css?v=20260416c">
+    <link rel="stylesheet" href="css/admin.css?v=20260417a">
 </head>
 <body>
     <div class="admin-shell">
@@ -22,6 +22,7 @@
                 <button class="nav-link" data-section="reliability">Reliability</button>
                 <button class="nav-link" data-section="users">Users</button>
                 <button class="nav-link" data-section="queries">Queries</button>
+                <button class="nav-link" data-section="data">Data Explorer</button>
                 <button class="nav-link" data-section="audit">Audit Logs</button>
             </nav>
             <div class="sidebar-footer">
@@ -242,7 +243,8 @@
                         <button class="primary-button" data-action="refresh-users">Search</button>
                     </div>
                 </div>
-                <div class="panel">
+                <div class="query-monitor-layout">
+                    <div class="panel">
                     <div class="panel-body">
                         <div class="table-scroll">
                             <table class="data-table" id="usersTable">
@@ -263,6 +265,20 @@
                         </div>
                         <div class="table-footnote">Updates are audited and may require elevated role.</div>
                     </div>
+                    </div>
+                    <aside class="panel detail-panel" id="userDetailPanel">
+                        <div class="panel-header detail-panel-header">
+                            <div>
+                                <h3 id="userDetailTitle">User Detail</h3>
+                                <p class="detail-subtitle" id="userDetailSummary">Select a user to inspect identities, sessions, usage, and audit history.</p>
+                            </div>
+                            <button class="ghost-button" data-action="close-user-detail" id="closeUserDetail">Close</button>
+                        </div>
+                        <div class="panel-body detail-body">
+                            <div class="detail-empty" id="userDetailEmpty">No user selected.</div>
+                            <div class="detail-content" id="userDetailContent" hidden></div>
+                        </div>
+                    </aside>
                 </div>
             </section>
 
@@ -277,6 +293,13 @@
                         </select>
                         <input type="text" id="querySession" placeholder="Session UUID">
                         <input type="number" id="queryUserId" placeholder="User ID">
+                        <select id="queryReviewStatus">
+                            <option value="">All Reviews</option>
+                            <option value="open">Open</option>
+                            <option value="resolved">Resolved</option>
+                            <option value="ignored">Ignored</option>
+                            <option value="unreviewed">Unreviewed</option>
+                        </select>
                         <button class="primary-button" data-action="refresh-queries">Filter</button>
                     </div>
                 </div>
@@ -294,6 +317,7 @@
                                             <th>Content</th>
                                             <th>Model</th>
                                             <th>Sources</th>
+                                            <th>Review</th>
                                             <th>Inspect</th>
                                         </tr>
                                     </thead>
@@ -316,6 +340,44 @@
                                 No query selected.
                             </div>
                             <div class="detail-content" id="queryDetailContent" hidden></div>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+
+            <section class="admin-section" id="section-data">
+                <div class="section-header">
+                    <h2>Data Explorer</h2>
+                    <div class="actions">
+                        <select id="dataTableSelect"></select>
+                        <input type="text" id="dataSearch" placeholder="Search current table">
+                        <button class="primary-button" data-action="refresh-data">Load</button>
+                    </div>
+                </div>
+                <div class="query-monitor-layout">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3 id="dataTableLabel">Table Rows</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-scroll">
+                                <table class="data-table" id="dataRowsTable">
+                                    <thead></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                            <div class="table-footnote" id="dataRowsMeta">Whitelist-based read-only explorer. No SQL console.</div>
+                        </div>
+                    </div>
+                    <aside class="panel detail-panel" id="dataDetailPanel">
+                        <div class="panel-header detail-panel-header">
+                            <div>
+                                <h3 id="dataDetailTitle">Schema</h3>
+                                <p class="detail-subtitle" id="dataDetailSummary">Column shape and current table scope.</p>
+                            </div>
+                        </div>
+                        <div class="panel-body detail-body">
+                            <div class="detail-content" id="dataDetailContent"></div>
                         </div>
                     </aside>
                 </div>
@@ -349,6 +411,6 @@
         </main>
     </div>
 
-    <script src="js/admin.js?v=20260416c"></script>
+    <script src="js/admin.js?v=20260417a"></script>
 </body>
 </html>
