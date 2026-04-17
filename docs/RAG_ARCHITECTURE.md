@@ -40,7 +40,19 @@ FastAPI app now uses the following runtime modules:
 
 ```text
 backend/app/main.py
-  Public chat endpoints, auth/quota/session orchestration, response formatting.
+  Public chat endpoints, quota/session orchestration, response formatting, and
+  static/health routes.
+
+backend/app/routers/auth.py
+  Password admin login, OAuth callback/login flow, current-user endpoints, and
+  refresh/logout routes.
+
+backend/app/routers/chat_history.py
+  Chat session history, saved exchanges, and session CRUD routes.
+
+backend/app/chat_history_service.py
+  Shared persistence/retrieval helpers used by chat endpoints and the chat
+  history router.
 
 backend/app/rag/chains.py
   LangChain LCEL helpers for creating and invoking retrieval chains.

@@ -534,10 +534,15 @@ make clean-all
 buddhakorea/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py          # FastAPI 앱 진입점
-│   │   ├── auth.py          # 인증 로직
-│   │   ├── database.py      # DB 연결
-│   │   └── models/          # SQLAlchemy 모델
+│   │   ├── main.py               # FastAPI 앱 진입점, public chat/health/static 라우트
+│   │   ├── auth.py               # OAuth/JWT 로직
+│   │   ├── admin.py              # Admin API router
+│   │   ├── chat_history_service.py  # 채팅 저장/조회 helper
+│   │   ├── database.py           # DB 연결
+│   │   ├── routers/
+│   │   │   ├── auth.py           # 로그인/현재 유저 라우터
+│   │   │   └── chat_history.py   # 세션/저장 질문 라우터
+│   │   └── models/               # SQLAlchemy 모델
 │   └── ...
 ├── frontend/
 │   ├── index.html
@@ -561,5 +566,5 @@ buddhakorea/
 ## 다음 단계
 
 1. [API 문서](http://localhost:8000/docs) 확인
-2. `backend/app/main.py`에서 엔드포인트 구조 파악
+2. `backend/app/main.py`와 `backend/app/routers/`에서 엔드포인트 구조 파악
 3. `tests/` 디렉토리에서 테스트 작성 방법 참고

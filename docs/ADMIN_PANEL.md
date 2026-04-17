@@ -252,4 +252,3 @@ Note: Admin UI uses the same auth cookies as the public site.
 - Re-embedding triggers and config diffing
 - Incident management and site notices
 - Deeper auth/session failure tracking once explicit login-failure metrics are collected
-- APIRouter-level backend split to reduce `main.py` footprint further
