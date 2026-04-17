@@ -77,6 +77,28 @@ def calculate_cost(input_tokens: int, output_tokens: int, model: str) -> float:
     return input_cost + output_cost
 
 
+def estimate_cost_from_total_tokens(
+    total_tokens: Optional[int],
+    model: Optional[str],
+    *,
+    assumed_input_share: float = 0.85,
+) -> Optional[float]:
+    """
+    Estimate cost from a stored total-token count.
+
+    Stored chat_messages currently keep a single `tokens_used` value rather than
+    separate prompt/completion counts. For observability, we use a stable input
+    share assumption so operators still get a cost trend in environments where
+    file-based usage logs are unavailable.
+    """
+    if not total_tokens or total_tokens <= 0 or not model:
+        return None
+
+    input_tokens = int(round(total_tokens * assumed_input_share))
+    output_tokens = max(int(total_tokens) - input_tokens, 0)
+    return calculate_cost(input_tokens, output_tokens, model)
+
+
 def log_token_usage(
     query: str,
     response: str,
@@ -365,6 +387,104 @@ def analyze_observability_logs(days: int = 7, slow_query_ms: int = 30000) -> Dic
             day_entry["avg_latency_ms"] = int(round(sum(day_latencies) / len(day_latencies)))
             day_entry["p95_latency_ms"] = _calculate_percentile(day_latencies, 0.95)
         day_entry["cost_usd"] = round(day_entry["cost_usd"], 6)
+
+    return base
+
+
+def analyze_observability_messages(
+    message_rows: List[tuple],
+    *,
+    days: int = 7,
+    slow_query_ms: int = 30000,
+) -> Dict:
+    """
+    Compute reliability metrics from persisted assistant chat messages.
+
+    Expected row shape:
+    - created_at
+    - latency_ms
+    - tokens_used
+    - model_used
+    """
+    base = {
+        "window_days": days,
+        "metrics_source": "database",
+        "latency_metrics_available": False,
+        "cache_metrics_available": False,
+        "cost_metrics_available": False,
+        "cost_metrics_estimated": False,
+        "total_queries": 0,
+        "queries_with_latency": 0,
+        "queries_with_cost": 0,
+        "cache_queries_sample": 0,
+        "cache_hit_rate": None,
+        "avg_cost_per_query_usd": None,
+        "avg_latency_ms": None,
+        "p50_latency_ms": None,
+        "p95_latency_ms": None,
+        "slow_query_threshold_ms": slow_query_ms,
+        "slow_queries": 0,
+        "by_day": {},
+    }
+
+    latencies: List[int] = []
+    total_cost = 0.0
+
+    for created_at, latency_ms, tokens_used, model_used in message_rows:
+        if not created_at:
+            continue
+
+        day = created_at.date().isoformat()
+        if day not in base["by_day"]:
+            base["by_day"][day] = {
+                "queries": 0,
+                "cost_usd": None,
+                "cached_queries": None,
+                "cache_hit_rate": None,
+                "avg_latency_ms": None,
+                "p95_latency_ms": None,
+            }
+        day_bucket = base["by_day"][day]
+        base["total_queries"] += 1
+        day_bucket["queries"] += 1
+
+        estimated_cost = estimate_cost_from_total_tokens(tokens_used, model_used)
+        if estimated_cost is not None:
+            total_cost += estimated_cost
+            base["queries_with_cost"] += 1
+            day_bucket["_cost_usd"] = day_bucket.get("_cost_usd", 0.0) + estimated_cost
+            day_bucket["_queries_with_cost"] = day_bucket.get("_queries_with_cost", 0) + 1
+
+        if isinstance(latency_ms, (int, float)) and latency_ms >= 0:
+            latency_value = int(latency_ms)
+            latencies.append(latency_value)
+            base["queries_with_latency"] += 1
+            if latency_value >= slow_query_ms:
+                base["slow_queries"] += 1
+            day_bucket.setdefault("_latencies", []).append(latency_value)
+
+    if base["queries_with_latency"] > 0:
+        base["latency_metrics_available"] = True
+        base["avg_latency_ms"] = int(round(sum(latencies) / len(latencies)))
+        base["p50_latency_ms"] = _calculate_percentile(latencies, 0.50)
+        base["p95_latency_ms"] = _calculate_percentile(latencies, 0.95)
+
+    if base["queries_with_cost"] > 0:
+        base["cost_metrics_available"] = True
+        base["cost_metrics_estimated"] = True
+        base["avg_cost_per_query_usd"] = round(total_cost / base["queries_with_cost"], 6)
+
+    for day_bucket in base["by_day"].values():
+        day_latencies = day_bucket.pop("_latencies", [])
+        if day_latencies:
+            day_bucket["avg_latency_ms"] = int(round(sum(day_latencies) / len(day_latencies)))
+            day_bucket["p95_latency_ms"] = _calculate_percentile(day_latencies, 0.95)
+
+        queries_with_cost = day_bucket.pop("_queries_with_cost", 0)
+        if queries_with_cost > 0:
+            day_bucket["cost_usd"] = round(day_bucket.pop("_cost_usd", 0.0), 6)
+        else:
+            day_bucket.pop("_cost_usd", None)
 
     return base
 

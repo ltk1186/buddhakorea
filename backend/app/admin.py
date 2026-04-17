@@ -22,7 +22,12 @@ from .models.user import User
 from .models.user_usage import ANONYMOUS_DAILY_LIMIT, AnonymousUsage, UserUsage
 from .privacy import mask_pii
 from .quota import get_client_ip, hash_ip
-from .usage_tracker import analyze_observability_logs, analyze_usage_logs, get_recent_queries
+from .usage_tracker import (
+    analyze_observability_logs,
+    analyze_observability_messages,
+    analyze_usage_logs,
+    get_recent_queries,
+)
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -220,20 +225,27 @@ class AdminAuditEntry(BaseModel):
 class AdminReliabilityDayEntry(BaseModel):
     date: str
     queries: int
-    cost_usd: float
-    cached_queries: int
-    cache_hit_rate: float
+    cost_usd: Optional[float]
+    cached_queries: Optional[int]
+    cache_hit_rate: Optional[float]
     avg_latency_ms: Optional[int]
     p95_latency_ms: Optional[int]
 
 
 class AdminReliabilityResponse(BaseModel):
     window_days: int
+    metrics_source: str
     usage_log_available: bool
+    latency_metrics_available: bool
+    cache_metrics_available: bool
+    cost_metrics_available: bool
+    cost_metrics_estimated: bool
     total_queries: int
     queries_with_latency: int
-    cache_hit_rate: float
-    avg_cost_per_query_usd: float
+    queries_with_cost: int
+    cache_queries_sample: int
+    cache_hit_rate: Optional[float]
+    avg_cost_per_query_usd: Optional[float]
     avg_latency_ms: Optional[int]
     p50_latency_ms: Optional[int]
     p95_latency_ms: Optional[int]
@@ -1038,6 +1050,17 @@ async def get_admin_observability(
 ) -> AdminReliabilityResponse:
     days = min(max(1, days), 30)
     reliability = analyze_observability_logs(days=days)
+    cutoff_window = datetime.now(timezone.utc) - timedelta(days=days)
+    messages_result = await db.execute(
+        select(
+            ChatMessage.created_at,
+            ChatMessage.latency_ms,
+            ChatMessage.tokens_used,
+            ChatMessage.model_used,
+        ).where(ChatMessage.role == "assistant", ChatMessage.created_at >= cutoff_window)
+    )
+    message_rows = messages_result.all()
+    db_reliability = analyze_observability_messages(message_rows, days=days)
     cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
 
     answers_result = await db.execute(
@@ -1066,31 +1089,60 @@ async def get_admin_observability(
     zero_source_count = int(zero_source_answers_24h or 0)
     zero_source_rate = round((zero_source_count / answers_count) * 100, 2) if answers_count > 0 else 0.0
 
+    merged_daily = dict(db_reliability.get("by_day", {}))
+    if reliability.get("usage_log_available", False):
+        for day, entry in reliability.get("by_day", {}).items():
+            bucket = merged_daily.setdefault(
+                day,
+                {
+                    "queries": 0,
+                    "cost_usd": None,
+                    "cached_queries": None,
+                    "cache_hit_rate": None,
+                    "avg_latency_ms": None,
+                    "p95_latency_ms": None,
+                },
+            )
+            bucket["cached_queries"] = entry.get("cached_queries", 0)
+            bucket["cache_hit_rate"] = float(entry.get("cache_hit_rate", 0.0))
+
+    metrics_source = "database+usage_log" if reliability.get("usage_log_available", False) else "database"
     daily_entries = [
         AdminReliabilityDayEntry(
             date=day,
             queries=entry["queries"],
-            cost_usd=round(float(entry["cost_usd"]), 6),
-            cached_queries=entry["cached_queries"],
-            cache_hit_rate=float(entry["cache_hit_rate"]),
+            cost_usd=round(float(entry["cost_usd"]), 6) if entry.get("cost_usd") is not None else None,
+            cached_queries=entry.get("cached_queries"),
+            cache_hit_rate=float(entry["cache_hit_rate"]) if entry.get("cache_hit_rate") is not None else None,
             avg_latency_ms=entry["avg_latency_ms"],
             p95_latency_ms=entry["p95_latency_ms"],
         )
-        for day, entry in sorted(reliability.get("by_day", {}).items(), reverse=True)
+        for day, entry in sorted(merged_daily.items(), reverse=True)
     ]
 
     return AdminReliabilityResponse(
-        window_days=reliability["window_days"],
+        window_days=db_reliability["window_days"],
+        metrics_source=metrics_source,
         usage_log_available=bool(reliability.get("usage_log_available", False)),
-        total_queries=reliability["total_queries"],
-        queries_with_latency=reliability["queries_with_latency"],
-        cache_hit_rate=float(reliability["cache_hit_rate"]),
-        avg_cost_per_query_usd=float(reliability["avg_cost_per_query_usd"]),
-        avg_latency_ms=reliability["avg_latency_ms"],
-        p50_latency_ms=reliability["p50_latency_ms"],
-        p95_latency_ms=reliability["p95_latency_ms"],
-        slow_query_threshold_ms=reliability["slow_query_threshold_ms"],
-        slow_queries=reliability["slow_queries"],
+        latency_metrics_available=bool(db_reliability.get("latency_metrics_available", False)),
+        cache_metrics_available=bool(reliability.get("usage_log_available", False)),
+        cost_metrics_available=bool(db_reliability.get("cost_metrics_available", False)),
+        cost_metrics_estimated=bool(db_reliability.get("cost_metrics_estimated", False)),
+        total_queries=db_reliability["total_queries"],
+        queries_with_latency=db_reliability["queries_with_latency"],
+        queries_with_cost=db_reliability["queries_with_cost"],
+        cache_queries_sample=reliability.get("total_queries", 0),
+        cache_hit_rate=float(reliability["cache_hit_rate"]) if reliability.get("usage_log_available", False) else None,
+        avg_cost_per_query_usd=(
+            float(db_reliability["avg_cost_per_query_usd"])
+            if db_reliability.get("avg_cost_per_query_usd") is not None
+            else None
+        ),
+        avg_latency_ms=db_reliability["avg_latency_ms"],
+        p50_latency_ms=db_reliability["p50_latency_ms"],
+        p95_latency_ms=db_reliability["p95_latency_ms"],
+        slow_query_threshold_ms=db_reliability["slow_query_threshold_ms"],
+        slow_queries=db_reliability["slow_queries"],
         answers_last_24h=answers_count,
         zero_source_answers_24h=zero_source_count,
         zero_source_rate_24h=zero_source_rate,

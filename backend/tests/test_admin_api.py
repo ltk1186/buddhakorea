@@ -312,17 +312,38 @@ def test_admin_api_data_explorer_schema_and_rows():
     assert payload["rows"][0]["nickname"] == "Person"
 
 
+@patch("backend.app.admin.analyze_observability_messages")
 @patch("backend.app.admin.analyze_observability_logs")
-def test_admin_api_observability_returns_reliability_metrics(mock_analyze_observability):
+def test_admin_api_observability_returns_reliability_metrics(
+    mock_analyze_observability,
+    mock_analyze_observability_messages,
+):
     app.dependency_overrides[get_current_user_required] = override_get_current_user_required_admin
     client = make_client()
 
     mock_analyze_observability.return_value = {
-        "window_days": 7,
         "usage_log_available": True,
         "total_queries": 120,
-        "queries_with_latency": 100,
         "cache_hit_rate": 25.0,
+        "by_day": {
+            "2026-04-16": {
+                "cached_queries": 5,
+                "cache_hit_rate": 25.0,
+            }
+        },
+    }
+    mock_analyze_observability_messages.return_value = {
+        "window_days": 7,
+        "metrics_source": "database",
+        "latency_metrics_available": True,
+        "cache_metrics_available": False,
+        "cost_metrics_available": True,
+        "cost_metrics_estimated": True,
+        "total_queries": 110,
+        "queries_with_latency": 100,
+        "queries_with_cost": 95,
+        "cache_queries_sample": 0,
+        "cache_hit_rate": None,
         "avg_cost_per_query_usd": 0.012345,
         "avg_latency_ms": 1800,
         "p50_latency_ms": 1400,
@@ -333,8 +354,8 @@ def test_admin_api_observability_returns_reliability_metrics(mock_analyze_observ
             "2026-04-16": {
                 "queries": 20,
                 "cost_usd": 0.4,
-                "cached_queries": 5,
-                "cache_hit_rate": 25.0,
+                "cached_queries": None,
+                "cache_hit_rate": None,
                 "avg_latency_ms": 1700,
                 "p95_latency_ms": 3500,
             }
@@ -342,21 +363,30 @@ def test_admin_api_observability_returns_reliability_metrics(mock_analyze_observ
     }
 
     mock_db = AsyncMock()
+    messages_result = Mock()
+    messages_result.all.return_value = [("2026-04-16T00:00:00Z", 1200, 800, "gemini-2.5-pro")]
     answers_result = Mock()
     answers_result.one.return_value = (10, 2, 3.4)
     user_limits_result = Mock()
     user_limits_result.scalar_one.return_value = 4
     anon_limits_result = Mock()
     anon_limits_result.scalar_one.return_value = 7
-    mock_db.execute.side_effect = [answers_result, user_limits_result, anon_limits_result]
+    mock_db.execute.side_effect = [messages_result, answers_result, user_limits_result, anon_limits_result]
     app.dependency_overrides[get_db] = lambda: mock_db
 
     response = client.get("/api/admin/observability?days=7")
     assert response.status_code == 200
     payload = response.json()
     assert payload["window_days"] == 7
+    assert payload["metrics_source"] == "database+usage_log"
     assert payload["usage_log_available"] is True
+    assert payload["latency_metrics_available"] is True
+    assert payload["cost_metrics_available"] is True
+    assert payload["cost_metrics_estimated"] is True
+    assert payload["queries_with_cost"] == 95
+    assert payload["cache_queries_sample"] == 120
     assert payload["cache_hit_rate"] == 25.0
+    assert payload["avg_cost_per_query_usd"] == 0.012345
     assert payload["zero_source_answers_24h"] == 2
     assert payload["zero_source_rate_24h"] == 20.0
     assert payload["rate_limited_users_today"] == 4

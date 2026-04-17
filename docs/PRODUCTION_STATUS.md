@@ -40,10 +40,14 @@ Admin entrypoint:
 
 ## Production Caveats
 
-- File-based usage metrics are not currently available in production:
+- File-based cache sampling may still be unavailable in production:
   - `usage_log_available = false`
-  - latency/cache/cost reliability metrics are therefore shown as unavailable
-- DB-based quality metrics are available:
+  - cache-hit metrics are therefore shown as unavailable
+- DB-based reliability metrics are available:
+  - latency sample count
+  - P50 / P95 latency
+  - slow-query count
+  - estimated average cost per query
   - answers in last 24h
   - zero-source rate
   - average sources per answer

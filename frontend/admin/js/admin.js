@@ -268,22 +268,27 @@ async function loadReliability() {
         apiFetch("/api/health"),
         apiFetch(`/api/admin/observability?days=${days}`)
     ]);
-    const hasUsageLogMetrics = Boolean(data.usage_log_available);
+    const hasLatencyMetrics = Boolean(data.latency_metrics_available);
+    const hasCacheMetrics = Boolean(data.cache_metrics_available);
+    const hasCostMetrics = Boolean(data.cost_metrics_available);
+    const costLabel = hasCostMetrics
+        ? `${data.cost_metrics_estimated ? "Estimated" : "Measured"} avg cost/query ${formatCost(data.avg_cost_per_query_usd || 0)}`
+        : "Cost sample unavailable";
 
     document.getElementById("reliabilityHealth").textContent = health.status || "-";
-    document.getElementById("reliabilityHealthMeta").textContent = `Chroma ${health.chroma_connected ? "connected" : "disconnected"} / LLM ${health.llm_configured ? "configured" : "missing"} / Usage log ${hasUsageLogMetrics ? "available" : "missing"}`;
-    document.getElementById("reliabilityP95").textContent = hasUsageLogMetrics && data.p95_latency_ms ? `${formatNumber(data.p95_latency_ms)} ms` : "-";
-    document.getElementById("reliabilityLatencyMeta").textContent = hasUsageLogMetrics
-        ? `P50 ${data.p50_latency_ms ? `${formatNumber(data.p50_latency_ms)} ms` : "-"} / Avg ${data.avg_latency_ms ? `${formatNumber(data.avg_latency_ms)} ms` : "-"}`
-        : "Usage log metrics unavailable";
-    document.getElementById("reliabilityCacheRate").textContent = hasUsageLogMetrics ? formatPercentage(data.cache_hit_rate) : "-";
-    document.getElementById("reliabilityCacheMeta").textContent = hasUsageLogMetrics
-        ? `${formatNumber(data.total_queries)} queries / ${formatNumber(data.queries_with_latency)} with latency`
-        : "No usage log sample on this environment";
+    document.getElementById("reliabilityHealthMeta").textContent = `Chroma ${health.chroma_connected ? "connected" : "disconnected"} / LLM ${health.llm_configured ? "configured" : "missing"} / Source ${data.metrics_source || "-"}`;
+    document.getElementById("reliabilityP95").textContent = hasLatencyMetrics && data.p95_latency_ms ? `${formatNumber(data.p95_latency_ms)} ms` : "-";
+    document.getElementById("reliabilityLatencyMeta").textContent = hasLatencyMetrics
+        ? `P50 ${data.p50_latency_ms ? `${formatNumber(data.p50_latency_ms)} ms` : "-"} / Avg ${data.avg_latency_ms ? `${formatNumber(data.avg_latency_ms)} ms` : "-"} / Sample ${formatNumber(data.queries_with_latency)} answers`
+        : "Latency sample unavailable";
+    document.getElementById("reliabilityCacheRate").textContent = hasCacheMetrics && data.cache_hit_rate !== null ? formatPercentage(data.cache_hit_rate) : "-";
+    document.getElementById("reliabilityCacheMeta").textContent = hasCacheMetrics
+        ? `${formatNumber(data.cache_queries_sample)} log queries / ${costLabel}`
+        : `Cache sample unavailable / ${costLabel}`;
     document.getElementById("reliabilityZeroSource").textContent = formatPercentage(data.zero_source_rate_24h);
     document.getElementById("reliabilitySourceMeta").textContent = `${formatNumber(data.zero_source_answers_24h)} zero-source of ${formatNumber(data.answers_last_24h)} answers`;
-    document.getElementById("reliabilitySlowQueries").textContent = hasUsageLogMetrics ? formatNumber(data.slow_queries) : "-";
-    document.getElementById("reliabilitySlowMeta").textContent = hasUsageLogMetrics ? `Threshold ${formatNumber(data.slow_query_threshold_ms)} ms` : "Usage log metrics unavailable";
+    document.getElementById("reliabilitySlowQueries").textContent = hasLatencyMetrics ? formatNumber(data.slow_queries) : "-";
+    document.getElementById("reliabilitySlowMeta").textContent = hasLatencyMetrics ? `Threshold ${formatNumber(data.slow_query_threshold_ms)} ms` : "Latency sample unavailable";
     document.getElementById("reliabilityRateLimits").textContent = formatNumber(data.rate_limited_users_today + data.rate_limited_anonymous_today);
     document.getElementById("reliabilityRateLimitMeta").textContent = `${formatNumber(data.rate_limited_users_today)} users / ${formatNumber(data.rate_limited_anonymous_today)} anonymous`;
 
@@ -294,9 +299,9 @@ async function loadReliability() {
         row.innerHTML = `
             <td class="mono">${escapeHtml(entry.date)}</td>
             <td>${formatNumber(entry.queries)}</td>
-            <td>${formatCost(entry.cost_usd)}</td>
-            <td>${formatNumber(entry.cached_queries)}</td>
-            <td>${formatPercentage(entry.cache_hit_rate)}</td>
+            <td>${entry.cost_usd !== null && entry.cost_usd !== undefined ? formatCost(entry.cost_usd) : "-"}</td>
+            <td>${entry.cached_queries !== null && entry.cached_queries !== undefined ? formatNumber(entry.cached_queries) : "-"}</td>
+            <td>${entry.cache_hit_rate !== null && entry.cache_hit_rate !== undefined ? formatPercentage(entry.cache_hit_rate) : "-"}</td>
             <td>${entry.avg_latency_ms ? `${formatNumber(entry.avg_latency_ms)} ms` : "-"}</td>
             <td>${entry.p95_latency_ms ? `${formatNumber(entry.p95_latency_ms)} ms` : "-"}</td>
         `;

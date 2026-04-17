@@ -192,7 +192,8 @@ rollback.
 
 ### Reliability panel shows unavailable metrics
 
-- expected if `usage_log_available = false`
+- `usage_log_available = false`여도 latency/slow/cost cards는 채워져 있어야 한다.
+- cache-hit sample만 unavailable로 남는 것은 현재 정상이다.
 - see [OBSERVABILITY_STATUS.md](./OBSERVABILITY_STATUS.md)
 
 ## Related Docs

@@ -60,9 +60,16 @@ test.describe("Admin Panel E2E Tests", () => {
         status: 200,
         json: {
           window_days: 7,
+          metrics_source: "database+usage_log",
           usage_log_available: true,
+          latency_metrics_available: true,
+          cache_metrics_available: true,
+          cost_metrics_available: true,
+          cost_metrics_estimated: false,
           total_queries: 120,
           queries_with_latency: 100,
+          queries_with_cost: 120,
+          cache_queries_sample: 120,
           cache_hit_rate: 25,
           avg_cost_per_query_usd: 0.012345,
           avg_latency_ms: 1800,
@@ -492,14 +499,21 @@ test.describe("Admin Panel RBAC UI Tests", () => {
         status: 200,
         json: {
           window_days: 7,
+          metrics_source: "database",
           usage_log_available: false,
+          latency_metrics_available: true,
+          cache_metrics_available: false,
+          cost_metrics_available: true,
+          cost_metrics_estimated: true,
           total_queries: 0,
-          queries_with_latency: 0,
-          cache_hit_rate: 0,
-          avg_cost_per_query_usd: 0,
-          avg_latency_ms: null,
-          p50_latency_ms: null,
-          p95_latency_ms: null,
+          queries_with_latency: 3,
+          queries_with_cost: 3,
+          cache_queries_sample: 0,
+          cache_hit_rate: null,
+          avg_cost_per_query_usd: 0.0065,
+          avg_latency_ms: 1800,
+          p50_latency_ms: 1500,
+          p95_latency_ms: 2600,
           slow_query_threshold_ms: 30000,
           slow_queries: 0,
           answers_last_24h: 0,
@@ -546,6 +560,9 @@ test.describe("Admin Panel RBAC UI Tests", () => {
 
     await page.goto("/admin/");
     await expect(page.locator("#adminUser")).toHaveText("Analyst (analyst)");
+    await page.click('button[data-section="reliability"]');
+    await expect(page.locator("#reliabilityP95")).toHaveText("2,600 ms");
+    await expect(page.locator("#reliabilityCacheRate")).toHaveText("-");
     await page.click('button[data-section="users"]');
     const row = page.locator("#usersTable tbody tr").first();
     await expect(row.locator('button[data-action="save-user"]')).toBeDisabled();

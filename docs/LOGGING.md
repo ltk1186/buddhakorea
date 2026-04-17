@@ -80,13 +80,18 @@ Current trace fields include:
 Phase 7 adds a reliability-oriented aggregation path on top of the same
 structured usage logs:
 
+- cache-hit rate
+- cached-query sample count
+
+The admin panel now derives the rest of its reliability view from persisted
+assistant-message rows in PostgreSQL:
+
 - latency sample size
 - average latency
 - P50 / P95 latency
 - slow-query count by threshold
-- cache-hit rate
-- average cost per query
-- daily trend rows for query volume, cost, cache, and latency
+- estimated average cost per query
+- daily trend rows for query volume, estimated cost, and latency
 
 The admin panel combines that usage-log view with persisted `chat_messages`
 data to show source-quality proxies such as:
@@ -97,8 +102,8 @@ data to show source-quality proxies such as:
 - average sources per answer
 
 When `usage.jsonl` is absent in a runtime environment, the admin observability
-API reports that file-based metrics are unavailable so the UI can avoid showing
-false zeroes for latency, cache-hit, and cost-derived reliability signals.
+API now only marks cache-specific metrics unavailable. Latency and cost still
+render from PostgreSQL-backed assistant-message data.
 
 The runtime chat persistence layer now also stores this trace on assistant
 messages in PostgreSQL:

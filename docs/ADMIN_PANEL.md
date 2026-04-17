@@ -155,11 +155,12 @@ Recent usage entries from `logs/usage.jsonl` (PII masked).
 
 ### GET /api/admin/observability
 Read-only reliability metrics for operators:
-- `usage_log_available` indicates whether file-based usage metrics exist on the current environment
+- `metrics_source` and per-metric availability flags indicate whether latency,
+  cache, and cost came from PostgreSQL, usage logs, or both
 - latency sample count, average latency, P50, P95
 - slow-query count using a fixed threshold
-- cache hit rate
-- average cost per query
+- cache hit rate when a usage-log sample exists
+- average cost per query, estimated from stored total-token counts when needed
 - zero-source answer count/rate over the last 24 hours
 - average sources per answer over the last 24 hours
 - rate-limited logged-in and anonymous users for today

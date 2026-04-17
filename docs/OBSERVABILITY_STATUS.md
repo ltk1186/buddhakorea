@@ -1,24 +1,33 @@
 # Observability Status
 
-Last updated: 2026-04-16
+Last updated: 2026-04-17
 
 This document records which operational metrics are currently available in
 production, where they come from, and what is still incomplete.
 
 ## Current Production Reality
 
-Admin reliability metrics are split across two sources:
+Admin reliability metrics are now split across two explicit sources:
 
 1. PostgreSQL-backed application data
 2. File-based usage logs (`logs/usage.jsonl`)
 
-Today, production only has the first category reliably available.
+Production can operate with the first source alone. The second source is now an
+optional cache sample, not a hard dependency for latency/cost visibility.
 
 ## Metrics Available Now
 
-These metrics are currently available in production because they come from the
-database:
+These metrics are currently available from persisted `chat_messages` and usage
+tables:
 
+- answered-query volume over the selected window
+- latency sample count
+- average latency
+- P50 / P95 latency
+- slow-query count
+- estimated average cost per query
+- daily latency trend
+- daily estimated cost trend
 - answers in the last 24 hours
 - zero-source answer count
 - zero-source answer rate
@@ -30,49 +39,50 @@ These are surfaced in:
 - `GET /api/admin/observability`
 - the admin Reliability panel
 
-## Metrics Currently Unavailable in Production
+## Metrics Still Dependent on Usage Logs
 
-These metrics depend on `logs/usage.jsonl`:
+These metrics still depend on `logs/usage.jsonl`:
 
-- latency distribution
-- P50 / P95 latency
 - cache hit rate
-- slow-query count
-- average cost per query
-- daily cost trend from usage logs
+- cached query count
+- daily cache-hit sample
 
-When that file is missing, the API returns:
+When that file is missing, the API now returns:
 
 - `usage_log_available = false`
+- `cache_metrics_available = false`
 
-The admin UI intentionally renders those fields as unavailable instead of `0`.
+The admin UI renders cache-specific fields as unavailable, while still showing
+DB-backed latency and estimated cost metrics.
 
 ## Why This Gap Exists
 
-The current app already emits structured runtime data, but the admin reliability
-panel still expects a local file-based sink for some metrics. Production does
-not currently persist that file in a dependable way.
+The current app persists assistant-message latency/tokens/model metadata in
+PostgreSQL, so reliability no longer needs to block on local files for its core
+operator view. Cache-hit sampling still needs a log sink because cached answers
+do not create assistant message rows today.
 
 This is a data collection gap, not an admin rendering bug.
 
 ## Current Safe Interpretation
 
-- DB-backed quality metrics are trustworthy.
-- File-based latency/cache/cost metrics should be treated as not collected in
-  production.
-- Operators should not infer healthy latency or low cost from blank values.
+- DB-backed latency, quality, and estimated cost metrics are trustworthy enough
+  for daily operations.
+- Cache-hit rate should still be treated as not collected when the usage log
+  sample is missing.
+- Cost figures in reliability are estimated from stored total-token counts when
+  usage logs are absent.
 
 ## Recommended Next Normalization
 
-Move reliability metrics off local file assumptions and onto a production-safe
-source of truth:
+The next normalization target is narrower now:
 
-1. Keep DB-backed quality metrics as-is.
-2. Normalize latency/cache/cost metrics from one of:
+1. Keep DB-backed latency/quality/cost estimation as-is.
+2. Move cache-hit sampling to a production-safe source of truth:
    - structured application logs
-   - PostgreSQL
+   - PostgreSQL event rows
    - Redis aggregates
-3. Update `GET /api/admin/observability` to prefer that source over local files.
+3. Remove the remaining cache-specific dependence on local `usage.jsonl`.
 
 ## Verification
 

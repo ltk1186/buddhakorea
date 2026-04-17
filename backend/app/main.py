@@ -44,15 +44,11 @@ from .llm import (
 from .rag.chains import create_rag_chain, invoke_rag_chain
 from .rag.prompts import NORMAL_PROMPT_ID, build_prompt
 
-# Usage tracking
-from .usage_tracker import analyze_usage_logs, export_usage_csv, get_recent_queries
-
 # Pali Studio API (integrated from nikaya_gemini)
 # Use absolute import since pali is a sibling package at container root (/app)
 from pali.api import router as pali_router
 from .admin import router as admin_router
-from .api_schemas import ChatRequest, ChatResponse, CachedResponseInfo, CacheRequest, CollectionInfo, HealthResponse, SourceDocument
-from .chat_history_service import get_chat_messages, get_user_chat_sessions, save_chat_to_db
+from .chat_history_service import get_chat_messages, get_user_chat_sessions
 from .routers.auth import create_auth_router
 from .routers.chat import create_chat_router
 from .routers.chat_history import create_chat_history_router
