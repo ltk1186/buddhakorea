@@ -40,8 +40,15 @@ FastAPI app now uses the following runtime modules:
 
 ```text
 backend/app/main.py
-  Public chat endpoints, quota/session orchestration, response formatting, and
-  static/health routes.
+  FastAPI app initialization, shared helper functions, middleware, and global
+  error handling.
+
+backend/app/api_schemas.py
+  Shared request/response schemas for public chat, health, cache, and content
+  endpoints.
+
+backend/app/routers/chat.py
+  Public chat, streaming chat, health, and collection routes.
 
 backend/app/routers/auth.py
   Password admin login, OAuth callback/login flow, current-user endpoints, and
@@ -49,6 +56,10 @@ backend/app/routers/auth.py
 
 backend/app/routers/chat_history.py
   Chat session history, saved exchanges, and session CRUD routes.
+
+backend/app/routers/public.py
+  Static page delivery, scripture/source browsing, cache endpoints, and public
+  usage/Q&A analytics routes.
 
 backend/app/chat_history_service.py
   Shared persistence/retrieval helpers used by chat endpoints and the chat

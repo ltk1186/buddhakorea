@@ -537,11 +537,14 @@ buddhakorea/
 │   │   ├── main.py               # FastAPI 앱 진입점, public chat/health/static 라우트
 │   │   ├── auth.py               # OAuth/JWT 로직
 │   │   ├── admin.py              # Admin API router
+│   │   ├── api_schemas.py        # 공용 API request/response schema
 │   │   ├── chat_history_service.py  # 채팅 저장/조회 helper
 │   │   ├── database.py           # DB 연결
 │   │   ├── routers/
 │   │   │   ├── auth.py           # 로그인/현재 유저 라우터
-│   │   │   └── chat_history.py   # 세션/저장 질문 라우터
+│   │   │   ├── chat.py           # public chat/stream/health 라우터
+│   │   │   ├── chat_history.py   # 세션/저장 질문 라우터
+│   │   │   └── public.py         # 정적 페이지/소스/usage/cache 라우터
 │   │   └── models/               # SQLAlchemy 모델
 │   └── ...
 ├── frontend/
