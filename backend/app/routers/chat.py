@@ -138,6 +138,18 @@ def create_chat_router(
                         gemini_provider=config.gemini_provider,
                     ),
                 )
+                update_session_fn(
+                    session_id=session_id,
+                    user_message=request.query,
+                    assistant_message=cached_response["response"],
+                    context_chunks=cached_sources,
+                    metadata={
+                        "response_mode": "cached",
+                        "query_trace": cached_trace,
+                    },
+                )
+                updated_context = get_session_context_fn(session_id)
+                conversation_depth = updated_context["conversation_depth"]
                 log_token_usage(
                     query=request.query,
                     response=cached_response["response"],
@@ -150,6 +162,37 @@ def create_chat_router(
                     from_cache=True,
                     trace=cached_trace,
                 )
+                log_qa_pair(
+                    query=request.query,
+                    response=cached_response["response"],
+                    session_id=session_id,
+                    model=cached_response.get("model", config.llm_model),
+                    sources=[
+                        source.text_id if isinstance(source, SourceDocument) else source.get("text_id", "")
+                        for source in cached_sources[: request.max_sources]
+                    ],
+                    input_tokens=0,
+                    output_tokens=0,
+                    latency_ms=latency_ms,
+                    from_cache=True,
+                    trace=cached_trace,
+                )
+                await save_chat_to_db(
+                    db=db,
+                    session_uuid=session_id,
+                    user_id=user.id if user else None,
+                    user_message=request.query,
+                    assistant_message=cached_response["response"],
+                    metadata={
+                        "model": cached_response.get("model", config.llm_model),
+                        "sources_count": len(cached_sources[: request.max_sources]),
+                        "sources": cached_sources[: request.max_sources],
+                        "response_mode": "cached",
+                        "latency_ms": latency_ms,
+                        "tokens_used": 0,
+                        "query_trace": cached_trace,
+                    },
+                )
                 return ChatResponse(
                     response=cached_response["response"],
                     sources=cached_sources[: request.max_sources],
@@ -158,7 +201,7 @@ def create_chat_router(
                     collection=request.collection,
                     session_id=session_id,
                     can_followup=True,
-                    conversation_depth=1,
+                    conversation_depth=conversation_depth,
                     from_cache=True,
                 )
 

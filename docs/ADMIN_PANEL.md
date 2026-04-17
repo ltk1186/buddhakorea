@@ -149,6 +149,8 @@ Session investigation detail:
 
 ### GET /api/admin/usage-stats
 Usage + cost stats from `logs/usage.jsonl` via `usage_tracker.analyze_usage_logs`.
+This remains a secondary analytics path, not the source of truth for admin
+reliability.
 
 ### GET /api/admin/usage/recent
 Recent usage entries from `logs/usage.jsonl` (PII masked).
@@ -159,7 +161,7 @@ Read-only reliability metrics for operators:
   cache, and cost came from PostgreSQL, usage logs, or both
 - latency sample count, average latency, P50, P95
 - slow-query count using a fixed threshold
-- cache hit rate when a usage-log sample exists
+- cache hit rate from persisted assistant messages, including cached replies
 - average cost per query, estimated from stored total-token counts when needed
 - zero-source answer count/rate over the last 24 hours
 - average sources per answer over the last 24 hours
@@ -227,6 +229,14 @@ Reliability metrics intentionally mix two sources:
 This keeps the admin panel grounded in already collected runtime data without exposing raw server internals or requiring SSH access.
 
 If `logs/usage.jsonl` is not present in a given environment, the admin UI shows usage-log metrics as unavailable rather than presenting misleading zero values.
+
+## Phase 8 Governance Docs
+
+Operational policy now also lives in:
+
+- [PRIVACY_AND_DATA_RETENTION.md](./PRIVACY_AND_DATA_RETENTION.md)
+- [ADMIN_SECURITY.md](./ADMIN_SECURITY.md)
+- [SOURCE_GOVERNANCE.md](./SOURCE_GOVERNANCE.md)
 
 ## Local Development
 1) Start dev stack:

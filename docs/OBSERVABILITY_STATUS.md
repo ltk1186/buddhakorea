@@ -7,13 +7,8 @@ production, where they come from, and what is still incomplete.
 
 ## Current Production Reality
 
-Admin reliability metrics are now split across two explicit sources:
-
-1. PostgreSQL-backed application data
-2. File-based usage logs (`logs/usage.jsonl`)
-
-Production can operate with the first source alone. The second source is now an
-optional cache sample, not a hard dependency for latency/cost visibility.
+Admin reliability metrics are now primarily database-backed, with usage logs
+remaining optional for secondary usage analytics.
 
 ## Metrics Available Now
 
@@ -25,6 +20,8 @@ tables:
 - average latency
 - P50 / P95 latency
 - slow-query count
+- cache-hit count
+- cache-hit rate
 - estimated average cost per query
 - daily latency trend
 - daily estimated cost trend
@@ -39,50 +36,43 @@ These are surfaced in:
 - `GET /api/admin/observability`
 - the admin Reliability panel
 
-## Metrics Still Dependent on Usage Logs
+## What Usage Logs Still Provide
 
-These metrics still depend on `logs/usage.jsonl`:
+`logs/usage.jsonl` is still useful for local/debug usage analytics, but it is no
+longer required for the admin reliability panel.
 
-- cache hit rate
-- cached query count
-- daily cache-hit sample
-
-When that file is missing, the API now returns:
+When that file is missing, the API may still report:
 
 - `usage_log_available = false`
-- `cache_metrics_available = false`
 
-The admin UI renders cache-specific fields as unavailable, while still showing
-DB-backed latency and estimated cost metrics.
+That now means only that local file-based usage analytics are absent. It no
+longer means reliability cards should go blank.
 
 ## Why This Gap Exists
 
 The current app persists assistant-message latency/tokens/model metadata in
-PostgreSQL, so reliability no longer needs to block on local files for its core
-operator view. Cache-hit sampling still needs a log sink because cached answers
-do not create assistant message rows today.
+PostgreSQL, and cached answers are also stored as assistant messages. That lets
+admin reliability compute latency, cost, and cache-hit rate without depending
+on a local file sink.
 
 This is a data collection gap, not an admin rendering bug.
 
 ## Current Safe Interpretation
 
-- DB-backed latency, quality, and estimated cost metrics are trustworthy enough
+- DB-backed latency, quality, estimated cost, and cache-hit metrics are
+  trustworthy enough
   for daily operations.
-- Cache-hit rate should still be treated as not collected when the usage log
-  sample is missing.
 - Cost figures in reliability are estimated from stored total-token counts when
   usage logs are absent.
 
 ## Recommended Next Normalization
 
-The next normalization target is narrower now:
+The next normalization target is now outside the admin reliability panel:
 
-1. Keep DB-backed latency/quality/cost estimation as-is.
-2. Move cache-hit sampling to a production-safe source of truth:
-   - structured application logs
-   - PostgreSQL event rows
-   - Redis aggregates
-3. Remove the remaining cache-specific dependence on local `usage.jsonl`.
+1. Keep DB-backed reliability aggregation as-is.
+2. Move remaining local-file usage analytics to a durable structured sink.
+3. Decide whether usage trends should live in PostgreSQL, Redis aggregates, or
+   external structured logging.
 
 ## Verification
 

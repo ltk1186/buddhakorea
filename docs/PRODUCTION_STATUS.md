@@ -40,13 +40,14 @@ Admin entrypoint:
 
 ## Production Caveats
 
-- File-based cache sampling may still be unavailable in production:
-  - `usage_log_available = false`
-  - cache-hit metrics are therefore shown as unavailable
+- `usage_log_available = false` can still appear in production.
+  - this now means local usage-log analytics are absent
+  - it does not mean admin reliability is blind
 - DB-based reliability metrics are available:
   - latency sample count
   - P50 / P95 latency
   - slow-query count
+  - cache-hit rate
   - estimated average cost per query
   - answers in last 24h
   - zero-source rate
@@ -78,3 +79,6 @@ See [MIGRATIONS_AND_SCHEMA.md](./MIGRATIONS_AND_SCHEMA.md) for the full runbook.
 - [MIGRATIONS_AND_SCHEMA.md](./MIGRATIONS_AND_SCHEMA.md)
 - [OBSERVABILITY_STATUS.md](./OBSERVABILITY_STATUS.md)
 - [DEPLOYMENT_QUICKSTART.md](./DEPLOYMENT_QUICKSTART.md)
+- [PRIVACY_AND_DATA_RETENTION.md](./PRIVACY_AND_DATA_RETENTION.md)
+- [ADMIN_SECURITY.md](./ADMIN_SECURITY.md)
+- [SOURCE_GOVERNANCE.md](./SOURCE_GOVERNANCE.md)

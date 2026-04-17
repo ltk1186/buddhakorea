@@ -336,14 +336,14 @@ def test_admin_api_observability_returns_reliability_metrics(
         "window_days": 7,
         "metrics_source": "database",
         "latency_metrics_available": True,
-        "cache_metrics_available": False,
+        "cache_metrics_available": True,
         "cost_metrics_available": True,
         "cost_metrics_estimated": True,
         "total_queries": 110,
         "queries_with_latency": 100,
         "queries_with_cost": 95,
-        "cache_queries_sample": 0,
-        "cache_hit_rate": None,
+        "cache_queries_sample": 8,
+        "cache_hit_rate": 7.27,
         "avg_cost_per_query_usd": 0.012345,
         "avg_latency_ms": 1800,
         "p50_latency_ms": 1400,
@@ -354,8 +354,8 @@ def test_admin_api_observability_returns_reliability_metrics(
             "2026-04-16": {
                 "queries": 20,
                 "cost_usd": 0.4,
-                "cached_queries": None,
-                "cache_hit_rate": None,
+                "cached_queries": 2,
+                "cache_hit_rate": 10.0,
                 "avg_latency_ms": 1700,
                 "p95_latency_ms": 3500,
             }
@@ -364,7 +364,7 @@ def test_admin_api_observability_returns_reliability_metrics(
 
     mock_db = AsyncMock()
     messages_result = Mock()
-    messages_result.all.return_value = [("2026-04-16T00:00:00Z", 1200, 800, "gemini-2.5-pro")]
+    messages_result.all.return_value = [("2026-04-16T00:00:00Z", 1200, 800, "gemini-2.5-pro", "normal")]
     answers_result = Mock()
     answers_result.one.return_value = (10, 2, 3.4)
     user_limits_result = Mock()
@@ -378,14 +378,15 @@ def test_admin_api_observability_returns_reliability_metrics(
     assert response.status_code == 200
     payload = response.json()
     assert payload["window_days"] == 7
-    assert payload["metrics_source"] == "database+usage_log"
+    assert payload["metrics_source"] == "database"
     assert payload["usage_log_available"] is True
     assert payload["latency_metrics_available"] is True
+    assert payload["cache_metrics_available"] is True
     assert payload["cost_metrics_available"] is True
     assert payload["cost_metrics_estimated"] is True
     assert payload["queries_with_cost"] == 95
-    assert payload["cache_queries_sample"] == 120
-    assert payload["cache_hit_rate"] == 25.0
+    assert payload["cache_queries_sample"] == 8
+    assert payload["cache_hit_rate"] == 7.27
     assert payload["avg_cost_per_query_usd"] == 0.012345
     assert payload["zero_source_answers_24h"] == 2
     assert payload["zero_source_rate_24h"] == 20.0

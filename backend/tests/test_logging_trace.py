@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from backend.app import qa_logger, usage_tracker
 
 
@@ -60,3 +62,25 @@ def test_log_qa_pair_includes_trace(monkeypatch):
     assert captured["qa"]["trace"]["retrieval"]["mode"] == "default"
     assert captured["qa"]["trace"]["provider"] == "gemini_vertex"
     assert captured["message"] == "Q&A pair logged"
+
+
+def test_analyze_observability_messages_derives_cache_and_cost_metrics():
+    rows = [
+        (datetime.fromisoformat("2026-04-17T10:00:00+00:00"), 1200, 1000, "gemini-2.5-pro", "normal"),
+        (datetime.fromisoformat("2026-04-17T11:00:00+00:00"), 800, 0, "gemini-2.5-pro", "cached"),
+    ]
+
+    stats = usage_tracker.analyze_observability_messages(rows, days=7)
+
+    assert stats["metrics_source"] == "database"
+    assert stats["latency_metrics_available"] is True
+    assert stats["cache_metrics_available"] is True
+    assert stats["cost_metrics_available"] is True
+    assert stats["cost_metrics_estimated"] is True
+    assert stats["total_queries"] == 2
+    assert stats["cache_queries_sample"] == 1
+    assert stats["cache_hit_rate"] == 50.0
+    assert stats["queries_with_cost"] == 1
+    assert stats["avg_latency_ms"] == 1000
+    assert stats["by_day"]["2026-04-17"]["cached_queries"] == 1
+    assert stats["by_day"]["2026-04-17"]["cache_hit_rate"] == 50.0

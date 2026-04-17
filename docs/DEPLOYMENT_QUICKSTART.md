@@ -88,8 +88,8 @@ python3 scripts/rag_regression_check.py \
 - `.env`는 GitHub Actions가 생성한다. 서버에서 수동 편집하지 않는다.
 - admin CSS/JS 변경 시 `frontend/admin/index.html`의 `?v=...`를 같이 올린다.
 - Cloudflare 때문에 admin asset이 오래 보존될 수 있다.
-- reliability 패널에서 `usage_log_available = false`가 보여도 latency/slow/cost는 DB 기준으로 계속 보여야 한다.
-- cache-hit 관련 값만 `-`로 보이는 것이 현재 정상이다.
+- reliability 패널에서 `usage_log_available = false`가 보여도 latency/slow/cost/cache는 DB 기준으로 계속 보여야 한다.
+- 이 값은 이제 local usage-log analytics 부재를 뜻한다.
 
 ## 6. 주요 링크
 

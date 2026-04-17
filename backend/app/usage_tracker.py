@@ -405,6 +405,7 @@ def analyze_observability_messages(
     - latency_ms
     - tokens_used
     - model_used
+    - response_mode
     """
     base = {
         "window_days": days,
@@ -430,7 +431,9 @@ def analyze_observability_messages(
     latencies: List[int] = []
     total_cost = 0.0
 
-    for created_at, latency_ms, tokens_used, model_used in message_rows:
+    cached_queries = 0
+
+    for created_at, latency_ms, tokens_used, model_used, response_mode in message_rows:
         if not created_at:
             continue
 
@@ -447,6 +450,10 @@ def analyze_observability_messages(
         day_bucket = base["by_day"][day]
         base["total_queries"] += 1
         day_bucket["queries"] += 1
+
+        if response_mode == "cached":
+            cached_queries += 1
+            day_bucket["_cached_queries"] = day_bucket.get("_cached_queries", 0) + 1
 
         estimated_cost = estimate_cost_from_total_tokens(tokens_used, model_used)
         if estimated_cost is not None:
@@ -474,11 +481,21 @@ def analyze_observability_messages(
         base["cost_metrics_estimated"] = True
         base["avg_cost_per_query_usd"] = round(total_cost / base["queries_with_cost"], 6)
 
+    if base["total_queries"] > 0:
+        base["cache_metrics_available"] = True
+        base["cache_queries_sample"] = cached_queries
+        base["cache_hit_rate"] = round((cached_queries / base["total_queries"]) * 100, 2)
+
     for day_bucket in base["by_day"].values():
         day_latencies = day_bucket.pop("_latencies", [])
         if day_latencies:
             day_bucket["avg_latency_ms"] = int(round(sum(day_latencies) / len(day_latencies)))
             day_bucket["p95_latency_ms"] = _calculate_percentile(day_latencies, 0.95)
+
+        cached_for_day = day_bucket.pop("_cached_queries", 0)
+        day_bucket["cached_queries"] = cached_for_day
+        if day_bucket["queries"] > 0:
+            day_bucket["cache_hit_rate"] = round((cached_for_day / day_bucket["queries"]) * 100, 2)
 
         queries_with_cost = day_bucket.pop("_queries_with_cost", 0)
         if queries_with_cost > 0:

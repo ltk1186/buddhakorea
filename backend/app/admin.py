@@ -1057,6 +1057,7 @@ async def get_admin_observability(
             ChatMessage.latency_ms,
             ChatMessage.tokens_used,
             ChatMessage.model_used,
+            ChatMessage.response_mode,
         ).where(ChatMessage.role == "assistant", ChatMessage.created_at >= cutoff_window)
     )
     message_rows = messages_result.all()
@@ -1090,23 +1091,7 @@ async def get_admin_observability(
     zero_source_rate = round((zero_source_count / answers_count) * 100, 2) if answers_count > 0 else 0.0
 
     merged_daily = dict(db_reliability.get("by_day", {}))
-    if reliability.get("usage_log_available", False):
-        for day, entry in reliability.get("by_day", {}).items():
-            bucket = merged_daily.setdefault(
-                day,
-                {
-                    "queries": 0,
-                    "cost_usd": None,
-                    "cached_queries": None,
-                    "cache_hit_rate": None,
-                    "avg_latency_ms": None,
-                    "p95_latency_ms": None,
-                },
-            )
-            bucket["cached_queries"] = entry.get("cached_queries", 0)
-            bucket["cache_hit_rate"] = float(entry.get("cache_hit_rate", 0.0))
-
-    metrics_source = "database+usage_log" if reliability.get("usage_log_available", False) else "database"
+    metrics_source = "database"
     daily_entries = [
         AdminReliabilityDayEntry(
             date=day,
@@ -1125,14 +1110,18 @@ async def get_admin_observability(
         metrics_source=metrics_source,
         usage_log_available=bool(reliability.get("usage_log_available", False)),
         latency_metrics_available=bool(db_reliability.get("latency_metrics_available", False)),
-        cache_metrics_available=bool(reliability.get("usage_log_available", False)),
+        cache_metrics_available=bool(db_reliability.get("cache_metrics_available", False)),
         cost_metrics_available=bool(db_reliability.get("cost_metrics_available", False)),
         cost_metrics_estimated=bool(db_reliability.get("cost_metrics_estimated", False)),
         total_queries=db_reliability["total_queries"],
         queries_with_latency=db_reliability["queries_with_latency"],
         queries_with_cost=db_reliability["queries_with_cost"],
-        cache_queries_sample=reliability.get("total_queries", 0),
-        cache_hit_rate=float(reliability["cache_hit_rate"]) if reliability.get("usage_log_available", False) else None,
+        cache_queries_sample=db_reliability.get("cache_queries_sample", 0),
+        cache_hit_rate=(
+            float(db_reliability["cache_hit_rate"])
+            if db_reliability.get("cache_hit_rate") is not None
+            else None
+        ),
         avg_cost_per_query_usd=(
             float(db_reliability["avg_cost_per_query_usd"])
             if db_reliability.get("avg_cost_per_query_usd") is not None
