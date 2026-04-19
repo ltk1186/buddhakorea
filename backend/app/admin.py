@@ -377,15 +377,15 @@ def _build_table_summary(name: str, config: Dict[str, Any]) -> AdminDataTableSum
     )
 
 
-def _serialize_explorer_value(column_name: str, value: Any, admin_user: User) -> Any:
+def _serialize_explorer_value(column_name: str, value: Any, admin_user: User, pii_columns: set) -> Any:
     if value is None:
         return None
     if isinstance(value, datetime):
         return value.isoformat()
-    if column_name in {"email", "provider_email"}:
-        return value if _can_view_email(admin_user) else _mask_email(value)
-    if column_name == "content":
-        return mask_pii(value)
+    if column_name in pii_columns:
+        if "email" in column_name:
+            return value if _can_view_email(admin_user) else _mask_email(value)
+        return mask_pii(value) if isinstance(value, str) else value
     if column_name in {"access_token", "refresh_token", "access_token_encrypted", "refresh_token_encrypted"}:
         return "[redacted]"
     return value
@@ -419,6 +419,7 @@ EXPLORER_TABLES: Dict[str, Dict[str, Any]] = {
         "model": ChatMessage,
         "searchable_columns": ["role", "content", "model_used", "response_mode"],
         "hidden_columns": set(),
+        "pii_columns": {"content"},
     },
     "user_usage": {
         "label": "User Usage",
@@ -918,6 +919,9 @@ async def update_query_review(
     review = review_result.scalar_one_or_none()
     before_state = None
     if review:
+        if review.created_by_admin_id is not None and review.created_by_admin_id != admin_user.id:
+            raise HTTPException(status_code=403, detail="Cannot edit another admin's review")
+            
         before_state = {"status": review.status, "reason": review.reason, "note": review.note}
         review.status = payload.status
         review.reason = payload.reason
@@ -1090,6 +1094,18 @@ async def get_admin_observability(
     zero_source_count = int(zero_source_answers_24h or 0)
     zero_source_rate = round((zero_source_count / answers_count) * 100, 2) if answers_count > 0 else 0.0
 
+    # Merge file log cache metrics into DB reliability if DB is missing them
+    if reliability.get("usage_log_available") and not db_reliability.get("cache_metrics_available"):
+        db_reliability["cache_metrics_available"] = True
+        db_reliability["cache_queries_sample"] = reliability.get("cache_queries_sample", 0)
+        db_reliability["cache_hit_rate"] = reliability.get("cache_hit_rate")
+        for day, file_entry in reliability.get("by_day", {}).items():
+            if day in db_reliability["by_day"] and file_entry.get("cached_queries") is not None:
+                db_entry = db_reliability["by_day"][day]
+                if not db_entry.get("cached_queries"):
+                    db_entry["cached_queries"] = file_entry["cached_queries"]
+                    db_entry["cache_hit_rate"] = file_entry.get("cache_hit_rate")
+
     merged_daily = dict(db_reliability.get("by_day", {}))
     metrics_source = "database"
     daily_entries = [
@@ -1216,6 +1232,7 @@ async def get_explorer_table_rows(
     model = config["model"]
     hidden_columns = config["hidden_columns"]
     searchable_columns = config["searchable_columns"]
+    pii_columns = config.get("pii_columns", set())
 
     limit = min(max(limit, 1), 100)
     offset = max(offset, 0)
@@ -1240,7 +1257,7 @@ async def get_explorer_table_rows(
         for column in model.__table__.columns:
             if column.name in hidden_columns:
                 continue
-            serialized[column.name] = _serialize_explorer_value(column.name, getattr(row, column.name), admin_user)
+            serialized[column.name] = _serialize_explorer_value(column.name, getattr(row, column.name), admin_user, pii_columns)
         rows.append(serialized)
 
     return AdminDataTableRowsResponse(

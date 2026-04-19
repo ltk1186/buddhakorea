@@ -4,7 +4,7 @@ Chat History Models
 유저별 채팅 세션 및 메시지 영구 저장
 """
 
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean, Index
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
@@ -46,6 +46,9 @@ class ChatSession(Base):
 class ChatMessage(Base):
     """채팅 메시지 - 개별 메시지 저장"""
     __tablename__ = "chat_messages"
+    __table_args__ = (
+        Index("ix_chat_messages_role_created_at", "role", "created_at"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     session_id = Column(Integer, ForeignKey("chat_sessions.id", ondelete="CASCADE"), nullable=False, index=True)

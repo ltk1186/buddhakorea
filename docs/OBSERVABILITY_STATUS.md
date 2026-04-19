@@ -1,6 +1,6 @@
 # Observability Status
 
-Last updated: 2026-04-17
+Last updated: 2026-04-19
 
 This document records which operational metrics are currently available in
 production, where they come from, and what is still incomplete.
@@ -9,6 +9,10 @@ production, where they come from, and what is still incomplete.
 
 Admin reliability metrics are now primarily database-backed, with usage logs
 remaining optional for secondary usage analytics.
+
+Performance guardrail:
+- `chat_messages(role, created_at)` composite index is required to keep
+  `/api/admin/observability` query latency stable under growth.
 
 ## Metrics Available Now
 

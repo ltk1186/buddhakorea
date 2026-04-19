@@ -222,13 +222,24 @@ cd /opt/buddha-korea
 
 `admin_query_reviews` stores operator review state separately from chat runtime data.
 
-Reliability metrics intentionally mix two sources:
-- `logs/usage.jsonl` for latency, cache-hit, and cost distributions
-- `chat_messages` for source-count quality proxies such as zero-source answers
+Reliability metrics are database-first:
+- `chat_messages` is the source of truth for latency, cache-hit, estimated cost,
+  and query volume.
+- `logs/usage.jsonl` is optional supplemental input and is only merged when DB
+  cache metrics are unavailable in a given window.
 
 This keeps the admin panel grounded in already collected runtime data without exposing raw server internals or requiring SSH access.
 
-If `logs/usage.jsonl` is not present in a given environment, the admin UI shows usage-log metrics as unavailable rather than presenting misleading zero values.
+If `logs/usage.jsonl` is not present in a given environment, `usage_log_available`
+may be false while reliability cards remain populated from DB.
+
+## Observability Performance Guardrail
+
+Admin observability queries rely on the composite index below to avoid
+assistant-message full scans:
+
+- `chat_messages(role, created_at)` via Alembic revision
+  `011_add_chat_messages_role_created_at_index`.
 
 ## Phase 8 Governance Docs
 

@@ -1,6 +1,6 @@
 # Buddha Korea - Deployment Quickstart
 
-최종 업데이트: 2026-04-16
+최종 업데이트: 2026-04-19
 
 이 문서는 가장 짧은 운영용 배포 참조다. 상세 절차는 아래 문서가 기준이다.
 
@@ -72,6 +72,7 @@ docker logs buddhakorea-backend --tail 100 2>&1
 - admin login
 - `/api/admin/summary`
 - `/api/admin/observability`
+- admin observability 테이블/카드가 정상 렌더링되고 5xx가 없는지 확인
 
 RAG/provider/prompt/runtime 변경 후에는 production smoke를 최소 1건 실행:
 
@@ -90,8 +91,26 @@ python3 scripts/rag_regression_check.py \
 - Cloudflare 때문에 admin asset이 오래 보존될 수 있다.
 - reliability 패널에서 `usage_log_available = false`가 보여도 latency/slow/cost/cache는 DB 기준으로 계속 보여야 한다.
 - 이 값은 이제 local usage-log analytics 부재를 뜻한다.
+- admin observability 성능 회귀 방지를 위해 `011_add_chat_messages_role_created_at_index`가 적용되어야 한다.
 
-## 6. 주요 링크
+## 6. 실패 시 즉시 롤백
+
+배포 직후 헬스체크/스모크 실패 시:
+
+```bash
+git revert <bad_commit_sha>
+git push origin main
+```
+
+자동 배포 완료 후 아래 재확인:
+
+```bash
+curl -s https://buddhakorea.com/api/health
+```
+
+스키마 downgrade는 migration 자체가 원인일 때만 수행한다.
+
+## 7. 주요 링크
 
 | 항목 | URL |
 |------|-----|

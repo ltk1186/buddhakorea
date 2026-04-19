@@ -1,6 +1,6 @@
 # Production Runbook
 
-Last updated: 2026-04-16
+Last updated: 2026-04-19
 
 This is the canonical operational runbook for Buddha Korea production.
 
@@ -125,6 +125,7 @@ Check:
 - admin login works
 - `/api/admin/summary` returns `200`
 - `/api/admin/observability` returns `200`
+- observability page loads without timeout/5xx and shows DB-backed latency/cache/cost cards
 
 If the deployment touched admin query investigation detail, also verify:
 
@@ -195,6 +196,12 @@ rollback.
 - `usage_log_available = false`여도 latency/slow/cost/cache cards는 채워져 있어야 한다.
 - 이 값은 local usage-log analytics 부재로 해석한다.
 - see [OBSERVABILITY_STATUS.md](./OBSERVABILITY_STATUS.md)
+
+### Observability endpoint is slow after deploy
+
+- verify migration `011_add_chat_messages_role_created_at_index` has been applied
+- run `./scripts/migrate.sh current` and confirm head includes revision 011
+- check backend logs for long-running `/api/admin/observability` queries
 
 ## Related Docs
 

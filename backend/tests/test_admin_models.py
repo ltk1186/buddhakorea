@@ -1,6 +1,5 @@
-import pytest
-from datetime import datetime, timezone
 from backend.app.models.admin_audit_log import AdminAuditLog
+from backend.app.models.chat import ChatMessage
 
 def test_admin_audit_log_instantiation():
     """Test that AdminAuditLog model instantiates correctly with required fields."""
@@ -36,3 +35,8 @@ def test_admin_audit_log_defaults():
     assert log.before_state is None
     assert log.after_state is None
     assert log.context is None
+
+
+def test_chat_message_has_observability_composite_index():
+    index_names = {idx.name for idx in ChatMessage.__table__.indexes}
+    assert "ix_chat_messages_role_created_at" in index_names

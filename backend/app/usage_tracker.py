@@ -436,6 +436,8 @@ def analyze_observability_messages(
     for created_at, latency_ms, tokens_used, model_used, response_mode in message_rows:
         if not created_at:
             continue
+            
+        response_mode = response_mode or "normal"
 
         day = created_at.date().isoformat()
         if day not in base["by_day"]:

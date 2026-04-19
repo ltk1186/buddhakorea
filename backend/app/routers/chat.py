@@ -33,6 +33,10 @@ from ..rag.prompts import (
 from ..rag.trace import RetrievalConfigTrace, build_query_trace
 from ..tradition_normalizer import normalize_tradition
 from ..usage_tracker import log_token_usage
+try:
+    from rag.buddhist_thesaurus import expand_query as expand_buddhist_terms
+except ModuleNotFoundError:  # pragma: no cover - package path differs between runtime and tests
+    from ...rag.buddhist_thesaurus import expand_query as expand_buddhist_terms
 
 
 def create_chat_router(
@@ -153,8 +157,8 @@ def create_chat_router(
                 log_token_usage(
                     query=request.query,
                     response=cached_response["response"],
-                    input_tokens=0,
-                    output_tokens=0,
+                    input_tokens=int(estimated_tokens * 0.85),
+                    output_tokens=int(estimated_tokens * 0.15),
                     model=cached_response.get("model", config.llm_model),
                     mode="cached",
                     session_id=session_id,
@@ -171,8 +175,8 @@ def create_chat_router(
                         source.text_id if isinstance(source, SourceDocument) else source.get("text_id", "")
                         for source in cached_sources[: request.max_sources]
                     ],
-                    input_tokens=0,
-                    output_tokens=0,
+                    input_tokens=int(estimated_tokens * 0.85),
+                    output_tokens=int(estimated_tokens * 0.15),
                     latency_ms=latency_ms,
                     from_cache=True,
                     trace=cached_trace,
@@ -189,7 +193,7 @@ def create_chat_router(
                         "sources": cached_sources[: request.max_sources],
                         "response_mode": "cached",
                         "latency_ms": latency_ms,
-                        "tokens_used": 0,
+                        "tokens_used": estimated_tokens,
                         "query_trace": cached_trace,
                     },
                 )
@@ -212,8 +216,6 @@ def create_chat_router(
             logger.info(f"Follow-up question (depth: {session_context['conversation_depth'] + 1})")
 
         try:
-            from rag.buddhist_thesaurus import expand_query as expand_buddhist_terms
-
             query = expand_buddhist_terms(request.query)
             logger.debug(f"Buddhist term expansion: {request.query} -> {query}")
 
@@ -506,14 +508,12 @@ def create_chat_router(
 
                 is_detailed = request.detailed_mode
                 retrieval_k = config.top_k_retrieval if is_detailed else config.top_k_retrieval_fast
-                llm = app_state.llm if is_detailed else app_state.llm_fast
+                llm = app_state.llm if is_detailed else (app_state.llm_fast or app_state.llm)
                 model_name = config.llm_model if is_detailed else config.llm_model_fast
 
                 logger.info(
                     f"[Stream] Mode: {'detailed' if is_detailed else 'normal'}, k={retrieval_k}, model={model_name}"
                 )
-
-                from rag.buddhist_thesaurus import expand_query as expand_buddhist_terms
 
                 query = expand_buddhist_terms(request.query)
                 logger.info(f"[Stream] Buddhist term expansion: {request.query} -> {query}")
