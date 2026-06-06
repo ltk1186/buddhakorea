@@ -1,0 +1,21 @@
+{
+  "profiles": [
+    {
+      "profile_id": "gpt_local_default",
+      "provider": "openai",
+      "counter": "tiktoken",
+      "model": "CONFIGURED_LATER",
+      "encoding_fallback": "cl100k_base",
+      "token_threshold": 8000,
+      "notes": "Local GPT-family token estimate using tiktoken. Fill exact model later."
+    },
+    {
+      "profile_id": "gemini_local_approx",
+      "provider": "gemini",
+      "counter": "sentencepiece_or_heuristic",
+      "sentencepiece_model_path": null,
+      "token_threshold": 8000,
+      "notes": "Local approximate Gemini-family estimate. Not official billing count."
+    }
+  ]
+}
