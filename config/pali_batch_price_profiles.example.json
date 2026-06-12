@@ -1,0 +1,14 @@
+{
+  "profiles": [
+    {
+      "profile_id": "mock_gemini_3_1_pro_batch_planning",
+      "provider": "gemini",
+      "model": "models/gemini-3.1-pro-preview",
+      "input_usd_per_million_tokens": "10",
+      "output_usd_per_million_tokens": "20",
+      "thinking_usd_per_million_tokens": "0",
+      "batch_discount_multiplier": "0.5",
+      "notes": "Mock planning values for local guardrail tests and dry-run artifacts. Replace with official current pricing before any real submission."
+    }
+  ]
+}

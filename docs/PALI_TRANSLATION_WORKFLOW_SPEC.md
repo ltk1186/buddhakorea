@@ -708,6 +708,445 @@ Output fields include:
 
 ## 10. Cost Analysis Boundary
 
+## 10. Gemini Batch API Translation Flow
+
+This section is a design only. It does not submit Gemini Batch jobs and does not call `generateContent`.
+
+Official Gemini Batch API notes to preserve in implementation:
+
+- Batch API is asynchronous and intended for large, non-urgent workloads.
+- Batch requests can be submitted inline or through an uploaded JSONL file.
+- For larger jobs, JSONL input is preferred.
+- Each JSONL line contains a user-defined `key` and a `request` object.
+- The output JSONL line can be a `GenerateContentResponse` or a status/error object.
+- Batch jobs return a provider job name that must be used for polling and result retrieval.
+
+Confirmed model:
+
+- Default high-quality translation model target: `models/gemini-3.1-pro-preview`.
+- Do not fall back to Flash-family models for canonical translation.
+
+### 10.1 Batch Job Lifecycle
+
+Planned lifecycle:
+
+1. Create a local translation job record.
+2. Expand the selected source scope into canonical segment items.
+3. Estimate source input tokens from the corrected Gemini source token report.
+4. Estimate output tokens using a pilot-derived output multiplier. This is not available yet.
+5. Split items into bounded batch shards.
+6. Create provider JSONL per shard.
+7. Create local sidecar metadata per shard keyed by `stable_segment_key`.
+8. Run preflight budget check.
+9. Reserve estimated budget for the shard.
+10. Upload JSONL through the Files API.
+11. Submit Gemini Batch job.
+12. Store provider batch id/name.
+13. Poll status.
+14. On completion, download result JSONL.
+15. Map each result line back by `key` / `stable_segment_key`.
+16. Parse successful response text as Korean Advanced JSON.
+17. Extract `usage_metadata`.
+18. Reconcile estimated vs actual token usage and cost.
+19. Mark failed or missing-usage items as `needs_retry`.
+20. Creating `translation_versions` is a later implementation phase.
+
+Terminal provider states should be treated as final for the shard:
+
+- `JOB_STATE_SUCCEEDED`
+- `JOB_STATE_FAILED`
+- `JOB_STATE_CANCELLED`
+- `JOB_STATE_EXPIRED`
+
+### 10.2 JSONL Request Format
+
+Provider JSONL should stay close to the official Batch API shape:
+
+```json
+{
+  "key": "stable_segment_key",
+  "request": {
+    "contents": [
+      {
+        "role": "user",
+        "parts": [
+          {
+            "text": "..."
+          }
+        ]
+      }
+    ],
+    "generation_config": {
+      "temperature": 0.2,
+      "response_mime_type": "application/json"
+    }
+  }
+}
+```
+
+Local sidecar metadata should not be relied on as provider-accepted JSONL fields unless verified against the current SDK/API. Keep a separate manifest keyed by the same `stable_segment_key`:
+
+```json
+{
+  "stable_segment_key": "...",
+  "source_text_hash": "...",
+  "source_path": "...",
+  "text_layer": "...",
+  "chunk_type": "...",
+  "estimated_input_tokens": 0,
+  "estimated_output_tokens": 0,
+  "estimated_thinking_tokens": 0,
+  "estimated_cost_usd": "0.000000"
+}
+```
+
+Mapping rule:
+
+- Provider request `key` must be exactly `stable_segment_key`.
+- Sidecar manifest must also use `stable_segment_key`.
+- Result parser must reject duplicate keys within one shard.
+- Result parser must not rely on result ordering.
+
+### 10.3 Result JSONL Parsing
+
+Each output line must be classified independently:
+
+- `succeeded`: line has a response, response text is present, usage metadata is present, and Korean Advanced JSON parse succeeds.
+- `needs_retry`: response exists but usage metadata is missing, output JSON parse fails, schema validation fails, or transient provider status is recoverable.
+- `failed`: line-level error/status object indicates non-retryable failure.
+
+The provider output may be a normal `GenerateContentResponse` or an error/status object. The parser must preserve raw result payload for audit/debugging, but avoid storing credentials or request secrets.
+
+### 10.4 usage_metadata Collection
+
+Extract from `GenerateContentResponse.usage_metadata` or `usageMetadata`.
+
+Logical fields:
+
+- `prompt_token_count`
+- `candidates_token_count`
+- `thoughts_token_count`
+- `cached_content_token_count`
+- `total_token_count`
+
+Policy:
+
+- `prompt_token_count` is actual input tokens.
+- `candidates_token_count` is actual output tokens.
+- `thoughts_token_count`, if present, is recorded separately and included in actual cost calculations when the injected price profile defines a thinking-token price.
+- `cached_content_token_count`, if present, is stored for caching analysis.
+- `total_token_count` is stored as provider-reported total.
+- Missing usage metadata means the item is `needs_retry` or `failed`; it cannot be reconciled as successful.
+
+### 10.5 Estimated vs Actual Token Accounting
+
+Preflight estimated fields:
+
+- `estimated_input_tokens`
+- `estimated_output_tokens`
+- `estimated_thinking_tokens`
+- `estimated_cost_usd`
+
+Actual fields after result parse:
+
+- `actual_input_tokens`
+- `actual_output_tokens`
+- `actual_thinking_tokens`
+- `actual_cached_content_tokens`
+- `actual_total_tokens`
+- `actual_cost_usd`
+
+Corrected source token estimate:
+
+- Use corrected Gemini source token report for source text.
+- Add prompt overhead only after Korean Advanced Prompt v1 is finalized.
+- Estimate output tokens from pilot translation output multiplier later.
+
+### 10.6 Batch Cost Estimation and Budget Reservation
+
+Prices must not be hardcoded. Inject a price profile:
+
+```json
+{
+  "input_usd_per_million_tokens": "CONFIGURED_AT_RUNTIME",
+  "output_usd_per_million_tokens": "CONFIGURED_AT_RUNTIME",
+  "thinking_usd_per_million_tokens": "CONFIGURED_AT_RUNTIME",
+  "batch_discount_multiplier": "CONFIGURED_AT_RUNTIME"
+}
+```
+
+Submission guard:
+
+```text
+actual_spent_usd
++ reserved_open_batches_usd
++ new_batch_estimated_cost_usd
+<= hard_cap_usd
+```
+
+Default planning caps:
+
+- Production hard cap example: `3000 USD`.
+- First smoke batch cap: `5 USD`.
+- Pilot batch cap: `20-50 USD`.
+
+Reservation model:
+
+1. Estimate shard cost.
+2. Check hard cap.
+3. If allowed, add estimate to `reserved_open_batches_usd`.
+4. Submit batch.
+5. On completion, calculate actual cost from usage metadata.
+6. Subtract reserved estimate.
+7. Add actual cost to `actual_spent_usd`.
+8. If actual cost exceeds estimate, the delta reduces remaining hard-cap budget.
+
+### 10.7 Hard Cap, Kill Switch, and Cancellation
+
+Hard cap policy:
+
+- If projected total exceeds hard cap, do not submit a new batch.
+- Include open reservations in all checks.
+- Never assume pending/running batches can stop exactly at a target dollar amount.
+
+Kill switch policy:
+
+- If operator kill switch is enabled, do not submit new batches.
+- Attempt to cancel pending/running provider batches.
+- Mark local batches as `cancellation_requested`.
+- Continue polling until provider returns terminal state.
+- Reconcile any partial results and actual usage reported by the provider.
+
+Cancellation policy:
+
+- Cancellation may not prevent already processed requests from being billed.
+- Loss boundary is controlled by shard size, not by mid-shard cancellation.
+- Production shards must be small enough that one shard failure or late cancellation is financially bounded.
+
+### 10.8 Batch Shard Policy
+
+Never submit the full corpus as one batch.
+
+Initial pilot policy:
+
+- First smoke batch: `3-5` segments or estimated cost `<= 5 USD`.
+- Pilot batch: existing `75` sample segments or estimated cost `<= 20-50 USD`.
+
+Production planning policy:
+
+- one shard estimated cost `<= 100 USD`;
+- one shard `<= 5000` segments;
+- JSONL file size well below provider limit;
+- first production run must be one literature or one literature subset, not the full corpus.
+
+The shard limits are safety controls. Reduce shard size if provider latency, cancellation behavior, parse failure rate, or actual/estimated cost drift is worse than expected.
+
+### 10.9 Retry Policy and Failure Modes
+
+Retryable item-level failures:
+
+- transient provider errors;
+- missing usage metadata;
+- malformed JSON output;
+- schema validation failure;
+- timeout while fetching result line;
+- recoverable safety block if policy allows prompt adjustment.
+
+Non-retryable or operator-review failures:
+
+- source segment missing or hash mismatch;
+- stable key collision;
+- repeated JSON/schema failure after retry limit;
+- provider model unavailable;
+- account/billing/permission failure;
+- budget hard cap violation;
+- kill switch enabled.
+
+Model-level errors such as `404 model not found` or unsupported `countTokens`/Batch capability must fail before shard submission. They are not per-segment retry targets.
+
+### 10.10 Context Caching Position
+
+Context caching is not the MVP cost-control mechanism.
+
+Position:
+
+- First reduction mechanism: Batch API.
+- Second reduction mechanism: compact prompt design.
+- Future optimization: explicit context caching.
+
+Why not MVP:
+
+- Short segment-level prompts may have limited cache hit value.
+- Cache setup adds lifecycle and invalidation complexity.
+- Large shared glossary, DPD context, or document-level context is not finalized yet.
+- Batch requests may reference cached content in future, but MVP avoids this complexity.
+
+Revisit caching when:
+
+- Korean Advanced Prompt v1 is stable;
+- glossary/context blocks become large and repeated;
+- literature-level context is shared across many segments;
+- usage metadata shows prompt overhead dominates.
+
+### 10.11 Logical Cost Fields
+
+No DB migration is created in this phase.
+
+`translation_jobs` candidate fields:
+
+- `budget_limit_usd`
+- `estimated_cost_usd`
+- `reserved_cost_usd`
+- `actual_cost_usd`
+- `budget_status`
+- `kill_switch_enabled`
+
+`translation_batches` candidate fields:
+
+- `id`
+- `job_id`
+- `provider_batch_id`
+- `model`
+- `status`
+- `request_count`
+- `estimated_input_tokens`
+- `estimated_output_tokens`
+- `estimated_cost_usd`
+- `reserved_cost_usd`
+- `actual_input_tokens`
+- `actual_output_tokens`
+- `actual_thinking_tokens`
+- `actual_total_tokens`
+- `actual_cost_usd`
+- `submitted_at`
+- `completed_at`
+- `cancelled_at`
+- `result_file_name`
+- `error_message`
+
+`translation_job_items` candidate fields:
+
+- `stable_segment_key`
+- `batch_id`
+- `estimated_input_tokens`
+- `estimated_output_tokens`
+- `actual_input_tokens`
+- `actual_output_tokens`
+- `actual_thinking_tokens`
+- `actual_total_tokens`
+- `estimated_cost_usd`
+- `actual_cost_usd`
+- `status`
+
+Implemented local-only helper skeletons:
+
+- `backend/pali/translation/budget.py`
+- `backend/pali/translation/batch_plan.py`
+
+These helpers are pure functions/dataclasses only. They do not call providers, connect to DB, or store official prices.
+
+### 10.12 Smoke Batch Dry-Run Planner
+
+Implemented local planner:
+
+- `backend/pali/scripts/plan_gemini_smoke_batch.py`
+
+Purpose:
+
+- Generate provider JSONL just before the point where a Gemini Batch job would be submitted.
+- Generate a separate local sidecar manifest.
+- Validate stable-key mapping before any real provider call.
+- Run budget guardrail checks locally.
+- Keep the first smoke batch to 3-5 segments.
+
+Example:
+
+```bash
+./venv/bin/python backend/pali/scripts/plan_gemini_smoke_batch.py \
+  --samples data/reports/pali/vri_translation_sample_candidates_49bc869.json \
+  --model models/gemini-3.1-pro-preview \
+  --out-jsonl data/reports/pali/gemini_smoke_batch_49bc869.jsonl \
+  --out-manifest data/reports/pali/gemini_smoke_batch_49bc869_manifest.json \
+  --max-segments 5 \
+  --max-estimated-cost-usd 5 \
+  --pretty-manifest
+```
+
+Provider JSONL artifact:
+
+```text
+data/reports/pali/gemini_smoke_batch_49bc869.jsonl
+```
+
+Sidecar manifest artifact:
+
+```text
+data/reports/pali/gemini_smoke_batch_49bc869_manifest.json
+```
+
+Provider JSONL rules:
+
+- one JSON object per line;
+- each line has `key` equal to `stable_segment_key`;
+- each line has a Gemini `request` body;
+- internal-only metadata is not placed in provider JSONL;
+- no API key or credential values are stored.
+
+Sidecar manifest rules:
+
+- stores source identity and estimated token/cost details;
+- maps `jsonl_line_index` to `stable_segment_key`;
+- records `source_text_hash`, `source_path`, `text_layer`, `pitaka`, `nikaya`, `chunk_type`, and `length_bucket`;
+- records budget check result;
+- records validation result.
+
+Smoke planner validation:
+
+- JSONL line count equals manifest item count;
+- all keys are unique;
+- provider JSONL key order matches manifest `stable_segment_key` order;
+- every manifest item has `source_text_hash`;
+- `jsonl_line_index` is exact;
+- provider JSONL lines are valid JSON;
+- request contents include source text block;
+- estimated cost is within `max_estimated_cost_usd`;
+- manifest does not contain credential-like markers.
+
+Prompt policy:
+
+- The planner uses `korean_advanced_batch_placeholder`.
+- This is not Korean Advanced Prompt v1.
+- The generated JSONL must be regenerated after Prompt v1 is finalized.
+- Smoke batch is for request shape, sidecar mapping, and budget guardrail verification, not translation quality evaluation.
+
+Price profile:
+
+- Default local profile: `config/pali_batch_price_profiles.example.json`.
+- This file contains mock planning values only.
+- Replace with current official pricing before any real submission.
+- Official prices must be configuration input, not hardcoded in Python.
+
+Current dry-run artifact summary for source commit `49bc86914748589a2501b548cc6b3e97a8abe018`:
+
+- request count: 5;
+- estimated input tokens: 626;
+- estimated output tokens: 1,878;
+- estimated cost with mock profile: `0.021910 USD`;
+- budget cap: `5 USD`;
+- budget result: `ok`;
+- validation result: `valid`;
+- layer distribution: `mula=1`, `atthakatha=3`, `tika=1`;
+- chunk distribution: `prose=3`, `verse=2`;
+- length distribution: `short=4`, `medium=1`.
+
+Next phase after this planner:
+
+- finalize Korean Advanced Prompt v1;
+- regenerate smoke JSONL with Prompt v1;
+- only after explicit approval, submit a 3-5 segment smoke Batch job.
+
+## 11. Cost Analysis Boundary
+
 This document defines the cost-analysis structure only. It does not calculate official costs.
 
 Separate token layers:
@@ -728,20 +1167,22 @@ Required inputs for a later official cost analysis:
 - Expected arbitration rate.
 - Expected retry rate.
 
-## 11. Implementation Roadmap
+## 12. Implementation Roadmap
 
 1. Keep improving VRI XML canonical segment identity and validation.
 2. Add prompt template versioning for `korean_advanced`.
 3. Add sample selector for calibration and pilot runs.
 4. Run Gemini countTokens sample calibration.
-5. Run 50-100 segment pilot with Gemini 3.1 Pro.
-6. Validate output schema and quality flags.
-7. Run GPT-5.5 arbitration on flagged pilot subset.
-8. Decide publication policy for machine drafts.
-9. Only then design DB migrations for jobs, job items, and translation versions.
-10. Only after calibration and pilot, perform official price-based cost analysis.
+5. Design Batch API shard planning and budget guardrails.
+6. Run first smoke batch with 3-5 segments only after explicit approval.
+7. Run 50-100 segment pilot with Gemini 3.1 Pro.
+8. Validate output schema and quality flags.
+9. Run GPT-5.5 arbitration on flagged pilot subset.
+10. Decide publication policy for machine drafts.
+11. Only then design DB migrations for jobs, job items, and translation versions.
+12. Only after calibration and pilot, perform official price-based cost analysis.
 
-## 12. Out of Scope
+## 13. Out of Scope
 
 - Actual LLM API calls.
 - Bulk translation execution.
