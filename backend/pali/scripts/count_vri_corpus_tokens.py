@@ -50,6 +50,7 @@ def count_corpus_tokens(
     files_with_warnings: list[dict[str, Any]] = []
     unknown_filename_patterns: list[str] = []
     token_reports: list[dict[str, Any]] = []
+    import_report_totals: Counter[str] = Counter()
     excluded_layers: Counter[str] = Counter()
 
     for xml_file in xml_files:
@@ -77,6 +78,17 @@ def count_corpus_tokens(
         literature = artifact["literature"]
         import_report = artifact["import_report"]
         token_reports.append(token_report)
+        for key in (
+            "metadata_only_node_count",
+            "pb_only_node_count",
+            "note_only_node_count",
+            "skipped_empty_node_count",
+            "empty_text_error_count",
+            "skipped_node_count",
+        ):
+            import_report_totals[key] += int(import_report.get(key) or 0)
+        for key, value in (import_report.get("empty_node_classification") or {}).items():
+            import_report_totals[f"empty_node_classification.{key}"] += int(value)
         layer = literature.get("text_layer") or "unknown"
         pitaka = literature.get("pitaka") or "unknown"
         nikaya = literature.get("nikaya") or "unknown"
@@ -158,6 +170,7 @@ def count_corpus_tokens(
         "files_with_errors": files_with_errors,
         "files_with_warnings": files_with_warnings,
         "unknown_filename_patterns": unknown_filename_patterns,
+        "import_report_totals": dict(sorted(import_report_totals.items())),
         "tokenizer_fallbacks_used": fallbacks,
         "tokenizer_warnings": merge_tokenizer_warnings(token_reports),
         "generated_at": datetime.now(timezone.utc).isoformat(),

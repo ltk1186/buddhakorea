@@ -10,6 +10,43 @@ Buddha Korea Pali Studio will use VRI XML from `VipassanaTech/tipitaka-xml` as t
 
 The current goal is not to match old PDF parser segment boundaries. VRI XML is the new canonical basis.
 
+### 1.1 PDF Diff and Cost Boundary
+
+PDF diff is not part of this phase. Existing PDF-derived JSON can be kept as a legacy diagnostic source for historical comparison, but it must not define canonical segment boundaries and is not required for importer validation.
+
+This phase also stops at token counts. Official provider pricing, total cost estimation, and scenario-based cost analysis are intentionally deferred to a later cost-profile step. The current artifact should make that later step possible by exposing stable segment counts, character counts, local GPT-family token estimates, and local Gemini-family approximate token estimates.
+
+### 1.2 Local VRI Checkout
+
+Repeated development should use a local shallow checkout under `data/tipitaka-xml`. This directory is intentionally ignored by Git because it is a large external source repository.
+
+```bash
+git clone --depth 1 https://github.com/VipassanaTech/tipitaka-xml.git data/tipitaka-xml
+cd data/tipitaka-xml
+git rev-parse HEAD
+```
+
+Use that commit SHA as `source_commit` whenever generating segment artifacts or corpus token summaries:
+
+```bash
+SOURCE_COMMIT=$(git -C data/tipitaka-xml rev-parse HEAD)
+
+python3 backend/pali/importers/vri_xml.py \
+  data/tipitaka-xml/romn/s0505a.att.xml \
+  --source-path romn/s0505a.att.xml \
+  --source-commit "$SOURCE_COMMIT" \
+  --out /tmp/s0505a_segments.json \
+  --pretty
+
+python3 backend/pali/scripts/count_vri_corpus_tokens.py \
+  --input-dir data/tipitaka-xml/romn \
+  --include-layers mul,att,tik \
+  --token-profiles config/pali_token_profiles.example.json \
+  --source-commit "$SOURCE_COMMIT" \
+  --out /tmp/vri_romn_corpus_token_summary.json \
+  --pretty
+```
+
 ## 2. Buddha Korea Canonical Segment Format
 
 The Buddha Korea Canonical Segment Format is not raw VRI XML. It is a normalized source artifact designed for long-term application use.
@@ -294,9 +331,15 @@ python3 backend/pali/importers/vri_xml.py \
 - `unknown_node_count`
 - `unknown_rend_values`
 - `skipped_node_count`
+- `metadata_only_node_count`
+- `pb_only_node_count`
+- `note_only_node_count`
+- `skipped_empty_node_count`
 - `note_count`
 - `page_ref_count`
 - `empty_text_segment_count`
+- `empty_text_error_count`
+- `empty_node_classification`
 - `duplicate_source_text_hash_count`
 - `headingless_segment_count`
 - `largest_segments_by_chars`
@@ -313,12 +356,41 @@ Validation expectations:
 
 - Same file imported twice should produce the same `stable_segment_key` values.
 - `sort_order` starts at 1 and is contiguous.
-- Empty translatable `original_text` is an error.
+- Empty translatable `original_text` is an error only when the node appears to contain real translatable content that the importer removed incorrectly.
+- `pb`-only, `note`-only, metadata-only, and whitespace-only candidates are skipped and counted separately rather than emitted as segments.
 - `source_text_hash` is deterministic from `normalized_text`.
 - Headingless segment count is reported for review.
 - Duplicate source text hash count is reported.
 - Page refs and notes are not mixed into `original_text`.
 - Unknown `p/@rend` values become warnings.
+
+### 9.1 Empty original_text Policy
+
+Production importer policy:
+
+- After removing `pb` and `note`, do not emit prose or verse segments with empty `original_text`.
+- If a candidate node contains only page break references, increment `pb_only_node_count`.
+- If it contains only notes, increment `note_only_node_count`.
+- If it is a heading or other metadata-only node, update `heading_path` or increment `metadata_only_node_count`.
+- If it is whitespace-only, increment `skipped_empty_node_count`.
+- Keep `empty_text_error_count` only for nodes that look like true translation targets but still become empty.
+
+### 9.2 Empty Text Analysis from VRI romn
+
+Before the policy update, the files below produced empty segment candidate errors. Local full analysis of the current checkout found 550 empty candidates in these 10 files. They were all non-content candidates: whitespace-only separators, empty verse-number lines, empty verse-closing lines, or note-only references. None looked like real translatable text that the importer had incorrectly removed.
+
+| source_path | count | tag | rend values | first xml_node_path examples | classification | decision |
+| --- | ---: | --- | --- | --- | --- | --- |
+| `romn/s0402a.att.xml` | 1 | `p` | `bodytext` | `/TEI.2/text[1]/body[1]/div[@n='an2']/div[@n='an2_3']/div[@n='an2_3_4']/p[9]` | whitespace-only | skip, no error |
+| `romn/s0502m.mul.xml` | 1 | `p` | `bodytext` | `/TEI.2/text[1]/body[1]/div[@n='kn2']/p[4]` | note-only | count as `note_only_node_count`, no segment |
+| `romn/s0513a1.att.xml` | 147 | `p` | `hangnum` | `/TEI.2/text[1]/body[1]/p[865]`, `/p[915]`, `/p[937]` | whitespace-only verse-number placeholders | skip, no error |
+| `romn/s0513a2.att.xml` | 150 | `p` | `hangnum` | `/TEI.2/text[1]/body[1]/p[6]`, `/p[26]`, `/p[47]` | whitespace-only verse-number placeholders | skip, no error |
+| `romn/s0513a3.att.xml` | 138 | `p` | `hangnum` | `/TEI.2/text[1]/body[1]/p[7]`, `/p[38]`, `/p[67]` | whitespace-only verse-number placeholders | skip, no error |
+| `romn/s0513a4.att.xml` | 84 | `p` | `hangnum`, `gathalast` | `/TEI.2/text[1]/body[1]/p[6]`, `/p[54]`, `/p[126]` | whitespace-only verse placeholders | skip, no error |
+| `romn/s0514a1.att.xml` | 17 | `p` | `hangnum` | `/TEI.2/text[1]/body[1]/p[3]`, `/p[210]`, `/p[438]` | whitespace-only verse-number placeholders | skip, no error |
+| `romn/s0514a2.att.xml` | 5 | `p` | `hangnum` | `/TEI.2/text[1]/body[1]/p[6]`, `/p[497]`, `/p[1170]` | whitespace-only verse-number placeholders | skip, no error |
+| `romn/s0514a3.att.xml` | 6 | `p` | `hangnum`, `gathalast` | `/TEI.2/text[1]/body[1]/p[6]`, `/p[845]`, `/p[1480]` | whitespace-only verse placeholders | skip, no error |
+| `romn/s0515m.mul.xml` | 1 | `p` | `gathalast` | `/TEI.2/text[1]/body[1]/div[@n='kn15']/div[@n='kn15_15']/p[217]` | whitespace-only verse-closing placeholder | skip, no error |
 
 ## 10. Local Token Counting Design
 
@@ -354,6 +426,7 @@ GPT-family:
 - Uses local `tiktoken`.
 - If exact model is not configured or unknown to `tiktoken`, uses fallback encoding such as `cl100k_base`.
 - Fallback is recorded in `token_report`.
+- With the example profile, `model` is `CONFIGURED_LATER`, so `gpt_local_default` is a local source input token estimate using fallback encoding, not a final billing token count.
 
 Gemini-family:
 
@@ -361,6 +434,7 @@ Gemini-family:
 - If a SentencePiece model path is supplied and usable, counts local pieces.
 - If no model is supplied, uses a local heuristic fallback.
 - It is explicitly approximate and is not an official Gemini billing count.
+- The heuristic estimate is useful for corpus scale planning only and should not be used directly for cost comparison.
 
 No provider `countTokens` API is called.
 
@@ -386,7 +460,7 @@ No provider `countTokens` API is called.
 - `heading_token_breakdown`
 - `text_layer_token_breakdown`
 
-This is enough for the next cost-analysis step, but this spec intentionally does not include official prices.
+These values are source input token estimates from `original_text`/`normalized_text`. Real translation cost cannot be calculated from source tokens alone. The later cost-analysis phase must add `prompt_overhead_tokens`, `context_overhead_tokens`, and `estimated_output_tokens`, then apply official provider pricing in a separate volatile cost profile.
 
 ## 12. Corpus Token Summary Design
 
@@ -423,6 +497,7 @@ Corpus summary includes:
 - `files_with_errors`
 - `files_with_warnings`
 - `unknown_filename_patterns`
+- `import_report_totals`
 - `tokenizer_fallbacks_used`
 - `tokenizer_warnings`
 - `generated_at`
@@ -436,7 +511,36 @@ Target rollups:
 - Pali atthakatha/commentary total Gemini approximate tokens.
 - Pali tika/subcommentary total Gemini approximate tokens.
 
-## 13. Explicitly Out of Scope
+### 12.1 Token Terminology
+
+Use the term `source input token estimate` for current reports. Do not describe these counts as total translation tokens or final cost basis.
+
+Current summary numbers exclude:
+
+- system/developer/user prompt overhead
+- XML/source metadata included in prompts
+- grammar-analysis instructions
+- DPD or dictionary hints
+- context carried across segments
+- output translation tokens
+- reviewer/commentary output tokens
+
+## 13. Gemini countTokens Calibration Design
+
+Do not call Gemini `countTokens` across the full corpus in this phase.
+
+Next-step sample-only calibration design:
+
+1. Stratify segments by `text_layer`: `mula`, `atthakatha`, `tika`.
+2. Within each layer, sample short, medium, and long segments by local token estimate.
+3. Use 100-300 total samples, preserving `stable_segment_key`, `source_path`, `chunk_type`, and local estimates.
+4. Call Gemini official `countTokens` only for those samples.
+5. Compare official sample counts against `gemini_local_approx`.
+6. Compute ratios by layer, chunk type, and length bucket.
+7. Apply those ratios as calibration coefficients to corpus-level estimates.
+8. Keep raw official sample counts and calibration coefficients versioned separately from Segment JSON.
+
+## 14. Explicitly Out of Scope
 
 - LLM translation execution.
 - Gemini/OpenAI/Claude text generation API calls.
@@ -448,7 +552,7 @@ Target rollups:
 - PDF diff.
 - Legacy PDF segment alignment.
 
-## 14. Remaining Uncertainties
+## 15. Remaining Uncertainties
 
 - Exact canonical meaning and production inclusion policy for `.nrf.xml`.
 - Full scholarly mapping from all VRI filenames to pitaka, nikaya, book, mūla/aṭṭhakathā/ṭīkā hierarchy.
@@ -456,4 +560,3 @@ Target rollups:
 - Whether notes should later become separate translatable apparatus segments.
 - Whether verse grouping should remain verse-level or later support child line-level grammar analysis.
 - Reconciliation policy when upstream XML structure changes but text remains mostly identical.
-

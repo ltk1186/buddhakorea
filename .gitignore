@@ -56,6 +56,12 @@ opennotebook/chroma_db/
 # CBETA corpus
 data/cbeta-t/
 
+# VRI tipitaka-xml local checkout (large external source repository)
+data/tipitaka-xml/
+
+# Local/generated Pali experiment reports
+data/reports/
+
 # Source Data (127MB+) - keep structure, exclude large files
 **/source_data/*.json
 !**/source_data/.gitkeep

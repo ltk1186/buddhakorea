@@ -118,9 +118,15 @@ class VriXmlParser:
         self.unknown_rend_values: Counter[str] = Counter()
         self.unknown_node_count = 0
         self.skipped_node_count = 0
+        self.metadata_only_node_count = 0
+        self.pb_only_node_count = 0
+        self.note_only_node_count = 0
+        self.skipped_empty_node_count = 0
         self.note_count = 0
         self.page_ref_count = 0
         self.empty_text_segment_count = 0
+        self.empty_text_error_count = 0
+        self.empty_node_classification: Counter[str] = Counter()
         self.verse_group_count = 0
         self.verse_line_count = 0
         self.warnings: list[str] = []
@@ -263,6 +269,11 @@ class VriXmlParser:
             rend = child.attrib.get("rend", "")
 
             if rend in VERSE_RENDS:
+                if not normalize_whitespace(extract_main_text(child)):
+                    self._record_empty_candidate([child])
+                    if rend == "gathalast":
+                        flush_verse()
+                    continue
                 verse_buffer.append(child)
                 if rend == "gathalast":
                     flush_verse()
@@ -272,10 +283,14 @@ class VriXmlParser:
 
             if rend in HEADING_RENDS:
                 apply_p_heading(child, rend, local_state)
+                self.metadata_only_node_count += 1
                 self.skipped_node_count += 1
                 continue
 
             if rend in PROSE_RENDS:
+                if not normalize_whitespace(extract_main_text(child)):
+                    self._record_empty_candidate([child])
+                    continue
                 segment = self._build_segment(
                     [child],
                     "prose",
@@ -320,8 +335,9 @@ class VriXmlParser:
         xml_node_path = paths[0] if len(paths) == 1 else " + ".join(paths)
 
         if not original_text:
-            self.empty_text_segment_count += 1
-            self.errors.append(f"Empty original_text for segment candidate at {xml_node_path}.")
+            classification = self._record_empty_candidate(nodes)
+            if classification == "empty_text_error":
+                self.errors.append(f"Empty original_text for segment candidate at {xml_node_path}.")
             return None
 
         canonical_ref = build_canonical_ref(literature, state, nodes, sort_order)
@@ -375,6 +391,41 @@ class VriXmlParser:
             "paragraph_id": state["paragraph_counter"],
         }
 
+    def _record_empty_candidate(self, nodes: list[ET.Element]) -> str:
+        classifications = [classify_empty_node(node) for node in nodes]
+        if "empty_text_error" in classifications:
+            classification = "empty_text_error"
+        elif "pb_note_only" in classifications:
+            classification = "pb_note_only"
+        elif "pb_only" in classifications:
+            classification = "pb_only"
+        elif "note_only" in classifications:
+            classification = "note_only"
+        elif "metadata_only" in classifications:
+            classification = "metadata_only"
+        else:
+            classification = "blank_only"
+
+        self.empty_node_classification[classification] += 1
+        self.empty_text_segment_count += 1
+        self.skipped_empty_node_count += 1
+        self.skipped_node_count += len(nodes)
+
+        if classification == "pb_only":
+            self.pb_only_node_count += 1
+        elif classification == "note_only":
+            self.note_only_node_count += 1
+        elif classification == "pb_note_only":
+            self.pb_only_node_count += 1
+            self.note_only_node_count += 1
+            self.metadata_only_node_count += 1
+        elif classification == "metadata_only":
+            self.metadata_only_node_count += 1
+        elif classification == "empty_text_error":
+            self.empty_text_error_count += 1
+
+        return classification
+
     def _build_import_report(
         self,
         segments: list[dict[str, Any]],
@@ -400,9 +451,15 @@ class VriXmlParser:
             "unknown_node_count": self.unknown_node_count,
             "unknown_rend_values": dict(sorted(self.unknown_rend_values.items())),
             "skipped_node_count": self.skipped_node_count,
+            "metadata_only_node_count": self.metadata_only_node_count,
+            "pb_only_node_count": self.pb_only_node_count,
+            "note_only_node_count": self.note_only_node_count,
+            "skipped_empty_node_count": self.skipped_empty_node_count,
             "note_count": self.note_count,
             "page_ref_count": self.page_ref_count,
             "empty_text_segment_count": self.empty_text_segment_count,
+            "empty_text_error_count": self.empty_text_error_count,
+            "empty_node_classification": dict(sorted(self.empty_node_classification.items())),
             "duplicate_source_text_hash_count": duplicate_hash_count,
             "headingless_segment_count": headingless_count,
             "largest_segments_by_chars": [
@@ -654,6 +711,31 @@ def collect_notes(nodes: list[ET.Element]) -> list[str]:
                 if text:
                     notes.append(text)
     return notes
+
+
+def classify_empty_node(node: ET.Element) -> str:
+    child_tags = [strip_namespace(child.tag) for child in list(node)]
+    has_pb = any(strip_namespace(element.tag) == "pb" for element in node.iter())
+    has_note = any(strip_namespace(element.tag) == "note" for element in node.iter())
+    non_pb_note_children = [
+        strip_namespace(element.tag)
+        for element in node.iter()
+        if element is not node and strip_namespace(element.tag) not in {"pb", "note"}
+    ]
+    tail_and_text = (node.text or "") + "".join(child.tail or "" for child in list(node))
+    text_blank = not normalize_whitespace(tail_and_text)
+
+    if has_pb and not has_note and not non_pb_note_children and text_blank:
+        return "pb_only"
+    if has_note and not has_pb and not non_pb_note_children and text_blank:
+        return "note_only"
+    if has_pb and has_note and not non_pb_note_children and text_blank:
+        return "pb_note_only"
+    if text_blank and not child_tags:
+        return "blank_only"
+    if text_blank and set(child_tags).issubset({"pb", "note"}):
+        return "metadata_only"
+    return "empty_text_error"
 
 
 def format_page_ref(ref: dict[str, str | None]) -> str | None:

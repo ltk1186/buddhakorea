@@ -85,6 +85,32 @@ def test_sort_order_unique(tmp_path):
     assert artifact["import_report"]["segment_count_by_chunk_type"] == {"prose": 1, "verse": 1}
 
 
+def test_empty_metadata_candidates_are_skipped_without_errors(tmp_path):
+    xml = """<?xml version="1.0" encoding="UTF-8"?>
+<TEI.2>
+  <text>
+    <body>
+      <p rend="book">Test Book</p>
+      <p rend="bodytext"><note>Only note</note></p>
+      <p rend="hangnum">  </p>
+      <p rend="gatha1">Dhammo have rakkhati dhammacāriṃ.</p>
+      <p rend="gathalast">  </p>
+      <p rend="bodytext">Valid prose.</p>
+    </body>
+  </text>
+</TEI.2>
+"""
+    xml_path = write_sample(tmp_path / "s0505m.mul.xml", xml)
+    artifact = parse_vri_xml(xml_path, source_path="romn/s0505m.mul.xml")
+    report = artifact["import_report"]
+    assert report["errors"] == []
+    assert report["empty_text_error_count"] == 0
+    assert report["note_only_node_count"] == 1
+    assert report["skipped_empty_node_count"] == 3
+    assert report["empty_node_classification"] == {"blank_only": 2, "note_only": 1}
+    assert [segment["chunk_type"] for segment in artifact["segments"]] == ["verse", "prose"]
+
+
 def test_token_counter_returns_counts(tmp_path):
     xml_path = write_sample(tmp_path / "s0505m.mul.xml")
     artifact = parse_vri_xml(xml_path, source_path="romn/s0505m.mul.xml")
