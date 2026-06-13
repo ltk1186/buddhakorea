@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from enum import StrEnum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class TranslationJobStatus(StrEnum):
@@ -38,6 +38,7 @@ class QualityFlag(StrEnum):
     TOO_LONG = "too_long"
     CONTAINS_UNTRANSLATED_PALI = "contains_untranslated_pali"
     GLOSSARY_CONFLICT = "glossary_conflict"
+    POSSIBLE_GLOSSARY_CONFLICT = "possible_glossary_conflict"
     DOCTRINAL_RISK = "doctrinal_risk"
     GRAMMAR_UNCERTAIN = "grammar_uncertain"
     LOW_CONFIDENCE = "low_confidence"
@@ -60,6 +61,8 @@ class QualityFlagSeverity(StrEnum):
 
 
 class QualityFlagDetail(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     flag: QualityFlag
     source: QualityFlagSource
     severity: QualityFlagSeverity = QualityFlagSeverity.WARNING
@@ -68,6 +71,8 @@ class QualityFlagDetail(BaseModel):
 
 
 class KoreanAdvancedTerm(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     pali: str
     ko: str
     gloss: str = ""
@@ -75,12 +80,14 @@ class KoreanAdvancedTerm(BaseModel):
 
 
 class KoreanAdvancedTranslation(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     literal_ko: str = Field(min_length=1)
     natural_ko: str = Field(min_length=1)
-    terms: list[KoreanAdvancedTerm] = Field(default_factory=list)
-    grammar_notes: list[str] = Field(default_factory=list)
-    doctrinal_notes: list[str] = Field(default_factory=list)
-    uncertainties: list[str] = Field(default_factory=list)
+    terms: list[KoreanAdvancedTerm] = Field(default_factory=list, max_length=5)
+    grammar_notes: list[str] = Field(default_factory=list, max_length=3)
+    doctrinal_notes: list[str] = Field(default_factory=list, max_length=3)
+    uncertainties: list[str] = Field(default_factory=list, max_length=3)
     quality_flags: list[QualityFlag] = Field(default_factory=list)
     quality_flag_details: list[QualityFlagDetail] = Field(default_factory=list)
 

@@ -8,6 +8,10 @@ from backend.pali.scripts.plan_gemini_smoke_batch import (
     plan_gemini_smoke_batch,
     validate_smoke_batch,
 )
+from backend.pali.translation.prompts import (
+    KOREAN_ADVANCED_PROMPT_ID,
+    KOREAN_ADVANCED_PROMPT_VERSION,
+)
 
 
 def write_json(path: Path, data: dict) -> None:
@@ -60,6 +64,19 @@ def calibration_artifact() -> dict:
     }
 
 
+def prompt_token_calibration_artifact() -> dict:
+    return {
+        "prompt_template_id": KOREAN_ADVANCED_PROMPT_ID,
+        "prompt_template_version": KOREAN_ADVANCED_PROMPT_VERSION,
+        "average_prompt_v1_overhead_tokens": 600,
+        "overhead_by_text_layer": {
+            "mula": {"average_prompt_v1_overhead_tokens": 500},
+            "atthakatha": {"average_prompt_v1_overhead_tokens": 700},
+            "tika": {"average_prompt_v1_overhead_tokens": 900},
+        },
+    }
+
+
 def price_profile() -> dict:
     return {
         "profiles": [
@@ -77,11 +94,13 @@ def price_profile() -> dict:
 def test_smoke_batch_planner_writes_jsonl_and_manifest(tmp_path: Path):
     samples = tmp_path / "samples.json"
     calibration = tmp_path / "calibration.json"
+    prompt_calibration = tmp_path / "prompt_calibration.json"
     profile = tmp_path / "price.json"
     out_jsonl = tmp_path / "smoke.jsonl"
     out_manifest = tmp_path / "manifest.json"
     write_json(samples, samples_artifact())
     write_json(calibration, calibration_artifact())
+    write_json(prompt_calibration, prompt_token_calibration_artifact())
     write_json(profile, price_profile())
 
     manifest = plan_gemini_smoke_batch(
@@ -94,6 +113,7 @@ def test_smoke_batch_planner_writes_jsonl_and_manifest(tmp_path: Path):
         price_profile_path=profile,
         price_profile_id="test",
         calibration_path=calibration,
+        prompt_token_calibration_path=prompt_calibration,
         pretty_manifest=True,
     )
 
@@ -113,7 +133,61 @@ def test_smoke_batch_planner_writes_jsonl_and_manifest(tmp_path: Path):
     assert Decimal(manifest["estimated_cost_usd_total"]) > Decimal("0")
     assert manifest["budget_check_result"]["can_submit"] is True
     assert manifest["validation"]["valid"] is True
+    assert manifest["prompt_template_id"] == KOREAN_ADVANCED_PROMPT_ID
+    assert manifest["prompt_template_version"] == KOREAN_ADVANCED_PROMPT_VERSION
+    assert manifest["prompt_overhead_estimate_source"] == "prompt_v1_counttokens"
+    assert manifest["prompt_overhead_average_tokens"] == 600
+    assert manifest_data["items"][0]["prompt_template_id"] == KOREAN_ADVANCED_PROMPT_ID
+    for item in manifest_data["items"]:
+        expected_overhead = {
+            "mula": 500,
+            "atthakatha": 700,
+            "tika": 900,
+        }[item["text_layer"]]
+        assert item["prompt_overhead_source"] == "prompt_v1_counttokens"
+        assert item["prompt_overhead_tokens_applied"] == expected_overhead
+        assert item["estimated_input_tokens"] >= expected_overhead
+    assert "literal_ko 작성 원칙" in lines[0]["request"]["contents"][0]["parts"][0]["text"]
+    assert "빠알리 원문:" in lines[0]["request"]["contents"][0]["parts"][0]["text"]
     assert "AIza" not in out_manifest.read_text()
+
+
+def test_schemafix_artifact_naming_does_not_overwrite_previous_smoke(tmp_path: Path):
+    samples = tmp_path / "samples.json"
+    calibration = tmp_path / "calibration.json"
+    prompt_calibration = tmp_path / "prompt_calibration.json"
+    profile = tmp_path / "price.json"
+    previous_jsonl = tmp_path / "gemini_smoke_batch_49bc869_prompt_v1.jsonl"
+    previous_manifest = tmp_path / "gemini_smoke_batch_49bc869_prompt_v1_manifest.json"
+    out_jsonl = tmp_path / "gemini_smoke_batch_49bc869_prompt_v1_schemafix.jsonl"
+    out_manifest = tmp_path / "gemini_smoke_batch_49bc869_prompt_v1_schemafix_manifest.json"
+    previous_jsonl.write_text("previous-jsonl", encoding="utf-8")
+    previous_manifest.write_text("previous-manifest", encoding="utf-8")
+    write_json(samples, samples_artifact())
+    write_json(calibration, calibration_artifact())
+    write_json(prompt_calibration, prompt_token_calibration_artifact())
+    write_json(profile, price_profile())
+
+    manifest = plan_gemini_smoke_batch(
+        samples_path=samples,
+        out_jsonl_path=out_jsonl,
+        out_manifest_path=out_manifest,
+        model="models/gemini-3.1-pro-preview",
+        max_segments=5,
+        max_estimated_cost_usd=Decimal("5"),
+        price_profile_path=profile,
+        price_profile_id="test",
+        calibration_path=calibration,
+        prompt_token_calibration_path=prompt_calibration,
+        prompt_version=KOREAN_ADVANCED_PROMPT_VERSION,
+    )
+
+    assert previous_jsonl.read_text() == "previous-jsonl"
+    assert previous_manifest.read_text() == "previous-manifest"
+    assert out_jsonl.exists()
+    assert out_manifest.exists()
+    assert "schemafix" in out_jsonl.name
+    assert manifest["prompt_template_version"] == KOREAN_ADVANCED_PROMPT_VERSION
 
 
 def test_budget_cap_exceeded_fails(tmp_path: Path):

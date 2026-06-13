@@ -274,6 +274,182 @@ Field purposes:
 - `quality_flags`: compact compatibility list of review signals.
 - `quality_flag_details`: future-compatible structured flag records with source, severity, message, and evidence.
 
+### 5.1 Korean Advanced Prompt v1
+
+Implemented prompt skeleton:
+
+- `backend/pali/translation/prompts.py`
+- prompt id: `korean_advanced`
+- prompt version: `korean_advanced_v1_schemafix`
+- default model: `models/gemini-3.1-pro-preview`
+
+Purpose:
+
+- Convert one canonical VRI Pāli XML segment into Korean Advanced JSON.
+- Work with Gemini Batch API request JSONL.
+- Keep output limited to Korean translation JSON.
+- Exclude English translation fields.
+- Preserve segment identity in the prompt only through minimal context.
+- Keep source path, API keys, internal cost data, and credentials out of the prompt.
+
+Prompt v1 translation philosophy:
+
+- Be faithful to the Pāli source.
+- Clearly separate literal translation and natural translation.
+- `literal_ko` preserves source structure, key predicates, case relations, and word order as far as Korean allows.
+- `natural_ko` reads naturally in Korean while staying conservative about the source meaning.
+- Do not insert doctrinal explanation into `literal_ko` or `natural_ko`.
+- Limited reader-friendly Buddhist vocabulary is allowed in `natural_ko`.
+- Do not reinterpret early Buddhist / Theravāda context through Mahāyāna scholastic frames, modern psychology, MBSR, or self-help language.
+- Mahāyāna-region general Buddhist terms are not banned as words; banned is imposing a Mahāyāna interpretive framework on the source.
+- Put interpretive additions into `grammar_notes` or `doctrinal_notes`.
+- If unsure, record uncertainty rather than guessing.
+- Do not write in sermon style.
+- Quality is judged by accuracy, restraint, and consistency, not length.
+
+`literal_ko` policy:
+
+- For reviewers and researchers.
+- Prefer strict Korean terms aligned with the Early Buddhist Texts Translation Institute style.
+- Preserve Pāli sentence structure, word order, predicates, case relations, and causal/conditional relations.
+- Korean may be slightly awkward.
+- Do not force missing subjects or objects into the sentence.
+- Do not add explanation, paraphrase, modern psychological interpretation, or Mahāyāna reinterpretation.
+
+`natural_ko` policy:
+
+- For readers.
+- Use Early Buddhist Texts Translation Institute terminology and interpretation as the baseline.
+- If needed for comprehension, use general Buddhist terms or common Korean expressions with restraint.
+- Do not mix explanation into the translation body.
+- Keep source meaning conservative.
+- Move necessary explanation to `grammar_notes` or `doctrinal_notes`.
+- Avoid excessive polishing, emotive style, sermon style, and self-help phrasing.
+
+Terms policy:
+
+- `terms` is a glossary seed.
+- Record only key Pāli terms.
+- Maximum 5 items.
+- Use `[]` if no key term is needed.
+- Each item contains `pali`, `ko`, `gloss`, and `note`.
+- `ko` should use the standard strict term when possible.
+- If `natural_ko` uses a reader-friendly expression, still record the standard term in `terms`.
+- `note` is at most one sentence explaining the local choice.
+- Do not include ordinary conjunctions, particles, or semantically weak words.
+
+Grammar notes policy:
+
+- Maximum 3 items.
+- Use only when grammar needs explanation.
+- Keep each item short.
+- Use for compounds, sandhi, case relations, relative clauses, ellipsis, or ambiguous grammar.
+- Simple passages should use `[]`.
+
+Doctrinal notes policy:
+
+- Maximum 3 items.
+- Each item is at most 1-2 sentences.
+- Use only for doctrinal background that cannot belong in the translation body.
+- Stay grounded in early Buddhist / Theravāda context.
+- Briefly note important commentarial meaning where relevant.
+- Do not write sermons, reflections, modern psychology, or self-help advice.
+- If uncertain, use `uncertainties` instead.
+
+Uncertainties policy:
+
+- Maximum 3 items.
+- Use for uncertain grammar, ambiguous terms, context gaps, or source-state issues.
+- Use `[]` if no uncertainty exists.
+- Be honest about uncertainty.
+- Do not present guesses as settled interpretation.
+- Do not hide uncertainty by smoothing `natural_ko`.
+
+Model self-reported `quality_flags` policy:
+
+- These are model self-report flags only.
+- Use `[]` if there is no issue.
+- Allowed values:
+  - `grammar_uncertain`
+  - `doctrinal_risk`
+  - `low_confidence`
+  - `possible_glossary_conflict`
+  - `needs_human_review`
+- The model must not emit local-validator flags.
+- Local-validator flags include `json_parse_failed`, `schema_validation_failed`, `empty_translation`, `too_short`, `too_long`, and `contains_untranslated_pali`.
+
+Core terminology policy:
+
+| Pāli | Korean policy |
+| --- | --- |
+| `sati` | `마음챙김` |
+| `viññāṇa` | `알음알이` |
+| `paññā` | `통찰지` |
+| `āyatana` / `saḷāyatana` | `(여섯) 감각장소` |
+| `phassa` | `감각접촉` |
+| `nibbidā` | `염오` |
+| `virāga` | `탐욕의 빛바램` |
+
+Contextual term policy:
+
+- `saṅkhāra` in five-aggregate context: `심리현상들`.
+- `saṅkhāra` in dependent-origination context: `의도적 행위들`.
+- `saṅkhāra` as conditioned formations / sabbe saṅkhārā aniccā context: `형성된 것들`.
+- For `anussati` and memory/recollection contexts, do not mechanically translate `sati` only as `마음챙김`; inspect the context.
+- `paññā` remains `통찰지` in `literal_ko` and `terms`; `natural_ko` may use `지혜` only when it improves readability without importing prajñā/emptiness meanings.
+- `viññāṇa` remains `알음알이` in `literal_ko` and `terms`; `natural_ko` may use consciousness-like wording only for readability and must not import Yogācāra meaning.
+- `nibbāna` may be `열반` in `natural_ko`, but must not be colored as Buddha-nature, tathatā, or original-face discourse.
+
+Output length control:
+
+- `literal_ko` should be concise and proportional to source length.
+- `natural_ko` should also avoid unnecessary expansion.
+- `terms`: maximum 5.
+- `grammar_notes`: maximum 3.
+- `doctrinal_notes`: maximum 3.
+- `uncertainties`: maximum 3.
+- Each note is at most 1-2 sentences.
+- Simple passages can have empty note arrays.
+
+Prohibitions:
+
+- No text outside JSON.
+- No Markdown code fence.
+- No schema-extra fields.
+- No English translation field.
+- No explanation inserted into `literal_ko` or `natural_ko`.
+- No modern psychology / MBSR reinterpretation.
+- No Mahāyāna doctrinal reinterpretation of early Buddhist / Theravāda context.
+- No self-help phrasing.
+- No sermon style or emotive prose.
+- No presenting uncertain interpretation as certain.
+- No model-generated local-validator flags.
+- No excessive `terms` generation.
+
+Schema validation policy:
+
+- `KoreanAdvancedTranslation` rejects extra fields.
+- `literal_ko` and `natural_ko` must be non-empty strings.
+- `terms`, `grammar_notes`, `doctrinal_notes`, and `uncertainties` enforce the Prompt v1 max lengths.
+- `validate_korean_advanced_model_output()` additionally rejects model output that uses local-validator quality flags.
+- Extra fields are treated as schema validation failures, not silently accepted.
+- Empty arrays are valid when the field has no useful content.
+
+Smoke batch planner connection:
+
+- `plan_gemini_smoke_batch.py` uses Prompt v1 by default.
+- `--prompt-version korean_advanced_v1_schemafix` is the current supported prompt option.
+- The sidecar manifest records `prompt_template_id` and `prompt_template_version`.
+- Provider JSONL contains the rendered Prompt v1 text.
+- If Prompt v1 changes, regenerate the smoke JSONL and manifest.
+
+Token estimate note:
+
+- Prompt v1 is longer than the previous placeholder prompt.
+- The old placeholder overhead (`106` tokens) is deprecated and must not be used for Prompt v1 planning.
+- Prompt v1 overhead has been remeasured with Gemini `countTokens`; use the Prompt v1 artifact for smoke and pilot input-token estimates.
+- This stage still does not call `generateContent`, GPT, or Batch submit.
+
 ## 6. Quality Flags and Arbitration Policy
 
 Quality flags:
@@ -285,6 +461,7 @@ Quality flags:
 - `too_long`
 - `contains_untranslated_pali`
 - `glossary_conflict`
+- `possible_glossary_conflict`
 - `doctrinal_risk`
 - `grammar_uncertain`
 - `low_confidence`
@@ -310,6 +487,7 @@ Recommended source ownership:
 | `too_long` | `local_validator` |
 | `contains_untranslated_pali` | `local_validator` |
 | `glossary_conflict` | `local_validator` first, `human_admin` if manually marked |
+| `possible_glossary_conflict` | `model_self_report` |
 | `doctrinal_risk` | `model_self_report` or `human_admin` |
 | `grammar_uncertain` | `model_self_report` or `human_admin` |
 | `low_confidence` | `model_self_report` or `human_admin` |
@@ -419,6 +597,77 @@ Existing Buddha Korea authentication note:
 - The optional `GEMINI_PROVIDER=google_genai` route uses `GEMINI_API_KEY`.
 - Pali Studio `gemini_client.py` tries `GEMINI_API_KEY` first, then falls back to Vertex AI if `GCP_PROJECT_ID` is configured.
 - This calibration runner currently supports API-key countTokens only. Vertex AI countTokens support can be added later with an explicit auth mode such as `--auth-mode vertex --gcp-project-id ... --gcp-location ...`, but keeping this runner API-key-only reduces risk while we are measuring token counts rather than running production translation.
+
+### Gemini Batch Billing Path Verification
+
+The 75-segment pilot batch `batches/w1h2mcfla5uymac1pauiveazrq5e9dw3ngum` was submitted by
+`backend/pali/scripts/submit_gemini_smoke_batch.py`, not by the RAG runtime path.
+
+Credential resolution for this submitter is API-key only:
+
+1. Process environment:
+   - `GEMINI_API_KEY`
+   - `GOOGLE_API_KEY`
+   - `GOOGLE_GENAI_API_KEY`
+   - `PALI_GEMINI_API_KEY`
+2. Local repo `.env`
+3. Local `config/.env`
+
+Because the submitter calls `resolve_gemini_api_key()` and then constructs `GeminiBatchRestClient(api_key=...)`,
+the Batch API path is the Gemini Developer API / AI Studio API-key path. The request URL is:
+
+```text
+https://generativelanguage.googleapis.com/v1beta/{model}:batchGenerateContent?key=<api-key>
+```
+
+The submitter does not initialize Vertex AI, does not pass `vertexai=True`, and does not use
+`GOOGLE_APPLICATION_CREDENTIALS`, ADC, or a GCP service account for Batch submission. Existing Buddha Korea RAG
+traffic may still use Vertex AI, but this pilot batch did not use that code path.
+
+For the local environment used by this workflow, `.env` and `config/.env` contain non-empty `GEMINI_API_KEY` and
+`PALI_GEMINI_API_KEY` entries. Since `GEMINI_API_KEY` is first in the resolver order and the command did not pass an
+explicit `--api-key`, the code-level attribution is: root `.env` `GEMINI_API_KEY` was the first eligible credential.
+The key value must never be printed, logged, committed, or stored in artifacts.
+
+Verified credential note:
+
+- The API key fingerprint used by the local resolver was `6c570f7ed099`.
+- The same key was found in the Google AI Studio API key list for the BuddhaKorea project
+  `gen-lang-client-0324154376` by matching the visible key suffix in the dashboard.
+- Therefore a project/key mismatch is currently unlikely for this pilot Batch path.
+- The fingerprint is a local SHA-256 prefix used only for safe operator comparison. It is not a Google-provided key id
+  and must not be treated as a secret-bearing artifact.
+
+Code-level limitations:
+
+- The returned Batch ID is only `batches/...`; it does not encode a visible Google Cloud project or API-key owner.
+- The local artifacts store provider batch id, model, usage metadata, and local estimated/actual cost fields, but not
+  the API key identity.
+- Therefore the exact Google billing account/project must be confirmed in Google dashboards, not inferred from the
+  artifact alone.
+
+Cost fields in Pali artifacts:
+
+- `price_profile_source_url` points to the public pricing page used by the local estimator.
+- `total_actual_cost_usd` is a local calculation from provider usage metadata and the injected price profile.
+- It is not a Google invoice, not an authoritative billing export, and not proof of actual charged spend.
+
+Actual spend verification paths:
+
+- AI Studio Dashboard > Usage.
+- AI Studio Billing/Spend > Prepay credits.
+- Google Cloud Billing Reports > Group by Service > Gemini API.
+- Cloud Billing Reports > Group by SKU with Services filter set to Gemini API.
+- Billing graphs and SKU-level costs can lag by up to 24 hours, so recent Batch usage may not appear immediately.
+
+Current dashboard reconciliation status:
+
+- AI Studio Usage shows requests for the Batch activity.
+- Google Cloud Billing Reports did not yet show Gemini API cost for June 10-13 at the time of verification.
+- The June 2 KRW 50 charge appears to be Vertex AI cost and should be treated as separate from this Gemini Developer
+  API Batch pilot.
+- Production work must not proceed on local estimator values alone. Before any production-scale Batch run, confirm
+  AI Studio spend caps/prepay credit behavior and verify that Gemini API charges appear in the expected billing view.
 
 Implemented runner:
 
@@ -564,6 +813,8 @@ Calibration result for source commit `49bc86914748589a2501b548cc6b3e97a8abe018`:
   - median: 106 tokens.
   - p90: 106 tokens.
 
+Deprecated: the placeholder overhead above was useful only before Prompt v1 existed. It must not be used for smoke, pilot, or production planning after `korean_advanced_v1_schemafix`.
+
 Important diagnostic: verse samples have a higher correction ratio than prose samples. The default corpus correction still uses text-layer factors, but verse-heavy subsets should be reviewed separately.
 
 Corrected source estimate report:
@@ -595,6 +846,112 @@ Limitations:
 - It does not estimate output tokens.
 - It does not include final prompt, glossary context, DPD hints, RAG context, retry rate, or arbitration overhead.
 - It must not be used as official price-based total cost.
+
+### 7.1 Prompt v1 Schemafix countTokens recalibration
+
+Prompt overhead is measured separately because the finalized Korean Advanced prompt is much longer than the earlier placeholder wrapper. After the schemafix prompt update, `korean_advanced_v1_schemafix` is the current pilot-candidate prompt version.
+
+Command:
+
+```bash
+./venv/bin/python backend/pali/scripts/calibrate_prompt_v1_tokens.py \
+  --samples data/reports/pali/vri_translation_sample_candidates_49bc869.json \
+  --sample-set calibration_samples \
+  --model models/gemini-3.1-pro-preview \
+  --out data/reports/pali/gemini_prompt_v1_schemafix_token_calibration_49bc869.json \
+  --max-samples 150 \
+  --timeout-seconds 60 \
+  --max-retries 2 \
+  --retry-backoff-seconds 2 \
+  --pretty
+```
+
+Result for source commit `49bc86914748589a2501b548cc6b3e97a8abe018`:
+
+- Prompt template: `korean_advanced` / `korean_advanced_v1_schemafix`.
+- Model: `models/gemini-3.1-pro-preview`.
+- Sample size: 150.
+- Successful samples: 150.
+- Failed samples: 0.
+- Source text only total: 30,337 tokens.
+- Prompt with source total: 422,768 tokens.
+- Prompt overhead total: 392,431 tokens.
+- Average Prompt overhead: 2,616.206667 tokens.
+- Median Prompt overhead: 2,617 tokens.
+- P90 Prompt overhead: 2,627 tokens.
+
+Schemafix overhead by text layer:
+
+| text_layer | samples | source text only | prompt with source | overhead total | avg overhead | median | p90 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `mula` | 50 | 9,801 | 140,378 | 130,577 | 2,611.54 | 2,613.5 | 2,619 |
+| `atthakatha` | 50 | 10,361 | 141,304 | 130,943 | 2,618.86 | 2,621 | 2,629 |
+| `tika` | 50 | 10,175 | 141,086 | 130,911 | 2,618.22 | 2,618 | 2,627 |
+
+Schemafix overhead by chunk type:
+
+| chunk_type | samples | source text only | prompt with source | overhead total | avg overhead | median | p90 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `prose` | 88 | 24,658 | 254,881 | 230,223 | 2,616.170455 | 2,616 | 2,626 |
+| `verse` | 62 | 5,679 | 167,887 | 162,208 | 2,616.258065 | 2,617.5 | 2,629 |
+
+Comparison with pre-schemafix `korean_advanced_v1`:
+
+- Average overhead: 1,845.206667 -> 2,616.206667.
+- Median overhead: 1,846 -> 2,617.
+- P90 overhead: 1,856 -> 2,627.
+- Total prompt overhead on the 150-sample calibration set: 276,781 -> 392,431.
+- Prompt overhead increase ratio: 1.417839.
+- 75-sample pilot estimated input tokens: 147,676 -> 205,501.
+- Full corpus approximate input tokens: 404,538,379 -> 561,509,353.
+- Full corpus estimate method: corrected source tokens plus layer-average prompt overhead per segment. This is a planning estimate, not a final production cost.
+
+Prompt v1 input-token estimate policy:
+
+- Use official `source_text_only_tokens` from source correction for source scale.
+- Add Prompt v1 schemafix overhead from `gemini_prompt_v1_schemafix_token_calibration_<commit>.json`.
+- For smoke planning, prefer text-layer average Prompt v1 overhead when available; fall back to overall average only when no layer-specific value exists.
+- Do not use the deprecated placeholder overhead of `106`.
+- Output and thinking token estimates for pilot planning are rough ratios from the 5-segment schemafix smoke. They are not final production estimates.
+- Official price-based cost calculation remains out of scope until current price profiles are injected explicitly.
+
+75-sample pilot estimate artifact:
+
+```bash
+./venv/bin/python backend/pali/scripts/estimate_gemini_pilot_batch.py \
+  --samples data/reports/pali/vri_translation_sample_candidates_49bc869.json \
+  --source-calibration data/reports/pali/gemini_token_calibration_49bc869.json \
+  --previous-prompt-calibration data/reports/pali/gemini_prompt_v1_token_calibration_49bc869.json \
+  --schemafix-prompt-calibration data/reports/pali/gemini_prompt_v1_schemafix_token_calibration_49bc869.json \
+  --smoke-summary data/reports/pali/gemini_smoke_batch_49bc869_prompt_v1_schemafix_summary.json \
+  --corpus-corrected-summary data/reports/pali/vri_romn_corpus_token_summary_gemini_corrected_49bc869.json \
+  --out data/reports/pali/gemini_pilot_75_prompt_v1_schemafix_estimate_49bc869.json \
+  --model models/gemini-3.1-pro-preview \
+  --pilot-size 75 \
+  --budget-cap-usd 50 \
+  --price-profile config/pali_batch_price_profiles.example.json \
+  --price-profile-id official_gemini_3_1_pro_preview_batch_2026_06_13 \
+  --pretty
+```
+
+Pilot estimate result:
+
+- request_count: 75.
+- estimated_input_tokens: 205,501.
+- estimated_output_tokens: 25,859.
+- estimated_thinking_tokens: 66,599.
+- estimated_cost_usd: 0.760249.
+- budget cap: 50 USD.
+- budget check: pass.
+
+Pilot preconditions:
+
+- Use prompt version `korean_advanced_v1_schemafix`.
+- Use model `models/gemini-3.1-pro-preview`.
+- Use `gemini_prompt_v1_schemafix_token_calibration_49bc869.json` for prompt overhead.
+- Use a hard pilot cap and preflight validation before submit.
+- Do not submit the 75-sample pilot without explicit human approval.
+- After the pilot, manually review translation quality before any larger batch.
 
 ## 8. Pilot Translation Plan
 
@@ -1065,23 +1422,25 @@ Example:
 ./venv/bin/python backend/pali/scripts/plan_gemini_smoke_batch.py \
   --samples data/reports/pali/vri_translation_sample_candidates_49bc869.json \
   --model models/gemini-3.1-pro-preview \
-  --out-jsonl data/reports/pali/gemini_smoke_batch_49bc869.jsonl \
-  --out-manifest data/reports/pali/gemini_smoke_batch_49bc869_manifest.json \
+  --out-jsonl data/reports/pali/gemini_smoke_batch_49bc869_prompt_v1_schemafix.jsonl \
+  --out-manifest data/reports/pali/gemini_smoke_batch_49bc869_prompt_v1_schemafix_manifest.json \
   --max-segments 5 \
   --max-estimated-cost-usd 5 \
+  --prompt-version korean_advanced_v1_schemafix \
+  --prompt-token-calibration data/reports/pali/gemini_prompt_v1_token_calibration_49bc869.json \
   --pretty-manifest
 ```
 
 Provider JSONL artifact:
 
 ```text
-data/reports/pali/gemini_smoke_batch_49bc869.jsonl
+data/reports/pali/gemini_smoke_batch_49bc869_prompt_v1_schemafix.jsonl
 ```
 
 Sidecar manifest artifact:
 
 ```text
-data/reports/pali/gemini_smoke_batch_49bc869_manifest.json
+data/reports/pali/gemini_smoke_batch_49bc869_prompt_v1_schemafix_manifest.json
 ```
 
 Provider JSONL rules:
@@ -1114,9 +1473,10 @@ Smoke planner validation:
 
 Prompt policy:
 
-- The planner uses `korean_advanced_batch_placeholder`.
-- This is not Korean Advanced Prompt v1.
-- The generated JSONL must be regenerated after Prompt v1 is finalized.
+- The planner uses `korean_advanced` / `korean_advanced_v1_schemafix`.
+- The generated JSONL must be regenerated whenever Prompt v1 changes.
+- Prompt v1 overhead is read from `gemini_prompt_v1_token_calibration_<commit>.json` when available.
+- The deprecated placeholder overhead of `106` tokens must not be used for Prompt v1 planning.
 - Smoke batch is for request shape, sidecar mapping, and budget guardrail verification, not translation quality evaluation.
 
 Price profile:
@@ -1126,24 +1486,28 @@ Price profile:
 - Replace with current official pricing before any real submission.
 - Official prices must be configuration input, not hardcoded in Python.
 
-Current dry-run artifact summary for source commit `49bc86914748589a2501b548cc6b3e97a8abe018`:
+Current Prompt v1 dry-run artifact summary for source commit `49bc86914748589a2501b548cc6b3e97a8abe018`:
 
 - request count: 5;
-- estimated input tokens: 626;
-- estimated output tokens: 1,878;
-- estimated cost with mock profile: `0.021910 USD`;
+- prompt id/version: `korean_advanced` / `korean_advanced_v1_schemafix`;
+- prompt token calibration: `data/reports/pali/gemini_prompt_v1_token_calibration_49bc869.json`;
+- provider JSONL: `data/reports/pali/gemini_smoke_batch_49bc869_prompt_v1.jsonl`;
+- sidecar manifest: `data/reports/pali/gemini_smoke_batch_49bc869_prompt_v1_manifest.json`;
+- estimated input tokens: 9,328;
+- estimated output tokens: 27,984;
+- estimated cost with mock profile: `0.326480 USD`;
 - budget cap: `5 USD`;
 - budget result: `ok`;
 - validation result: `valid`;
 - layer distribution: `mula=1`, `atthakatha=3`, `tika=1`;
 - chunk distribution: `prose=3`, `verse=2`;
 - length distribution: `short=4`, `medium=1`.
+- note: these token/cost estimates use calibrated source-token correction, Prompt v1 countTokens overhead, and a mock output-token multiplier. They still do not know actual output tokens because no translation generation has been run.
 
 Next phase after this planner:
 
-- finalize Korean Advanced Prompt v1;
-- regenerate smoke JSONL with Prompt v1;
-- only after explicit approval, submit a 3-5 segment smoke Batch job.
+- only after explicit approval, submit a 3-5 segment smoke Batch job;
+- reconcile the smoke result's actual `usage_metadata` against this estimate.
 
 ## 11. Cost Analysis Boundary
 

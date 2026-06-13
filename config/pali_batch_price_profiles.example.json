@@ -9,6 +9,17 @@
       "thinking_usd_per_million_tokens": "0",
       "batch_discount_multiplier": "0.5",
       "notes": "Mock planning values for local guardrail tests and dry-run artifacts. Replace with official current pricing before any real submission."
+    },
+    {
+      "profile_id": "official_gemini_3_1_pro_preview_batch_2026_06_13",
+      "provider": "gemini",
+      "model": "models/gemini-3.1-pro-preview",
+      "input_usd_per_million_tokens": "1",
+      "output_usd_per_million_tokens": "6",
+      "thinking_usd_per_million_tokens": "6",
+      "batch_discount_multiplier": "1",
+      "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
+      "notes": "Gemini 3.1 Pro Preview Batch pricing for prompts <= 200k tokens, recorded 2026-06-13. Output price includes thinking tokens; this profile treats candidates and thoughts as output-rate tokens when both are separately reported."
     }
   ]
 }

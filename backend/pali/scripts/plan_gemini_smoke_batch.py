@@ -31,39 +31,16 @@ from backend.pali.translation.budget import (
     can_submit_batch_under_budget,
     estimate_request_cost,
 )
+from backend.pali.translation.prompts import (
+    KOREAN_ADVANCED_PROMPT_ID,
+    KOREAN_ADVANCED_PROMPT_VERSION,
+    render_korean_advanced_prompt_v1,
+)
 
 
 DEFAULT_PRICE_PROFILE_PATH = REPO_ROOT / "config" / "pali_batch_price_profiles.example.json"
 DEFAULT_PRICE_PROFILE_ID = "mock_gemini_3_1_pro_batch_planning"
-PROMPT_TEMPLATE_ID = "korean_advanced_batch_placeholder"
-PROMPT_TEMPLATE_VERSION = "placeholder-2026-06-12"
 OUTPUT_PROFILE = "korean_advanced"
-
-
-def build_placeholder_prompt(source_text: str) -> str:
-    return f"""You are translating Pāli Buddhist canonical and commentarial texts into Korean.
-
-This is a placeholder prompt for Gemini Batch API smoke testing.
-It is not the final Korean Advanced Prompt v1 and must be regenerated after Prompt v1 is finalized.
-
-Return a JSON object matching this schema:
-{{
-  "literal_ko": "...",
-  "natural_ko": "...",
-  "terms": [],
-  "grammar_notes": [],
-  "doctrinal_notes": [],
-  "uncertainties": [],
-  "quality_flags": []
-}}
-
-Do not add fields outside the schema.
-
-Pāli source:
-<<<
-{source_text}
->>>
-"""
 
 
 def plan_gemini_smoke_batch(
@@ -77,17 +54,27 @@ def plan_gemini_smoke_batch(
     price_profile_path: str | Path | None = None,
     price_profile_id: str | None = None,
     calibration_path: str | Path | None = None,
+    prompt_token_calibration_path: str | Path | None = None,
     output_token_multiplier: Decimal = Decimal("3"),
     seed: int = 917,
     kill_switch: bool = False,
+    prompt_version: str = KOREAN_ADVANCED_PROMPT_VERSION,
     pretty_manifest: bool = False,
 ) -> dict[str, Any]:
+    if prompt_version != KOREAN_ADVANCED_PROMPT_VERSION:
+        raise RuntimeError(f"Unsupported prompt version: {prompt_version}")
+
     samples_file = Path(samples_path)
     sample_artifact = json.loads(samples_file.read_text(encoding="utf-8"))
     source_commit = sample_artifact.get("source_commit")
     calibration = load_calibration(samples_file, source_commit, calibration_path)
+    prompt_token_calibration = load_prompt_token_calibration(
+        samples_file,
+        source_commit,
+        prompt_token_calibration_path,
+    )
     price_profile = load_price_profile(price_profile_path, price_profile_id)
-    warnings = build_initial_warnings(calibration)
+    warnings = build_initial_warnings(calibration, prompt_token_calibration)
 
     selected = select_smoke_samples(
         sample_artifact,
@@ -101,6 +88,7 @@ def plan_gemini_smoke_batch(
         sample_to_segment_plan(
             sample,
             calibration=calibration,
+            prompt_token_calibration=prompt_token_calibration,
             output_token_multiplier=output_token_multiplier,
         )
         for sample in selected
@@ -147,8 +135,8 @@ def plan_gemini_smoke_batch(
             "source_chars": len(selected[index].get("original_text") or ""),
             "model": model,
             "output_profile": OUTPUT_PROFILE,
-            "prompt_template_id": PROMPT_TEMPLATE_ID,
-            "prompt_template_version": PROMPT_TEMPLATE_VERSION,
+            "prompt_template_id": KOREAN_ADVANCED_PROMPT_ID,
+            "prompt_template_version": KOREAN_ADVANCED_PROMPT_VERSION,
             "jsonl_line_index": index,
         }
         for index, (plan, estimated_cost) in enumerate(zip(plans, estimated_costs, strict=True))
@@ -173,9 +161,24 @@ def plan_gemini_smoke_batch(
         "price_profile_id": price_profile_id or DEFAULT_PRICE_PROFILE_ID,
         "price_profile_is_mock": True,
         "output_profile": OUTPUT_PROFILE,
-        "prompt_template_id": PROMPT_TEMPLATE_ID,
-        "prompt_template_version": PROMPT_TEMPLATE_VERSION,
-        "prompt_is_final": False,
+        "prompt_template_id": KOREAN_ADVANCED_PROMPT_ID,
+        "prompt_template_version": KOREAN_ADVANCED_PROMPT_VERSION,
+        "prompt_is_final": True,
+        "prompt_token_calibration_path": str(prompt_token_calibration_path) if prompt_token_calibration_path else (
+            str(samples_file.parent / f"gemini_prompt_v1_token_calibration_{source_commit[:7]}.json")
+            if source_commit and prompt_token_calibration
+            else None
+        ),
+        "prompt_overhead_estimate_source": (
+            "prompt_v1_counttokens"
+            if prompt_token_calibration
+            else "unmeasured_prompt_v1"
+        ),
+        "prompt_overhead_average_tokens": (
+            prompt_token_calibration.get("average_prompt_v1_overhead_tokens")
+            if prompt_token_calibration
+            else None
+        ),
         "warnings": warnings,
         "distribution": {
             "text_layer": dict(Counter(item["text_layer"] for item in selected)),
@@ -265,14 +268,14 @@ def sample_to_segment_plan(
     sample: dict[str, Any],
     *,
     calibration: dict[str, Any] | None,
+    prompt_token_calibration: dict[str, Any] | None = None,
     output_token_multiplier: Decimal,
 ) -> BatchSegmentPlan:
-    source_text = sample.get("original_text") or ""
     local_source_tokens = int(
         (sample.get("token_estimates_by_profile") or {}).get("gemini_local_approx") or 0
     )
     factor = correction_factor_for_sample(sample, calibration)
-    prompt_overhead = prompt_overhead_from_calibration(calibration)
+    prompt_overhead = prompt_v1_overhead_for_sample(sample, prompt_token_calibration)
     estimated_input = round(local_source_tokens * factor) + prompt_overhead
     estimated_output = round(Decimal(estimated_input) * output_token_multiplier)
     return BatchSegmentPlan(
@@ -281,12 +284,17 @@ def sample_to_segment_plan(
         source_path=sample["source_path"],
         text_layer=sample["text_layer"],
         chunk_type=sample["chunk_type"],
-        prompt_text=build_placeholder_prompt(source_text),
+        prompt_text=render_korean_advanced_prompt_v1(sample),
         estimated_input_tokens=estimated_input,
         estimated_output_tokens=estimated_output,
         metadata={
             "calibration_factor_applied": str(factor),
             "prompt_overhead_tokens_applied": prompt_overhead,
+            "prompt_overhead_source": (
+                "prompt_v1_counttokens"
+                if prompt_token_calibration
+                else "unmeasured_prompt_v1"
+            ),
         },
     )
 
@@ -300,10 +308,20 @@ def correction_factor_for_sample(sample: dict[str, Any], calibration: dict[str, 
     return Decimal(str(factor))
 
 
-def prompt_overhead_from_calibration(calibration: dict[str, Any] | None) -> int:
-    if not calibration:
+def prompt_v1_overhead_for_sample(
+    sample: dict[str, Any],
+    prompt_token_calibration: dict[str, Any] | None,
+) -> int:
+    if not prompt_token_calibration:
         return 0
-    value = calibration.get("aggregate_totals", {}).get("average_prompt_overhead_tokens") or 0
+    layer = sample.get("text_layer")
+    by_layer = prompt_token_calibration.get("overhead_by_text_layer") or {}
+    layer_summary = by_layer.get(layer) or {}
+    value = (
+        layer_summary.get("average_prompt_v1_overhead_tokens")
+        or prompt_token_calibration.get("average_prompt_v1_overhead_tokens")
+        or 0
+    )
     return int(round(float(value)))
 
 
@@ -317,6 +335,22 @@ def load_calibration(
         candidates.append(Path(calibration_path))
     if source_commit:
         candidates.append(samples_file.parent / f"gemini_token_calibration_{source_commit[:7]}.json")
+    for path in candidates:
+        if path.exists():
+            return json.loads(path.read_text(encoding="utf-8"))
+    return None
+
+
+def load_prompt_token_calibration(
+    samples_file: Path,
+    source_commit: str | None,
+    prompt_token_calibration_path: str | Path | None,
+) -> dict[str, Any] | None:
+    candidates: list[Path] = []
+    if prompt_token_calibration_path:
+        candidates.append(Path(prompt_token_calibration_path))
+    if source_commit:
+        candidates.append(samples_file.parent / f"gemini_prompt_v1_token_calibration_{source_commit[:7]}.json")
     for path in candidates:
         if path.exists():
             return json.loads(path.read_text(encoding="utf-8"))
@@ -342,15 +376,21 @@ def load_price_profile(
     )
 
 
-def build_initial_warnings(calibration: dict[str, Any] | None) -> list[str]:
+def build_initial_warnings(
+    calibration: dict[str, Any] | None,
+    prompt_token_calibration: dict[str, Any] | None,
+) -> list[str]:
     warnings = [
         "This is a local dry-run artifact only. It must not be submitted automatically.",
-        "The prompt is a placeholder, not Korean Advanced Prompt v1.",
-        "Regenerate JSONL after Korean Advanced Prompt v1 is finalized.",
+        "The prompt is Korean Advanced Prompt v1; regenerate JSONL if Prompt v1 changes.",
         "The default price profile is mock planning data; replace it before real submission.",
     ]
     if calibration is None:
         warnings.append("No calibration artifact was found; local Gemini estimates were not corrected.")
+    if prompt_token_calibration is None:
+        warnings.append("No Prompt v1 countTokens calibration artifact was found; input estimates omit Prompt v1 overhead.")
+    else:
+        warnings.append("Input estimates use Prompt v1 countTokens overhead; old placeholder overhead 106 is deprecated.")
     return warnings
 
 
@@ -385,7 +425,7 @@ def validate_smoke_batch(
             .get("parts", [{}])[0]
             .get("text", "")
         )
-        if "Pāli source:" not in text or "<<<" not in text:
+        if ("빠알리 원문:" not in text and "Pāli source:" not in text) or "<<<" not in text:
             errors.append(f"Request text does not include source block at index {index}.")
     estimated_total = Decimal(str(manifest.get("estimated_cost_usd_total") or "0"))
     max_cost = Decimal(str(manifest.get("max_estimated_cost_usd") or "0"))
@@ -422,10 +462,12 @@ def main() -> None:
     parser.add_argument("--price-profile")
     parser.add_argument("--price-profile-id")
     parser.add_argument("--calibration")
+    parser.add_argument("--prompt-token-calibration")
     parser.add_argument("--max-estimated-cost-usd", default="5")
     parser.add_argument("--output-token-multiplier", default="3")
     parser.add_argument("--seed", type=int, default=917)
     parser.add_argument("--kill-switch", action="store_true")
+    parser.add_argument("--prompt-version", default=KOREAN_ADVANCED_PROMPT_VERSION)
     parser.add_argument("--pretty-manifest", action="store_true")
     args = parser.parse_args()
 
@@ -440,9 +482,11 @@ def main() -> None:
             price_profile_path=args.price_profile,
             price_profile_id=args.price_profile_id,
             calibration_path=args.calibration,
+            prompt_token_calibration_path=args.prompt_token_calibration,
             output_token_multiplier=Decimal(str(args.output_token_multiplier)),
             seed=args.seed,
             kill_switch=args.kill_switch,
+            prompt_version=args.prompt_version,
             pretty_manifest=args.pretty_manifest,
         )
     except RuntimeError as exc:

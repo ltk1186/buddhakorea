@@ -1,0 +1,182 @@
+{
+  "schema_version": "controlled_glossary_v1",
+  "description": "Seed controlled glossary for deterministic Pali translation QA. This is infrastructure seed data, not a complete glossary.",
+  "entries": [
+    {
+      "pali": "khandha",
+      "type": "fixed",
+      "status": "approved",
+      "canonical_ko": "무더기",
+      "natural_ko_allowed": ["무더기", "무더기(오온)"],
+      "avoid_ko": ["무리"],
+      "priority": 100,
+      "note": "QA Patch v2 stabilized khandha as 무더기, with optional first-use reader support as 무더기(오온)."
+    },
+    {
+      "pali": "manasikāra",
+      "type": "fixed",
+      "status": "approved",
+      "canonical_ko": "마음에 잡도리함",
+      "natural_ko_allowed": ["마음에 잡도리함"],
+      "avoid_ko": ["주의기울임", "주의 기울임"],
+      "priority": 100
+    },
+    {
+      "pali": "yonisomanasikāra",
+      "type": "fixed",
+      "status": "approved",
+      "canonical_ko": "여리작의",
+      "natural_ko_allowed": ["여리작의"],
+      "avoid_ko": [],
+      "priority": 95
+    },
+    {
+      "pali": "ayonisomanasikāra",
+      "type": "fixed",
+      "status": "approved",
+      "canonical_ko": "비여리작의",
+      "natural_ko_allowed": ["비여리작의"],
+      "avoid_ko": [],
+      "priority": 95
+    },
+    {
+      "pali": "uppala",
+      "type": "fixed",
+      "status": "approved",
+      "canonical_ko": "수련",
+      "natural_ko_allowed": ["수련", "청련"],
+      "avoid_ko": ["연꽃"],
+      "cross_avoid": ["paduma"],
+      "priority": 90,
+      "note": "Do not collapse uppala into paduma."
+    },
+    {
+      "pali": "paduma",
+      "type": "fixed",
+      "status": "approved",
+      "canonical_ko": "연꽃",
+      "natural_ko_allowed": ["연꽃"],
+      "avoid_ko": ["수련"],
+      "cross_avoid": ["uppala"],
+      "priority": 90,
+      "note": "Do not collapse paduma into uppala."
+    },
+    {
+      "pali": "dhīra",
+      "type": "fixed",
+      "status": "approved",
+      "canonical_ko": "슬기로운 이",
+      "natural_ko_allowed": ["슬기로운 이", "슬기로운 자"],
+      "avoid_ko": ["현자", "지혜로운 자"],
+      "cross_avoid": ["paṇḍita"],
+      "priority": 90
+    },
+    {
+      "pali": "paṇḍita",
+      "type": "fixed",
+      "status": "approved",
+      "canonical_ko": "현자",
+      "natural_ko_allowed": ["현자"],
+      "avoid_ko": ["슬기로운 이", "슬기로운 자"],
+      "cross_avoid": ["dhīra"],
+      "priority": 90
+    },
+    {
+      "pali": "saṅkhāra",
+      "type": "context_variant",
+      "status": "approved",
+      "priority": 75,
+      "variants": [
+        {
+          "context_key": "five_aggregates",
+          "allowed_ko": ["심리현상들"],
+          "note": "오온 문맥."
+        },
+        {
+          "context_key": "dependent_origination",
+          "allowed_ko": ["의도적 행위들"],
+          "note": "12연기 문맥."
+        },
+        {
+          "context_key": "general_conditioned",
+          "allowed_ko": ["형성된 것들"],
+          "note": "제행무상 또는 조건 지어진 것 일반."
+        }
+      ]
+    },
+    {
+      "pali": "dhamma",
+      "type": "context_variant",
+      "status": "review",
+      "priority": 20,
+      "variants": [
+        {
+          "context_key": "phenomenon",
+          "allowed_ko": ["현상", "법"],
+          "note": "현상 또는 법 일반."
+        },
+        {
+          "context_key": "teaching",
+          "allowed_ko": ["가르침"],
+          "note": "부처님 가르침 문맥."
+        },
+        {
+          "context_key": "quality",
+          "allowed_ko": ["성질"],
+          "note": "성품, 특질 문맥."
+        },
+        {
+          "context_key": "mental_object",
+          "allowed_ko": ["법(대상)", "법"],
+          "note": "마음의 대상 문맥."
+        }
+      ],
+      "note": "Review status; low injection priority. Do not force as a single rendering."
+    },
+    {
+      "pali": "sati",
+      "type": "context_variant",
+      "status": "approved",
+      "priority": 70,
+      "variants": [
+        {
+          "context_key": "general",
+          "allowed_ko": ["마음챙김"],
+          "note": "일반 수행 요소."
+        },
+        {
+          "context_key": "recollection_anussati",
+          "allowed_ko": ["수념", "계속해서 생각함"],
+          "note": "anussati 등 기억/수념 문맥."
+        }
+      ]
+    },
+    {
+      "pali": "khanti",
+      "type": "context_variant",
+      "status": "review",
+      "priority": 70,
+      "variants": [
+        {
+          "context_key": "general",
+          "allowed_ko": ["감내", "참음", "인욕"],
+          "note": "감내/참음/인욕 계열."
+        },
+        {
+          "context_key": "truth_acceptance_anulomika",
+          "allowed_ko": ["수순", "받아들임", "수순하는 받아들임"],
+          "note": "anulomika khanti 등 진리 수용 문맥."
+        }
+      ],
+      "note": "Review status; do not force general khanti to one Korean term."
+    },
+    {
+      "pali": "abbokiṇṇa",
+      "type": "needs_human",
+      "status": "pending",
+      "priority": 95,
+      "candidate_ko": ["끊임없음", "순전함"],
+      "note": "후속절 nirantaraṃ 호응 근거로 끊임없음 우세. 인간 확정 대기."
+    }
+  ]
+}
