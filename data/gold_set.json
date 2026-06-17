@@ -1,0 +1,267 @@
+{
+  "schema_version": "pali_gold_set_v0",
+  "description": "Seed gold set for Pali translation QA regression. This file stores project constraints and source text only; it does not store protected external translation text.",
+  "baseline_prompt_version": "korean_advanced_v1_schemafix_qa_patch_v2",
+  "entries": [
+    {
+      "gold_set_id": "gold-v0-dhira-pandita-001",
+      "pool": "regression_gold",
+      "stable_segment_key": "vri:romn:abh01a.att:b75846bab59a",
+      "source_path": "romn/abh01a.att.xml",
+      "source_text_hash": "f03ad5d3661304df57bcb78f5e03ce222f083f58a2cfe79fd93fc8bca0ad2277",
+      "source_text": "‘‘Diṭṭhe dhamme ca yo attho, yo cattho samparāyiko; Atthābhisamayā dhīro, paṇḍitoti pavuccatī’’ti. (saṃ. ni. 1.129) –",
+      "issue_tags": ["cross_term", "dhira", "pandita", "citation"],
+      "acceptance_type": "constraint",
+      "accepted_literal_ko": null,
+      "accepted_natural_ko": null,
+      "required_terms": [
+        {"pali": "dhīra", "ko": "슬기로운 이"}
+      ],
+      "forbidden_terms": [
+        {"pali": "dhīra", "ko": "현자"},
+        {"pali": "paṇḍita", "ko": "슬기로운 이"}
+      ],
+      "acceptable_variants": [
+        {"pali": "paṇḍita", "ko": "현자"}
+      ],
+      "rationale": "dhīra와 paṇḍita는 같은 segment에 함께 나오므로 한국어에서 구별되어야 한다.",
+      "external_references": [
+        {"edition": "VRI", "ref_locator": "saṃ. ni. 1.129", "divergence_category": "locator_only", "note": "Citation locator only; no external translation body stored."}
+      ],
+      "difficulty": "medium",
+      "leverage": "high",
+      "reviewer_type": "internal_buddhist_terms",
+      "expert_question_status": "not_needed",
+      "adjudication_status": "accepted",
+      "gold_version": "v0",
+      "created_from_pilot": "pilot75_qa_patch_v2"
+    },
+    {
+      "gold_set_id": "gold-v0-khandha-001",
+      "pool": "regression_gold",
+      "stable_segment_key": "vri:romn:abh01a.att:1a230d04e5c2",
+      "source_path": "romn/abh01a.att.xml",
+      "source_text_hash": "983ec461500835849675e5a4401d4479b1ce0203de4548963dd8f5e13e50ca89",
+      "source_text": "‘‘Yaṃkiñci samudayadhammaṃ sabbaṃ taṃ nirodhadhamma’’nti (mahāva. 16; dī. ni. 1.298) evaṃ abhinivisitvā evameva vuṭṭhānakāle pana ekappahārena pañcahi khandhehi vuṭṭhāti nāmāti. Ayaṃ tikkhavipassakassa mahāpaññassa bhikkhuno vipassanā.",
+      "issue_tags": ["khandha", "fixed_glossary", "citation"],
+      "acceptance_type": "constraint",
+      "accepted_literal_ko": null,
+      "accepted_natural_ko": null,
+      "required_terms": [
+        {"pali": "khandha", "ko": "무더기"}
+      ],
+      "forbidden_terms": [
+        {"pali": "khandha", "ko": "무리"}
+      ],
+      "acceptable_variants": [
+        {"pali": "khandha", "ko": "무더기(오온)"}
+      ],
+      "rationale": "khandha는 기본 역어를 무더기로 두고, natural_ko 첫 출현에서는 무더기(오온) 보조를 허용한다.",
+      "external_references": [
+        {"edition": "VRI", "ref_locator": "mahāva. 16; dī. ni. 1.298", "divergence_category": "locator_only", "note": "Citation locator only."}
+      ],
+      "difficulty": "medium",
+      "leverage": "high",
+      "reviewer_type": "internal_buddhist_terms",
+      "expert_question_status": "not_needed",
+      "adjudication_status": "accepted",
+      "gold_version": "v0",
+      "created_from_pilot": "pilot75_qa_patch_v2"
+    },
+    {
+      "gold_set_id": "gold-v0-manasikara-001",
+      "pool": "regression_gold",
+      "stable_segment_key": "vri:romn:abh02t.tik:44f69334002c",
+      "source_path": "romn/abh02t.tik.xml",
+      "source_text_hash": "12fef96e35c2a235c9cf07e015fa6798f403d1f7b15a4e5dadcae004ed22c221",
+      "source_text": "Aniccādinā nayena manasi karotīti manasikāro, yoniso manasikāro, ayoniso manasikāroti ayaṃ vibhāgo daṭṭhabbo.",
+      "issue_tags": ["manasikara", "yoniso_manasikara", "fixed_glossary"],
+      "acceptance_type": "constraint",
+      "accepted_literal_ko": null,
+      "accepted_natural_ko": null,
+      "required_terms": [
+        {"pali": "manasikāra", "ko": "마음에 잡도리함"},
+        {"pali": "yonisomanasikāra", "ko": "여리작의"},
+        {"pali": "ayonisomanasikāra", "ko": "비여리작의"}
+      ],
+      "forbidden_terms": [
+        {"pali": "manasikāra", "ko": "주의기울임"},
+        {"pali": "manasikāra", "ko": "주의 기울임"}
+      ],
+      "acceptable_variants": [],
+      "rationale": "manasikāra 계열은 QA Patch v2에서 fixed glossary로 안정화한 핵심 항목이다.",
+      "external_references": [],
+      "difficulty": "medium",
+      "leverage": "high",
+      "reviewer_type": "internal_buddhist_terms",
+      "expert_question_status": "not_needed",
+      "adjudication_status": "accepted",
+      "gold_version": "v0",
+      "created_from_pilot": "pilot75_qa_patch_v2"
+    },
+    {
+      "gold_set_id": "gold-v0-uppala-001",
+      "pool": "regression_gold",
+      "stable_segment_key": "vri:romn:s0102t.tik:73c367bfb416",
+      "source_path": "romn/s0102t.tik.xml",
+      "source_text_hash": "271b76f4b2d73c3f456f88f7ab8e1bb30cc4f836a13b68627016a3ec0e2258e2",
+      "source_text": "‘‘Pubbeva sannivāsena, paccuppannahitena vā; Evaṃ taṃ jāyate pemaṃ, uppalaṃva yathodake’’ti. (jā. 1.2.174);",
+      "issue_tags": ["uppala", "paduma_distinction", "fixed_glossary"],
+      "acceptance_type": "constraint",
+      "accepted_literal_ko": null,
+      "accepted_natural_ko": null,
+      "required_terms": [
+        {"pali": "uppala", "ko": "수련"}
+      ],
+      "forbidden_terms": [
+        {"pali": "uppala", "ko": "연꽃"}
+      ],
+      "acceptable_variants": [
+        {"pali": "uppala", "ko": "청련"}
+      ],
+      "rationale": "uppala와 paduma는 같은 한국어로 collapse하지 않는다.",
+      "external_references": [
+        {"edition": "VRI", "ref_locator": "jā. 1.2.174", "divergence_category": "locator_only", "note": "Citation locator only."}
+      ],
+      "difficulty": "medium",
+      "leverage": "medium",
+      "reviewer_type": "internal_buddhist_terms",
+      "expert_question_status": "not_needed",
+      "adjudication_status": "accepted",
+      "gold_version": "v0",
+      "created_from_pilot": "pilot75_qa_patch_v2"
+    },
+    {
+      "gold_set_id": "gold-v0-abbokinna-001",
+      "pool": "discovery",
+      "stable_segment_key": "vri:romn:e0104n.att:ce9536156dac",
+      "source_path": "romn/e0104n.att.xml",
+      "source_text_hash": "c3475c1fd1b8aa3f6f8bf2cfcb00a6db196f473efa5a7ddc2e06d9e0ddaa944b",
+      "source_text": "Tattha abbokiṇṇanti nirantaraṃ.",
+      "issue_tags": ["abbokinna", "needs_human", "uncertainty"],
+      "acceptance_type": "reference",
+      "accepted_literal_ko": null,
+      "accepted_natural_ko": null,
+      "required_terms": [],
+      "forbidden_terms": [
+        {"pali": "abbokiṇṇa", "ko": "가득함"}
+      ],
+      "acceptable_variants": [
+        {"pali": "abbokiṇṇa", "ko": "끊임없음"},
+        {"pali": "abbokiṇṇa", "ko": "순전함"}
+      ],
+      "rationale": "abbokiṇṇa는 needs_human 항목이다. nirantaraṃ 호응상 끊임없음 계열이 우세하지만 아직 확정 역어로 주입하지 않는다.",
+      "external_references": [],
+      "difficulty": "high",
+      "leverage": "high",
+      "reviewer_type": "pali_expert",
+      "expert_question_status": "queued",
+      "adjudication_status": "needs_expert",
+      "gold_version": "v0",
+      "created_from_pilot": "pilot75_qa_patch_v2"
+    },
+    {
+      "gold_set_id": "gold-v0-anulomika-khanti-001",
+      "pool": "discovery",
+      "stable_segment_key": "vri:romn:e0103n.att:0f1e7b16a8fb",
+      "source_path": "romn/e0103n.att.xml",
+      "source_text_hash": "7f353ac0d67f9787ee84b692d88c3aa22bb9e4b052193e6fa630f64b49629251",
+      "source_text": "Anulomikāya khantiyā samannāgato hoti.",
+      "issue_tags": ["khanti", "anulomika_khanti", "uncertainty"],
+      "acceptance_type": "reference",
+      "accepted_literal_ko": null,
+      "accepted_natural_ko": null,
+      "required_terms": [],
+      "forbidden_terms": [
+        {"pali": "anulomika khanti", "ko": "인욕"}
+      ],
+      "acceptable_variants": [
+        {"pali": "anulomika khanti", "ko": "수순하는 받아들임"},
+        {"pali": "anulomika khanti", "ko": "수순"}
+      ],
+      "rationale": "anulomika khanti는 일반 khanti보다 진리 수용 의미가 강할 수 있으므로 인욕 계열 과잉해석을 검토한다.",
+      "external_references": [],
+      "difficulty": "high",
+      "leverage": "high",
+      "reviewer_type": "pali_expert",
+      "expert_question_status": "queued",
+      "adjudication_status": "needs_expert",
+      "gold_version": "v0",
+      "created_from_pilot": "pilot75_qa_patch_v2"
+    },
+    {
+      "gold_set_id": "gold-v0-source-normalization-001",
+      "pool": "regression_gold",
+      "stable_segment_key": "vri:romn:s0508m.mul:287165addd39",
+      "source_path": "romn/s0508m.mul.xml",
+      "source_text_hash": "b9f5f590c62ad05bd6ef13a67e2da8fc2c5827ed77151d06cc9ec4d986cda874",
+      "source_text": "Akicchāni ca kappeti, anācāraṃ carati ca.",
+      "issue_tags": ["source_normalization", "uncertainty"],
+      "acceptance_type": "constraint",
+      "accepted_literal_ko": null,
+      "accepted_natural_ko": null,
+      "required_terms": [],
+      "forbidden_terms": [
+        {"pali": "akicchāni", "ko": "akiccāni silently normalized"}
+      ],
+      "acceptable_variants": [],
+      "rationale": "저본 철자를 다른 형태로 읽어 번역했다면 uncertainties 또는 source normalization note가 필요하다.",
+      "external_references": [],
+      "difficulty": "medium",
+      "leverage": "medium",
+      "reviewer_type": "operator",
+      "expert_question_status": "not_needed",
+      "adjudication_status": "accepted",
+      "gold_version": "v0",
+      "created_from_pilot": "pilot75_qa_patch_v2"
+    },
+    {
+      "gold_set_id": "gold-v0-long-tika-001",
+      "pool": "discovery",
+      "stable_segment_key": "vri:romn:s0402t.tik:af9f6dc82fdf",
+      "source_path": "romn/s0402t.tik.xml",
+      "source_text_hash": "317daab3771a69f5b5f1b4836d8e9e865c0d18169e3b4d8c7ab81c709af448b2",
+      "source_text": "Khiḍḍāya padussantīti khiḍḍāpadosino, khiḍḍāpadosino eva khiḍḍāpadosikā. Khiḍḍāpadoso vā etesaṃ atthīti khiḍḍāpadosikā. Te kira puññavisesādhigatena mahantena attano sirivibhavena nakkhattaṃ kīḷantā tāya sampattiyā mahantatāya ‘‘āhāraṃ paribhuñjimhā na paribhuñjimhā’’tipi na jānanti. Atha ekāhārātikkamato paṭṭhāya nirantaraṃ khādantāpi pivantāpi cavantiyeva na tiṭṭhanti. Kasmā? Kammajatejassa balavatāya karajakāyassa mandatāya. Manussānañhi kammajatejo mando, karajakāyo balavā. Tesaṃ tejassa mandatāya kāyassa balavatāya sattāhampi atikkamitvā uṇhodakaacchayāguādīhi sakkā karajakāyaṃ upatthambhetuṃ. Devānaṃ pana tejo balavā hoti uḷārapuññanibbattattā uḷāragarusiniddhasudhāhārajīraṇato ca. Karajaṃ mandaṃ mudusukhumālabhāvato. Te ekaṃ āhāravelaṃ akkamitvāva saṇṭhāpetuṃ na sakkonti. Yathā nāma gimhānaṃ majjhanhike tattapāsāṇe ṭhapitaṃ padumaṃ vā uppalaṃ vā sāyanhasamaye ghaṭasatenapi siñciyamānaṃ pākatikaṃ na hoti vinassatiyeva, evameva pacchā nirantaraṃ khādantāpi pivantāpi cavantiyeva na tiṭṭhanti. Katame pana te devāti? ‘‘Ime nāmā’’ti aṭṭhakathāya vicāraṇā natthi, ‘‘āhārūpacchedena ātape khittamālā viyā’’ti vuttattā ye keci kabaḷīkārāhārūpajīvino devā evaṃ karonti, te evaṃ cavantīti veditabbā. Abhayagirivāsino panāhu ‘‘nimmānaratiparanimmitavasavattino te devā, khiḍḍāya padussanamatteneva hete khiḍḍāpadosikāti vuttā’’ti. Ko panettha devānaṃ āhāro, kā āhāravelāti? ‘‘Sabbesampi kāmāvacaradevānaṃ sudhā āhāro, sā heṭṭhimehi heṭṭhimehi uparimānaṃ uparimānaṃ paṇītatamā hoti. Taṃ yathāsakaṃ divasavaseneva divase divase bhuñjanti. Keci pana badarappamāṇaṃ sudhāhāraṃ paribhuñjanti. So jivhāyaṃ ṭhapitamattoyeva yāva kesagganakhaggā kāyaṃ pharati, tesaṃyeva divasavasena sattadivasaṃ yāpanasamatthova hotī’’ti vadanti.",
+      "issue_tags": ["long_tika", "cost_driver", "human_review"],
+      "acceptance_type": "reference",
+      "accepted_literal_ko": null,
+      "accepted_natural_ko": null,
+      "required_terms": [],
+      "forbidden_terms": [],
+      "acceptable_variants": [],
+      "rationale": "Long tika prose는 thinking/output token과 문맥 복잡도 때문에 representative review가 필요하다.",
+      "external_references": [],
+      "difficulty": "high",
+      "leverage": "medium",
+      "reviewer_type": "internal_buddhist_terms",
+      "expert_question_status": "not_needed",
+      "adjudication_status": "pending",
+      "gold_version": "v0",
+      "created_from_pilot": "pilot75_qa_patch_v2"
+    },
+    {
+      "gold_set_id": "gold-v0-untranslated-pali-001",
+      "pool": "discovery",
+      "stable_segment_key": "vri:romn:vin01t1.tik:b9c1a89b49aa",
+      "source_path": "romn/vin01t1.tik.xml",
+      "source_text_hash": "38e26aee3d453ba639f4ff8be0dff8d1227ed9482b0341411475422e39add483",
+      "source_text": "Amarāvikkhepikāti ettha na marati na upacchijjatīti amarā. Kā sā? ‘‘Evantipi me no, tathātipi me no, aññathātipi me no, notipi me no, no notipi me no’’ti (dī. ni. 1.62) evaṃ pavattavādavasena pariyantarahitā diṭṭhigatikassa diṭṭhi ceva vācā ca. ‘‘Evantipi me no’’tiādinā vividho nānappakāro khepo paravādīnaṃ khipanaṃ vikkhepo, amarāya diṭṭhiyā vācāya vā vikkhepo amarāvikkhepo, so etesamatthīti amarāvikkhepikā. Atha vā amarāya diṭṭhiyā vācāya vikkhipantīti amarāvikkhepino, amarāvikkhepino eva amarāvikkhepikā. Atha vā amarā nāma macchajāti, sā ummujjananimujjanādivasena udake sandhāvamānā gahetuṃ na sakkā, evameva ayampi vādo ekasmiṃ sabhāve anavaṭṭhānato ito cito ca sandhāvati, gāhaṃ na upagacchatīti amarāya vikkhepo viyāti amarāvikkhepoti vuccati. Ayañhi amarāvikkhepiko ‘‘idaṃ kusala’’nti vā ‘‘akusala’’nti vā puṭṭho na kiñci byākaroti. ‘‘Idaṃ kusala’’nti vā puṭṭho ‘‘evantipi me no’’ti vadati. Tato ‘‘kiṃ akusala’’nti vutte ‘‘tathātipi me no’’ti vadati. ‘‘Kiṃ ubhayato aññathā’’tipi vutte ‘‘aññathātipi me no’’ti vadati. Tato ‘‘tividhenapi na hoti, kiṃ te laddhī’’ti vutte ‘‘notipi me no’’ti vadati. Tato ‘‘kiṃ no no te laddhī’’ti vutte ‘‘no notipi me no’’ti vadati. Evaṃ vikkhepameva āpajjati, ekamekasmimpi pakkhe na tiṭṭhati. Tato ‘‘atthi paro loko’’tiādinā puṭṭhopi evameva vikkhipati, na ekasmiṃ pakkhe tiṭṭhati. So vuttappakāro amarāvikkhepo etesamatthīti amarāvikkhepikā.",
+      "issue_tags": ["possible_true_untranslated_pali", "validator"],
+      "acceptance_type": "reference",
+      "accepted_literal_ko": null,
+      "accepted_natural_ko": null,
+      "required_terms": [],
+      "forbidden_terms": [],
+      "acceptable_variants": [],
+      "rationale": "괄호 안 원어 병기와 본문 미번역 Pāli를 구별하는 positive review case다.",
+      "external_references": [],
+      "difficulty": "medium",
+      "leverage": "high",
+      "reviewer_type": "operator",
+      "expert_question_status": "not_needed",
+      "adjudication_status": "pending",
+      "gold_version": "v0",
+      "created_from_pilot": "pilot75_qa_patch_v2"
+    }
+  ]
+}

@@ -1,0 +1,706 @@
+{
+  "schema_version": "pali_qa_infra_v1_2_baseline",
+  "baseline_prompt_version": "korean_advanced_v1_schemafix_qa_patch_v2",
+  "input_artifacts": {
+    "schemafix_parsed": "data/reports/pali/gemini_pilot_75_49bc869_prompt_v1_schemafix_parsed.json",
+    "qa_patch_v2_parsed": "data/reports/pali/gemini_pilot_75_49bc869_prompt_qa_patch_v2_parsed.json",
+    "qa_v1_1_baseline": "data/reports/pali/translation_qa_v1_1_baseline_49bc869.json",
+    "gold_set": "data/gold_set.json"
+  },
+  "qa_patch_v2_summary": {
+    "item_count": 75,
+    "schema_valid_count": 75,
+    "schema_invalid_count": 0,
+    "parse_failed_count": 0,
+    "actual_input_tokens": 242651,
+    "actual_output_tokens": 56043,
+    "actual_thinking_tokens": 142478,
+    "actual_cost_usd": "1.433777"
+  },
+  "gold_set_validation": {
+    "entry_count": 9,
+    "valid_count": 9,
+    "invalid_count": 0,
+    "items": [
+      {
+        "gold_set_id": "gold-v0-dhira-pandita-001",
+        "valid": true,
+        "errors": []
+      },
+      {
+        "gold_set_id": "gold-v0-khandha-001",
+        "valid": true,
+        "errors": []
+      },
+      {
+        "gold_set_id": "gold-v0-manasikara-001",
+        "valid": true,
+        "errors": []
+      },
+      {
+        "gold_set_id": "gold-v0-uppala-001",
+        "valid": true,
+        "errors": []
+      },
+      {
+        "gold_set_id": "gold-v0-abbokinna-001",
+        "valid": true,
+        "errors": []
+      },
+      {
+        "gold_set_id": "gold-v0-anulomika-khanti-001",
+        "valid": true,
+        "errors": []
+      },
+      {
+        "gold_set_id": "gold-v0-source-normalization-001",
+        "valid": true,
+        "errors": []
+      },
+      {
+        "gold_set_id": "gold-v0-long-tika-001",
+        "valid": true,
+        "errors": []
+      },
+      {
+        "gold_set_id": "gold-v0-untranslated-pali-001",
+        "valid": true,
+        "errors": []
+      }
+    ]
+  },
+  "gold_regression": {
+    "gold_set_schema_version": "pali_gold_set_v0",
+    "gold_entry_count": 9,
+    "verdict_counts": {
+      "escalate": 4,
+      "improved": 2,
+      "neutral": 3,
+      "worsened": 0
+    },
+    "results": [
+      {
+        "verdict": "improved",
+        "reason": "failed_to_passed",
+        "before_eval": {
+          "pass": false,
+          "auto_evaluable": true,
+          "acceptance_type": "constraint",
+          "errors": [],
+          "matched_required": [],
+          "missing_required": [
+            {
+              "pali": "dhīra",
+              "ko": "슬기로운 이"
+            }
+          ],
+          "hit_forbidden": [],
+          "matched_variants": []
+        },
+        "after_eval": {
+          "pass": true,
+          "auto_evaluable": true,
+          "acceptance_type": "constraint",
+          "errors": [],
+          "matched_required": [
+            {
+              "pali": "dhīra",
+              "ko": "슬기로운 이"
+            }
+          ],
+          "missing_required": [],
+          "hit_forbidden": [],
+          "matched_variants": []
+        },
+        "stable_segment_key": "vri:romn:abh01a.att:b75846bab59a",
+        "gold_set_id": "gold-v0-dhira-pandita-001"
+      },
+      {
+        "verdict": "neutral",
+        "reason": "same_pass_state",
+        "before_eval": {
+          "pass": true,
+          "auto_evaluable": true,
+          "acceptance_type": "constraint",
+          "errors": [],
+          "matched_required": [
+            {
+              "pali": "khandha",
+              "ko": "무더기"
+            }
+          ],
+          "missing_required": [],
+          "hit_forbidden": [],
+          "matched_variants": []
+        },
+        "after_eval": {
+          "pass": true,
+          "auto_evaluable": true,
+          "acceptance_type": "constraint",
+          "errors": [],
+          "matched_required": [
+            {
+              "pali": "khandha",
+              "ko": "무더기"
+            }
+          ],
+          "missing_required": [],
+          "hit_forbidden": [],
+          "matched_variants": []
+        },
+        "stable_segment_key": "vri:romn:abh01a.att:1a230d04e5c2",
+        "gold_set_id": "gold-v0-khandha-001"
+      },
+      {
+        "verdict": "improved",
+        "reason": "failed_to_passed",
+        "before_eval": {
+          "pass": false,
+          "auto_evaluable": true,
+          "acceptance_type": "constraint",
+          "errors": [],
+          "matched_required": [
+            {
+              "pali": "yonisomanasikāra",
+              "ko": "여리작의"
+            },
+            {
+              "pali": "ayonisomanasikāra",
+              "ko": "비여리작의"
+            }
+          ],
+          "missing_required": [
+            {
+              "pali": "manasikāra",
+              "ko": "마음에 잡도리함"
+            }
+          ],
+          "hit_forbidden": [
+            {
+              "pali": "manasikāra",
+              "ko": "주의기울임"
+            }
+          ],
+          "matched_variants": []
+        },
+        "after_eval": {
+          "pass": true,
+          "auto_evaluable": true,
+          "acceptance_type": "constraint",
+          "errors": [],
+          "matched_required": [
+            {
+              "pali": "manasikāra",
+              "ko": "마음에 잡도리함"
+            },
+            {
+              "pali": "yonisomanasikāra",
+              "ko": "여리작의"
+            },
+            {
+              "pali": "ayonisomanasikāra",
+              "ko": "비여리작의"
+            }
+          ],
+          "missing_required": [],
+          "hit_forbidden": [],
+          "matched_variants": []
+        },
+        "stable_segment_key": "vri:romn:abh02t.tik:44f69334002c",
+        "gold_set_id": "gold-v0-manasikara-001"
+      },
+      {
+        "verdict": "neutral",
+        "reason": "same_pass_state",
+        "before_eval": {
+          "pass": true,
+          "auto_evaluable": true,
+          "acceptance_type": "constraint",
+          "errors": [],
+          "matched_required": [
+            {
+              "pali": "uppala",
+              "ko": "수련"
+            }
+          ],
+          "missing_required": [],
+          "hit_forbidden": [],
+          "matched_variants": []
+        },
+        "after_eval": {
+          "pass": true,
+          "auto_evaluable": true,
+          "acceptance_type": "constraint",
+          "errors": [],
+          "matched_required": [
+            {
+              "pali": "uppala",
+              "ko": "수련"
+            }
+          ],
+          "missing_required": [],
+          "hit_forbidden": [],
+          "matched_variants": []
+        },
+        "stable_segment_key": "vri:romn:s0102t.tik:73c367bfb416",
+        "gold_set_id": "gold-v0-uppala-001"
+      },
+      {
+        "verdict": "escalate",
+        "reason": "not_auto_evaluable",
+        "before_eval": {
+          "pass": null,
+          "auto_evaluable": false,
+          "acceptance_type": "reference",
+          "errors": [
+            "reference_only_no_auto_pass_fail"
+          ],
+          "matched_required": [],
+          "missing_required": [],
+          "hit_forbidden": [],
+          "matched_variants": []
+        },
+        "after_eval": {
+          "pass": null,
+          "auto_evaluable": false,
+          "acceptance_type": "reference",
+          "errors": [
+            "reference_only_no_auto_pass_fail"
+          ],
+          "matched_required": [],
+          "missing_required": [],
+          "hit_forbidden": [],
+          "matched_variants": []
+        },
+        "stable_segment_key": "vri:romn:e0104n.att:ce9536156dac",
+        "gold_set_id": "gold-v0-abbokinna-001"
+      },
+      {
+        "verdict": "escalate",
+        "reason": "not_auto_evaluable",
+        "before_eval": {
+          "pass": null,
+          "auto_evaluable": false,
+          "acceptance_type": "reference",
+          "errors": [
+            "reference_only_no_auto_pass_fail"
+          ],
+          "matched_required": [],
+          "missing_required": [],
+          "hit_forbidden": [],
+          "matched_variants": []
+        },
+        "after_eval": {
+          "pass": null,
+          "auto_evaluable": false,
+          "acceptance_type": "reference",
+          "errors": [
+            "reference_only_no_auto_pass_fail"
+          ],
+          "matched_required": [],
+          "missing_required": [],
+          "hit_forbidden": [],
+          "matched_variants": []
+        },
+        "stable_segment_key": "vri:romn:e0103n.att:0f1e7b16a8fb",
+        "gold_set_id": "gold-v0-anulomika-khanti-001"
+      },
+      {
+        "verdict": "neutral",
+        "reason": "same_pass_state",
+        "before_eval": {
+          "pass": true,
+          "auto_evaluable": true,
+          "acceptance_type": "constraint",
+          "errors": [],
+          "matched_required": [],
+          "missing_required": [],
+          "hit_forbidden": [],
+          "matched_variants": []
+        },
+        "after_eval": {
+          "pass": true,
+          "auto_evaluable": true,
+          "acceptance_type": "constraint",
+          "errors": [],
+          "matched_required": [],
+          "missing_required": [],
+          "hit_forbidden": [],
+          "matched_variants": []
+        },
+        "stable_segment_key": "vri:romn:s0508m.mul:287165addd39",
+        "gold_set_id": "gold-v0-source-normalization-001"
+      },
+      {
+        "verdict": "escalate",
+        "reason": "not_auto_evaluable",
+        "before_eval": {
+          "pass": null,
+          "auto_evaluable": false,
+          "acceptance_type": "reference",
+          "errors": [
+            "reference_only_no_auto_pass_fail"
+          ],
+          "matched_required": [],
+          "missing_required": [],
+          "hit_forbidden": [],
+          "matched_variants": []
+        },
+        "after_eval": {
+          "pass": null,
+          "auto_evaluable": false,
+          "acceptance_type": "reference",
+          "errors": [
+            "reference_only_no_auto_pass_fail"
+          ],
+          "matched_required": [],
+          "missing_required": [],
+          "hit_forbidden": [],
+          "matched_variants": []
+        },
+        "stable_segment_key": "vri:romn:s0402t.tik:af9f6dc82fdf",
+        "gold_set_id": "gold-v0-long-tika-001"
+      },
+      {
+        "verdict": "escalate",
+        "reason": "not_auto_evaluable",
+        "before_eval": {
+          "pass": null,
+          "auto_evaluable": false,
+          "acceptance_type": "reference",
+          "errors": [
+            "reference_only_no_auto_pass_fail"
+          ],
+          "matched_required": [],
+          "missing_required": [],
+          "hit_forbidden": [],
+          "matched_variants": []
+        },
+        "after_eval": {
+          "pass": null,
+          "auto_evaluable": false,
+          "acceptance_type": "reference",
+          "errors": [
+            "reference_only_no_auto_pass_fail"
+          ],
+          "matched_required": [],
+          "missing_required": [],
+          "hit_forbidden": [],
+          "matched_variants": []
+        },
+        "stable_segment_key": "vri:romn:vin01t1.tik:b9c1a89b49aa",
+        "gold_set_id": "gold-v0-untranslated-pali-001"
+      }
+    ]
+  },
+  "review_queue": {
+    "total_raw_candidates": 19,
+    "deduped_item_count": 6,
+    "priority_counts": {
+      "B": 5,
+      "C": 1
+    },
+    "auto_resolvable_count": 1,
+    "human_needed_count": 5,
+    "top_items": [
+      {
+        "stable_segment_key": "vri:romn:abh03t.tik:6fbb7ff462ce",
+        "source_path": "romn/abh03t.tik.xml",
+        "text_layer": "tika",
+        "chunk_type": "prose",
+        "length_bucket": "medium",
+        "signals": [
+          "grammar_uncertain"
+        ],
+        "dedup_group_key": "grammar_uncertain:vri:romn:abh03t.tik:6fbb7ff462ce",
+        "recurrence_count": 1,
+        "example_stable_segment_keys": [
+          "vri:romn:abh03t.tik:6fbb7ff462ce"
+        ],
+        "priority": "B",
+        "auto_resolvable": false,
+        "human_needed": true,
+        "review_tier": "tier_1_operator",
+        "estimated_review_minutes": 3
+      },
+      {
+        "stable_segment_key": "vri:romn:e0104n.att:ce9536156dac",
+        "signals": [
+          "reference_only_gold"
+        ],
+        "dedup_group_key": "reference_only_gold:gold-v0-abbokinna-001",
+        "recurrence_count": 1,
+        "example_stable_segment_keys": [
+          "vri:romn:e0104n.att:ce9536156dac"
+        ],
+        "priority": "B",
+        "auto_resolvable": false,
+        "human_needed": true,
+        "review_tier": "tier_1_operator",
+        "estimated_review_minutes": 3
+      },
+      {
+        "stable_segment_key": "vri:romn:e0103n.att:0f1e7b16a8fb",
+        "signals": [
+          "reference_only_gold"
+        ],
+        "dedup_group_key": "reference_only_gold:gold-v0-anulomika-khanti-001",
+        "recurrence_count": 1,
+        "example_stable_segment_keys": [
+          "vri:romn:e0103n.att:0f1e7b16a8fb"
+        ],
+        "priority": "B",
+        "auto_resolvable": false,
+        "human_needed": true,
+        "review_tier": "tier_1_operator",
+        "estimated_review_minutes": 3
+      },
+      {
+        "stable_segment_key": "vri:romn:s0402t.tik:af9f6dc82fdf",
+        "signals": [
+          "reference_only_gold"
+        ],
+        "dedup_group_key": "reference_only_gold:gold-v0-long-tika-001",
+        "recurrence_count": 1,
+        "example_stable_segment_keys": [
+          "vri:romn:s0402t.tik:af9f6dc82fdf"
+        ],
+        "priority": "B",
+        "auto_resolvable": false,
+        "human_needed": true,
+        "review_tier": "tier_1_operator",
+        "estimated_review_minutes": 3
+      },
+      {
+        "stable_segment_key": "vri:romn:vin01t1.tik:b9c1a89b49aa",
+        "signals": [
+          "reference_only_gold"
+        ],
+        "dedup_group_key": "reference_only_gold:gold-v0-untranslated-pali-001",
+        "recurrence_count": 1,
+        "example_stable_segment_keys": [
+          "vri:romn:vin01t1.tik:b9c1a89b49aa"
+        ],
+        "priority": "B",
+        "auto_resolvable": false,
+        "human_needed": true,
+        "review_tier": "tier_1_operator",
+        "estimated_review_minutes": 3
+      },
+      {
+        "stable_segment_key": "vri:romn:abh02a.att:24195e117aef",
+        "signals": [
+          "allowed_parenthetical_pali"
+        ],
+        "dedup_group_key": "allowed_parenthetical_pali",
+        "recurrence_count": 14,
+        "example_stable_segment_keys": [
+          "vri:romn:abh02a.att:24195e117aef",
+          "vri:romn:e0103n.att:0f1e7b16a8fb",
+          "vri:romn:e0104n.att:ce9536156dac",
+          "vri:romn:s0102a.att:4e9e30478928",
+          "vri:romn:s0102a.att:dae7dfcd3529",
+          "vri:romn:s0103a.att:27e70ab82fea",
+          "vri:romn:s0401a.att:29f5bdb38113",
+          "vri:romn:s0511a.att:0332b75e26a0",
+          "vri:romn:e0101n.mul:462c11938bc6",
+          "vri:romn:abh02t.tik:44f69334002c",
+          "vri:romn:s0201t.tik:8e951c4f787c",
+          "vri:romn:s0402t.tik:502640aed7e8",
+          "vri:romn:s0402t.tik:af9f6dc82fdf",
+          "vri:romn:vin01t1.tik:b9c1a89b49aa"
+        ],
+        "priority": "C",
+        "auto_resolvable": true,
+        "human_needed": false,
+        "review_tier": "tier_1_operator",
+        "estimated_review_minutes": 1
+      }
+    ]
+  },
+  "source_integrity_gap": {
+    "schemafix": {
+      "item_count": 75,
+      "valid_count": 75,
+      "invalid_count": 0,
+      "gap_counts": {
+        "missing_field:raw_source_text": 75,
+        "missing_field:display_source_text": 75,
+        "missing_field:translation_source_text": 75,
+        "missing_field:normalization_notes": 75
+      },
+      "flag_counts": {},
+      "sample_gaps": [
+        {
+          "stable_segment_key": "vri:romn:abh01a.att:b75846bab59a",
+          "valid": true,
+          "flags": [],
+          "warnings": [],
+          "gaps": [
+            "missing_field:raw_source_text",
+            "missing_field:display_source_text",
+            "missing_field:translation_source_text",
+            "missing_field:normalization_notes"
+          ],
+          "raw_equals_display": true,
+          "raw_equals_translation_source": true
+        },
+        {
+          "stable_segment_key": "vri:romn:abh01a.att:1a230d04e5c2",
+          "valid": true,
+          "flags": [],
+          "warnings": [],
+          "gaps": [
+            "missing_field:raw_source_text",
+            "missing_field:display_source_text",
+            "missing_field:translation_source_text",
+            "missing_field:normalization_notes"
+          ],
+          "raw_equals_display": true,
+          "raw_equals_translation_source": true
+        },
+        {
+          "stable_segment_key": "vri:romn:abh02a.att:24195e117aef",
+          "valid": true,
+          "flags": [],
+          "warnings": [],
+          "gaps": [
+            "missing_field:raw_source_text",
+            "missing_field:display_source_text",
+            "missing_field:translation_source_text",
+            "missing_field:normalization_notes"
+          ],
+          "raw_equals_display": true,
+          "raw_equals_translation_source": true
+        },
+        {
+          "stable_segment_key": "vri:romn:abh03a.att:44e90d9602c2",
+          "valid": true,
+          "flags": [],
+          "warnings": [],
+          "gaps": [
+            "missing_field:raw_source_text",
+            "missing_field:display_source_text",
+            "missing_field:translation_source_text",
+            "missing_field:normalization_notes"
+          ],
+          "raw_equals_display": true,
+          "raw_equals_translation_source": true
+        },
+        {
+          "stable_segment_key": "vri:romn:abh03a.att:6c4930da0b03",
+          "valid": true,
+          "flags": [],
+          "warnings": [],
+          "gaps": [
+            "missing_field:raw_source_text",
+            "missing_field:display_source_text",
+            "missing_field:translation_source_text",
+            "missing_field:normalization_notes"
+          ],
+          "raw_equals_display": true,
+          "raw_equals_translation_source": true
+        }
+      ]
+    },
+    "qa_patch_v2": {
+      "item_count": 75,
+      "valid_count": 75,
+      "invalid_count": 0,
+      "gap_counts": {
+        "missing_field:raw_source_text": 75,
+        "missing_field:display_source_text": 75,
+        "missing_field:translation_source_text": 75,
+        "missing_field:normalization_notes": 75
+      },
+      "flag_counts": {},
+      "sample_gaps": [
+        {
+          "stable_segment_key": "vri:romn:abh01a.att:b75846bab59a",
+          "valid": true,
+          "flags": [],
+          "warnings": [],
+          "gaps": [
+            "missing_field:raw_source_text",
+            "missing_field:display_source_text",
+            "missing_field:translation_source_text",
+            "missing_field:normalization_notes"
+          ],
+          "raw_equals_display": true,
+          "raw_equals_translation_source": true
+        },
+        {
+          "stable_segment_key": "vri:romn:abh01a.att:1a230d04e5c2",
+          "valid": true,
+          "flags": [],
+          "warnings": [],
+          "gaps": [
+            "missing_field:raw_source_text",
+            "missing_field:display_source_text",
+            "missing_field:translation_source_text",
+            "missing_field:normalization_notes"
+          ],
+          "raw_equals_display": true,
+          "raw_equals_translation_source": true
+        },
+        {
+          "stable_segment_key": "vri:romn:abh02a.att:24195e117aef",
+          "valid": true,
+          "flags": [],
+          "warnings": [],
+          "gaps": [
+            "missing_field:raw_source_text",
+            "missing_field:display_source_text",
+            "missing_field:translation_source_text",
+            "missing_field:normalization_notes"
+          ],
+          "raw_equals_display": true,
+          "raw_equals_translation_source": true
+        },
+        {
+          "stable_segment_key": "vri:romn:abh03a.att:44e90d9602c2",
+          "valid": true,
+          "flags": [],
+          "warnings": [],
+          "gaps": [
+            "missing_field:raw_source_text",
+            "missing_field:display_source_text",
+            "missing_field:translation_source_text",
+            "missing_field:normalization_notes"
+          ],
+          "raw_equals_display": true,
+          "raw_equals_translation_source": true
+        },
+        {
+          "stable_segment_key": "vri:romn:abh03a.att:6c4930da0b03",
+          "valid": true,
+          "flags": [],
+          "warnings": [],
+          "gaps": [
+            "missing_field:raw_source_text",
+            "missing_field:display_source_text",
+            "missing_field:translation_source_text",
+            "missing_field:normalization_notes"
+          ],
+          "raw_equals_display": true,
+          "raw_equals_translation_source": true
+        }
+      ]
+    }
+  },
+  "qa_v1_1_signals": {
+    "cross_collision_count": 0,
+    "avoid_ko_conflict_count": 0,
+    "contains_untranslated_pali_before_count": 14,
+    "possible_true_after_count": 0,
+    "citation_candidate_count": 32,
+    "citation_mapped_count": 32
+  },
+  "notes": [
+    "This baseline is read-only and local-only; no API calls were made.",
+    "Reference acceptance gold entries are escalated rather than auto pass/fail.",
+    "Pali+Korean term constraints are evaluated against terms[] exact pairs to avoid body-string false positives.",
+    "Current parsed pilot artifacts lack separated raw/display/translation source fields, so source integrity gaps are expected.",
+    "Allowed contains_untranslated_pali reclassifications suppress duplicate raw queue entries; possible true cases remain human-needed."
+  ]
+}
