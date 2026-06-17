@@ -17,6 +17,9 @@ PRIORITY_A_SIGNALS = {
     "gold_regression_worsened",
     "source_hash_mismatch",
     "silent_source_normalization",
+    "raw_source_hash_mismatch",
+    "normalized_source_hash_mismatch",
+    "high_divergence_candidate",
 }
 PRIORITY_B_SIGNALS = {
     "grammar_uncertain",
@@ -26,6 +29,9 @@ PRIORITY_B_SIGNALS = {
     "needs_human_glossary_review",
     "unexpected_variant",
     "reference_only_gold",
+    "second_model_disagreement",
+    "cc0_parallel_disagreement",
+    "oracle_unavailable",
 }
 PRIORITY_C_SIGNALS = {
     "random_sample",
@@ -139,7 +145,14 @@ def classify_review_tier(item: dict[str, Any]) -> str:
     signals = set(item.get("signals", []))
     if item.get("auto_resolvable"):
         return "tier_1_operator"
-    if {"gold_regression_worsened", "source_hash_mismatch", "silent_source_normalization"} & signals:
+    if {
+        "source_hash_mismatch",
+        "silent_source_normalization",
+        "raw_source_hash_mismatch",
+        "normalized_source_hash_mismatch",
+    } & signals:
+        return "tier_source_integrity_operator"
+    if {"gold_regression_worsened"} & signals:
         return "tier_3_pali_expert"
     if {"glossary_conflict", "cross_term_collision_review", "avoid_ko_conflict_candidate"} & signals:
         return "tier_2_buddhist_terms"

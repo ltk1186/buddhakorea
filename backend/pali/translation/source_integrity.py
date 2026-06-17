@@ -6,7 +6,9 @@ import hashlib
 from typing import Any
 
 
-REQUIRED_IDENTITY_FIELDS = ("stable_segment_key", "source_text_hash")
+REQUIRED_IDENTITY_FIELDS = ("stable_segment_key",)
+PRODUCTION_HASH_FIELDS = ("raw_source_text_hash", "normalized_source_text_hash")
+LEGACY_HASH_FIELDS = ("source_text_hash",)
 
 
 def compute_source_hashes(raw_source_text: str, normalized_source_text: str | None = None) -> dict[str, str]:
@@ -32,14 +34,22 @@ def detect_silent_normalization(
     return []
 
 
-def validate_source_integrity_record(record: dict[str, Any]) -> dict[str, Any]:
+def validate_source_integrity_record(record: dict[str, Any], mode: str = "legacy") -> dict[str, Any]:
     """Validate identity/hash fields in one source integrity record."""
 
+    if mode not in {"legacy", "production"}:
+        raise ValueError("mode must be legacy or production")
     errors: list[str] = []
     warnings: list[str] = []
     for field in REQUIRED_IDENTITY_FIELDS:
         if not record.get(field):
             errors.append(f"missing_field:{field}")
+    if mode == "production":
+        for field in PRODUCTION_HASH_FIELDS:
+            if not record.get(field):
+                errors.append(f"missing_field:{field}")
+    elif not any(record.get(field) for field in (*PRODUCTION_HASH_FIELDS, *LEGACY_HASH_FIELDS)):
+        errors.append("missing_field:source_text_hash")
 
     raw = str(record.get("raw_source_text") or record.get("original_text") or "")
     normalized = str(record.get("normalized_source_text") or record.get("normalized_text") or raw)
@@ -47,20 +57,23 @@ def validate_source_integrity_record(record: dict[str, Any]) -> dict[str, Any]:
         hashes = compute_source_hashes(raw, normalized)
         expected_raw = record.get("raw_source_text_hash")
         expected_normalized = record.get("normalized_source_text_hash")
+        legacy_hash = record.get("source_text_hash")
         if expected_raw and expected_raw != hashes["raw_source_text_hash"]:
             errors.append("raw_source_hash_mismatch")
         if expected_normalized and expected_normalized != hashes["normalized_source_text_hash"]:
             errors.append("normalized_source_hash_mismatch")
+        if legacy_hash and not expected_raw and not expected_normalized:
+            warnings.append("legacy_source_text_hash_alias_used")
     else:
         warnings.append("missing_raw_source_text")
 
     return {"valid": not errors, "errors": errors, "warnings": warnings}
 
 
-def check_integrity(segment_record: dict[str, Any]) -> dict[str, Any]:
+def check_integrity(segment_record: dict[str, Any], mode: str = "legacy") -> dict[str, Any]:
     """Check one parsed segment/source record for production integrity gaps."""
 
-    validation = validate_source_integrity_record(segment_record)
+    validation = validate_source_integrity_record(segment_record, mode=mode)
     raw = str(segment_record.get("raw_source_text") or segment_record.get("original_text") or "")
     display = str(segment_record.get("display_source_text") or segment_record.get("original_text") or raw)
     translation_source = str(

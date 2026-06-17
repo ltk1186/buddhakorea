@@ -36,6 +36,7 @@ Gold set은 하나의 단일 목록이 아니라 목적별 pool로 나눈다.
 - `source_text`: 검수 대상 Pāli source. VRI 원문 source이므로 저장 가능하다.
 - `issue_tags`: `khandha`, `manasikara`, `cross_term`, `uncertainty`, `source_normalization` 등.
 - `acceptance_type`: `exact`, `constraint`, `reference`.
+- `eval_mode`: optional. 기본값은 `terms_strict`.
 - `accepted_literal_ko`: project-adjudicated 직역. 없으면 `null`.
 - `accepted_natural_ko`: project-adjudicated 자연역. 없으면 `null`.
 - `required_terms`: 반드시 충족해야 하는 `pali`, `ko` pair 목록.
@@ -53,6 +54,14 @@ Gold set은 하나의 단일 목록이 아니라 목적별 pool로 나눈다.
 
 보호되는 외부 번역 본문을 저장하지 않는다. Bodhi, Walshe, Ñāṇamoli 등 외부 번역은 internal divergence reference로만 사용하며, 저장 가능한 것은 edition name, ref locator, divergence category, 짧은 자체 메모뿐이다.
 
+운영 규칙:
+
+- external reference note는 30 words 이하를 권장한다.
+- 보호 번역문 직접 인용 금지.
+- 보호 번역문 복제 금지.
+- 운영자 요약만 허용한다.
+- 필드명 기반 보호 본문 차단은 validator에서 유지한다.
+
 ## Acceptance Types
 
 `exact`는 project-adjudicated literal/natural translation과 비교할 수 있는 경우만 사용한다. 현재 v0에서는 남용하지 않는다.
@@ -60,6 +69,17 @@ Gold set은 하나의 단일 목록이 아니라 목적별 pool로 나눈다.
 `constraint`는 특정 용어, 금지 역어, ambiguity 처리 여부 같은 구조적 조건을 검사한다. 대부분의 초기 seed는 이 형식이 적합하다.
 
 `reference`는 외부 병행 번역 또는 전문가 검토가 필요한 항목이다. 자동 pass/fail을 하지 않으며, regression 결과는 `escalate`로 보낸다.
+
+## Evaluation Modes
+
+각 gold entry는 선택적으로 `eval_mode`를 가질 수 있다.
+
+- `terms_strict`: 기본값. `required_terms`와 `forbidden_terms`는 `terms[]`의 `(pali, ko)` pair만 기준으로 평가한다.
+- `body_allowed`: `terms[]` pair가 없더라도 `ko`가 `literal_ko` 또는 `natural_ko` 본문에 있고, 해당 `pali`가 source text에 실제로 등장하면 match로 본다.
+
+본문 매칭에는 co-occurrence gate를 둔다. 해당 Pāli term이 source에 없으면 일반 한국어 단어가 본문에 있더라도 발화하지 않는다. 이 정책은 “무리”, “연꽃” 같은 일상어 false positive를 줄이기 위한 것이다.
+
+기본값은 반드시 `terms_strict`다. `body_allowed`는 dhīra/paṇḍita처럼 terms 누락 때문에 false fail이 생길 수 있는 제한된 canary에만 사용한다.
 
 ## Initial Seed Strategy
 
@@ -74,6 +94,22 @@ Gold set은 하나의 단일 목록이 아니라 목적별 pool로 나눈다.
 - source normalization: `akicchāni`를 `akiccāni`처럼 무언 정규화하지 않는다.
 
 이 seed들은 holdout이 아니라 regression/discovery에 둔다. 이미 알려진 문제를 다시 찾는 것이 목적이기 때문이다.
+
+현재 9개 seed는 정확도 측정용이 아니다. 초기 seed는 glossary/prompt 튜닝에 이미 노출되어 오염 가능성이 있으므로, 이 seed의 pass/fail 수치를 전체 정확도처럼 해석하면 낙관 편향될 수 있다.
+
+Gold seed 성장 계획:
+
+- 현재 9개 seed는 v0 regression canary다.
+- 300 pilot 때 미오염 `holdout_gold` 15~20개를 동결한다.
+- 1,000 pilot 때 `holdout_gold`를 50~100개로 확장한다.
+- `regression_gold`와 `holdout_gold`는 alias가 아니며 자동 매핑하지 않는다.
+- 두 pool의 결과를 하나의 정확도 숫자로 합산하지 않는다.
+
+Pool 정의:
+
+- `discovery`: 문제 발견과 튜닝용.
+- `regression_gold`: 이미 알려진 문제의 재발 감시용 canary. 오염되어 있어도 된다.
+- `holdout_gold`: 비오염 정확도 측정용. 튜닝에 사용하지 않는다.
 
 ## Expert Question Queue
 

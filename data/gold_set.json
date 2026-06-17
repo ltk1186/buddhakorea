@@ -12,6 +12,7 @@
       "source_text": "‘‘Diṭṭhe dhamme ca yo attho, yo cattho samparāyiko; Atthābhisamayā dhīro, paṇḍitoti pavuccatī’’ti. (saṃ. ni. 1.129) –",
       "issue_tags": ["cross_term", "dhira", "pandita", "citation"],
       "acceptance_type": "constraint",
+      "eval_mode": "body_allowed",
       "accepted_literal_ko": null,
       "accepted_natural_ko": null,
       "required_terms": [

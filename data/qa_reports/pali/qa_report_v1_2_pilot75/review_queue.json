@@ -1,0 +1,1163 @@
+{
+  "auto_resolvable": [
+    {
+      "auto_resolvable": true,
+      "dedup_group_key": "allowed_parenthetical_pali",
+      "estimated_review_minutes": 1,
+      "evidence": {
+        "chunk_type": "",
+        "example_stable_segment_keys": [
+          "vri:romn:abh02a.att:24195e117aef",
+          "vri:romn:e0103n.att:0f1e7b16a8fb",
+          "vri:romn:e0104n.att:ce9536156dac",
+          "vri:romn:s0102a.att:4e9e30478928",
+          "vri:romn:s0102a.att:dae7dfcd3529",
+          "vri:romn:s0103a.att:27e70ab82fea",
+          "vri:romn:s0401a.att:29f5bdb38113",
+          "vri:romn:s0511a.att:0332b75e26a0",
+          "vri:romn:e0101n.mul:462c11938bc6",
+          "vri:romn:abh02t.tik:44f69334002c",
+          "vri:romn:s0201t.tik:8e951c4f787c",
+          "vri:romn:s0402t.tik:502640aed7e8",
+          "vri:romn:s0402t.tik:af9f6dc82fdf",
+          "vri:romn:vin01t1.tik:b9c1a89b49aa"
+        ],
+        "signals": [
+          "allowed_parenthetical_pali"
+        ],
+        "source_path": "",
+        "text_layer": ""
+      },
+      "example_stable_segment_keys": [
+        "vri:romn:abh02a.att:24195e117aef",
+        "vri:romn:e0103n.att:0f1e7b16a8fb",
+        "vri:romn:e0104n.att:ce9536156dac",
+        "vri:romn:s0102a.att:4e9e30478928",
+        "vri:romn:s0102a.att:dae7dfcd3529",
+        "vri:romn:s0103a.att:27e70ab82fea",
+        "vri:romn:s0401a.att:29f5bdb38113",
+        "vri:romn:s0511a.att:0332b75e26a0",
+        "vri:romn:e0101n.mul:462c11938bc6",
+        "vri:romn:abh02t.tik:44f69334002c",
+        "vri:romn:s0201t.tik:8e951c4f787c",
+        "vri:romn:s0402t.tik:502640aed7e8",
+        "vri:romn:s0402t.tik:af9f6dc82fdf",
+        "vri:romn:vin01t1.tik:b9c1a89b49aa"
+      ],
+      "human_needed": false,
+      "priority": "C",
+      "recurrence_count": 14,
+      "review_tier": "tier_1_operator",
+      "signals": [
+        "allowed_parenthetical_pali"
+      ],
+      "stable_segment_key": "vri:romn:abh02a.att:24195e117aef",
+      "suggested_action": "deterministic_validator_or_whitelist_update_candidate"
+    }
+  ],
+  "gold_current": {
+    "discovery": {
+      "escalate": 4,
+      "fail": 0,
+      "items": [
+        {
+          "evaluation": {
+            "acceptance_type": "reference",
+            "auto_evaluable": false,
+            "errors": [
+              "reference_only_no_auto_pass_fail"
+            ],
+            "hit_forbidden": [],
+            "matched_required": [],
+            "matched_variants": [],
+            "missing_required": [],
+            "pass": null
+          },
+          "gold_set_id": "gold-v0-abbokinna-001",
+          "pool": "discovery",
+          "result": "escalate",
+          "stable_segment_key": "vri:romn:e0104n.att:ce9536156dac"
+        },
+        {
+          "evaluation": {
+            "acceptance_type": "reference",
+            "auto_evaluable": false,
+            "errors": [
+              "reference_only_no_auto_pass_fail"
+            ],
+            "hit_forbidden": [],
+            "matched_required": [],
+            "matched_variants": [],
+            "missing_required": [],
+            "pass": null
+          },
+          "gold_set_id": "gold-v0-anulomika-khanti-001",
+          "pool": "discovery",
+          "result": "escalate",
+          "stable_segment_key": "vri:romn:e0103n.att:0f1e7b16a8fb"
+        },
+        {
+          "evaluation": {
+            "acceptance_type": "reference",
+            "auto_evaluable": false,
+            "errors": [
+              "reference_only_no_auto_pass_fail"
+            ],
+            "hit_forbidden": [],
+            "matched_required": [],
+            "matched_variants": [],
+            "missing_required": [],
+            "pass": null
+          },
+          "gold_set_id": "gold-v0-long-tika-001",
+          "pool": "discovery",
+          "result": "escalate",
+          "stable_segment_key": "vri:romn:s0402t.tik:af9f6dc82fdf"
+        },
+        {
+          "evaluation": {
+            "acceptance_type": "reference",
+            "auto_evaluable": false,
+            "errors": [
+              "reference_only_no_auto_pass_fail"
+            ],
+            "hit_forbidden": [],
+            "matched_required": [],
+            "matched_variants": [],
+            "missing_required": [],
+            "pass": null
+          },
+          "gold_set_id": "gold-v0-untranslated-pali-001",
+          "pool": "discovery",
+          "result": "escalate",
+          "stable_segment_key": "vri:romn:vin01t1.tik:b9c1a89b49aa"
+        }
+      ],
+      "pass": 0
+    },
+    "holdout_correctness": {
+      "escalate": 0,
+      "fail": 0,
+      "items": [],
+      "pass": 0
+    },
+    "note": "Holdout correctness and regression canary are intentionally separate and must not be combined.",
+    "regression_canary": {
+      "escalate": 0,
+      "fail": 1,
+      "items": [
+        {
+          "evaluation": {
+            "acceptance_type": "constraint",
+            "auto_evaluable": true,
+            "errors": [],
+            "eval_mode": "body_allowed",
+            "hit_forbidden": [
+              {
+                "ko": "현자",
+                "pali": "dhīra"
+              },
+              {
+                "ko": "슬기로운 이",
+                "pali": "paṇḍita"
+              }
+            ],
+            "matched_required": [
+              {
+                "ko": "슬기로운 이",
+                "pali": "dhīra"
+              }
+            ],
+            "matched_variants": [
+              {
+                "ko": "현자",
+                "pali": "paṇḍita"
+              }
+            ],
+            "missing_required": [],
+            "pass": false
+          },
+          "gold_set_id": "gold-v0-dhira-pandita-001",
+          "pool": "regression_gold",
+          "result": "fail",
+          "stable_segment_key": "vri:romn:abh01a.att:b75846bab59a"
+        },
+        {
+          "evaluation": {
+            "acceptance_type": "constraint",
+            "auto_evaluable": true,
+            "errors": [],
+            "eval_mode": "terms_strict",
+            "hit_forbidden": [],
+            "matched_required": [
+              {
+                "ko": "무더기",
+                "pali": "khandha"
+              }
+            ],
+            "matched_variants": [],
+            "missing_required": [],
+            "pass": true
+          },
+          "gold_set_id": "gold-v0-khandha-001",
+          "pool": "regression_gold",
+          "result": "pass",
+          "stable_segment_key": "vri:romn:abh01a.att:1a230d04e5c2"
+        },
+        {
+          "evaluation": {
+            "acceptance_type": "constraint",
+            "auto_evaluable": true,
+            "errors": [],
+            "eval_mode": "terms_strict",
+            "hit_forbidden": [],
+            "matched_required": [
+              {
+                "ko": "마음에 잡도리함",
+                "pali": "manasikāra"
+              },
+              {
+                "ko": "여리작의",
+                "pali": "yonisomanasikāra"
+              },
+              {
+                "ko": "비여리작의",
+                "pali": "ayonisomanasikāra"
+              }
+            ],
+            "matched_variants": [],
+            "missing_required": [],
+            "pass": true
+          },
+          "gold_set_id": "gold-v0-manasikara-001",
+          "pool": "regression_gold",
+          "result": "pass",
+          "stable_segment_key": "vri:romn:abh02t.tik:44f69334002c"
+        },
+        {
+          "evaluation": {
+            "acceptance_type": "constraint",
+            "auto_evaluable": true,
+            "errors": [],
+            "eval_mode": "terms_strict",
+            "hit_forbidden": [],
+            "matched_required": [
+              {
+                "ko": "수련",
+                "pali": "uppala"
+              }
+            ],
+            "matched_variants": [],
+            "missing_required": [],
+            "pass": true
+          },
+          "gold_set_id": "gold-v0-uppala-001",
+          "pool": "regression_gold",
+          "result": "pass",
+          "stable_segment_key": "vri:romn:s0102t.tik:73c367bfb416"
+        },
+        {
+          "evaluation": {
+            "acceptance_type": "constraint",
+            "auto_evaluable": true,
+            "errors": [],
+            "eval_mode": "terms_strict",
+            "hit_forbidden": [],
+            "matched_required": [],
+            "matched_variants": [],
+            "missing_required": [],
+            "pass": true
+          },
+          "gold_set_id": "gold-v0-source-normalization-001",
+          "pool": "regression_gold",
+          "result": "pass",
+          "stable_segment_key": "vri:romn:s0508m.mul:287165addd39"
+        }
+      ],
+      "pass": 4
+    }
+  },
+  "gold_regression": null,
+  "human_needed": [
+    {
+      "auto_resolvable": false,
+      "chunk_type": "prose",
+      "dedup_group_key": "grammar_uncertain:vri:romn:abh03t.tik:6fbb7ff462ce",
+      "estimated_review_minutes": 3,
+      "evidence": {
+        "chunk_type": "prose",
+        "example_stable_segment_keys": [
+          "vri:romn:abh03t.tik:6fbb7ff462ce"
+        ],
+        "signals": [
+          "grammar_uncertain"
+        ],
+        "source_path": "romn/abh03t.tik.xml",
+        "text_layer": "tika"
+      },
+      "example_stable_segment_keys": [
+        "vri:romn:abh03t.tik:6fbb7ff462ce"
+      ],
+      "human_needed": true,
+      "length_bucket": "medium",
+      "priority": "B",
+      "recurrence_count": 1,
+      "review_tier": "tier_1_operator",
+      "signals": [
+        "grammar_uncertain"
+      ],
+      "source_path": "romn/abh03t.tik.xml",
+      "stable_segment_key": "vri:romn:abh03t.tik:6fbb7ff462ce",
+      "suggested_action": "human_review",
+      "text_layer": "tika"
+    }
+  ],
+  "items": [
+    {
+      "auto_resolvable": false,
+      "chunk_type": "prose",
+      "dedup_group_key": "grammar_uncertain:vri:romn:abh03t.tik:6fbb7ff462ce",
+      "estimated_review_minutes": 3,
+      "evidence": {
+        "chunk_type": "prose",
+        "example_stable_segment_keys": [
+          "vri:romn:abh03t.tik:6fbb7ff462ce"
+        ],
+        "signals": [
+          "grammar_uncertain"
+        ],
+        "source_path": "romn/abh03t.tik.xml",
+        "text_layer": "tika"
+      },
+      "example_stable_segment_keys": [
+        "vri:romn:abh03t.tik:6fbb7ff462ce"
+      ],
+      "human_needed": true,
+      "length_bucket": "medium",
+      "priority": "B",
+      "recurrence_count": 1,
+      "review_tier": "tier_1_operator",
+      "signals": [
+        "grammar_uncertain"
+      ],
+      "source_path": "romn/abh03t.tik.xml",
+      "stable_segment_key": "vri:romn:abh03t.tik:6fbb7ff462ce",
+      "suggested_action": "human_review",
+      "text_layer": "tika"
+    },
+    {
+      "auto_resolvable": true,
+      "dedup_group_key": "allowed_parenthetical_pali",
+      "estimated_review_minutes": 1,
+      "evidence": {
+        "chunk_type": "",
+        "example_stable_segment_keys": [
+          "vri:romn:abh02a.att:24195e117aef",
+          "vri:romn:e0103n.att:0f1e7b16a8fb",
+          "vri:romn:e0104n.att:ce9536156dac",
+          "vri:romn:s0102a.att:4e9e30478928",
+          "vri:romn:s0102a.att:dae7dfcd3529",
+          "vri:romn:s0103a.att:27e70ab82fea",
+          "vri:romn:s0401a.att:29f5bdb38113",
+          "vri:romn:s0511a.att:0332b75e26a0",
+          "vri:romn:e0101n.mul:462c11938bc6",
+          "vri:romn:abh02t.tik:44f69334002c",
+          "vri:romn:s0201t.tik:8e951c4f787c",
+          "vri:romn:s0402t.tik:502640aed7e8",
+          "vri:romn:s0402t.tik:af9f6dc82fdf",
+          "vri:romn:vin01t1.tik:b9c1a89b49aa"
+        ],
+        "signals": [
+          "allowed_parenthetical_pali"
+        ],
+        "source_path": "",
+        "text_layer": ""
+      },
+      "example_stable_segment_keys": [
+        "vri:romn:abh02a.att:24195e117aef",
+        "vri:romn:e0103n.att:0f1e7b16a8fb",
+        "vri:romn:e0104n.att:ce9536156dac",
+        "vri:romn:s0102a.att:4e9e30478928",
+        "vri:romn:s0102a.att:dae7dfcd3529",
+        "vri:romn:s0103a.att:27e70ab82fea",
+        "vri:romn:s0401a.att:29f5bdb38113",
+        "vri:romn:s0511a.att:0332b75e26a0",
+        "vri:romn:e0101n.mul:462c11938bc6",
+        "vri:romn:abh02t.tik:44f69334002c",
+        "vri:romn:s0201t.tik:8e951c4f787c",
+        "vri:romn:s0402t.tik:502640aed7e8",
+        "vri:romn:s0402t.tik:af9f6dc82fdf",
+        "vri:romn:vin01t1.tik:b9c1a89b49aa"
+      ],
+      "human_needed": false,
+      "priority": "C",
+      "recurrence_count": 14,
+      "review_tier": "tier_1_operator",
+      "signals": [
+        "allowed_parenthetical_pali"
+      ],
+      "stable_segment_key": "vri:romn:abh02a.att:24195e117aef",
+      "suggested_action": "deterministic_validator_or_whitelist_update_candidate"
+    }
+  ],
+  "mode": "single_run",
+  "oracle_availability": {
+    "counts": {
+      "oracle_unavailable": 50,
+      "second_model_verifier_candidate": 25
+    },
+    "items": [
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/abh01a.att.xml",
+        "stable_segment_key": "vri:romn:abh01a.att:b75846bab59a",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/abh01a.att.xml",
+        "stable_segment_key": "vri:romn:abh01a.att:1a230d04e5c2",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/abh02a.att.xml",
+        "stable_segment_key": "vri:romn:abh02a.att:24195e117aef",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/abh03a.att.xml",
+        "stable_segment_key": "vri:romn:abh03a.att:44e90d9602c2",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/abh03a.att.xml",
+        "stable_segment_key": "vri:romn:abh03a.att:6c4930da0b03",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/e0103n.att.xml",
+        "stable_segment_key": "vri:romn:e0103n.att:fa08474c4389",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/e0103n.att.xml",
+        "stable_segment_key": "vri:romn:e0103n.att:0f1e7b16a8fb",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/e0104n.att.xml",
+        "stable_segment_key": "vri:romn:e0104n.att:2344f49fa374",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/e0104n.att.xml",
+        "stable_segment_key": "vri:romn:e0104n.att:ce9536156dac",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/e0104n.att.xml",
+        "stable_segment_key": "vri:romn:e0104n.att:60c2ea78fbd6",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0101a.att.xml",
+        "stable_segment_key": "vri:romn:s0101a.att:d0cfedc0e02a",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0101a.att.xml",
+        "stable_segment_key": "vri:romn:s0101a.att:bf3f7cfd1000",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0102a.att.xml",
+        "stable_segment_key": "vri:romn:s0102a.att:4e9e30478928",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0102a.att.xml",
+        "stable_segment_key": "vri:romn:s0102a.att:dae7dfcd3529",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0103a.att.xml",
+        "stable_segment_key": "vri:romn:s0103a.att:27e70ab82fea",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0401a.att.xml",
+        "stable_segment_key": "vri:romn:s0401a.att:b74e5e11e6ab",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0401a.att.xml",
+        "stable_segment_key": "vri:romn:s0401a.att:de09c6c7fbd8",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0401a.att.xml",
+        "stable_segment_key": "vri:romn:s0401a.att:4db52fe72c0d",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0401a.att.xml",
+        "stable_segment_key": "vri:romn:s0401a.att:29f5bdb38113",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0403a.att.xml",
+        "stable_segment_key": "vri:romn:s0403a.att:d18c5e2dddeb",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0506a.att.xml",
+        "stable_segment_key": "vri:romn:s0506a.att:3f8a80294845",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0506a.att.xml",
+        "stable_segment_key": "vri:romn:s0506a.att:ac1b125551c1",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0511a.att.xml",
+        "stable_segment_key": "vri:romn:s0511a.att:0332b75e26a0",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0513a2.att.xml",
+        "stable_segment_key": "vri:romn:s0513a2.att:3845c0998515",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0517a.att.xml",
+        "stable_segment_key": "vri:romn:s0517a.att:fce7fb5aa3b1",
+        "text_layer": "atthakatha"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/abh03m10.mul.xml",
+        "stable_segment_key": "vri:romn:abh03m10.mul:095ce215bd0f",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/abh03m10.mul.xml",
+        "stable_segment_key": "vri:romn:abh03m10.mul:ce5392cb3aad",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/abh03m11.mul.xml",
+        "stable_segment_key": "vri:romn:abh03m11.mul:cf694cd76a99",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/abh03m3.mul.xml",
+        "stable_segment_key": "vri:romn:abh03m3.mul:f43e709ac38f",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/abh03m3.mul.xml",
+        "stable_segment_key": "vri:romn:abh03m3.mul:b19c55d61703",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/e0101n.mul.xml",
+        "stable_segment_key": "vri:romn:e0101n.mul:462c11938bc6",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/e0101n.mul.xml",
+        "stable_segment_key": "vri:romn:e0101n.mul:c5a54ec9b23a",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/e0101n.mul.xml",
+        "stable_segment_key": "vri:romn:e0101n.mul:999d9df7680a",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/e0101n.mul.xml",
+        "stable_segment_key": "vri:romn:e0101n.mul:f81c59d325f2",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/e0101n.mul.xml",
+        "stable_segment_key": "vri:romn:e0101n.mul:0fc52ad8438c",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/s0101m.mul.xml",
+        "stable_segment_key": "vri:romn:s0101m.mul:ef40f51dbb2f",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/s0102m.mul.xml",
+        "stable_segment_key": "vri:romn:s0102m.mul:d17d0ca3f887",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/s0103m.mul.xml",
+        "stable_segment_key": "vri:romn:s0103m.mul:c2aa97aceb31",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/s0103m.mul.xml",
+        "stable_segment_key": "vri:romn:s0103m.mul:e102c431aeac",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/s0103m.mul.xml",
+        "stable_segment_key": "vri:romn:s0103m.mul:b1b9c6ac4e56",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/s0401m.mul.xml",
+        "stable_segment_key": "vri:romn:s0401m.mul:ec6609ed1b0a",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/s0402m3.mul.xml",
+        "stable_segment_key": "vri:romn:s0402m3.mul:f96a7a9fd874",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/s0402m3.mul.xml",
+        "stable_segment_key": "vri:romn:s0402m3.mul:d8ee20bd56f8",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/s0403m3.mul.xml",
+        "stable_segment_key": "vri:romn:s0403m3.mul:dae89c16d905",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/s0404m2.mul.xml",
+        "stable_segment_key": "vri:romn:s0404m2.mul:2677066d018a",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/s0508m.mul.xml",
+        "stable_segment_key": "vri:romn:s0508m.mul:287165addd39",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/s0508m.mul.xml",
+        "stable_segment_key": "vri:romn:s0508m.mul:1d3157c27571",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/s0509m.mul.xml",
+        "stable_segment_key": "vri:romn:s0509m.mul:359f7088ed61",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/s0510m2.mul.xml",
+        "stable_segment_key": "vri:romn:s0510m2.mul:d9e212d00fe6",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "second_model_verifier_candidate",
+        "source_path": "romn/s0514m.mul.xml",
+        "stable_segment_key": "vri:romn:s0514m.mul:63449fb68006",
+        "text_layer": "mula"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/abh01t.tik.xml",
+        "stable_segment_key": "vri:romn:abh01t.tik:3913b3da6511",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/abh01t.tik.xml",
+        "stable_segment_key": "vri:romn:abh01t.tik:411fd5bc316b",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/abh02t.tik.xml",
+        "stable_segment_key": "vri:romn:abh02t.tik:44f69334002c",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/abh02t.tik.xml",
+        "stable_segment_key": "vri:romn:abh02t.tik:736d8d03fd2b",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/abh03t.tik.xml",
+        "stable_segment_key": "vri:romn:abh03t.tik:6fbb7ff462ce",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0101t.tik.xml",
+        "stable_segment_key": "vri:romn:s0101t.tik:0ffc93c03bb2",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0101t.tik.xml",
+        "stable_segment_key": "vri:romn:s0101t.tik:c12703644157",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0101t.tik.xml",
+        "stable_segment_key": "vri:romn:s0101t.tik:7b9e1776ec6b",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0102t.tik.xml",
+        "stable_segment_key": "vri:romn:s0102t.tik:73c367bfb416",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0103t.tik.xml",
+        "stable_segment_key": "vri:romn:s0103t.tik:f212d1a26d96",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0201t.tik.xml",
+        "stable_segment_key": "vri:romn:s0201t.tik:d04c4bf70fe8",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0201t.tik.xml",
+        "stable_segment_key": "vri:romn:s0201t.tik:8e951c4f787c",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0401t.tik.xml",
+        "stable_segment_key": "vri:romn:s0401t.tik:d33f2029a9fa",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0402t.tik.xml",
+        "stable_segment_key": "vri:romn:s0402t.tik:502640aed7e8",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0402t.tik.xml",
+        "stable_segment_key": "vri:romn:s0402t.tik:e4fba4808e4a",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0402t.tik.xml",
+        "stable_segment_key": "vri:romn:s0402t.tik:64a0534991bb",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0402t.tik.xml",
+        "stable_segment_key": "vri:romn:s0402t.tik:9e01f56c5374",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0402t.tik.xml",
+        "stable_segment_key": "vri:romn:s0402t.tik:af9f6dc82fdf",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0519t.tik.xml",
+        "stable_segment_key": "vri:romn:s0519t.tik:fa9495f8097d",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0519t.tik.xml",
+        "stable_segment_key": "vri:romn:s0519t.tik:b4eab834317d",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0519t.tik.xml",
+        "stable_segment_key": "vri:romn:s0519t.tik:704342bd7c75",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0519t.tik.xml",
+        "stable_segment_key": "vri:romn:s0519t.tik:0278ccd07c11",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0519t.tik.xml",
+        "stable_segment_key": "vri:romn:s0519t.tik:3b542c405ee3",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/s0519t.tik.xml",
+        "stable_segment_key": "vri:romn:s0519t.tik:a60775fb7f39",
+        "text_layer": "tika"
+      },
+      {
+        "oracle_availability": "oracle_unavailable",
+        "source_path": "romn/vin01t1.tik.xml",
+        "stable_segment_key": "vri:romn:vin01t1.tik:b9c1a89b49aa",
+        "text_layer": "tika"
+      }
+    ],
+    "policy": [
+      "oracle agreement is not proof of correctness",
+      "oracle disagreement is not proof of mistranslation",
+      "oracle disagreement escalates to review queue only",
+      "live oracle calls are disabled in this stage"
+    ],
+    "registry_provided": false
+  },
+  "representative_samples": {
+    "citation_heavy": [
+      {
+        "chunk_type": "verse",
+        "length_bucket": "short",
+        "source_path": "romn/abh02a.att.xml",
+        "stable_segment_key": "vri:romn:abh02a.att:24195e117aef",
+        "text_layer": "atthakatha"
+      },
+      {
+        "chunk_type": "verse",
+        "length_bucket": "medium",
+        "source_path": "romn/e0101n.mul.xml",
+        "stable_segment_key": "vri:romn:e0101n.mul:f81c59d325f2",
+        "text_layer": "mula"
+      },
+      {
+        "chunk_type": "verse",
+        "length_bucket": "long",
+        "source_path": "romn/s0201t.tik.xml",
+        "stable_segment_key": "vri:romn:s0201t.tik:8e951c4f787c",
+        "text_layer": "tika"
+      },
+      {
+        "chunk_type": "verse",
+        "length_bucket": "long",
+        "source_path": "romn/s0517a.att.xml",
+        "stable_segment_key": "vri:romn:s0517a.att:fce7fb5aa3b1",
+        "text_layer": "atthakatha"
+      },
+      {
+        "chunk_type": "prose",
+        "length_bucket": "long",
+        "source_path": "romn/vin01t1.tik.xml",
+        "stable_segment_key": "vri:romn:vin01t1.tik:b9c1a89b49aa",
+        "text_layer": "tika"
+      }
+    ],
+    "long": [
+      {
+        "chunk_type": "prose",
+        "length_bucket": "long",
+        "source_path": "romn/e0101n.mul.xml",
+        "stable_segment_key": "vri:romn:e0101n.mul:462c11938bc6",
+        "text_layer": "mula"
+      },
+      {
+        "chunk_type": "prose",
+        "length_bucket": "long",
+        "source_path": "romn/s0401a.att.xml",
+        "stable_segment_key": "vri:romn:s0401a.att:de09c6c7fbd8",
+        "text_layer": "atthakatha"
+      },
+      {
+        "chunk_type": "prose",
+        "length_bucket": "long",
+        "source_path": "romn/s0404m2.mul.xml",
+        "stable_segment_key": "vri:romn:s0404m2.mul:2677066d018a",
+        "text_layer": "mula"
+      },
+      {
+        "chunk_type": "verse",
+        "length_bucket": "long",
+        "source_path": "romn/s0519t.tik.xml",
+        "stable_segment_key": "vri:romn:s0519t.tik:fa9495f8097d",
+        "text_layer": "tika"
+      },
+      {
+        "chunk_type": "prose",
+        "length_bucket": "long",
+        "source_path": "romn/vin01t1.tik.xml",
+        "stable_segment_key": "vri:romn:vin01t1.tik:b9c1a89b49aa",
+        "text_layer": "tika"
+      }
+    ],
+    "random": [
+      {
+        "chunk_type": "verse",
+        "length_bucket": "short",
+        "source_path": "romn/abh01t.tik.xml",
+        "stable_segment_key": "vri:romn:abh01t.tik:411fd5bc316b",
+        "text_layer": "tika"
+      },
+      {
+        "chunk_type": "prose",
+        "length_bucket": "long",
+        "source_path": "romn/abh03m10.mul.xml",
+        "stable_segment_key": "vri:romn:abh03m10.mul:095ce215bd0f",
+        "text_layer": "mula"
+      },
+      {
+        "chunk_type": "verse",
+        "length_bucket": "short",
+        "source_path": "romn/s0102m.mul.xml",
+        "stable_segment_key": "vri:romn:s0102m.mul:d17d0ca3f887",
+        "text_layer": "mula"
+      },
+      {
+        "chunk_type": "prose",
+        "length_bucket": "short",
+        "source_path": "romn/s0401m.mul.xml",
+        "stable_segment_key": "vri:romn:s0401m.mul:ec6609ed1b0a",
+        "text_layer": "mula"
+      },
+      {
+        "chunk_type": "prose",
+        "length_bucket": "medium",
+        "source_path": "romn/s0403a.att.xml",
+        "stable_segment_key": "vri:romn:s0403a.att:d18c5e2dddeb",
+        "text_layer": "atthakatha"
+      }
+    ],
+    "tika": [
+      {
+        "chunk_type": "prose",
+        "length_bucket": "long",
+        "source_path": "romn/abh02t.tik.xml",
+        "stable_segment_key": "vri:romn:abh02t.tik:44f69334002c",
+        "text_layer": "tika"
+      },
+      {
+        "chunk_type": "prose",
+        "length_bucket": "medium",
+        "source_path": "romn/abh03t.tik.xml",
+        "stable_segment_key": "vri:romn:abh03t.tik:6fbb7ff462ce",
+        "text_layer": "tika"
+      },
+      {
+        "chunk_type": "verse",
+        "length_bucket": "long",
+        "source_path": "romn/s0201t.tik.xml",
+        "stable_segment_key": "vri:romn:s0201t.tik:8e951c4f787c",
+        "text_layer": "tika"
+      },
+      {
+        "chunk_type": "prose",
+        "length_bucket": "medium",
+        "source_path": "romn/s0402t.tik.xml",
+        "stable_segment_key": "vri:romn:s0402t.tik:64a0534991bb",
+        "text_layer": "tika"
+      },
+      {
+        "chunk_type": "prose",
+        "length_bucket": "long",
+        "source_path": "romn/vin01t1.tik.xml",
+        "stable_segment_key": "vri:romn:vin01t1.tik:b9c1a89b49aa",
+        "text_layer": "tika"
+      }
+    ],
+    "title": [],
+    "verse": [
+      {
+        "chunk_type": "verse",
+        "length_bucket": "short",
+        "source_path": "romn/e0101n.mul.xml",
+        "stable_segment_key": "vri:romn:e0101n.mul:c5a54ec9b23a",
+        "text_layer": "mula"
+      },
+      {
+        "chunk_type": "verse",
+        "length_bucket": "medium",
+        "source_path": "romn/e0101n.mul.xml",
+        "stable_segment_key": "vri:romn:e0101n.mul:f81c59d325f2",
+        "text_layer": "mula"
+      },
+      {
+        "chunk_type": "verse",
+        "length_bucket": "short",
+        "source_path": "romn/e0103n.att.xml",
+        "stable_segment_key": "vri:romn:e0103n.att:0f1e7b16a8fb",
+        "text_layer": "atthakatha"
+      },
+      {
+        "chunk_type": "verse",
+        "length_bucket": "medium",
+        "source_path": "romn/s0403m3.mul.xml",
+        "stable_segment_key": "vri:romn:s0403m3.mul:dae89c16d905",
+        "text_layer": "mula"
+      },
+      {
+        "chunk_type": "verse",
+        "length_bucket": "long",
+        "source_path": "romn/s0519t.tik.xml",
+        "stable_segment_key": "vri:romn:s0519t.tik:fa9495f8097d",
+        "text_layer": "tika"
+      }
+    ]
+  },
+  "schema_version": "pali_review_queue_v1_2",
+  "source_integrity": {
+    "flag_counts": {},
+    "gap_counts": {
+      "missing_field:display_source_text": 75,
+      "missing_field:normalization_notes": 75,
+      "missing_field:raw_source_text": 75,
+      "missing_field:translation_source_text": 75
+    },
+    "invalid_count": 0,
+    "item_count": 75,
+    "sample_gaps": [
+      {
+        "flags": [],
+        "gaps": [
+          "missing_field:raw_source_text",
+          "missing_field:display_source_text",
+          "missing_field:translation_source_text",
+          "missing_field:normalization_notes"
+        ],
+        "raw_equals_display": true,
+        "raw_equals_translation_source": true,
+        "stable_segment_key": "vri:romn:abh01a.att:b75846bab59a",
+        "valid": true,
+        "warnings": [
+          "legacy_source_text_hash_alias_used"
+        ]
+      },
+      {
+        "flags": [],
+        "gaps": [
+          "missing_field:raw_source_text",
+          "missing_field:display_source_text",
+          "missing_field:translation_source_text",
+          "missing_field:normalization_notes"
+        ],
+        "raw_equals_display": true,
+        "raw_equals_translation_source": true,
+        "stable_segment_key": "vri:romn:abh01a.att:1a230d04e5c2",
+        "valid": true,
+        "warnings": [
+          "legacy_source_text_hash_alias_used"
+        ]
+      },
+      {
+        "flags": [],
+        "gaps": [
+          "missing_field:raw_source_text",
+          "missing_field:display_source_text",
+          "missing_field:translation_source_text",
+          "missing_field:normalization_notes"
+        ],
+        "raw_equals_display": true,
+        "raw_equals_translation_source": true,
+        "stable_segment_key": "vri:romn:abh02a.att:24195e117aef",
+        "valid": true,
+        "warnings": [
+          "legacy_source_text_hash_alias_used"
+        ]
+      },
+      {
+        "flags": [],
+        "gaps": [
+          "missing_field:raw_source_text",
+          "missing_field:display_source_text",
+          "missing_field:translation_source_text",
+          "missing_field:normalization_notes"
+        ],
+        "raw_equals_display": true,
+        "raw_equals_translation_source": true,
+        "stable_segment_key": "vri:romn:abh03a.att:44e90d9602c2",
+        "valid": true,
+        "warnings": [
+          "legacy_source_text_hash_alias_used"
+        ]
+      },
+      {
+        "flags": [],
+        "gaps": [
+          "missing_field:raw_source_text",
+          "missing_field:display_source_text",
+          "missing_field:translation_source_text",
+          "missing_field:normalization_notes"
+        ],
+        "raw_equals_display": true,
+        "raw_equals_translation_source": true,
+        "stable_segment_key": "vri:romn:abh03a.att:6c4930da0b03",
+        "valid": true,
+        "warnings": [
+          "legacy_source_text_hash_alias_used"
+        ]
+      }
+    ],
+    "valid_count": 75
+  },
+  "summary": {
+    "auto_resolvable_count": 1,
+    "deduped_item_count": 2,
+    "estimated_review_minutes_total": 3,
+    "human_needed_count": 1,
+    "priority_counts": {
+      "B": 1,
+      "C": 1
+    },
+    "total_raw_candidates": 15
+  }
+}

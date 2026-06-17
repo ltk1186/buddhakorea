@@ -7,12 +7,15 @@ databases, RAG systems, or external reference services.
 from __future__ import annotations
 
 import json
+import re
+import unicodedata
 from pathlib import Path
 from typing import Any
 
 
 POOLS = {"discovery", "holdout_gold", "regression_gold"}
 ACCEPTANCE_TYPES = {"exact", "constraint", "reference"}
+EVAL_MODES = {"terms_strict", "body_allowed"}
 VERDICTS = {"improved", "worsened", "neutral", "escalate"}
 PROTECTED_REFERENCE_KEYS = {
     "external_translation_text",
@@ -39,6 +42,49 @@ REQUIRED_ENTRY_FIELDS = {
     "gold_version",
     "created_from_pilot",
 }
+ROMAN_TOKEN_RE = re.compile(r"[A-Za-zāīūṅñṭḍṇḷṃĀĪŪṄÑṬḌṆḶṂ]+")
+FINAL_VOWELS = ("a", "ā", "i", "ī", "u", "ū")
+INFLECTION_SUFFIXES = frozenset(
+    {
+        "",
+        "ṃ",
+        "ṁ",
+        "o",
+        "e",
+        "aṃ",
+        "ā",
+        "ānaṃ",
+        "āni",
+        "āsu",
+        "āya",
+        "āyaṃ",
+        "āyo",
+        "āhi",
+        "ābhi",
+        "ehi",
+        "ebhi",
+        "ena",
+        "esaṃ",
+        "esu",
+        "assa",
+        "amhi",
+        "asmiṃ",
+        "ato",
+        "enaṃ",
+        "ti",
+        "āti",
+        "īti",
+        "oti",
+        "nti",
+        "to",
+        "su",
+        "hi",
+        "bhi",
+        "naṃ",
+        "mhi",
+        "smiṃ",
+    }
+)
 
 
 def load_gold_set(path: str | Path) -> dict[str, Any]:
@@ -51,6 +97,7 @@ def validate_gold_entry(entry: dict[str, Any]) -> dict[str, Any]:
     """Validate a single gold entry shape and reference hygiene."""
 
     errors: list[str] = []
+    warnings: list[str] = []
     missing = sorted(field for field in REQUIRED_ENTRY_FIELDS if field not in entry)
     errors.extend(f"missing_field:{field}" for field in missing)
 
@@ -58,13 +105,16 @@ def validate_gold_entry(entry: dict[str, Any]) -> dict[str, Any]:
         errors.append("invalid_pool")
     if entry.get("acceptance_type") not in ACCEPTANCE_TYPES:
         errors.append("invalid_acceptance_type")
+    if entry.get("eval_mode", "terms_strict") not in EVAL_MODES:
+        errors.append("invalid_eval_mode")
     if not str(entry.get("stable_segment_key", "")).strip():
         errors.append("empty_stable_segment_key")
     if not str(entry.get("source_text", "")).strip():
         errors.append("empty_source_text")
     errors.extend(_protected_reference_errors(entry))
+    warnings.extend(_long_note_warnings(entry))
 
-    return {"valid": not errors, "errors": errors}
+    return {"valid": not errors, "errors": errors, "warnings": warnings}
 
 
 def evaluate_against_gold(
@@ -208,6 +258,8 @@ def _evaluate_constraint(parsed_segment: dict[str, Any], gold_entry: dict[str, A
     variants = list(gold_entry.get("acceptable_variants") or [])
     terms = _term_pairs(parsed_segment)
     body = _body_text(parsed_segment)
+    source_text = str(gold_entry.get("source_text") or parsed_segment.get("original_text") or "")
+    eval_mode = str(gold_entry.get("eval_mode", "terms_strict"))
 
     matched_required: list[dict[str, str]] = []
     missing_required: list[dict[str, str]] = []
@@ -215,15 +267,15 @@ def _evaluate_constraint(parsed_segment: dict[str, Any], gold_entry: dict[str, A
     matched_variants: list[dict[str, str]] = []
 
     for pair in required:
-        if _pair_matches(pair, terms, body):
+        if _pair_matches(pair, terms, body, source_text=source_text, eval_mode=eval_mode):
             matched_required.append(_pair_dict(pair))
         else:
             missing_required.append(_pair_dict(pair))
     for pair in forbidden:
-        if _pair_matches(pair, terms, body):
+        if _pair_matches(pair, terms, body, source_text=source_text, eval_mode=eval_mode):
             hit_forbidden.append(_pair_dict(pair))
     for pair in variants:
-        if _pair_matches(pair, terms, body):
+        if _pair_matches(pair, terms, body, source_text=source_text, eval_mode=eval_mode):
             matched_variants.append(_pair_dict(pair))
 
     passed = not missing_required and not hit_forbidden
@@ -234,6 +286,7 @@ def _evaluate_constraint(parsed_segment: dict[str, Any], gold_entry: dict[str, A
             acceptance_type="constraint",
             errors=[],
         ),
+        "eval_mode": eval_mode,
         "matched_required": matched_required,
         "missing_required": missing_required,
         "hit_forbidden": hit_forbidden,
@@ -287,13 +340,22 @@ def _body_text(segment: dict[str, Any]) -> str:
     )
 
 
-def _pair_matches(pair: dict[str, Any], terms: set[tuple[str, str]], body: str) -> bool:
+def _pair_matches(
+    pair: dict[str, Any],
+    terms: set[tuple[str, str]],
+    body: str,
+    *,
+    source_text: str,
+    eval_mode: str,
+) -> bool:
     pali = str(pair.get("pali", "")).strip()
     ko = str(pair.get("ko", "")).strip()
     if not ko:
         return False
     if pali:
-        return (pali, ko) in terms
+        if (pali, ko) in terms:
+            return True
+        return eval_mode == "body_allowed" and ko in body and _pali_term_in_source(pali, source_text)
     if not pali and ko in body:
         return True
     return False
@@ -327,3 +389,42 @@ def _protected_reference_errors(value: Any, path: str = "") -> list[str]:
         for index, child in enumerate(value):
             errors.extend(_protected_reference_errors(child, f"{path}[{index}]"))
     return errors
+
+
+def _long_note_warnings(value: Any, path: str = "") -> list[str]:
+    warnings: list[str] = []
+    if isinstance(value, dict):
+        for key, child in value.items():
+            key_path = f"{path}.{key}" if path else str(key)
+            if str(key) in {"note", "divergence_note", "rationale"}:
+                word_count = len(str(child).split())
+                if word_count > 30:
+                    warnings.append(f"long_reference_note:{key_path}:{word_count}_words")
+            warnings.extend(_long_note_warnings(child, key_path))
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            warnings.extend(_long_note_warnings(child, f"{path}[{index}]"))
+    return warnings
+
+
+def _pali_term_in_source(pali: str, source_text: str) -> bool:
+    term = _norm(pali)
+    tokens = [_norm(token) for token in ROMAN_TOKEN_RE.findall(source_text)]
+    return any(_token_matches_term(token, term) for token in tokens)
+
+
+def _token_matches_term(token: str, term: str) -> bool:
+    if token == term:
+        return True
+    stem = _stem(term)
+    return bool(stem and token.startswith(stem) and token[len(stem) :] in INFLECTION_SUFFIXES)
+
+
+def _stem(term: str) -> str:
+    if term.endswith(FINAL_VOWELS):
+        return term[:-1]
+    return term
+
+
+def _norm(text: str) -> str:
+    return unicodedata.normalize("NFC", text.strip().casefold())
