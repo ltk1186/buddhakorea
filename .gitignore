@@ -159,3 +159,4 @@ CLAUDE.md
 GEMINI.md
 DEPLOYMENT_CHECKLIST.md
 VISION_AND_ROADMAP.md
+data/pilot_sets/pali/*inventory_cache*.json

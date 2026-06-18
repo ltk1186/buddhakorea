@@ -1,0 +1,116 @@
+{
+  "checks": {
+    "bucket_classifier_applied_to_full_inventory": {
+      "pass": true
+    },
+    "bucket_classifier_validated_against_75_artifact": {
+      "pass": true
+    },
+    "checked_75_duplicate_key_count": {
+      "actual": 4,
+      "pass": true
+    },
+    "chunk_type_reproduces_75": {
+      "checked": 75,
+      "pass": true
+    },
+    "deterministic_rerun_hash": {
+      "pass": true,
+      "sha256": "810bc49f2def7fd09dc14a98845aebe1ba1499cfb5132bf51f8e90ecd9b41a84"
+    },
+    "disjoint_from_pilot_75": {
+      "pass": true
+    },
+    "hard_bucket_detection_rules_applied": {
+      "pass": true
+    },
+    "hard_count": {
+      "actual": 100,
+      "expected": 100,
+      "pass": true
+    },
+    "hard_representative_disjoint": {
+      "pass": true
+    },
+    "heading_title_metadata_probe_cap": {
+      "actual": 0,
+      "max": 10,
+      "pass": true
+    },
+    "holdout_candidate_count": {
+      "actual": 20,
+      "max": 20,
+      "min": 15,
+      "pass": true
+    },
+    "holdout_candidates_protected": {
+      "pass": true
+    },
+    "inventory_count": {
+      "actual": 203594,
+      "pass": true
+    },
+    "inventory_generation_deterministic": {
+      "pass": true
+    },
+    "inventory_hash_present": {
+      "pass": true,
+      "sha256": "0cf74813283ee50ea649dcd14f52eb13fd37f98ca46084cd96c0a3ac09c328ca"
+    },
+    "length_bucket_reproduces_75": {
+      "checked": 75,
+      "pass": true
+    },
+    "no_batch_jsonl_generated": {
+      "pass": true
+    },
+    "no_db_write": {
+      "pass": true
+    },
+    "no_gemini_api_llm_call": {
+      "pass": true
+    },
+    "representative_count": {
+      "actual": 200,
+      "expected": 200,
+      "pass": true
+    },
+    "representative_excludes_hard_selected": {
+      "pass": true
+    },
+    "selected_count": {
+      "actual": 300,
+      "expected": 300,
+      "pass": true
+    },
+    "selection_content_hash": {
+      "pass": true,
+      "sha256": "810bc49f2def7fd09dc14a98845aebe1ba1499cfb5132bf51f8e90ecd9b41a84"
+    },
+    "source_diversity": {
+      "actual": {
+        "abh01": 8,
+        "abh02": 13,
+        "abh03": 26,
+        "e01": 7,
+        "s01": 23,
+        "s02": 22,
+        "s03": 24,
+        "s04": 21,
+        "s05": 117,
+        "vin01": 22,
+        "vin02": 17
+      }
+    },
+    "text_layer_reproduces_75": {
+      "checked": 75,
+      "pass": true
+    },
+    "unique_stable_segment_keys": {
+      "pass": true
+    }
+  },
+  "errors": [],
+  "valid": true,
+  "warnings": []
+}

@@ -9,7 +9,7 @@
   --parsed data/reports/pali/gemini_pilot_75_49bc869_prompt_qa_patch_v2_parsed.json \
   --gold data/gold_set.json \
   --glossary-qa data/reports/pali/translation_qa_v1_1_baseline_49bc869.json \
-  --out data/reports/pali/qa_report_v1_2_pilot75
+  --out data/qa_reports/pali/qa_report_v1_2_pilot75
 ```
 
 Single-run mode는 `--before-parsed`가 없을 때 사용한다. 현재 parsed result 하나의 risk profile, current gold pass/fail/escalate, review queue, source integrity gap, oracle availability summary를 생성한다. 이 모드에서는 regression verdict를 계산하지 않으며 `review_report.md`에 `regression mode disabled`가 표시된다.
@@ -22,7 +22,7 @@ Single-run mode는 `--before-parsed`가 없을 때 사용한다. 현재 parsed r
   --parsed data/reports/pali/gemini_pilot_75_49bc869_prompt_qa_patch_v2_parsed.json \
   --gold data/gold_set.json \
   --glossary-qa data/reports/pali/translation_qa_v1_1_baseline_49bc869.json \
-  --out data/reports/pali/qa_report_v1_2_regression
+  --out data/qa_reports/pali/qa_report_v1_2_regression
 ```
 
 Regression mode는 `--before-parsed`가 있을 때 사용한다. before와 after의 gold regression verdict를 `improved`, `worsened`, `neutral`, `escalate`로 계산한다. `worsened`는 Priority A review queue로 올라간다.
@@ -34,7 +34,7 @@ Regression mode는 `--before-parsed`가 있을 때 사용한다. before와 after
   --parsed <300_pilot_parsed.json> \
   --gold data/gold_set.json \
   --glossary-qa <300_qa_report.json> \
-  --out data/reports/pali/qa_report_300_<run_id>
+  --out data/qa_reports/pali/qa_report_300_<run_id>
 ```
 
 300/1,000/production shard report는 durable local path에 보관하되, commit 여부는 별도 판단한다. repo 비대화를 막기 위해 모든 대형 운영 report를 자동 commit 대상으로 보지 않는다.

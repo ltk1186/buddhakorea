@@ -49,7 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
       --parsed data/reports/pali/gemini_pilot_75_49bc869_prompt_qa_patch_v2_parsed.json \\
       --gold data/gold_set.json \\
       --glossary-qa data/reports/pali/translation_qa_v1_1_baseline_49bc869.json \\
-      --out data/reports/pali/qa_report_v1_2_pilot75
+      --out data/qa_reports/pali/qa_report_v1_2_pilot75
 
   before/after regression:
     ./venv/bin/python -m backend.pali.scripts.generate_qa_report \\
@@ -57,14 +57,14 @@ def build_parser() -> argparse.ArgumentParser:
       --parsed data/reports/pali/gemini_pilot_75_49bc869_prompt_qa_patch_v2_parsed.json \\
       --gold data/gold_set.json \\
       --glossary-qa data/reports/pali/translation_qa_v1_1_baseline_49bc869.json \\
-      --out data/reports/pali/qa_report_v1_2_regression
+      --out data/qa_reports/pali/qa_report_v1_2_regression
 
   300 pilot template:
     ./venv/bin/python -m backend.pali.scripts.generate_qa_report \\
       --parsed <300_pilot_parsed.json> \\
       --gold data/gold_set.json \\
       --glossary-qa <300_qa_report.json> \\
-      --out data/reports/pali/qa_report_300_<run_id>
+      --out data/qa_reports/pali/qa_report_300_<run_id>
 """
     parser = argparse.ArgumentParser(
         description="Generate local deterministic QA report artifacts.",
