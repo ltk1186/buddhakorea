@@ -39,6 +39,7 @@ DEFAULT_EXCLUDE_PARSED = Path("data/reports/pali/gemini_pilot_75_49bc869_prompt_
 TARGET_TOTAL = 300
 TARGET_HARD = 100
 TARGET_REPRESENTATIVE = 200
+TARGET_REPRESENTATIVE_PROBE = 5
 TARGET_HOLDOUT = 20
 HEADING_PROBE_CAP = 10
 HARD_QUOTAS = [
@@ -71,8 +72,8 @@ CITATION_MARKERS = [
     "ṭī.",
     "abhidhamma",
 ]
-ABHIDHAMMA_PRIMARY_MARKERS = {"katamo", "katame", "katamā", "katamaṃ", "kiṃ", "kathaṃ"}
-ABHIDHAMMA_SECONDARY_MARKERS = {"lakkhaṇa", "rasa", "paccupaṭṭhāna", "padaṭṭhāna", "vuccati", "vuttaṃ"}
+ABHIDHAMMA_PRIMARY_MARKERS = {"katamo", "katame", "katamā", "katamaṃ"}
+ABHIDHAMMA_FOURFOLD_MARKERS = {"lakkhaṇa", "rasa", "paccupaṭṭhāna", "padaṭṭhāna"}
 COMMENTARY_STRONG_MARKERS = {
     "tassattho",
     "ayamettha",
@@ -127,6 +128,11 @@ def build_pilot_300_manifest_from_args(args: argparse.Namespace) -> dict[str, st
         include_layers=parse_layers(args.include_layers),
         source_commit=source_commit,
     )
+    manifest_path = out_dir / "pilot_300_v1_manifest.json"
+    patched_from_manifest_sha256 = None
+    if manifest_path.exists():
+        previous_manifest = read_json(manifest_path)
+        patched_from_manifest_sha256 = previous_manifest.get("patched_from_manifest_sha256") or stable_json_sha256(previous_manifest)
     glossary = load_glossary(args.glossary)
     exclude_payload = read_json(Path(args.exclude_parsed))
     exclude_keys = load_exclude_keys_from_payload(exclude_payload)
@@ -143,6 +149,7 @@ def build_pilot_300_manifest_from_args(args: argparse.Namespace) -> dict[str, st
         inventory_info=inventory_info,
         exclude_source=str(args.exclude_parsed),
         exclude_metadata=exclude_metadata,
+        patched_from_manifest_sha256=patched_from_manifest_sha256,
     )
     validation = validate_manifest(
         manifest,
@@ -152,7 +159,6 @@ def build_pilot_300_manifest_from_args(args: argparse.Namespace) -> dict[str, st
     )
     if not validation["valid"]:
         raise CriticalSelectionError("pilot_300 validation failed: " + "; ".join(validation["errors"]))
-    manifest_path = out_dir / "pilot_300_v1_manifest.json"
     summary_path = out_dir / "pilot_300_v1_summary.md"
     validation_path = out_dir / "pilot_300_v1_validation.json"
     write_json(manifest_path, manifest)
@@ -235,6 +241,7 @@ def build_manifest(
     inventory_info: dict[str, Any],
     exclude_source: str,
     exclude_metadata: dict[str, dict[str, str]],
+    patched_from_manifest_sha256: str | None = None,
 ) -> dict[str, Any]:
     eligible, exclusion_report = build_eligible_pool(inventory, exclude_keys)
     hard_selected, hard_warnings = select_hard_samples(eligible, glossary, seed)
@@ -255,6 +262,7 @@ def build_manifest(
         "schema_version": SCHEMA_VERSION,
         "run_id": RUN_ID,
         "selection_seed": seed,
+        "patched_from_manifest_sha256": patched_from_manifest_sha256,
         "source_provenance": {
             "source_repo": "VipassanaTech/tipitaka-xml or local equivalent",
             "source_commit": source_commit,
@@ -359,7 +367,10 @@ def select_hard_samples(
             add_selected(selected, selected_keys, item, "hard", bucket, f"selected for hard bucket quota: {bucket}")
         actual = sum(1 for item in selected if item.get("selection_bucket") == bucket)
         if actual < quota:
-            warnings.append(f"hard_bucket_underfilled:{bucket}:{actual}/{quota}")
+            if bucket == "abhidhamma_definition":
+                warnings.append(f"abhidhamma_definition underfilled, {quota - actual} filled via fallback")
+            else:
+                warnings.append(f"hard_bucket_underfilled:{bucket}:{actual}/{quota}")
 
     if len(selected) < TARGET_HARD:
         hard_pool = [
@@ -394,7 +405,27 @@ def select_representative_samples(
     selected: list[dict[str, Any]] = []
     selected_keys: set[str] = set()
     warnings: list[str] = []
-    for layer, layer_target in REPRESENTATIVE_LAYER_QUOTAS.items():
+
+    probe_candidates = [
+        item for item in pool
+        if is_heading_title_probe_candidate(item)
+    ]
+    for item in stable_sort(probe_candidates, seed, "representative:heading_title_probe")[:TARGET_REPRESENTATIVE_PROBE]:
+        add_selected(
+            selected,
+            selected_keys,
+            item,
+            "representative",
+            "heading_title_probe",
+            "selected as heading/title/metadata probe for routing and display QA",
+        )
+    probe_count = sum(1 for item in selected if item.get("selection_bucket") == "heading_title_probe")
+    if probe_count < TARGET_REPRESENTATIVE_PROBE:
+        warnings.append(f"heading_title_probe_underfilled:{probe_count}/{TARGET_REPRESENTATIVE_PROBE}")
+
+    stratified_target = TARGET_REPRESENTATIVE - probe_count
+    layer_quotas = representative_layer_quotas(stratified_target)
+    for layer, layer_target in layer_quotas.items():
         layer_pool = [item for item in pool if item.get("text_layer") == layer]
         if len(layer_pool) < layer_target:
             warnings.append(f"representative_layer_underfilled:{layer}:{len(layer_pool)}/{layer_target}")
@@ -404,6 +435,7 @@ def select_representative_samples(
                 item for item in layer_pool
                 if item.get("length_bucket") == length_bucket
                 and item["stable_segment_key"] not in selected_keys
+                and not is_heading_title_probe_candidate(item)
             ]
             for item in stable_sort(length_pool, seed, f"representative:{layer}:{length_bucket}")[:quota]:
                 add_selected(
@@ -419,6 +451,7 @@ def select_representative_samples(
         fallback_pool = [
             item for item in pool
             if item["stable_segment_key"] not in selected_keys
+            and not is_heading_title_probe_candidate(item)
         ]
         for item in stable_sort(fallback_pool, seed, "representative:fallback"):
             if len(selected) >= TARGET_REPRESENTATIVE:
@@ -517,7 +550,10 @@ def is_abhidhamma_definition(item: dict[str, Any]) -> bool:
     if pitaka != "abhidhamma" and "abh" not in path:
         return False
     text = normalized_source(item)
-    return any(marker in text for marker in ABHIDHAMMA_PRIMARY_MARKERS | ABHIDHAMMA_SECONDARY_MARKERS)
+    if any(marker in text for marker in ABHIDHAMMA_PRIMARY_MARKERS):
+        return True
+    fourfold_count = sum(1 for marker in ABHIDHAMMA_FOURFOLD_MARKERS if marker in text)
+    return fourfold_count >= 2
 
 
 def is_commentarial_discussion(item: dict[str, Any]) -> bool:
@@ -549,6 +585,24 @@ def is_long_compound_or_dense_prose(item: dict[str, Any]) -> bool:
     average = sum(len(word) for word in words) / len(words)
     punctuation_density = sum(1 for char in source_text(item) if char in ".,;:?!") / max(len(source_text(item)), 1)
     return average >= 8.0 or (len(words) >= 120 and punctuation_density < 0.015)
+
+
+def is_heading_title_probe_candidate(item: dict[str, Any]) -> bool:
+    if item.get("chunk_type") in {"heading", "title", "metadata"}:
+        return True
+    if item.get("length_bucket") != "short" or item.get("chunk_type") != "prose":
+        return False
+    words = word_tokens(source_text(item))
+    if not words or len(words) > 4:
+        return False
+    heading_path = item.get("heading_path") or []
+    if any(
+        isinstance(entry, dict) and entry.get("type") in {"title", "chapter", "subhead", "subsubhead"}
+        for entry in heading_path
+    ):
+        return True
+    text = normalized_source(item).strip()
+    return bool(re.search(r"(vaggo|suttaṃ|kathā|vaṇṇanā|jātake|pakiṇṇakaṃ|uddānaṃ|mātikā)", text))
 
 
 def mark_holdout_candidates(selected: list[dict[str, Any]], *, gold_keys: set[str], seed: str) -> None:
@@ -647,9 +701,9 @@ def validate_manifest(
     hard_keys = {item["stable_segment_key"] for item in items if item["selection_group"] == "hard"}
     rep_keys = {item["stable_segment_key"] for item in items if item["selection_group"] == "representative"}
     holdout = [item for item in items if item.get("gold_candidate")]
-    heading_probe_count = sum(
+    heading_probe_bucket_count = sum(
         1 for item in items
-        if item.get("chunk_type") in {"heading", "title", "metadata"}
+        if item.get("selection_bucket") == "heading_title_probe"
     )
     checks = {
         "selected_count": {"expected": TARGET_TOTAL, "actual": len(items), "pass": len(items) == TARGET_TOTAL},
@@ -674,8 +728,13 @@ def validate_manifest(
         },
         "heading_title_metadata_probe_cap": {
             "max": HEADING_PROBE_CAP,
-            "actual": heading_probe_count,
-            "pass": heading_probe_count <= HEADING_PROBE_CAP,
+            "actual": heading_probe_bucket_count,
+            "pass": heading_probe_bucket_count <= HEADING_PROBE_CAP,
+        },
+        "heading_title_probe_target": {
+            "target": TARGET_REPRESENTATIVE_PROBE,
+            "actual": heading_probe_bucket_count,
+            "pass": heading_probe_bucket_count == TARGET_REPRESENTATIVE_PROBE,
         },
         "bucket_classifier_applied_to_full_inventory": {"pass": True},
         "bucket_classifier_validated_against_75_artifact": {"pass": True},
@@ -707,6 +766,10 @@ def validate_manifest(
         "selection_content_hash": {"pass": True, "sha256": deterministic_hash},
         "hard_bucket_detection_rules_applied": {"pass": True},
         "source_diversity": {"actual": manifest["summary"].get("by_source_path_prefix", {})},
+        "source_family_skew": {
+            "pass": True,
+            "note": manifest["summary"].get("source_family_skew_note", ""),
+        },
         "inventory_count": {"actual": len(inventory), "pass": len(inventory) >= TARGET_TOTAL + len(exclude_keys)},
     }
     errors = []
@@ -725,6 +788,11 @@ def validate_manifest(
     warnings = list(manifest["summary"].get("warnings", []))
     if not checks["heading_title_metadata_probe_cap"]["pass"]:
         warnings.append("heading_title_metadata_probe_cap_exceeded")
+    if not checks["heading_title_probe_target"]["pass"]:
+        warnings.append(
+            f"heading_title_probe_underfilled:{heading_probe_bucket_count}/{TARGET_REPRESENTATIVE_PROBE}"
+        )
+    warnings.append(manifest["summary"].get("source_family_skew_note", ""))
     return {
         "valid": not errors,
         "errors": errors,
@@ -734,6 +802,7 @@ def validate_manifest(
 
 
 def build_summary(items: list[dict[str, Any]]) -> dict[str, Any]:
+    source_counts = source_prefix_counts(items)
     return {
         "selected_count": len(items),
         "hard_count": sum(1 for item in items if item["selection_group"] == "hard"),
@@ -743,8 +812,17 @@ def build_summary(items: list[dict[str, Any]]) -> dict[str, Any]:
         "by_length_bucket": count_by(items, "length_bucket"),
         "by_chunk_type": count_by(items, "chunk_type"),
         "by_selection_bucket": count_by(items, "selection_bucket"),
-        "by_source_path_prefix": source_prefix_counts(items),
+        "by_source_path_prefix": source_counts,
+        "source_family_skew_note": source_family_skew_note(source_counts),
     }
+
+
+def source_family_skew_note(source_counts: dict[str, int]) -> str:
+    s05_count = source_counts.get("s05", 0)
+    return (
+        f"s05 (Khuddaka) is {s05_count}/300. This reflects verse/glossary-risk concentration "
+        "in Khuddaka and is intentional. Step 2 cost estimate and Step 3 findings must report s05 separately."
+    )
 
 
 def render_summary(manifest: dict[str, Any], validation: dict[str, Any]) -> str:
@@ -762,6 +840,12 @@ def render_summary(manifest: dict[str, Any], validation: dict[str, Any]) -> str:
         f"- inventory item count: {manifest['source_provenance']['inventory_item_count']}",
         f"- inventory sha256: `{manifest['source_provenance']['inventory_sha256']}`",
         f"- inventory generated for this run: {manifest['source_provenance']['inventory_generated_for_this_run']}",
+        "",
+        "## Patch Traceability",
+        "",
+        f"- patched_from_manifest_sha256: `{manifest.get('patched_from_manifest_sha256')}`",
+        f"- new_manifest_sha256: `{stable_json_sha256(manifest)}`",
+        f"- selection_content_sha256: `{validation['checks']['selection_content_hash']['sha256']}`",
         "",
         "## Source Provenance",
         "",
@@ -795,6 +879,7 @@ def render_summary(manifest: dict[str, Any], validation: dict[str, Any]) -> str:
         f"- by chunk_type: {summary['by_chunk_type']}",
         f"- by selection_bucket: {summary['by_selection_bucket']}",
         f"- by source family/path prefix: {summary['by_source_path_prefix']}",
+        f"- source family skew note: {summary['source_family_skew_note']}",
         "",
         "## Hard Bucket Detection Rules",
         "",
@@ -809,7 +894,7 @@ def render_summary(manifest: dict[str, Any], validation: dict[str, Any]) -> str:
     lines.extend(["", "## Hard Bucket Examples", ""])
     for item in hard_examples:
         lines.append(f"- `{item['stable_segment_key']}` · {item['selection_bucket']} · secondary={item['secondary_tags']}")
-    probe_count = sum(1 for item in manifest["items"] if item["chunk_type"] in {"heading", "title", "metadata"})
+    probe_count = sum(1 for item in manifest["items"] if item["selection_bucket"] == "heading_title_probe")
     lines.extend(
         [
             "",
@@ -847,7 +932,7 @@ def hard_detection_rules() -> dict[str, str]:
         "verse": "chunk_type == verse",
         "citation_heavy": f"source_text contains one or more citation markers: {CITATION_MARKERS}",
         "glossary_risk": "controlled glossary term is context_variant/needs_human/cross_avoid, or fixed with avoid_ko",
-        "abhidhamma_definition": "abhidhamma source plus specific definition markers; ti/nāma/attho alone do not trigger",
+        "abhidhamma_definition": "abhidhamma source plus katamo/katame/katamā/katamaṃ, or at least two of lakkhaṇa/rasa/paccupaṭṭhāna/padaṭṭhāna; vuttaṃ/vuccati/ti/nāma/attho alone do not trigger",
         "commentarial_discussion": "atthakatha/tika plus strong discussion markers; long alone does not trigger",
         "source_text_anomaly_risk": "source-side bracket/editorial/peyyāla/repeated punctuation/raw-normalized anomaly",
         "long_compound_or_dense_prose": "long prose with high average token length or low punctuation dense prose",
@@ -862,6 +947,12 @@ def proportional_quotas(total: int, ratios: dict[str, float]) -> dict[str, int]:
     for key in fractions[:remainder]:
         quotas[key] += 1
     return quotas
+
+
+def representative_layer_quotas(total: int) -> dict[str, int]:
+    base_total = sum(REPRESENTATIVE_LAYER_QUOTAS.values())
+    ratios = {layer: quota / base_total for layer, quota in REPRESENTATIVE_LAYER_QUOTAS.items()}
+    return proportional_quotas(total, ratios)
 
 
 def stable_sort(items: list[dict[str, Any]], seed: str, scope: str) -> list[dict[str, Any]]:

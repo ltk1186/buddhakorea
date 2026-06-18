@@ -16,7 +16,7 @@
     },
     "deterministic_rerun_hash": {
       "pass": true,
-      "sha256": "810bc49f2def7fd09dc14a98845aebe1ba1499cfb5132bf51f8e90ecd9b41a84"
+      "sha256": "06f0d35a7eeebdb23c23fb5dd78bf34739a65abc41ffe45c5311212f6e12cc93"
     },
     "disjoint_from_pilot_75": {
       "pass": true
@@ -33,9 +33,14 @@
       "pass": true
     },
     "heading_title_metadata_probe_cap": {
-      "actual": 0,
+      "actual": 5,
       "max": 10,
       "pass": true
+    },
+    "heading_title_probe_target": {
+      "actual": 5,
+      "pass": true,
+      "target": 5
     },
     "holdout_candidate_count": {
       "actual": 20,
@@ -85,22 +90,26 @@
     },
     "selection_content_hash": {
       "pass": true,
-      "sha256": "810bc49f2def7fd09dc14a98845aebe1ba1499cfb5132bf51f8e90ecd9b41a84"
+      "sha256": "06f0d35a7eeebdb23c23fb5dd78bf34739a65abc41ffe45c5311212f6e12cc93"
     },
     "source_diversity": {
       "actual": {
-        "abh01": 8,
-        "abh02": 13,
+        "abh01": 12,
+        "abh02": 12,
         "abh03": 26,
-        "e01": 7,
+        "e01": 6,
         "s01": 23,
         "s02": 22,
-        "s03": 24,
-        "s04": 21,
-        "s05": 117,
-        "vin01": 22,
-        "vin02": 17
+        "s03": 23,
+        "s04": 19,
+        "s05": 116,
+        "vin01": 25,
+        "vin02": 16
       }
+    },
+    "source_family_skew": {
+      "note": "s05 (Khuddaka) is 116/300. This reflects verse/glossary-risk concentration in Khuddaka and is intentional. Step 2 cost estimate and Step 3 findings must report s05 separately.",
+      "pass": true
     },
     "text_layer_reproduces_75": {
       "checked": 75,
@@ -112,5 +121,7 @@
   },
   "errors": [],
   "valid": true,
-  "warnings": []
+  "warnings": [
+    "s05 (Khuddaka) is 116/300. This reflects verse/glossary-risk concentration in Khuddaka and is intentional. Step 2 cost estimate and Step 3 findings must report s05 separately."
+  ]
 }

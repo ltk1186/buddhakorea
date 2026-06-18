@@ -68,6 +68,10 @@ def build_inventory():
     for i in range(10):
         index += 1
         items.append(make_item(index, layer="mula", length="short", text="pe. peyyāla [broken", pitaka="sutta"))
+    for i in range(8):
+        index += 1
+        chunk = "title" if i % 2 == 0 else "heading"
+        items.append(make_item(index, layer="mula", chunk=chunk, length="short", text=f"section heading {i}", pitaka="sutta"))
     for layer, count in (("mula", 160), ("atthakatha", 120), ("tika", 90)):
         for i in range(count):
             index += 1
@@ -162,6 +166,7 @@ class Pilot300SelectionTests(unittest.TestCase):
                 self.assertEqual(item["pool_candidate"], "holdout_gold")
                 self.assertTrue(item["do_not_use_for_tuning_until_reviewed"])
             self.assertTrue(validation["checks"]["heading_title_metadata_probe_cap"]["pass"])
+            self.assertEqual(validation["checks"]["heading_title_probe_target"]["actual"], 5)
 
     def test_same_seed_same_order_and_hash(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -191,7 +196,11 @@ class Pilot300SelectionTests(unittest.TestCase):
         self.assertTrue(is_glossary_risk(make_item(2, text="saṅkhāra dhamma"), glossary))
         self.assertTrue(is_glossary_risk(make_item(3, text="khandhānaṃ"), glossary))
         self.assertFalse(is_abhidhamma_definition(make_item(4, text="iti ti", path="romn/abh0001m.mul.xml", pitaka="abhidhamma")))
+        self.assertFalse(is_abhidhamma_definition(make_item(40, text="vuttaṃ vuccati nāma attho", path="romn/abh0001m.mul.xml", pitaka="abhidhamma")))
+        self.assertFalse(is_abhidhamma_definition(make_item(42, text="kiṃ kathaṃ", path="romn/abh0001m.mul.xml", pitaka="abhidhamma")))
+        self.assertFalse(is_abhidhamma_definition(make_item(41, text="lakkhaṇa only", path="romn/abh0001m.mul.xml", pitaka="abhidhamma")))
         self.assertTrue(is_abhidhamma_definition(make_item(5, text="katamo dhammo", path="romn/abh0002m.mul.xml", pitaka="abhidhamma")))
+        self.assertTrue(is_abhidhamma_definition(make_item(50, text="lakkhaṇa rasa", path="romn/abh0002m.mul.xml", pitaka="abhidhamma")))
         self.assertFalse(is_commentarial_discussion(make_item(6, layer="atthakatha", text="attho ti nāma")))
         self.assertTrue(is_commentarial_discussion(make_item(7, layer="atthakatha", text="tassattho ayamettha adhippāyo")))
 
@@ -200,9 +209,38 @@ class Pilot300SelectionTests(unittest.TestCase):
             _out, manifest, validation = run_builder(tmp)
             representatives = [item for item in manifest["items"] if item["selection_group"] == "representative"]
             self.assertTrue(any(item["secondary_tags"] for item in representatives))
+            self.assertEqual(sum(1 for item in representatives if item["selection_bucket"] == "heading_title_probe"), 5)
             self.assertTrue(manifest["bucket_definition_source"]["bucket_classifier_applied_to_full_inventory"])
             self.assertTrue(manifest["bucket_definition_source"]["bucket_classifier_validated_against_75_artifact"])
             self.assertTrue(validation["checks"]["inventory_hash_present"]["pass"])
+            self.assertIn("source_family_skew_note", manifest["summary"])
+            self.assertIn("source_family_skew", validation["checks"])
+
+    def test_abhidhamma_underfill_uses_fallback_warning(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            inventory = {"items": build_inventory()}
+            for item in inventory["items"]:
+                if "abh" in item.get("source_path", "") or item.get("pitaka") == "abhidhamma":
+                    item["original_text"] = "vuttaṃ vuccati ti nāma attho"
+                    item["normalized_text"] = item["original_text"]
+            inventory_path = Path(tmp) / "inventory.json"
+            inventory_path.write_text(json.dumps(inventory, ensure_ascii=False), encoding="utf-8")
+            exclude_items = [
+                {
+                    "stable_segment_key": f"seg-{i:04d}",
+                    "length_bucket": inventory["items"][i - 1]["length_bucket"],
+                    "chunk_type": inventory["items"][i - 1]["chunk_type"],
+                    "text_layer": inventory["items"][i - 1]["text_layer"],
+                }
+                for i in range(1, 76)
+            ]
+            exclude_path = Path(tmp) / "exclude.json"
+            exclude_path.write_text(json.dumps({"items": exclude_items}, ensure_ascii=False), encoding="utf-8")
+            gold_path = Path(tmp) / "gold.json"
+            gold_path.write_text(json.dumps({"entries": []}), encoding="utf-8")
+            _out, manifest, validation = run_builder_with_paths(inventory_path, exclude_path, gold_path, Path(tmp) / "out")
+            self.assertEqual(manifest["summary"]["hard_count"], 100)
+            self.assertIn("abhidhamma_definition underfilled", "\n".join(validation["warnings"]))
 
 
 if __name__ == "__main__":

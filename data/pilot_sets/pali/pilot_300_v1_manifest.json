@@ -18,7 +18,7 @@
     "pilot_75_source": "data/reports/pali/gemini_pilot_75_49bc869_prompt_qa_patch_v2_parsed.json"
   },
   "hard_bucket_detection_rules": {
-    "abhidhamma_definition": "abhidhamma source plus specific definition markers; ti/nāma/attho alone do not trigger",
+    "abhidhamma_definition": "abhidhamma source plus katamo/katame/katamā/katamaṃ, or at least two of lakkhaṇa/rasa/paccupaṭṭhāna/padaṭṭhāna; vuttaṃ/vuccati/ti/nāma/attho alone do not trigger",
     "atthakatha_long": "text_layer == atthakatha and length_bucket == long",
     "citation_heavy": "source_text contains one or more citation markers: ['dī. ni.', 'ma. ni.', 'saṃ. ni.', 'aṅ. ni.', 'khu. pā.', 'dha. pa.', 'udā.', 'itivu.', 'jā.', 'mahāva.', 'cūḷava.', 'visuddhi.', 'aṭṭha.', 'ṭī.', 'abhidhamma']",
     "commentarial_discussion": "atthakatha/tika plus strong discussion markers; long alone does not trigger",
@@ -168,7 +168,6 @@
       "secondary_tags": [
         "tika_long",
         "glossary_risk",
-        "abhidhamma_definition",
         "long_compound_or_dense_prose"
       ],
       "selection_bucket": "tika_long",
@@ -686,7 +685,6 @@
       "secondary_tags": [
         "tika_long",
         "glossary_risk",
-        "abhidhamma_definition",
         "long_compound_or_dense_prose"
       ],
       "selection_bucket": "tika_long",
@@ -4224,60 +4222,6 @@
         {
           "id": null,
           "level": 1,
-          "text": "Vibhaṅga-aṭṭhakathā",
-          "type": "book"
-        },
-        {
-          "id": null,
-          "level": 2,
-          "text": "1. Suttantabhājanīyaṃ",
-          "type": "title"
-        },
-        {
-          "id": null,
-          "level": 5,
-          "text": "Mātikāvaṇṇanā",
-          "type": "subhead"
-        }
-      ],
-      "length_bucket": "long",
-      "nikaya": "Abhidhammapiṭake",
-      "oracle_availability_hint": "oracle_unavailable",
-      "page_ref": null,
-      "pitaka": "abhidhamma",
-      "pool_candidate": null,
-      "secondary_tags": [
-        "atthakatha_long",
-        "glossary_risk",
-        "abhidhamma_definition",
-        "long_compound_or_dense_prose"
-      ],
-      "selection_bucket": "abhidhamma_definition",
-      "selection_group": "hard",
-      "selection_reason": "selected for hard bucket quota: abhidhamma_definition",
-      "source_char_count": 956,
-      "source_path": "romn/abh02a.att.xml",
-      "source_text_hash": "59e5d8d13f6cc15a3b8a0ef886cc7ffe94a8fac2fac759320dc77cd46b7f88cb",
-      "source_word_count": 79,
-      "stable_segment_key": "vri:romn:abh02a.att:8f3cb79cc19e",
-      "text_layer": "atthakatha"
-    },
-    {
-      "book_code": "",
-      "chunk_type": "prose",
-      "do_not_use_for_tuning_until_reviewed": false,
-      "excluded_from": [],
-      "gold_candidate": false,
-      "heading_path": [
-        {
-          "id": null,
-          "level": 0,
-          "text": "Abhidhammapiṭake",
-          "type": "nikaya"
-        },
-        {
-          "id": null,
-          "level": 1,
           "text": "Vibhaṅgapāḷi",
           "type": "book"
         },
@@ -4377,58 +4321,6 @@
         {
           "id": null,
           "level": 1,
-          "text": "Pañcapakaraṇa-mūlaṭīkā",
-          "type": "book"
-        },
-        {
-          "id": null,
-          "level": 2,
-          "text": "1. Anulomapaccanīkavaṇṇanā",
-          "type": "title"
-        },
-        {
-          "id": null,
-          "level": 5,
-          "text": "1. Atītādiekaccakathāvaṇṇanā",
-          "type": "subhead"
-        }
-      ],
-      "length_bucket": "medium",
-      "nikaya": "Abhidhammapiṭake",
-      "oracle_availability_hint": "oracle_unavailable",
-      "page_ref": null,
-      "pitaka": "abhidhamma",
-      "pool_candidate": null,
-      "secondary_tags": [
-        "glossary_risk",
-        "abhidhamma_definition"
-      ],
-      "selection_bucket": "abhidhamma_definition",
-      "selection_group": "hard",
-      "selection_reason": "selected for hard bucket quota: abhidhamma_definition",
-      "source_char_count": 192,
-      "source_path": "romn/abh03t.tik.xml",
-      "source_text_hash": "8252ba8d6c735e4e89a6d18f3bc49247271ffd7028b8cf08991ffdc9b35bb7af",
-      "source_word_count": 15,
-      "stable_segment_key": "vri:romn:abh03t.tik:e40f92c511a0",
-      "text_layer": "tika"
-    },
-    {
-      "book_code": "",
-      "chunk_type": "prose",
-      "do_not_use_for_tuning_until_reviewed": false,
-      "excluded_from": [],
-      "gold_candidate": false,
-      "heading_path": [
-        {
-          "id": null,
-          "level": 0,
-          "text": "Abhidhammapiṭake",
-          "type": "nikaya"
-        },
-        {
-          "id": null,
-          "level": 1,
           "text": "Vibhaṅgapāḷi",
           "type": "book"
         },
@@ -4480,115 +4372,35 @@
         },
         {
           "id": null,
-          "level": 3,
-          "text": "Paccayuddesavaṇṇanā",
-          "type": "chapter"
-        }
-      ],
-      "length_bucket": "medium",
-      "nikaya": "Abhidhammapiṭake",
-      "oracle_availability_hint": "oracle_unavailable",
-      "page_ref": null,
-      "pitaka": "abhidhamma",
-      "pool_candidate": null,
-      "secondary_tags": [
-        "abhidhamma_definition"
-      ],
-      "selection_bucket": "abhidhamma_definition",
-      "selection_group": "hard",
-      "selection_reason": "selected for hard bucket quota: abhidhamma_definition",
-      "source_char_count": 181,
-      "source_path": "romn/abh03a.att.xml",
-      "source_text_hash": "fd9aa9a87d3cee3b7ae922ae431ef1f26f1ff91bb7e7f09527621f60e6954f49",
-      "source_word_count": 17,
-      "stable_segment_key": "vri:romn:abh03a.att:5915d35af9cb",
-      "text_layer": "atthakatha"
-    },
-    {
-      "book_code": "",
-      "chunk_type": "prose",
-      "do_not_use_for_tuning_until_reviewed": false,
-      "excluded_from": [],
-      "gold_candidate": false,
-      "heading_path": [
-        {
-          "id": null,
-          "level": 0,
-          "text": "Abhidhammapiṭake",
-          "type": "nikaya"
-        },
-        {
-          "id": null,
           "level": 1,
-          "text": "Dhammasaṅgaṇī-mūlaṭīkā",
+          "text": "Dhammasaṅgaṇīpāḷi",
           "type": "book"
         },
         {
           "id": null,
-          "level": 6,
-          "text": "Vīsatigāthāvaṇṇanā",
-          "type": "subsubhead"
-        }
-      ],
-      "length_bucket": "medium",
-      "nikaya": "Abhidhammapiṭake",
-      "oracle_availability_hint": "oracle_unavailable",
-      "page_ref": null,
-      "pitaka": "abhidhamma",
-      "pool_candidate": null,
-      "secondary_tags": [
-        "citation_heavy",
-        "abhidhamma_definition"
-      ],
-      "selection_bucket": "abhidhamma_definition",
-      "selection_group": "hard",
-      "selection_reason": "selected for hard bucket quota: abhidhamma_definition",
-      "source_char_count": 317,
-      "source_path": "romn/abh01t.tik.xml",
-      "source_text_hash": "a5aa81820a792979ec13961e6a7144e4d52981a8c821901c05d071ceadb1fa4e",
-      "source_word_count": 37,
-      "stable_segment_key": "vri:romn:abh01t.tik:d71c1cdeff25",
-      "text_layer": "tika"
-    },
-    {
-      "book_code": "",
-      "chunk_type": "verse",
-      "do_not_use_for_tuning_until_reviewed": false,
-      "excluded_from": [],
-      "gold_candidate": false,
-      "heading_path": [
-        {
-          "id": null,
-          "level": 0,
-          "text": "Abhidhammapiṭake",
-          "type": "nikaya"
-        },
-        {
-          "id": null,
           "level": 2,
-          "text": "7. Pañhāvāravibhaṅgavaṇṇanā",
+          "text": "Suttantikadukanikkhepaṃ",
           "type": "title"
         }
       ],
-      "length_bucket": "short",
+      "length_bucket": "medium",
       "nikaya": "Abhidhammapiṭake",
-      "oracle_availability_hint": "oracle_unavailable",
+      "oracle_availability_hint": "second_model_verifier_candidate",
       "page_ref": null,
       "pitaka": "abhidhamma",
       "pool_candidate": null,
       "secondary_tags": [
-        "verse",
         "abhidhamma_definition"
       ],
       "selection_bucket": "abhidhamma_definition",
       "selection_group": "hard",
       "selection_reason": "selected for hard bucket quota: abhidhamma_definition",
-      "source_char_count": 94,
-      "source_path": "romn/abh03a.att.xml",
-      "source_text_hash": "857e476594fa1460042a548e1f5731ff2732a4f71b5788d9916abba6b7ac19ef",
-      "source_word_count": 10,
-      "stable_segment_key": "vri:romn:abh03a.att:b50dcc9e35a0",
-      "text_layer": "atthakatha"
+      "source_char_count": 147,
+      "source_path": "romn/abh01m.mul.xml",
+      "source_text_hash": "240fd287c3efc24c311155d75e17790fc215673f773269156fa3c5bf5b78bf25",
+      "source_word_count": 18,
+      "stable_segment_key": "vri:romn:abh01m.mul:9ec9e0ef899d",
+      "text_layer": "mula"
     },
     {
       "book_code": "",
@@ -4606,20 +4418,105 @@
         {
           "id": null,
           "level": 1,
-          "text": "Pañcapakaraṇa-mūlaṭīkā",
+          "text": "Dhammasaṅgaṇīpāḷi",
           "type": "book"
         },
         {
           "id": null,
           "level": 2,
-          "text": "1. Paṇṇattivāro",
+          "text": "Tikanikkhepaṃ",
+          "type": "title"
+        }
+      ],
+      "length_bucket": "medium",
+      "nikaya": "Abhidhammapiṭake",
+      "oracle_availability_hint": "second_model_verifier_candidate",
+      "page_ref": null,
+      "pitaka": "abhidhamma",
+      "pool_candidate": null,
+      "secondary_tags": [
+        "glossary_risk",
+        "abhidhamma_definition"
+      ],
+      "selection_bucket": "abhidhamma_definition",
+      "selection_group": "hard",
+      "selection_reason": "selected for hard bucket quota: abhidhamma_definition",
+      "source_char_count": 149,
+      "source_path": "romn/abh01m.mul.xml",
+      "source_text_hash": "2c53505dd8867cc98b3bcca46e2cce686e87eb429d813657557da2e82de735e8",
+      "source_word_count": 13,
+      "stable_segment_key": "vri:romn:abh01m.mul:67155b053dfb",
+      "text_layer": "mula"
+    },
+    {
+      "book_code": "",
+      "chunk_type": "prose",
+      "do_not_use_for_tuning_until_reviewed": false,
+      "excluded_from": [],
+      "gold_candidate": false,
+      "heading_path": [
+        {
+          "id": null,
+          "level": 0,
+          "text": "Abhidhammapiṭake",
+          "type": "nikaya"
+        },
+        {
+          "id": null,
+          "level": 1,
+          "text": "Dhammasaṅgaṇīpāḷi",
+          "type": "book"
+        },
+        {
+          "id": null,
+          "level": 2,
+          "text": "Rūpavibhatti",
           "type": "title"
         },
         {
           "id": null,
           "level": 5,
-          "text": "Paricchedaparicchinnuddesavāravaṇṇanā",
+          "text": "Upādābhājanīyaṃ",
           "type": "subhead"
+        }
+      ],
+      "length_bucket": "short",
+      "nikaya": "Abhidhammapiṭake",
+      "oracle_availability_hint": "second_model_verifier_candidate",
+      "page_ref": null,
+      "pitaka": "abhidhamma",
+      "pool_candidate": null,
+      "secondary_tags": [
+        "abhidhamma_definition"
+      ],
+      "selection_bucket": "abhidhamma_definition",
+      "selection_group": "hard",
+      "selection_reason": "selected for hard bucket quota: abhidhamma_definition",
+      "source_char_count": 90,
+      "source_path": "romn/abh01m.mul.xml",
+      "source_text_hash": "fd42bf03bed2aa6c35a16eb272de9c47fd0b485f6157d3b6cacfc72e401801e3",
+      "source_word_count": 12,
+      "stable_segment_key": "vri:romn:abh01m.mul:e451dddb7efc",
+      "text_layer": "mula"
+    },
+    {
+      "book_code": "",
+      "chunk_type": "prose",
+      "do_not_use_for_tuning_until_reviewed": false,
+      "excluded_from": [],
+      "gold_candidate": false,
+      "heading_path": [
+        {
+          "id": null,
+          "level": 0,
+          "text": "Abhidhammapiṭake",
+          "type": "nikaya"
+        },
+        {
+          "id": null,
+          "level": 2,
+          "text": "2. Dukaniddesavaṇṇanā",
+          "type": "title"
         }
       ],
       "length_bucket": "long",
@@ -4629,20 +4526,123 @@
       "pitaka": "abhidhamma",
       "pool_candidate": null,
       "secondary_tags": [
-        "tika_long",
+        "atthakatha_long",
+        "glossary_risk",
         "abhidhamma_definition",
-        "commentarial_discussion",
         "long_compound_or_dense_prose"
       ],
       "selection_bucket": "abhidhamma_definition",
       "selection_group": "hard",
       "selection_reason": "selected for hard bucket quota: abhidhamma_definition",
-      "source_char_count": 964,
-      "source_path": "romn/abh03t.tik.xml",
-      "source_text_hash": "4dd9c5a3fb145cf3d4c7f63eb3f0ee8a6b0f0fd595f44e18081107e3604cf966",
-      "source_word_count": 95,
-      "stable_segment_key": "vri:romn:abh03t.tik:3c47f5dfdb2d",
-      "text_layer": "tika"
+      "source_char_count": 410,
+      "source_path": "romn/abh03a.att.xml",
+      "source_text_hash": "bd1a3700eb3fadf963c15e62e8230426c7f6e0e947ccd22e37094afa14f4d4c6",
+      "source_word_count": 41,
+      "stable_segment_key": "vri:romn:abh03a.att:4d669630764a",
+      "text_layer": "atthakatha"
+    },
+    {
+      "book_code": "",
+      "chunk_type": "prose",
+      "do_not_use_for_tuning_until_reviewed": false,
+      "excluded_from": [],
+      "gold_candidate": false,
+      "heading_path": [
+        {
+          "id": null,
+          "level": 0,
+          "text": "Abhidhammapiṭake",
+          "type": "nikaya"
+        },
+        {
+          "id": null,
+          "level": 1,
+          "text": "Vibhaṅgapāḷi",
+          "type": "book"
+        },
+        {
+          "id": null,
+          "level": 2,
+          "text": "5. Pañcakaniddeso",
+          "type": "title"
+        },
+        {
+          "id": null,
+          "level": 5,
+          "text": "(8) Pañca nīvaraṇāni",
+          "type": "subhead"
+        }
+      ],
+      "length_bucket": "medium",
+      "nikaya": "Abhidhammapiṭake",
+      "oracle_availability_hint": "second_model_verifier_candidate",
+      "page_ref": null,
+      "pitaka": "abhidhamma",
+      "pool_candidate": null,
+      "secondary_tags": [
+        "abhidhamma_definition"
+      ],
+      "selection_bucket": "abhidhamma_definition",
+      "selection_group": "hard",
+      "selection_reason": "selected for hard bucket quota: abhidhamma_definition",
+      "source_char_count": 168,
+      "source_path": "romn/abh02m.mul.xml",
+      "source_text_hash": "060fcd297df80b17a61c6d5cc60647dff66302928ccf634abf6a8ac79852953b",
+      "source_word_count": 12,
+      "stable_segment_key": "vri:romn:abh02m.mul:6a9bbbfeda7b",
+      "text_layer": "mula"
+    },
+    {
+      "book_code": "",
+      "chunk_type": "prose",
+      "do_not_use_for_tuning_until_reviewed": false,
+      "excluded_from": [],
+      "gold_candidate": false,
+      "heading_path": [
+        {
+          "id": null,
+          "level": 0,
+          "text": "Abhidhammapiṭake",
+          "type": "nikaya"
+        },
+        {
+          "id": null,
+          "level": 1,
+          "text": "Dhammasaṅgaṇīpāḷi",
+          "type": "book"
+        },
+        {
+          "id": null,
+          "level": 2,
+          "text": "Dukaatthuddhāro",
+          "type": "title"
+        },
+        {
+          "id": null,
+          "level": 5,
+          "text": "Mahantaradukaṃ",
+          "type": "subhead"
+        }
+      ],
+      "length_bucket": "medium",
+      "nikaya": "Abhidhammapiṭake",
+      "oracle_availability_hint": "second_model_verifier_candidate",
+      "page_ref": null,
+      "pitaka": "abhidhamma",
+      "pool_candidate": null,
+      "secondary_tags": [
+        "glossary_risk",
+        "abhidhamma_definition"
+      ],
+      "selection_bucket": "abhidhamma_definition",
+      "selection_group": "hard",
+      "selection_reason": "selected for hard bucket quota: abhidhamma_definition",
+      "source_char_count": 140,
+      "source_path": "romn/abh01m.mul.xml",
+      "source_text_hash": "b3150b8ee9321bcd0e3d6983ca40919d1af3bf30fe519f4fa855c903ffc648bc",
+      "source_word_count": 11,
+      "stable_segment_key": "vri:romn:abh01m.mul:1aa169b5c917",
+      "text_layer": "mula"
     },
     {
       "book_code": "",
@@ -5187,6 +5187,257 @@
     },
     {
       "book_code": "",
+      "chunk_type": "prose",
+      "do_not_use_for_tuning_until_reviewed": false,
+      "excluded_from": [],
+      "gold_candidate": false,
+      "heading_path": [
+        {
+          "id": null,
+          "level": 0,
+          "text": "Abhidhammapiṭake",
+          "type": "nikaya"
+        },
+        {
+          "id": null,
+          "level": 1,
+          "text": "Paṭṭhānapāḷi",
+          "type": "book"
+        },
+        {
+          "id": null,
+          "level": 2,
+          "text": "1-6. Paṭiccavārādi",
+          "type": "title"
+        },
+        {
+          "id": null,
+          "level": 5,
+          "text": "Nahetupaccayādi",
+          "type": "subhead"
+        }
+      ],
+      "length_bucket": "short",
+      "nikaya": "Abhidhammapiṭake",
+      "oracle_availability_hint": "second_model_verifier_candidate",
+      "page_ref": null,
+      "pitaka": "abhidhamma",
+      "pool_candidate": null,
+      "secondary_tags": [],
+      "selection_bucket": "heading_title_probe",
+      "selection_group": "representative",
+      "selection_reason": "selected as heading/title/metadata probe for routing and display QA",
+      "source_char_count": 41,
+      "source_path": "romn/abh03m10.mul.xml",
+      "source_text_hash": "038a2c957b7d1a5c48c339e96eaa47953e72a29ae3b545d562ca14dc2f83b6ce",
+      "source_word_count": 4,
+      "stable_segment_key": "vri:romn:abh03m10.mul:4a04b4789026",
+      "text_layer": "mula"
+    },
+    {
+      "book_code": "",
+      "chunk_type": "prose",
+      "do_not_use_for_tuning_until_reviewed": false,
+      "excluded_from": [],
+      "gold_candidate": false,
+      "heading_path": [
+        {
+          "id": null,
+          "level": 0,
+          "text": "Abhidhammapiṭake",
+          "type": "nikaya"
+        },
+        {
+          "id": null,
+          "level": 1,
+          "text": "Abhidhammapiṭake",
+          "type": "book"
+        },
+        {
+          "id": null,
+          "level": 2,
+          "text": "4. Suddhindriyamūlacakkavāro",
+          "type": "title"
+        },
+        {
+          "id": null,
+          "level": 5,
+          "text": "(Ka) anulomaṃ",
+          "type": "subhead"
+        }
+      ],
+      "length_bucket": "short",
+      "nikaya": "Abhidhammapiṭake",
+      "oracle_availability_hint": "second_model_verifier_candidate",
+      "page_ref": null,
+      "pitaka": "abhidhamma",
+      "pool_candidate": null,
+      "secondary_tags": [],
+      "selection_bucket": "heading_title_probe",
+      "selection_group": "representative",
+      "selection_reason": "selected as heading/title/metadata probe for routing and display QA",
+      "source_char_count": 31,
+      "source_path": "romn/abh03m6.mul.xml",
+      "source_text_hash": "562d74ae23c711398c52f08093ce7e625e009c7ae34a305bb64f3cd30a3a339a",
+      "source_word_count": 4,
+      "stable_segment_key": "vri:romn:abh03m6.mul:7e4af1163385",
+      "text_layer": "mula"
+    },
+    {
+      "book_code": "",
+      "chunk_type": "prose",
+      "do_not_use_for_tuning_until_reviewed": false,
+      "excluded_from": [],
+      "gold_candidate": false,
+      "heading_path": [
+        {
+          "id": null,
+          "level": 0,
+          "text": "Khuddakanikāye",
+          "type": "nikaya"
+        },
+        {
+          "id": null,
+          "level": 1,
+          "text": "Dhammapada-aṭṭhakathā",
+          "type": "book"
+        },
+        {
+          "id": null,
+          "level": 2,
+          "text": "(Dutiyo bhāgo)",
+          "type": "title"
+        },
+        {
+          "id": null,
+          "level": 3,
+          "text": "10. Daṇḍavaggo",
+          "type": "chapter"
+        },
+        {
+          "id": null,
+          "level": 5,
+          "text": "8. Bahubhaṇḍikabhikkhuvatthu",
+          "type": "subhead"
+        }
+      ],
+      "length_bucket": "short",
+      "nikaya": "Khuddakanikāye",
+      "oracle_availability_hint": "oracle_unavailable",
+      "page_ref": null,
+      "pitaka": "sutta",
+      "pool_candidate": null,
+      "secondary_tags": [],
+      "selection_bucket": "heading_title_probe",
+      "selection_group": "representative",
+      "selection_reason": "selected as heading/title/metadata probe for routing and display QA",
+      "source_char_count": 49,
+      "source_path": "romn/s0502a.att.xml",
+      "source_text_hash": "1894a6ecb3afa98102888f62b9e7baffa51eacdf59ac42dbf075df7c1d6ce4ee",
+      "source_word_count": 4,
+      "stable_segment_key": "vri:romn:s0502a.att:5dc82ba6d0cf",
+      "text_layer": "atthakatha"
+    },
+    {
+      "book_code": "",
+      "chunk_type": "prose",
+      "do_not_use_for_tuning_until_reviewed": false,
+      "excluded_from": [],
+      "gold_candidate": false,
+      "heading_path": [
+        {
+          "id": null,
+          "level": 0,
+          "text": "Khuddakanikāye",
+          "type": "nikaya"
+        },
+        {
+          "id": null,
+          "level": 1,
+          "text": "Jātaka-aṭṭhakathā",
+          "type": "book"
+        },
+        {
+          "id": null,
+          "level": 2,
+          "text": "(Chaṭṭho bhāgo)",
+          "type": "title"
+        },
+        {
+          "id": null,
+          "level": 3,
+          "text": "22. Mahānipāto",
+          "type": "chapter"
+        }
+      ],
+      "length_bucket": "short",
+      "nikaya": "Khuddakanikāye",
+      "oracle_availability_hint": "oracle_unavailable",
+      "page_ref": null,
+      "pitaka": "sutta",
+      "pool_candidate": null,
+      "secondary_tags": [],
+      "selection_bucket": "heading_title_probe",
+      "selection_group": "representative",
+      "selection_reason": "selected as heading/title/metadata probe for routing and display QA",
+      "source_char_count": 23,
+      "source_path": "romn/s0514a2.att.xml",
+      "source_text_hash": "6ea52b04eff011801e007586dd1a09e19f2ca96bd26206b39d8877169c1994b9",
+      "source_word_count": 3,
+      "stable_segment_key": "vri:romn:s0514a2.att:fcc9f0426481",
+      "text_layer": "atthakatha"
+    },
+    {
+      "book_code": "",
+      "chunk_type": "prose",
+      "do_not_use_for_tuning_until_reviewed": true,
+      "excluded_from": [],
+      "gold_candidate": true,
+      "heading_path": [
+        {
+          "id": null,
+          "level": 0,
+          "text": "Abhidhammapiṭake",
+          "type": "nikaya"
+        },
+        {
+          "id": null,
+          "level": 1,
+          "text": "Paṭṭhānapāḷi",
+          "type": "book"
+        },
+        {
+          "id": null,
+          "level": 2,
+          "text": "7. Pañhāvāro",
+          "type": "title"
+        },
+        {
+          "id": null,
+          "level": 5,
+          "text": "Paccanīyuddhāro",
+          "type": "subhead"
+        }
+      ],
+      "length_bucket": "short",
+      "nikaya": "Abhidhammapiṭake",
+      "oracle_availability_hint": "second_model_verifier_candidate",
+      "page_ref": null,
+      "pitaka": "abhidhamma",
+      "pool_candidate": "holdout_gold",
+      "secondary_tags": [],
+      "selection_bucket": "heading_title_probe",
+      "selection_group": "representative",
+      "selection_reason": "selected as heading/title/metadata probe for routing and display QA",
+      "source_char_count": 41,
+      "source_path": "romn/abh03m10.mul.xml",
+      "source_text_hash": "038a2c957b7d1a5c48c339e96eaa47953e72a29ae3b545d562ca14dc2f83b6ce",
+      "source_word_count": 4,
+      "stable_segment_key": "vri:romn:abh03m10.mul:4d1189870043",
+      "text_layer": "mula"
+    },
+    {
+      "book_code": "",
       "chunk_type": "verse",
       "do_not_use_for_tuning_until_reviewed": false,
       "excluded_from": [],
@@ -5579,9 +5830,9 @@
     {
       "book_code": "",
       "chunk_type": "verse",
-      "do_not_use_for_tuning_until_reviewed": false,
+      "do_not_use_for_tuning_until_reviewed": true,
       "excluded_from": [],
-      "gold_candidate": false,
+      "gold_candidate": true,
       "heading_path": [
         {
           "id": null,
@@ -5613,7 +5864,7 @@
       "oracle_availability_hint": "second_model_verifier_candidate",
       "page_ref": null,
       "pitaka": "vinaya",
-      "pool_candidate": null,
+      "pool_candidate": "holdout_gold",
       "secondary_tags": [
         "verse",
         "glossary_risk"
@@ -5835,106 +6086,6 @@
       "source_text_hash": "7b570424938d1d6468cb0918adfa78b1227278b5ef8e67b5dce288050f780782",
       "source_word_count": 5,
       "stable_segment_key": "vri:romn:abh03m11.mul:4ab6e93ef3c3",
-      "text_layer": "mula"
-    },
-    {
-      "book_code": "",
-      "chunk_type": "prose",
-      "do_not_use_for_tuning_until_reviewed": true,
-      "excluded_from": [],
-      "gold_candidate": true,
-      "heading_path": [
-        {
-          "id": null,
-          "level": 1,
-          "text": "Visuddhimaggo",
-          "type": "book"
-        },
-        {
-          "id": null,
-          "level": 2,
-          "text": "Dukkhaniddesakathā",
-          "type": "title"
-        },
-        {
-          "id": null,
-          "level": 3,
-          "text": "22. Ñāṇadassanavisuddhiniddeso",
-          "type": "chapter"
-        },
-        {
-          "id": null,
-          "level": 5,
-          "text": "Bodhipakkhiyakathā",
-          "type": "subhead"
-        }
-      ],
-      "length_bucket": "short",
-      "nikaya": "unknown",
-      "oracle_availability_hint": "second_model_verifier_candidate",
-      "page_ref": null,
-      "pitaka": "extra",
-      "pool_candidate": "holdout_gold",
-      "secondary_tags": [],
-      "selection_bucket": "representative_stratified",
-      "selection_group": "representative",
-      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
-      "source_char_count": 17,
-      "source_path": "romn/e0102n.mul.xml",
-      "source_text_hash": "d69c671ff26722746b875628a6a89efd983a1073051e79edb515d55e4bd72a77",
-      "source_word_count": 2,
-      "stable_segment_key": "vri:romn:e0102n.mul:bbe350bc990e",
-      "text_layer": "mula"
-    },
-    {
-      "book_code": "",
-      "chunk_type": "prose",
-      "do_not_use_for_tuning_until_reviewed": true,
-      "excluded_from": [],
-      "gold_candidate": true,
-      "heading_path": [
-        {
-          "id": null,
-          "level": 0,
-          "text": "Dīghanikāyo",
-          "type": "nikaya"
-        },
-        {
-          "id": "dn3",
-          "level": 1,
-          "text": "Pāthikavaggapāḷi",
-          "type": "book"
-        },
-        {
-          "id": "dn3_10",
-          "level": 4,
-          "text": "10. Saṅgītisuttaṃ",
-          "type": "sutta"
-        },
-        {
-          "id": null,
-          "level": 5,
-          "text": "Dukaṃ",
-          "type": "subhead"
-        }
-      ],
-      "length_bucket": "short",
-      "nikaya": "Dīghanikāyo",
-      "oracle_availability_hint": "second_model_verifier_candidate",
-      "page_ref": null,
-      "pitaka": "sutta",
-      "pool_candidate": "holdout_gold",
-      "secondary_tags": [
-        "source_text_anomaly_risk"
-      ],
-      "selection_bucket": "representative_stratified",
-      "selection_group": "representative",
-      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
-      "source_char_count": 26,
-      "source_path": "romn/s0103m.mul.xml",
-      "source_text_hash": "18ac1ab7addb7fcfa358221f3e8a3053fd702cee9b38969a36ff2edd8d3531d6",
-      "source_word_count": 4,
-      "stable_segment_key": "vri:romn:s0103m.mul:3181017eacbc",
       "text_layer": "mula"
     },
     {
@@ -6356,6 +6507,106 @@
       "source_text_hash": "a9c8ede8714f78b89b1b5f6af62db57cf395677b69caebec9a8faf665e5e420e",
       "source_word_count": 7,
       "stable_segment_key": "vri:romn:s0201m.mul:616218862450",
+      "text_layer": "mula"
+    },
+    {
+      "book_code": "",
+      "chunk_type": "verse",
+      "do_not_use_for_tuning_until_reviewed": true,
+      "excluded_from": [],
+      "gold_candidate": true,
+      "heading_path": [
+        {
+          "id": null,
+          "level": 0,
+          "text": "Vinayapiṭake",
+          "type": "nikaya"
+        },
+        {
+          "id": "vin1",
+          "level": 1,
+          "text": "Pārājikapāḷi",
+          "type": "book"
+        },
+        {
+          "id": null,
+          "level": 2,
+          "text": "2. Dutiyapārājikaṃ",
+          "type": "title"
+        },
+        {
+          "id": null,
+          "level": 5,
+          "text": "Vinītavatthuuddānagāthā",
+          "type": "subhead"
+        }
+      ],
+      "length_bucket": "short",
+      "nikaya": "Vinayapiṭake",
+      "oracle_availability_hint": "second_model_verifier_candidate",
+      "page_ref": null,
+      "pitaka": "vinaya",
+      "pool_candidate": "holdout_gold",
+      "secondary_tags": [
+        "verse"
+      ],
+      "selection_bucket": "representative_stratified",
+      "selection_group": "representative",
+      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
+      "source_char_count": 95,
+      "source_path": "romn/vin01m.mul.xml",
+      "source_text_hash": "35a2d0864b0a97a66259608d747112bae9551c47022f43d63b457067aff5b7c6",
+      "source_word_count": 13,
+      "stable_segment_key": "vri:romn:vin01m.mul:4ac66ef7e85c",
+      "text_layer": "mula"
+    },
+    {
+      "book_code": "",
+      "chunk_type": "prose",
+      "do_not_use_for_tuning_until_reviewed": false,
+      "excluded_from": [],
+      "gold_candidate": false,
+      "heading_path": [
+        {
+          "id": null,
+          "level": 0,
+          "text": "Abhidhammapiṭake",
+          "type": "nikaya"
+        },
+        {
+          "id": null,
+          "level": 1,
+          "text": "Abhidhammapiṭake",
+          "type": "book"
+        },
+        {
+          "id": null,
+          "level": 2,
+          "text": "(5) Paccuppannānāgatavāro",
+          "type": "title"
+        },
+        {
+          "id": null,
+          "level": 5,
+          "text": "(Ga) anulomapuggalokāsā",
+          "type": "subhead"
+        }
+      ],
+      "length_bucket": "short",
+      "nikaya": "Abhidhammapiṭake",
+      "oracle_availability_hint": "second_model_verifier_candidate",
+      "page_ref": null,
+      "pitaka": "abhidhamma",
+      "pool_candidate": null,
+      "secondary_tags": [],
+      "selection_bucket": "representative_stratified",
+      "selection_group": "representative",
+      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
+      "source_char_count": 85,
+      "source_path": "romn/abh03m6.mul.xml",
+      "source_text_hash": "00d1e8a598c0a15a0aabf019b4efbb739287cc518169996784f95701b4b5e6b1",
+      "source_word_count": 10,
+      "stable_segment_key": "vri:romn:abh03m6.mul:7cb47ca1ad21",
       "text_layer": "mula"
     },
     {
@@ -7659,51 +7910,6 @@
         {
           "id": null,
           "level": 0,
-          "text": "Aṅguttaranikāyo",
-          "type": "nikaya"
-        },
-        {
-          "id": "an9_1_3",
-          "level": 3,
-          "text": "3. Sattāvāsavaggo",
-          "type": "vagga"
-        },
-        {
-          "id": null,
-          "level": 5,
-          "text": "4. Sattāvāsasuttaṃ",
-          "type": "subhead"
-        }
-      ],
-      "length_bucket": "medium",
-      "nikaya": "Aṅguttaranikāyo",
-      "oracle_availability_hint": "second_model_verifier_candidate",
-      "page_ref": null,
-      "pitaka": "sutta",
-      "pool_candidate": null,
-      "secondary_tags": [
-        "source_text_anomaly_risk"
-      ],
-      "selection_bucket": "representative_stratified",
-      "selection_group": "representative",
-      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
-      "source_char_count": 184,
-      "source_path": "romn/s0404m2.mul.xml",
-      "source_text_hash": "9c5d9f9c69ac16fc411755ee7994ffc0d80e18973efb0cedc00713088918d5fb",
-      "source_word_count": 21,
-      "stable_segment_key": "vri:romn:s0404m2.mul:2aacf3399d1d",
-      "text_layer": "mula"
-    },
-    {
-      "book_code": "",
-      "chunk_type": "prose",
-      "do_not_use_for_tuning_until_reviewed": false,
-      "excluded_from": [],
-      "gold_candidate": false,
-      "heading_path": [
-        {
-          "id": null,
-          "level": 0,
           "text": "Majjhimanikāye",
           "type": "nikaya"
         },
@@ -8473,57 +8679,6 @@
     },
     {
       "book_code": "",
-      "chunk_type": "prose",
-      "do_not_use_for_tuning_until_reviewed": true,
-      "excluded_from": [],
-      "gold_candidate": true,
-      "heading_path": [
-        {
-          "id": null,
-          "level": 0,
-          "text": "Abhidhammapiṭake",
-          "type": "nikaya"
-        },
-        {
-          "id": null,
-          "level": 1,
-          "text": "Abhidhammapiṭake",
-          "type": "book"
-        },
-        {
-          "id": null,
-          "level": 2,
-          "text": "(1) Paccuppannavāro",
-          "type": "title"
-        },
-        {
-          "id": null,
-          "level": 5,
-          "text": "(Ga) anulomapuggalokāsā",
-          "type": "subhead"
-        }
-      ],
-      "length_bucket": "long",
-      "nikaya": "Abhidhammapiṭake",
-      "oracle_availability_hint": "second_model_verifier_candidate",
-      "page_ref": null,
-      "pitaka": "abhidhamma",
-      "pool_candidate": "holdout_gold",
-      "secondary_tags": [
-        "long_compound_or_dense_prose"
-      ],
-      "selection_bucket": "representative_stratified",
-      "selection_group": "representative",
-      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
-      "source_char_count": 354,
-      "source_path": "romn/abh03m6.mul.xml",
-      "source_text_hash": "c45c1e999eaa1312eed20d226e736aebd3f131d5fbaa2d02964abcf922dba4d7",
-      "source_word_count": 28,
-      "stable_segment_key": "vri:romn:abh03m6.mul:1faf6330366a",
-      "text_layer": "mula"
-    },
-    {
-      "book_code": "",
       "chunk_type": "verse",
       "do_not_use_for_tuning_until_reviewed": false,
       "excluded_from": [],
@@ -8612,55 +8767,6 @@
       "source_text_hash": "77d3fbedca59d4b88244200939d89d7cff8e0a44416fb49cd2bb60cb17584659",
       "source_word_count": 10,
       "stable_segment_key": "vri:romn:s0513a3.att:c9c7061dba12",
-      "text_layer": "atthakatha"
-    },
-    {
-      "book_code": "",
-      "chunk_type": "prose",
-      "do_not_use_for_tuning_until_reviewed": false,
-      "excluded_from": [],
-      "gold_candidate": false,
-      "heading_path": [
-        {
-          "id": null,
-          "level": 0,
-          "text": "Khuddakanikāye",
-          "type": "nikaya"
-        },
-        {
-          "id": null,
-          "level": 1,
-          "text": "Petavatthu-aṭṭhakathā",
-          "type": "book"
-        },
-        {
-          "id": null,
-          "level": 3,
-          "text": "1. Uragavaggo",
-          "type": "chapter"
-        },
-        {
-          "id": null,
-          "level": 5,
-          "text": "11. Nāgapetavatthuvaṇṇanā",
-          "type": "subhead"
-        }
-      ],
-      "length_bucket": "short",
-      "nikaya": "Khuddakanikāye",
-      "oracle_availability_hint": "oracle_unavailable",
-      "page_ref": null,
-      "pitaka": "sutta",
-      "pool_candidate": null,
-      "secondary_tags": [],
-      "selection_bucket": "representative_stratified",
-      "selection_group": "representative",
-      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
-      "source_char_count": 22,
-      "source_path": "romn/s0507a.att.xml",
-      "source_text_hash": "d1eb2b0c7c49d38fbf275c04ef14c21de4cb220aae408648cd3715f0429ee6ff",
-      "source_word_count": 3,
-      "stable_segment_key": "vri:romn:s0507a.att:c36c76debe8f",
       "text_layer": "atthakatha"
     },
     {
@@ -9283,55 +9389,6 @@
     },
     {
       "book_code": "",
-      "chunk_type": "prose",
-      "do_not_use_for_tuning_until_reviewed": false,
-      "excluded_from": [],
-      "gold_candidate": false,
-      "heading_path": [
-        {
-          "id": null,
-          "level": 0,
-          "text": "Khuddakanikāye",
-          "type": "nikaya"
-        },
-        {
-          "id": null,
-          "level": 1,
-          "text": "Jātaka-aṭṭhakathā",
-          "type": "book"
-        },
-        {
-          "id": null,
-          "level": 2,
-          "text": "(Chaṭṭho bhāgo)",
-          "type": "title"
-        },
-        {
-          "id": null,
-          "level": 3,
-          "text": "22. Mahānipāto",
-          "type": "chapter"
-        }
-      ],
-      "length_bucket": "short",
-      "nikaya": "Khuddakanikāye",
-      "oracle_availability_hint": "oracle_unavailable",
-      "page_ref": null,
-      "pitaka": "sutta",
-      "pool_candidate": null,
-      "secondary_tags": [],
-      "selection_bucket": "representative_stratified",
-      "selection_group": "representative",
-      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
-      "source_char_count": 17,
-      "source_path": "romn/s0514a2.att.xml",
-      "source_text_hash": "6382c1d43b5a57e40f0035b9d485cd2eb5c335e5af31d19a0544d26d15be601c",
-      "source_word_count": 3,
-      "stable_segment_key": "vri:romn:s0514a2.att:a1bd096c5469",
-      "text_layer": "atthakatha"
-    },
-    {
-      "book_code": "",
       "chunk_type": "verse",
       "do_not_use_for_tuning_until_reviewed": false,
       "excluded_from": [],
@@ -9672,6 +9729,122 @@
       "source_text_hash": "37ce72048484813d4c56924f6795e634cf4c1c46f0d3710b1a36627d54981abb",
       "source_word_count": 11,
       "stable_segment_key": "vri:romn:s0508a2.att:73a6e172807a",
+      "text_layer": "atthakatha"
+    },
+    {
+      "book_code": "",
+      "chunk_type": "verse",
+      "do_not_use_for_tuning_until_reviewed": false,
+      "excluded_from": [],
+      "gold_candidate": false,
+      "heading_path": [
+        {
+          "id": null,
+          "level": 0,
+          "text": "Khuddakanikāye",
+          "type": "nikaya"
+        },
+        {
+          "id": null,
+          "level": 1,
+          "text": "Theragāthā-aṭṭhakathā",
+          "type": "book"
+        },
+        {
+          "id": null,
+          "level": 2,
+          "text": "(Dutiyo bhāgo)",
+          "type": "title"
+        },
+        {
+          "id": null,
+          "level": 3,
+          "text": "16. Vīsatinipāto",
+          "type": "chapter"
+        },
+        {
+          "id": null,
+          "level": 5,
+          "text": "4. Raṭṭhapālattheragāthāvaṇṇanā",
+          "type": "subhead"
+        }
+      ],
+      "length_bucket": "short",
+      "nikaya": "Khuddakanikāye",
+      "oracle_availability_hint": "oracle_unavailable",
+      "page_ref": null,
+      "pitaka": "sutta",
+      "pool_candidate": null,
+      "secondary_tags": [
+        "verse",
+        "source_text_anomaly_risk"
+      ],
+      "selection_bucket": "representative_stratified",
+      "selection_group": "representative",
+      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
+      "source_char_count": 87,
+      "source_path": "romn/s0508a2.att.xml",
+      "source_text_hash": "64ce21413494d62130545541eb8dc88d1d8c66fdbf3c0d5d03b1ba0b4f38d657",
+      "source_word_count": 9,
+      "stable_segment_key": "vri:romn:s0508a2.att:8ee1d462c8cb",
+      "text_layer": "atthakatha"
+    },
+    {
+      "book_code": "",
+      "chunk_type": "verse",
+      "do_not_use_for_tuning_until_reviewed": false,
+      "excluded_from": [],
+      "gold_candidate": false,
+      "heading_path": [
+        {
+          "id": null,
+          "level": 0,
+          "text": "Khuddakanikāye",
+          "type": "nikaya"
+        },
+        {
+          "id": null,
+          "level": 1,
+          "text": "Theragāthā-aṭṭhakathā",
+          "type": "book"
+        },
+        {
+          "id": null,
+          "level": 2,
+          "text": "(Dutiyo bhāgo)",
+          "type": "title"
+        },
+        {
+          "id": null,
+          "level": 3,
+          "text": "17. Tiṃsanipāto",
+          "type": "chapter"
+        },
+        {
+          "id": null,
+          "level": 5,
+          "text": "2. Sāriputtattheragāthāvaṇṇanā",
+          "type": "subhead"
+        }
+      ],
+      "length_bucket": "short",
+      "nikaya": "Khuddakanikāye",
+      "oracle_availability_hint": "oracle_unavailable",
+      "page_ref": null,
+      "pitaka": "sutta",
+      "pool_candidate": null,
+      "secondary_tags": [
+        "verse",
+        "source_text_anomaly_risk"
+      ],
+      "selection_bucket": "representative_stratified",
+      "selection_group": "representative",
+      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
+      "source_char_count": 89,
+      "source_path": "romn/s0508a2.att.xml",
+      "source_text_hash": "c68a23f433d2e194bcbd6b93f63b9519c910d6bab532b55c9e228e15a74e05c3",
+      "source_word_count": 9,
+      "stable_segment_key": "vri:romn:s0508a2.att:5f029fdd7e03",
       "text_layer": "atthakatha"
     },
     {
@@ -10946,61 +11119,6 @@
         {
           "id": null,
           "level": 0,
-          "text": "Khuddakanikāye",
-          "type": "nikaya"
-        },
-        {
-          "id": null,
-          "level": 1,
-          "text": "Jātaka-aṭṭhakathā",
-          "type": "book"
-        },
-        {
-          "id": null,
-          "level": 2,
-          "text": "(Sattamo bhāgo)",
-          "type": "title"
-        },
-        {
-          "id": null,
-          "level": 3,
-          "text": "22. Mahānipāto",
-          "type": "chapter"
-        },
-        {
-          "id": null,
-          "level": 5,
-          "text": "Micchākathā",
-          "type": "subhead"
-        }
-      ],
-      "length_bucket": "medium",
-      "nikaya": "Khuddakanikāye",
-      "oracle_availability_hint": "oracle_unavailable",
-      "page_ref": null,
-      "pitaka": "sutta",
-      "pool_candidate": null,
-      "secondary_tags": [],
-      "selection_bucket": "representative_stratified",
-      "selection_group": "representative",
-      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
-      "source_char_count": 113,
-      "source_path": "romn/s0514a3.att.xml",
-      "source_text_hash": "9884591a725465402af92408e96ba154a9a6f323b50ff9db9218bee409d5f6e4",
-      "source_word_count": 10,
-      "stable_segment_key": "vri:romn:s0514a3.att:be3f3b8f3dc2",
-      "text_layer": "atthakatha"
-    },
-    {
-      "book_code": "",
-      "chunk_type": "prose",
-      "do_not_use_for_tuning_until_reviewed": false,
-      "excluded_from": [],
-      "gold_candidate": false,
-      "heading_path": [
-        {
-          "id": null,
-          "level": 0,
           "text": "Vinayapiṭake",
           "type": "nikaya"
         },
@@ -11838,46 +11956,6 @@
     },
     {
       "book_code": "",
-      "chunk_type": "prose",
-      "do_not_use_for_tuning_until_reviewed": false,
-      "excluded_from": [],
-      "gold_candidate": false,
-      "heading_path": [
-        {
-          "id": null,
-          "level": 0,
-          "text": "Aṅguttaranikāye",
-          "type": "nikaya"
-        },
-        {
-          "id": "an2_1_3",
-          "level": 3,
-          "text": "3. Bālavaggavaṇṇanā",
-          "type": "vagga"
-        }
-      ],
-      "length_bucket": "long",
-      "nikaya": "Aṅguttaranikāye",
-      "oracle_availability_hint": "oracle_unavailable",
-      "page_ref": null,
-      "pitaka": "sutta",
-      "pool_candidate": null,
-      "secondary_tags": [
-        "atthakatha_long",
-        "long_compound_or_dense_prose"
-      ],
-      "selection_bucket": "representative_stratified",
-      "selection_group": "representative",
-      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
-      "source_char_count": 482,
-      "source_path": "romn/s0402a.att.xml",
-      "source_text_hash": "f0849a532020e4a00946e1aed63acfe0ace787106d59bec0643f72e994d65505",
-      "source_word_count": 49,
-      "stable_segment_key": "vri:romn:s0402a.att:113f889abd08",
-      "text_layer": "atthakatha"
-    },
-    {
-      "book_code": "",
       "chunk_type": "verse",
       "do_not_use_for_tuning_until_reviewed": false,
       "excluded_from": [],
@@ -12041,98 +12119,6 @@
         {
           "id": null,
           "level": 0,
-          "text": "Saṃyuttanikāye",
-          "type": "nikaya"
-        },
-        {
-          "id": "sn1",
-          "level": 1,
-          "text": "Sagāthāvaggaṭīkā",
-          "type": "book"
-        },
-        {
-          "id": null,
-          "level": 2,
-          "text": "2. Upāsakavaggo",
-          "type": "title"
-        },
-        {
-          "id": null,
-          "level": 5,
-          "text": "8. Kaṭṭhahārasuttavaṇṇanā",
-          "type": "subhead"
-        }
-      ],
-      "length_bucket": "short",
-      "nikaya": "Saṃyuttanikāye",
-      "oracle_availability_hint": "oracle_unavailable",
-      "page_ref": null,
-      "pitaka": "sutta",
-      "pool_candidate": null,
-      "secondary_tags": [],
-      "selection_bucket": "representative_stratified",
-      "selection_group": "representative",
-      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
-      "source_char_count": 69,
-      "source_path": "romn/s0301t.tik.xml",
-      "source_text_hash": "8578606f91cd08cd5f617dcef25ffd39270c8c4c4ff8b0ac932eadf13368d16d",
-      "source_word_count": 4,
-      "stable_segment_key": "vri:romn:s0301t.tik:472bd6b18255",
-      "text_layer": "tika"
-    },
-    {
-      "book_code": "",
-      "chunk_type": "prose",
-      "do_not_use_for_tuning_until_reviewed": false,
-      "excluded_from": [],
-      "gold_candidate": false,
-      "heading_path": [
-        {
-          "id": null,
-          "level": 0,
-          "text": "Khuddakanikāye",
-          "type": "nikaya"
-        },
-        {
-          "id": null,
-          "level": 1,
-          "text": "Nettippakaraṇa-ṭīkā",
-          "type": "book"
-        },
-        {
-          "id": null,
-          "level": 6,
-          "text": "Ganthārambhakathāvaṇṇanā",
-          "type": "subsubhead"
-        }
-      ],
-      "length_bucket": "short",
-      "nikaya": "Khuddakanikāye",
-      "oracle_availability_hint": "oracle_unavailable",
-      "page_ref": null,
-      "pitaka": "sutta",
-      "pool_candidate": null,
-      "secondary_tags": [],
-      "selection_bucket": "representative_stratified",
-      "selection_group": "representative",
-      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
-      "source_char_count": 7,
-      "source_path": "romn/s0519t.tik.xml",
-      "source_text_hash": "4859c8e34c293f4ddbbbf0bed942fcf2e53bb83569e9de63c567846df5485318",
-      "source_word_count": 1,
-      "stable_segment_key": "vri:romn:s0519t.tik:5f5f2053b006",
-      "text_layer": "tika"
-    },
-    {
-      "book_code": "",
-      "chunk_type": "prose",
-      "do_not_use_for_tuning_until_reviewed": false,
-      "excluded_from": [],
-      "gold_candidate": false,
-      "heading_path": [
-        {
-          "id": null,
-          "level": 0,
           "text": "Abhidhammapiṭake",
           "type": "nikaya"
         },
@@ -12219,57 +12205,6 @@
       "source_text_hash": "d4397c034a71d02445f0fb92c97ffa46de115c260f111537b772341a1f7a394c",
       "source_word_count": 7,
       "stable_segment_key": "vri:romn:s0101t.tik:6a66539651b0",
-      "text_layer": "tika"
-    },
-    {
-      "book_code": "",
-      "chunk_type": "prose",
-      "do_not_use_for_tuning_until_reviewed": false,
-      "excluded_from": [],
-      "gold_candidate": false,
-      "heading_path": [
-        {
-          "id": null,
-          "level": 0,
-          "text": "Abhidhammapiṭake",
-          "type": "nikaya"
-        },
-        {
-          "id": null,
-          "level": 1,
-          "text": "Vibhaṅga-anuṭīkā",
-          "type": "book"
-        },
-        {
-          "id": null,
-          "level": 2,
-          "text": "10. Dasakaniddeso",
-          "type": "title"
-        },
-        {
-          "id": null,
-          "level": 5,
-          "text": "Dutiyabalaniddesavaṇṇanā",
-          "type": "subhead"
-        }
-      ],
-      "length_bucket": "short",
-      "nikaya": "Abhidhammapiṭake",
-      "oracle_availability_hint": "oracle_unavailable",
-      "page_ref": null,
-      "pitaka": "abhidhamma",
-      "pool_candidate": null,
-      "secondary_tags": [
-        "commentarial_discussion"
-      ],
-      "selection_bucket": "representative_stratified",
-      "selection_group": "representative",
-      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
-      "source_char_count": 40,
-      "source_path": "romn/abh02t.tik.xml",
-      "source_text_hash": "82ce80e64d36ce18ce512864329deb3c2a808a7c61031b6f3ae85ee5d0d849f5",
-      "source_word_count": 3,
-      "stable_segment_key": "vri:romn:abh02t.tik:217720aaafa0",
       "text_layer": "tika"
     },
     {
@@ -12373,61 +12308,6 @@
       "source_text_hash": "90ec29876f5b72cbeb4530a4d6be9a240216dfb19c3702e22cb6db88daef82e5",
       "source_word_count": 8,
       "stable_segment_key": "vri:romn:vin01t1.tik:d9ccd2b62d48",
-      "text_layer": "tika"
-    },
-    {
-      "book_code": "",
-      "chunk_type": "prose",
-      "do_not_use_for_tuning_until_reviewed": true,
-      "excluded_from": [],
-      "gold_candidate": true,
-      "heading_path": [
-        {
-          "id": null,
-          "level": 0,
-          "text": "Vinayapiṭake",
-          "type": "nikaya"
-        },
-        {
-          "id": null,
-          "level": 1,
-          "text": "Sāratthadīpanī-ṭīkā (tatiyo bhāgo)",
-          "type": "book"
-        },
-        {
-          "id": null,
-          "level": 2,
-          "text": "Bhikkhunīvibhaṅgavaṇṇanā",
-          "type": "title"
-        },
-        {
-          "id": null,
-          "level": 3,
-          "text": "4. Pācittiyakaṇḍaṃ (bhikkhunīvibhaṅgavaṇṇanā)",
-          "type": "chapter"
-        },
-        {
-          "id": null,
-          "level": 5,
-          "text": "3. Naggavaggavaṇṇanā",
-          "type": "subhead"
-        }
-      ],
-      "length_bucket": "short",
-      "nikaya": "Vinayapiṭake",
-      "oracle_availability_hint": "oracle_unavailable",
-      "page_ref": null,
-      "pitaka": "vinaya",
-      "pool_candidate": "holdout_gold",
-      "secondary_tags": [],
-      "selection_bucket": "representative_stratified",
-      "selection_group": "representative",
-      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
-      "source_char_count": 54,
-      "source_path": "romn/vin02t.tik.xml",
-      "source_text_hash": "ebc669cfe315d5905eec0c532b9d24833f328689ebe724d7a83bc75356ee5782",
-      "source_word_count": 3,
-      "stable_segment_key": "vri:romn:vin02t.tik:4b896ba967ee",
       "text_layer": "tika"
     },
     {
@@ -12827,49 +12707,6 @@
     },
     {
       "book_code": "",
-      "chunk_type": "prose",
-      "do_not_use_for_tuning_until_reviewed": false,
-      "excluded_from": [],
-      "gold_candidate": false,
-      "heading_path": [
-        {
-          "id": null,
-          "level": 0,
-          "text": "Khuddakanikāye",
-          "type": "nikaya"
-        },
-        {
-          "id": null,
-          "level": 1,
-          "text": "Nettippakaraṇa-ṭīkā",
-          "type": "book"
-        },
-        {
-          "id": null,
-          "level": 3,
-          "text": "Sāsanapaṭṭhānavāravaṇṇanā",
-          "type": "chapter"
-        }
-      ],
-      "length_bucket": "short",
-      "nikaya": "Khuddakanikāye",
-      "oracle_availability_hint": "oracle_unavailable",
-      "page_ref": null,
-      "pitaka": "sutta",
-      "pool_candidate": null,
-      "secondary_tags": [],
-      "selection_bucket": "representative_stratified",
-      "selection_group": "representative",
-      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
-      "source_char_count": 45,
-      "source_path": "romn/s0519t.tik.xml",
-      "source_text_hash": "b87c5e222035dcec8d602fd2fc8a62a9d8e61e1b4dfa22525113069e1302f147",
-      "source_word_count": 4,
-      "stable_segment_key": "vri:romn:s0519t.tik:57dc7b3cc5b4",
-      "text_layer": "tika"
-    },
-    {
-      "book_code": "",
       "chunk_type": "verse",
       "do_not_use_for_tuning_until_reviewed": false,
       "excluded_from": [],
@@ -12917,55 +12754,6 @@
       "source_text_hash": "450d48eef7e558e1039c7c188b7bbb5aecca65fc68c3c47aa891ce3c6b4fac77",
       "source_word_count": 13,
       "stable_segment_key": "vri:romn:vin01t1.tik:b28cba0a7d69",
-      "text_layer": "tika"
-    },
-    {
-      "book_code": "",
-      "chunk_type": "prose",
-      "do_not_use_for_tuning_until_reviewed": false,
-      "excluded_from": [],
-      "gold_candidate": false,
-      "heading_path": [
-        {
-          "id": null,
-          "level": 0,
-          "text": "Saṃyuttanikāye",
-          "type": "nikaya"
-        },
-        {
-          "id": "sn3",
-          "level": 1,
-          "text": "Khandhavaggaṭīkā",
-          "type": "book"
-        },
-        {
-          "id": null,
-          "level": 2,
-          "text": "12. Dhammakathikavaggo",
-          "type": "title"
-        },
-        {
-          "id": null,
-          "level": 5,
-          "text": "5-9. Bandhanasuttādivaṇṇanā",
-          "type": "subhead"
-        }
-      ],
-      "length_bucket": "short",
-      "nikaya": "Saṃyuttanikāye",
-      "oracle_availability_hint": "oracle_unavailable",
-      "page_ref": null,
-      "pitaka": "sutta",
-      "pool_candidate": null,
-      "secondary_tags": [],
-      "selection_bucket": "representative_stratified",
-      "selection_group": "representative",
-      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
-      "source_char_count": 47,
-      "source_path": "romn/s0303t.tik.xml",
-      "source_text_hash": "ec78c589899d733aa0a33fa7b9a9573633886188af38cdce671c39acdc8e6460",
-      "source_word_count": 4,
-      "stable_segment_key": "vri:romn:s0303t.tik:a049bd2beeb4",
       "text_layer": "tika"
     },
     {
@@ -13018,6 +12806,310 @@
       "source_text_hash": "db2ef79c670ae7409883a7a4286298a0aa41b527f519c97e2da9747162e68e07",
       "source_word_count": 10,
       "stable_segment_key": "vri:romn:vin01t1.tik:6152163e0764",
+      "text_layer": "tika"
+    },
+    {
+      "book_code": "",
+      "chunk_type": "verse",
+      "do_not_use_for_tuning_until_reviewed": false,
+      "excluded_from": [],
+      "gold_candidate": false,
+      "heading_path": [
+        {
+          "id": null,
+          "level": 0,
+          "text": "Vinayapiṭake",
+          "type": "nikaya"
+        },
+        {
+          "id": null,
+          "level": 1,
+          "text": "Sāratthadīpanī-ṭīkā (paṭhamo bhāgo)",
+          "type": "book"
+        },
+        {
+          "id": null,
+          "level": 2,
+          "text": "Bāhiranidānakathā",
+          "type": "title"
+        },
+        {
+          "id": null,
+          "level": 5,
+          "text": "Paṭhamamahāsaṅgītikathāvaṇṇanā",
+          "type": "subhead"
+        }
+      ],
+      "length_bucket": "short",
+      "nikaya": "Vinayapiṭake",
+      "oracle_availability_hint": "oracle_unavailable",
+      "page_ref": null,
+      "pitaka": "vinaya",
+      "pool_candidate": null,
+      "secondary_tags": [
+        "verse",
+        "glossary_risk",
+        "source_text_anomaly_risk"
+      ],
+      "selection_bucket": "representative_stratified",
+      "selection_group": "representative",
+      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
+      "source_char_count": 92,
+      "source_path": "romn/vin01t1.tik.xml",
+      "source_text_hash": "474c860939e3e2514dd0b0e9e9e0fbee77e7d7b9a0f2106415c78e76e10d679a",
+      "source_word_count": 7,
+      "stable_segment_key": "vri:romn:vin01t1.tik:7e5b63ff7ee9",
+      "text_layer": "tika"
+    },
+    {
+      "book_code": "",
+      "chunk_type": "prose",
+      "do_not_use_for_tuning_until_reviewed": false,
+      "excluded_from": [],
+      "gold_candidate": false,
+      "heading_path": [
+        {
+          "id": null,
+          "level": 0,
+          "text": "Dīghanikāye",
+          "type": "nikaya"
+        },
+        {
+          "id": "dn2",
+          "level": 1,
+          "text": "Mahāvaggaṭīkā",
+          "type": "book"
+        },
+        {
+          "id": "dn2_10",
+          "level": 4,
+          "text": "10. Pāyāsirājaññasuttavaṇṇanā",
+          "type": "sutta"
+        },
+        {
+          "id": null,
+          "level": 5,
+          "text": "Pāyāsirājaññavatthuvaṇṇanā",
+          "type": "subhead"
+        }
+      ],
+      "length_bucket": "short",
+      "nikaya": "Dīghanikāye",
+      "oracle_availability_hint": "oracle_unavailable",
+      "page_ref": null,
+      "pitaka": "sutta",
+      "pool_candidate": null,
+      "secondary_tags": [],
+      "selection_bucket": "representative_stratified",
+      "selection_group": "representative",
+      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
+      "source_char_count": 105,
+      "source_path": "romn/s0102t.tik.xml",
+      "source_text_hash": "9e45e77a40c59787f2c897ea39a5c5716ca9e19b3e6750d6858f8e9ff1b0f9a3",
+      "source_word_count": 12,
+      "stable_segment_key": "vri:romn:s0102t.tik:3dd32d21880a",
+      "text_layer": "tika"
+    },
+    {
+      "book_code": "",
+      "chunk_type": "prose",
+      "do_not_use_for_tuning_until_reviewed": false,
+      "excluded_from": [],
+      "gold_candidate": false,
+      "heading_path": [
+        {
+          "id": null,
+          "level": 0,
+          "text": "Saṃyuttanikāye",
+          "type": "nikaya"
+        },
+        {
+          "id": "sn3",
+          "level": 1,
+          "text": "Khandhavaggaṭīkā",
+          "type": "book"
+        },
+        {
+          "id": null,
+          "level": 2,
+          "text": "8. Khajjanīyavaggo",
+          "type": "title"
+        },
+        {
+          "id": null,
+          "level": 5,
+          "text": "7. Khajjanīyasuttavaṇṇanā",
+          "type": "subhead"
+        }
+      ],
+      "length_bucket": "short",
+      "nikaya": "Saṃyuttanikāye",
+      "oracle_availability_hint": "oracle_unavailable",
+      "page_ref": null,
+      "pitaka": "sutta",
+      "pool_candidate": null,
+      "secondary_tags": [],
+      "selection_bucket": "representative_stratified",
+      "selection_group": "representative",
+      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
+      "source_char_count": 73,
+      "source_path": "romn/s0303t.tik.xml",
+      "source_text_hash": "b8a1d8f8f7ef43cc98940a6f2456466f593f166e530d7ca74285c18cd0891181",
+      "source_word_count": 6,
+      "stable_segment_key": "vri:romn:s0303t.tik:138b61121f66",
+      "text_layer": "tika"
+    },
+    {
+      "book_code": "",
+      "chunk_type": "verse",
+      "do_not_use_for_tuning_until_reviewed": false,
+      "excluded_from": [],
+      "gold_candidate": false,
+      "heading_path": [
+        {
+          "id": null,
+          "level": 0,
+          "text": "Aṅguttaranikāye",
+          "type": "nikaya"
+        },
+        {
+          "id": null,
+          "level": 2,
+          "text": "1. Paṭhamapaṇṇāsakaṃ",
+          "type": "title"
+        },
+        {
+          "id": null,
+          "level": 3,
+          "text": "2. Caravaggo",
+          "type": "chapter"
+        },
+        {
+          "id": null,
+          "level": 5,
+          "text": "2. Sīlasuttavaṇṇanā",
+          "type": "subhead"
+        }
+      ],
+      "length_bucket": "short",
+      "nikaya": "Aṅguttaranikāye",
+      "oracle_availability_hint": "oracle_unavailable",
+      "page_ref": null,
+      "pitaka": "sutta",
+      "pool_candidate": null,
+      "secondary_tags": [
+        "verse",
+        "citation_heavy"
+      ],
+      "selection_bucket": "representative_stratified",
+      "selection_group": "representative",
+      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
+      "source_char_count": 109,
+      "source_path": "romn/s0402t.tik.xml",
+      "source_text_hash": "f127130bcbca74dc2dbd8d08fb331600521feceba735e886dab154ea490b4229",
+      "source_word_count": 13,
+      "stable_segment_key": "vri:romn:s0402t.tik:636e22dd6bf1",
+      "text_layer": "tika"
+    },
+    {
+      "book_code": "",
+      "chunk_type": "verse",
+      "do_not_use_for_tuning_until_reviewed": false,
+      "excluded_from": [],
+      "gold_candidate": false,
+      "heading_path": [
+        {
+          "id": null,
+          "level": 0,
+          "text": "Vinayapiṭake",
+          "type": "nikaya"
+        },
+        {
+          "id": null,
+          "level": 1,
+          "text": "Sāratthadīpanī-ṭīkā (paṭhamo bhāgo)",
+          "type": "book"
+        },
+        {
+          "id": null,
+          "level": 2,
+          "text": "Bāhiranidānakathā",
+          "type": "title"
+        },
+        {
+          "id": null,
+          "level": 5,
+          "text": "Tatiyasaṅgītikathāvaṇṇanā",
+          "type": "subhead"
+        }
+      ],
+      "length_bucket": "short",
+      "nikaya": "Vinayapiṭake",
+      "oracle_availability_hint": "oracle_unavailable",
+      "page_ref": null,
+      "pitaka": "vinaya",
+      "pool_candidate": null,
+      "secondary_tags": [
+        "verse",
+        "source_text_anomaly_risk"
+      ],
+      "selection_bucket": "representative_stratified",
+      "selection_group": "representative",
+      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
+      "source_char_count": 99,
+      "source_path": "romn/vin01t1.tik.xml",
+      "source_text_hash": "d93b818f7516b45cee4b088fe4b0d5f374b2ae35e93357d1999ee73e5a25f59c",
+      "source_word_count": 11,
+      "stable_segment_key": "vri:romn:vin01t1.tik:20696c47d59b",
+      "text_layer": "tika"
+    },
+    {
+      "book_code": "",
+      "chunk_type": "prose",
+      "do_not_use_for_tuning_until_reviewed": false,
+      "excluded_from": [],
+      "gold_candidate": false,
+      "heading_path": [
+        {
+          "id": null,
+          "level": 0,
+          "text": "Abhidhammapiṭake",
+          "type": "nikaya"
+        },
+        {
+          "id": null,
+          "level": 1,
+          "text": "Dhammasaṅgaṇī-mūlaṭīkā",
+          "type": "book"
+        },
+        {
+          "id": null,
+          "level": 2,
+          "text": "Rūpāvacarakusalaṃ",
+          "type": "title"
+        },
+        {
+          "id": null,
+          "level": 5,
+          "text": "Lokuttarakusalavaṇṇanā",
+          "type": "subhead"
+        }
+      ],
+      "length_bucket": "short",
+      "nikaya": "Abhidhammapiṭake",
+      "oracle_availability_hint": "oracle_unavailable",
+      "page_ref": null,
+      "pitaka": "abhidhamma",
+      "pool_candidate": null,
+      "secondary_tags": [],
+      "selection_bucket": "representative_stratified",
+      "selection_group": "representative",
+      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
+      "source_char_count": 97,
+      "source_path": "romn/abh01t.tik.xml",
+      "source_text_hash": "5df1ceb26f2f7949f73500a8801e8f87b58b9fc0fcc05acb75f0b5c02d931fff",
+      "source_word_count": 5,
+      "stable_segment_key": "vri:romn:abh01t.tik:eea1b3340ac3",
       "text_layer": "tika"
     },
     {
@@ -13108,7 +13200,6 @@
       "pitaka": "abhidhamma",
       "pool_candidate": null,
       "secondary_tags": [
-        "abhidhamma_definition",
         "commentarial_discussion"
       ],
       "selection_bucket": "representative_stratified",
@@ -13583,9 +13674,9 @@
     {
       "book_code": "",
       "chunk_type": "prose",
-      "do_not_use_for_tuning_until_reviewed": false,
+      "do_not_use_for_tuning_until_reviewed": true,
       "excluded_from": [],
-      "gold_candidate": false,
+      "gold_candidate": true,
       "heading_path": [
         {
           "id": null,
@@ -13617,7 +13708,7 @@
       "oracle_availability_hint": "oracle_unavailable",
       "page_ref": null,
       "pitaka": "sutta",
-      "pool_candidate": null,
+      "pool_candidate": "holdout_gold",
       "secondary_tags": [
         "commentarial_discussion"
       ],
@@ -13773,7 +13864,6 @@
       "pitaka": "abhidhamma",
       "pool_candidate": null,
       "secondary_tags": [
-        "abhidhamma_definition",
         "commentarial_discussion"
       ],
       "selection_bucket": "representative_stratified",
@@ -14583,7 +14673,6 @@
       "pool_candidate": null,
       "secondary_tags": [
         "tika_long",
-        "abhidhamma_definition",
         "long_compound_or_dense_prose"
       ],
       "selection_bucket": "representative_stratified",
@@ -14848,7 +14937,6 @@
       "pool_candidate": null,
       "secondary_tags": [
         "tika_long",
-        "abhidhamma_definition",
         "long_compound_or_dense_prose"
       ],
       "selection_bucket": "representative_stratified",
@@ -15168,60 +15256,9 @@
       "source_word_count": 74,
       "stable_segment_key": "vri:romn:s0401t.tik:17f84e8ea364",
       "text_layer": "tika"
-    },
-    {
-      "book_code": "",
-      "chunk_type": "prose",
-      "do_not_use_for_tuning_until_reviewed": false,
-      "excluded_from": [],
-      "gold_candidate": false,
-      "heading_path": [
-        {
-          "id": null,
-          "level": 0,
-          "text": "Aṅguttaranikāye",
-          "type": "nikaya"
-        },
-        {
-          "id": "an1",
-          "level": 1,
-          "text": "Ekakanipāta-ṭīkā",
-          "type": "book"
-        },
-        {
-          "id": null,
-          "level": 2,
-          "text": "14. Etadaggavaggo",
-          "type": "title"
-        },
-        {
-          "id": null,
-          "level": 5,
-          "text": "Rāhula-raṭṭhapālattheravatthu",
-          "type": "subhead"
-        }
-      ],
-      "length_bucket": "long",
-      "nikaya": "Aṅguttaranikāye",
-      "oracle_availability_hint": "oracle_unavailable",
-      "page_ref": null,
-      "pitaka": "sutta",
-      "pool_candidate": null,
-      "secondary_tags": [
-        "tika_long",
-        "citation_heavy"
-      ],
-      "selection_bucket": "representative_stratified",
-      "selection_group": "representative",
-      "selection_reason": "selected to fill layer/length/chunk/source-family quota",
-      "source_char_count": 1680,
-      "source_path": "romn/s0401t.tik.xml",
-      "source_text_hash": "cc8886c833da81ec460150f07facd1606133f197275ce914e1a1f1a873b06fe9",
-      "source_word_count": 195,
-      "stable_segment_key": "vri:romn:s0401t.tik:c55f7445b4d0",
-      "text_layer": "tika"
     }
   ],
+  "patched_from_manifest_sha256": "23809d891f334147a6f638237bf017dc438e0d0eec8ee46020ce0d382137baf5",
   "run_id": "pilot_300_v1",
   "schema_version": "pali_pilot_300_manifest_v1",
   "selection_policy": {
@@ -15253,13 +15290,13 @@
   },
   "summary": {
     "by_chunk_type": {
-      "prose": 224,
-      "verse": 76
+      "prose": 219,
+      "verse": 81
     },
     "by_length_bucket": {
-      "long": 113,
-      "medium": 102,
-      "short": 85
+      "long": 109,
+      "medium": 101,
+      "short": 90
     },
     "by_selection_bucket": {
       "abhidhamma_definition": 10,
@@ -15267,34 +15304,36 @@
       "citation_heavy": 15,
       "commentarial_discussion": 5,
       "glossary_risk": 15,
+      "heading_title_probe": 5,
       "long_compound_or_dense_prose": 2,
-      "representative_stratified": 200,
+      "representative_stratified": 195,
       "source_text_anomaly_risk": 3,
       "tika_long": 20,
       "verse": 15
     },
     "by_source_path_prefix": {
-      "abh01": 8,
-      "abh02": 13,
+      "abh01": 12,
+      "abh02": 12,
       "abh03": 26,
-      "e01": 7,
+      "e01": 6,
       "s01": 23,
       "s02": 22,
-      "s03": 24,
-      "s04": 21,
-      "s05": 117,
-      "vin01": 22,
-      "vin02": 17
+      "s03": 23,
+      "s04": 19,
+      "s05": 116,
+      "vin01": 25,
+      "vin02": 16
     },
     "by_text_layer": {
-      "atthakatha": 112,
-      "mula": 91,
-      "tika": 97
+      "atthakatha": 110,
+      "mula": 97,
+      "tika": 93
     },
     "hard_count": 100,
     "holdout_candidate_count": 20,
     "representative_count": 200,
     "selected_count": 300,
+    "source_family_skew_note": "s05 (Khuddaka) is 116/300. This reflects verse/glossary-risk concentration in Khuddaka and is intentional. Step 2 cost estimate and Step 3 findings must report s05 separately.",
     "warnings": []
   }
 }

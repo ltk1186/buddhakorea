@@ -78,7 +78,12 @@ bucket 간 overlap이 있어도 primary `selection_bucket`은 하나만 부여�
 
 avoid_ko가 없는 안전한 fixed term만 등장하면 glossary_risk로 잡지 않는다. fuzzy matching, semantic matching, LLM-based term detection은 금지한다.
 
-`abhidhamma_definition`: `pitaka == "abhidhamma"` 또는 `source_path`가 `abh` 계열이며, 정의형 marker가 있어야 한다. 단독 `ti`, 단독 `nāma`, 단독 `attho`는 발화하지 않는다.
+`abhidhamma_definition`: `pitaka == "abhidhamma"` 또는 `source_path`가 `abh` 계열이며, 강한 정의 marker가 있어야 한다. 다음 중 하나일 때만 발화한다.
+
+- `katamo`, `katame`, `katamā`, `katamaṃ` 중 하나 이상.
+- `lakkhaṇa`, `rasa`, `paccupaṭṭhāna`, `padaṭṭhāna` 중 둘 이상.
+
+단독 `vuttaṃ`, 단독 `vuccati`, 단독 `ti`, 단독 `nāma`, 단독 `attho`는 발화하지 않는다. 이 규칙으로 quota가 부족해도 다시 느슨하게 만들지 않고, hard fallback으로 채우며 validation warning에 기록한다.
 
 `commentarial_discussion`: `text_layer in {"atthakatha", "tika"}`이고 강한 주석 풀이 marker가 있어야 한다. 단독 `ti`, 단독 `attho`, 단독 `nāma`, 또는 long 조건만으로는 primary trigger가 아니다.
 
@@ -89,6 +94,8 @@ avoid_ko가 없는 안전한 fixed term만 등장하면 glossary_risk로 잡지 
 ## Representative Sample 200
 
 Representative sample은 hard-selected key를 제외한 pool에서 선택한다.
+
+대표 표본 200개 안에는 heading/title/metadata probe 5개를 먼저 확보한다. 따라서 기본 구조는 `195 stratified + 5 heading_title_probe`이다. probe item은 `selection_group = "representative"`, `selection_bucket = "heading_title_probe"`로 기록한다. 후보가 부족하면 가능한 만큼만 확보하고 validation warning을 남긴다. probe는 최대 10개를 넘기지 않는다.
 
 목표 layer quota:
 
@@ -152,6 +159,14 @@ Manifest provenance에는 다음을 기록한다.
 - `inventory_generation_policy`
 
 같은 inventory hash, 같은 exclude set, 같은 seed이면 같은 300 manifest가 나와야 한다. inventory가 재생성되면 hash가 달라질 수 있으므로 summary에 명시한다.
+
+## Source Family Skew Note
+
+Selection은 source-family 편중을 재조정하지 않는다. 다만 summary와 validation에는 `source_family_skew_note`를 남긴다. 특히 `s05` Khuddaka 계열은 verse/glossary-risk 집중 때문에 비중이 높을 수 있으므로 Step 2 cost estimate와 Step 3 findings에서 별도 보고해야 한다.
+
+## Patch Traceability
+
+마감 패치 이후 summary에는 `patched_from_manifest_sha256`, 새 `manifest_sha256`, `selection_content_sha256`를 함께 기록한다. 같은 seed와 같은 inventory cache에서 selection content hash가 유지되는지 확인한다.
 
 ## Output Files
 
