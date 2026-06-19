@@ -16,7 +16,7 @@ import sys
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from pathlib import Path
 from typing import Any
 
@@ -109,6 +109,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--budget-usd", default="20")
     parser.add_argument("--prompt-calibration", default=str(PROMPT_CALIBRATION_DEFAULT))
     parser.add_argument("--gold", default=str(GOLD_DEFAULT))
+    parser.add_argument(
+        "--docs-out",
+        default="docs/translation/PALI_300_PILOT_COST_AND_LOCAL_DRY_RUN_PLAN.md",
+        help="Path for the generated Step 2 docs. Tests should pass a temp path.",
+    )
     parser.add_argument("--pretty", action="store_true")
     return parser
 
@@ -120,7 +125,7 @@ def run_preflight(args: argparse.Namespace) -> dict[str, Any]:
     validation_path = Path(args.validation)
     inventory_path = Path(args.inventory)
     pilot75_path = Path(args.pilot75_parsed)
-    budget_usd = Decimal(str(args.budget_usd))
+    budget_usd = parse_decimal_money(args.budget_usd, field_name="budget_usd")
 
     manifest = read_json(manifest_path)
     validation = read_json(validation_path)
@@ -200,7 +205,10 @@ def run_preflight(args: argparse.Namespace) -> dict[str, Any]:
 
     guardrail = run_budget_guardrail_test(
         budget_usd=budget_usd,
-        conservative_gate_cost_usd=Decimal(str(cost_report["estimate_totals"]["conservative_gate"]["cost_usd"])),
+        conservative_gate_cost_usd=parse_decimal_money(
+            cost_report["estimate_totals"]["conservative_gate"]["cost_usd"],
+            field_name="estimate_totals.conservative_gate.cost_usd",
+        ),
     )
     guardrail_path = out_dir / "pilot_300_v1_budget_guardrail_test.json"
     write_json(guardrail_path, guardrail, pretty=args.pretty)
@@ -220,8 +228,19 @@ def run_preflight(args: argparse.Namespace) -> dict[str, Any]:
     readiness_path = out_dir / "pilot_300_v1_batch_readiness.json"
     write_json(readiness_path, readiness, pretty=args.pretty)
 
-    docs_path = Path("docs/translation/PALI_300_PILOT_COST_AND_LOCAL_DRY_RUN_PLAN.md")
-    docs_path.write_text(render_plan_doc(cost_report, readiness), encoding="utf-8")
+    docs_path = Path(args.docs_out)
+    docs_path.parent.mkdir(parents=True, exist_ok=True)
+    docs_path.write_text(
+        render_plan_doc_from_outputs(
+            cost_report=cost_report,
+            readiness=readiness,
+            jsonl_result=jsonl_result,
+            source_integrity=source_integrity,
+            mock_result=mock_result,
+            guardrail=guardrail,
+        ),
+        encoding="utf-8",
+    )
     preflight_manifest_path = out_dir / "pilot_300_v1_preflight_run_manifest.json"
     preflight_manifest = build_preflight_run_manifest(
         args=args,
@@ -824,7 +843,10 @@ def build_readiness(
     guardrail: dict[str, Any],
     budget_usd: Decimal,
 ) -> dict[str, Any]:
-    conservative = Decimal(str(cost_report["estimate_totals"]["conservative_gate"]["cost_usd"]))
+    conservative = parse_decimal_money(
+        cost_report["estimate_totals"]["conservative_gate"]["cost_usd"],
+        field_name="estimate_totals.conservative_gate.cost_usd",
+    )
     under_budget = conservative <= budget_usd
     blocking = []
     if not under_budget:
@@ -840,7 +862,7 @@ def build_readiness(
     status = "PASS_READY_FOR_USER_APPROVAL" if not blocking else blocking[0]
     mean = cost_report["estimate_totals"]["expected_mean"]
     p90 = cost_report["estimate_totals"]["planning_p90"]
-    return {
+    readiness = {
         "schema_version": "pali_pilot_300_preflight_readiness_v1",
         "run_id": RUN_ID,
         "manifest_valid": True,
@@ -858,7 +880,7 @@ def build_readiness(
         "mock_qa_dryrun_passed": mock_result["valid"],
         "budget_guardrail_passed": guardrail["valid"] and under_budget,
         "qa_dry_run_plan_available": True,
-        "budget_usd": float(budget_usd),
+        "budget_usd": str(budget_usd),
         "estimated_cost_usd_expected_mean": mean["official_cost_usd"],
         "estimated_cost_usd_planning_p90": p90["official_cost_usd"],
         "estimated_cost_usd_conservative_gate": str(conservative),
@@ -882,6 +904,8 @@ def build_readiness(
             "Gold empty is expected for mock 300 dry-run because current gold seeds are disjoint from 300.",
         ],
     }
+    readiness["decimal_budget_gate"] = decimal_budget_gate_from_readiness(readiness)
+    return readiness
 
 
 def calibration_rows_from_pilot75(payload: dict[str, Any]) -> list[dict[str, Any]]:
@@ -1099,6 +1123,29 @@ def pricing_self_check(price_profile: PriceProfile) -> dict[str, Any]:
     }
 
 
+def parse_decimal_money(value: object, *, field_name: str) -> Decimal:
+    try:
+        return Decimal(str(value))
+    except (InvalidOperation, ValueError, TypeError) as exc:
+        raise ValueError(f"invalid decimal money field {field_name}: {value!r}") from exc
+
+
+def decimal_budget_gate_from_readiness(readiness: dict[str, Any]) -> dict[str, Any]:
+    estimated = parse_decimal_money(
+        readiness.get("estimated_cost_usd_conservative_gate"),
+        field_name="estimated_cost_usd_conservative_gate",
+    )
+    budget = parse_decimal_money(readiness.get("budget_usd"), field_name="budget_usd")
+    under_budget = estimated <= budget
+    return {
+        "estimated_cost_usd_conservative_gate": str(estimated),
+        "budget_usd": str(budget),
+        "under_budget": under_budget,
+        "status": "PASS_READY_FOR_USER_APPROVAL" if under_budget else "BLOCKED_OVER_BUDGET",
+        "comparison": "Decimal(str(value))",
+    }
+
+
 def totals_from_pilot75(payload: dict[str, Any]) -> dict[str, Any]:
     items = payload.get("items") or []
     return {
@@ -1210,7 +1257,16 @@ def render_cost_markdown(report: dict[str, Any]) -> str:
     )
 
 
-def render_plan_doc(cost_report: dict[str, Any], readiness: dict[str, Any]) -> str:
+def render_plan_doc_from_outputs(
+    *,
+    cost_report: dict[str, Any],
+    readiness: dict[str, Any],
+    jsonl_result: dict[str, Any],
+    source_integrity: dict[str, Any],
+    mock_result: dict[str, Any],
+    guardrail: dict[str, Any],
+) -> str:
+    decimal_gate = readiness.get("decimal_budget_gate") or decimal_budget_gate_from_readiness(readiness)
     return "\n".join(
         [
             "# Pāli 300 Pilot Cost And Local Dry-Run Plan",
@@ -1221,6 +1277,8 @@ def render_plan_doc(cost_report: dict[str, Any], readiness: dict[str, Any]) -> s
             "## Manifest Identity",
             f"- selection_content_sha256: `{readiness['selection_content_sha256']}`",
             f"- manifest_sha256: `{readiness['manifest_sha256']}`",
+            f"- inventory_sha256: `{readiness['inventory_sha256']}`",
+            f"- source_commit: `{readiness['source_commit']}`",
             "",
             "## 75 Actuals Calibration",
             "75 pilot actual usage에서 output/thinking ratio를 계산하고, prompt/input overhead는 source token proxy와 분리한다.",
@@ -1232,6 +1290,8 @@ def render_plan_doc(cost_report: dict[str, Any], readiness: dict[str, Any]) -> s
             f"- expected_mean: ${readiness['estimated_cost_usd_expected_mean']}",
             f"- planning_p90: ${readiness['estimated_cost_usd_planning_p90']}",
             f"- conservative_gate: ${readiness['estimated_cost_usd_conservative_gate']}",
+            f"- budget_usd: ${readiness['budget_usd']}",
+            f"- Decimal budget gate: {decimal_gate['status']} (`{decimal_gate['comparison']}`)",
             "",
             "## Bucket Backoff Method",
             "text_layer × length_bucket × chunk_type bucket이 n < 5이면 parent bucket으로 deterministic backoff한다.",
@@ -1247,17 +1307,31 @@ def render_plan_doc(cost_report: dict[str, Any], readiness: dict[str, Any]) -> s
             "",
             "## Unsubmitted JSONL Validation",
             f"- passed: {readiness['jsonl_validation_passed']}",
+            f"- request_count: {jsonl_result['manifest']['request_count']}",
+            f"- submitted: {jsonl_result['manifest']['submitted']}",
             "",
             "## Source Integrity Precheck",
             f"- passed: {readiness['source_integrity_passed']}",
+            f"- checked_count: {source_integrity['checked_count']}",
+            f"- mismatches: {len(source_integrity['mismatches'])}",
             "",
             "## Mock QA Dry-Run Result",
             f"- passed: {readiness['mock_qa_dryrun_passed']}",
+            f"- report_path: `{mock_result['qa_report_path']}`",
             "- mock QA dry-run is not a translation quality signal.",
             "- gold empty is expected because current gold seeds are disjoint from 300.",
             "",
             "## Budget Guardrail Test",
             f"- passed: {readiness['budget_guardrail_passed']}",
+            f"- synthetic under-budget: {guardrail['synthetic_under_budget']['can_submit']}",
+            f"- synthetic over-budget blocked: {not guardrail['synthetic_over_budget']['can_submit']}",
+            f"- actual gate status: {guardrail['actual_gate']['status']}",
+            "",
+            "## Decimal Budget Parsing",
+            "- Cost/readiness JSON의 USD 값은 Decimal-safe string으로 저장될 수 있다.",
+            "- 소비자는 `Decimal(str(value))`로 파싱해야 한다.",
+            "- 문자열 비교와 float 직접 비교는 금지한다.",
+            "- Step 3 제출 직전에는 readiness JSON을 다시 읽고 Decimal budget gate를 재검증한다.",
             "",
             "## Shard Recommendation",
             "- recommended_shards: 1",
@@ -1272,6 +1346,9 @@ def render_plan_doc(cost_report: dict[str, Any], readiness: dict[str, Any]) -> s
             "",
             "## GO / NO-GO",
             f"- readiness_status: `{readiness['readiness_status']}`",
+            f"- batch_submission_allowed_now: `{str(readiness['batch_submission_allowed_now']).lower()}`",
+            f"- requires_user_approval: `{str(readiness['requires_user_approval']).lower()}`",
+            f"- user_approval_received: `{str(readiness['user_approval_received']).lower()}`",
             "- GO 상태여도 Step 3 제출은 사용자 green-light 전까지 금지.",
             "",
             "## Known Limitations",
@@ -1283,6 +1360,26 @@ def render_plan_doc(cost_report: dict[str, Any], readiness: dict[str, Any]) -> s
             "GO 상태여도 Step 3 제출은 사용자 green-light 전까지 금지. Step 3에서는 JSONL hash, manifest hash, budget readiness를 재검증한 뒤 제출한다.",
             "",
         ]
+    )
+
+
+def render_plan_doc(cost_report: dict[str, Any], readiness: dict[str, Any]) -> str:
+    """Backward-compatible renderer for tests that only need core values."""
+    placeholder_jsonl = {"manifest": {"request_count": 0, "submitted": False}}
+    placeholder_source = {"checked_count": 0, "mismatches": []}
+    placeholder_mock = {"qa_report_path": ""}
+    placeholder_guardrail = {
+        "synthetic_under_budget": {"can_submit": False},
+        "synthetic_over_budget": {"can_submit": False},
+        "actual_gate": {"status": readiness.get("readiness_status", "")},
+    }
+    return render_plan_doc_from_outputs(
+        cost_report=cost_report,
+        readiness=readiness,
+        jsonl_result=placeholder_jsonl,
+        source_integrity=placeholder_source,
+        mock_result=placeholder_mock,
+        guardrail=placeholder_guardrail,
     )
 
 

@@ -15,7 +15,9 @@ from backend.pali.scripts.run_pilot_300_preflight import (
     PriceProfile,
     TokenEstimate,
     build_unsubmitted_jsonl,
+    decimal_budget_gate_from_readiness,
     estimate_pilot_300_cost,
+    parse_decimal_money,
     pricing_self_check,
     run_budget_guardrail_test,
     run_preflight,
@@ -181,6 +183,7 @@ def args_for(tmp):
         glossary=str(paths["glossary"]),
         out=str(Path(tmp) / "out"),
         qa_dryrun_out=str(Path(tmp) / "qa"),
+        docs_out=str(Path(tmp) / "docs" / "PALI_300_PILOT_COST_AND_LOCAL_DRY_RUN_PLAN.md"),
         expected_selection_sha=fixture["selection_sha"],
         budget_usd="20",
         prompt_calibration=str(paths["prompt_calibration"]),
@@ -281,9 +284,42 @@ class Pilot300PreflightTests(unittest.TestCase):
             self.assertTrue((Path(args.out) / "pilot_300_v1_batch_unsubmitted.jsonl").exists())
             self.assertTrue((Path(args.out) / "pilot_300_v1_source_integrity_precheck.json").exists())
             self.assertTrue((Path(args.qa_dryrun_out) / "review_report.md").exists())
+            self.assertTrue(Path(args.docs_out).exists())
             report = (Path(args.qa_dryrun_out) / "review_report.md").read_text(encoding="utf-8")
             self.assertIn("mock QA dry-run is not a translation quality signal", report)
             self.assertIn("gold empty is expected", report)
+
+    def test_docs_out_isolated_and_values_match_json(self):
+        production_docs = ROOT / "docs/translation/PALI_300_PILOT_COST_AND_LOCAL_DRY_RUN_PLAN.md"
+        before_hash = hashlib.sha256(production_docs.read_bytes()).hexdigest() if production_docs.exists() else None
+        with tempfile.TemporaryDirectory() as tmp:
+            _fixture, args = args_for(tmp)
+            result = run_preflight(args)
+            self.assertNotEqual(str(production_docs), args.docs_out)
+            if before_hash is not None:
+                self.assertEqual(before_hash, hashlib.sha256(production_docs.read_bytes()).hexdigest())
+            docs = Path(args.docs_out).read_text(encoding="utf-8")
+            readiness = json.loads((Path(args.out) / "pilot_300_v1_batch_readiness.json").read_text())
+            cost = json.loads((Path(args.out) / "pilot_300_v1_cost_estimate.json").read_text())
+            self.assertIn(readiness["selection_content_sha256"], docs)
+            self.assertIn(readiness["manifest_sha256"], docs)
+            self.assertIn(cost["estimate_totals"]["expected_mean"]["official_cost_usd"], docs)
+            self.assertIn(cost["estimate_totals"]["planning_p90"]["official_cost_usd"], docs)
+            self.assertIn(cost["estimate_totals"]["conservative_gate"]["cost_usd"], docs)
+            self.assertIn(f"- s05: {cost['special_slices']['s05']['count']}", docs)
+            self.assertIn(f"- hard: {cost['special_slices']['hard']['count']}", docs)
+            self.assertIn(f"- holdout_candidates: {cost['special_slices']['holdout_candidates']['count']}", docs)
+            self.assertIn("Decimal(str(value))", docs)
+            self.assertEqual(result["readiness_status"], readiness["readiness_status"])
+
+    def test_synthetic_fixture_values_do_not_leak_to_production_docs(self):
+        production_docs = ROOT / "docs/translation/PALI_300_PILOT_COST_AND_LOCAL_DRY_RUN_PLAN.md"
+        before = production_docs.read_text(encoding="utf-8") if production_docs.exists() else ""
+        with tempfile.TemporaryDirectory() as tmp:
+            _fixture, args = args_for(tmp)
+            run_preflight(args)
+        after = production_docs.read_text(encoding="utf-8") if production_docs.exists() else ""
+        self.assertEqual(before, after)
 
     def test_cross_pythonhashseed_selection_output_is_same(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -318,12 +354,38 @@ class Pilot300PreflightTests(unittest.TestCase):
             qa1 = Path(tmp) / "qa1"
             out2 = Path(tmp) / "out2"
             qa2 = Path(tmp) / "qa2"
-            subprocess.run(base_cmd + ["--out", str(out1), "--qa-dryrun-out", str(qa1)], cwd=ROOT, env=env1, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            subprocess.run(base_cmd + ["--out", str(out2), "--qa-dryrun-out", str(qa2)], cwd=ROOT, env=env2, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            subprocess.run(base_cmd + ["--out", str(out1), "--qa-dryrun-out", str(qa1), "--docs-out", str(Path(tmp) / "docs1.md")], cwd=ROOT, env=env1, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            subprocess.run(base_cmd + ["--out", str(out2), "--qa-dryrun-out", str(qa2), "--docs-out", str(Path(tmp) / "docs2.md")], cwd=ROOT, env=env2, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             r1 = json.loads((out1 / "pilot_300_v1_batch_readiness.json").read_text())
             r2 = json.loads((out2 / "pilot_300_v1_batch_readiness.json").read_text())
             self.assertEqual(r1["selection_content_sha256"], r2["selection_content_sha256"])
             self.assertEqual(r1["estimated_cost_usd_conservative_gate"], r2["estimated_cost_usd_conservative_gate"])
+
+    def test_decimal_budget_gate_parses_string_and_numeric_values(self):
+        self.assertEqual(parse_decimal_money("8.459241", field_name="x"), __import__("decimal").Decimal("8.459241"))
+        self.assertEqual(parse_decimal_money(20, field_name="x"), __import__("decimal").Decimal("20"))
+        self.assertTrue(
+            decimal_budget_gate_from_readiness(
+                {"estimated_cost_usd_conservative_gate": "8.459241", "budget_usd": 20}
+            )["under_budget"]
+        )
+        self.assertTrue(
+            decimal_budget_gate_from_readiness(
+                {"estimated_cost_usd_conservative_gate": "8.459241", "budget_usd": "20"}
+            )["under_budget"]
+        )
+        self.assertFalse(
+            decimal_budget_gate_from_readiness(
+                {"estimated_cost_usd_conservative_gate": "20.000001", "budget_usd": "20"}
+            )["under_budget"]
+        )
+        self.assertFalse(
+            decimal_budget_gate_from_readiness(
+                {"estimated_cost_usd_conservative_gate": "100", "budget_usd": "20"}
+            )["under_budget"]
+        )
+        with self.assertRaises(ValueError):
+            parse_decimal_money("abc", field_name="bad")
 
 
 if __name__ == "__main__":

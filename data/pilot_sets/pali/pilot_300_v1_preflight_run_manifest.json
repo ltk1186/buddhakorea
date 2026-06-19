@@ -2,6 +2,7 @@
   "batch_submission_allowed": false,
   "command_line_args": {
     "budget_usd": "20",
+    "docs_out": "docs/translation/PALI_300_PILOT_COST_AND_LOCAL_DRY_RUN_PLAN.md",
     "expected_selection_sha": "06f0d35a7eeebdb23c23fb5dd78bf34739a65abc41ffe45c5311212f6e12cc93",
     "glossary": "data/controlled_glossary.json",
     "gold": "data/gold_set.json",
@@ -15,7 +16,7 @@
     "validation": "data/pilot_sets/pali/pilot_300_v1_validation.json"
   },
   "gemini_calls_allowed": false,
-  "generated_at": "2026-06-19T13:34:59.003866+00:00",
+  "generated_at": "2026-06-19T14:06:33.281116+00:00",
   "glossary_version": "data/controlled_glossary.json",
   "identity": {
     "expected_selection_content_sha256": "06f0d35a7eeebdb23c23fb5dd78bf34739a65abc41ffe45c5311212f6e12cc93",

@@ -2,8 +2,15 @@
   "batch_submission_allowed_now": false,
   "blocking_reasons": [],
   "budget_guardrail_passed": true,
-  "budget_usd": 20.0,
+  "budget_usd": "20",
   "cost_estimate_available": true,
+  "decimal_budget_gate": {
+    "budget_usd": "20",
+    "comparison": "Decimal(str(value))",
+    "estimated_cost_usd_conservative_gate": "8.459241",
+    "status": "PASS_READY_FOR_USER_APPROVAL",
+    "under_budget": true
+  },
   "estimated_cost_usd_conservative_gate": "8.459241",
   "estimated_cost_usd_expected_mean": "7.091905",
   "estimated_cost_usd_planning_p90": "8.459241",
