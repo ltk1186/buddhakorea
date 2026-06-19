@@ -1,0 +1,22 @@
+{
+  "actual_gate": {
+    "batch_submission_allowed_now": false,
+    "can_submit_under_budget": true,
+    "reason": "ok",
+    "requires_user_approval": true,
+    "status": "PASS_READY_FOR_USER_APPROVAL",
+    "user_approval_received": false
+  },
+  "budget_usd": "20",
+  "conservative_gate_cost_usd": "8.459241",
+  "schema_version": "pali_pilot_300_budget_guardrail_test_v1",
+  "synthetic_over_budget": {
+    "can_submit": false,
+    "reason": "hard_cap_exceeded"
+  },
+  "synthetic_under_budget": {
+    "can_submit": true,
+    "reason": "ok"
+  },
+  "valid": true
+}

@@ -1,0 +1,87 @@
+{
+  "batch_submission_allowed": false,
+  "command_line_args": {
+    "budget_usd": "20",
+    "expected_selection_sha": "06f0d35a7eeebdb23c23fb5dd78bf34739a65abc41ffe45c5311212f6e12cc93",
+    "glossary": "data/controlled_glossary.json",
+    "gold": "data/gold_set.json",
+    "inventory": "data/pilot_sets/pali/pilot_300_v1_inventory_cache_49bc869.json",
+    "manifest": "data/pilot_sets/pali/pilot_300_v1_manifest.json",
+    "out": "data/pilot_sets/pali",
+    "pilot75_parsed": "data/reports/pali/gemini_pilot_75_49bc869_prompt_qa_patch_v2_parsed.json",
+    "pretty": true,
+    "prompt_calibration": "data/reports/pali/gemini_prompt_v1_schemafix_token_calibration_49bc869.json",
+    "qa_dryrun_out": "data/qa_reports/pali/qa_report_300_dryrun",
+    "validation": "data/pilot_sets/pali/pilot_300_v1_validation.json"
+  },
+  "gemini_calls_allowed": false,
+  "generated_at": "2026-06-19T13:34:59.003866+00:00",
+  "glossary_version": "data/controlled_glossary.json",
+  "identity": {
+    "expected_selection_content_sha256": "06f0d35a7eeebdb23c23fb5dd78bf34739a65abc41ffe45c5311212f6e12cc93",
+    "glossary_sha256": "509ae71ffb42983a594a887ac9f6339266e251a08bc4a12a7e2acb88da6d6c6a",
+    "inventory_sha256": "0cf74813283ee50ea649dcd14f52eb13fd37f98ca46084cd96c0a3ac09c328ca",
+    "manifest_path": "data/pilot_sets/pali/pilot_300_v1_manifest.json",
+    "manifest_sha256": "a79e65e39bf622b7994acc40df5ca7ba30fea392341c3d95d6a3b2b78f72428f",
+    "selection_content_sha256": "06f0d35a7eeebdb23c23fb5dd78bf34739a65abc41ffe45c5311212f6e12cc93",
+    "source_commit": "49bc86914748589a2501b548cc6b3e97a8abe018",
+    "source_path_root": "data/tipitaka-xml",
+    "stored_selection_content_sha256": "06f0d35a7eeebdb23c23fb5dd78bf34739a65abc41ffe45c5311212f6e12cc93"
+  },
+  "input_files": {
+    "glossary": {
+      "exists": true,
+      "path": "data/controlled_glossary.json",
+      "sha256": "509ae71ffb42983a594a887ac9f6339266e251a08bc4a12a7e2acb88da6d6c6a"
+    },
+    "gold": {
+      "exists": true,
+      "path": "data/gold_set.json",
+      "sha256": "37a020927ac8224d741bad15d139cc9c7c2e853679ca7c6e003859da8908019c"
+    },
+    "inventory": {
+      "exists": true,
+      "path": "data/pilot_sets/pali/pilot_300_v1_inventory_cache_49bc869.json",
+      "sha256": "0cf74813283ee50ea649dcd14f52eb13fd37f98ca46084cd96c0a3ac09c328ca"
+    },
+    "manifest": {
+      "exists": true,
+      "path": "data/pilot_sets/pali/pilot_300_v1_manifest.json",
+      "sha256": "eb1c8550b87e4a6c8a38d34113d3dce73695a14faa9619e43c374e12ae9fa3ed"
+    },
+    "pilot75_parsed": {
+      "exists": true,
+      "path": "data/reports/pali/gemini_pilot_75_49bc869_prompt_qa_patch_v2_parsed.json",
+      "sha256": "73cfb27e09dfaa48027a87cb7d40739f4c1a164fa33ba4034b68d05d33f98308"
+    },
+    "prompt_calibration": {
+      "exists": true,
+      "path": "data/reports/pali/gemini_prompt_v1_schemafix_token_calibration_49bc869.json",
+      "sha256": "4fe4b4a9942adfe41dcb2ee20dfc818152cf4c4d10ccc4527f2e5d236a9f471e"
+    },
+    "validation": {
+      "exists": true,
+      "path": "data/pilot_sets/pali/pilot_300_v1_validation.json",
+      "sha256": "60df91ad71257065c914afd81a6cca8dc9c1e75bea5a7746e2afeeba5d18a005"
+    }
+  },
+  "live_smoke_allowed": false,
+  "model": "models/gemini-3.1-pro-preview",
+  "network_allowed": false,
+  "output_paths": {
+    "budget_guardrail": "data/pilot_sets/pali/pilot_300_v1_budget_guardrail_test.json",
+    "cost_estimate": "data/pilot_sets/pali/pilot_300_v1_cost_estimate.json",
+    "cost_estimate_md": "data/pilot_sets/pali/pilot_300_v1_cost_estimate.md",
+    "docs": "docs/translation/PALI_300_PILOT_COST_AND_LOCAL_DRY_RUN_PLAN.md",
+    "jsonl": "data/pilot_sets/pali/pilot_300_v1_batch_unsubmitted.jsonl",
+    "jsonl_manifest": "data/pilot_sets/pali/pilot_300_v1_batch_unsubmitted_manifest.json",
+    "qa_dryrun_out": "data/qa_reports/pali/qa_report_300_dryrun",
+    "readiness": "data/pilot_sets/pali/pilot_300_v1_batch_readiness.json",
+    "source_integrity": "data/pilot_sets/pali/pilot_300_v1_source_integrity_precheck.json"
+  },
+  "prompt_id": "korean_advanced",
+  "prompt_version": "korean_advanced_v1_schemafix_qa_patch_v2",
+  "run_id": "pilot_300_v1",
+  "schema_version": "pali_pilot_300_preflight_run_manifest_v1",
+  "script_version": "pilot_300_preflight_v1"
+}

@@ -1,0 +1,11 @@
+{
+  "reports": {
+    "mock": {
+      "avoid_ko_conflicts": [],
+      "cross_term_collisions": [],
+      "same_segment_signals": [],
+      "untranslated_pali_reclassifications": []
+    }
+  },
+  "schema_version": "pali_mock_glossary_qa_v1"
+}

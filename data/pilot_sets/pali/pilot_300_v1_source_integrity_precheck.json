@@ -1,0 +1,9 @@
+{
+  "checked_count": 300,
+  "manifest_to_inventory_hash_match": true,
+  "manifest_to_jsonl_hash_match": true,
+  "mismatches": [],
+  "missing_inventory_keys": [],
+  "schema_version": "pali_pilot_300_source_integrity_precheck_v1",
+  "valid": true
+}

@@ -1,0 +1,9 @@
+{
+  "do_not_use_for_translation_evaluation": true,
+  "item_count": 300,
+  "mock": true,
+  "note": "mock QA dry-run is not a translation quality signal; gold empty is expected because current gold seeds are disjoint from 300.",
+  "parsed_path": "data/pilot_sets/pali/pilot_300_v1_mock_parsed.json",
+  "quality_signal": false,
+  "schema_version": "pali_pilot_300_mock_run_manifest_v1"
+}

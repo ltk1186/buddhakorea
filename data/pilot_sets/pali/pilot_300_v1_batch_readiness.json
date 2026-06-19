@@ -1,0 +1,42 @@
+{
+  "batch_submission_allowed_now": false,
+  "blocking_reasons": [],
+  "budget_guardrail_passed": true,
+  "budget_usd": 20.0,
+  "cost_estimate_available": true,
+  "estimated_cost_usd_conservative_gate": "8.459241",
+  "estimated_cost_usd_expected_mean": "7.091905",
+  "estimated_cost_usd_planning_p90": "8.459241",
+  "expected_selection_sha_match": true,
+  "glossary_sha256": "509ae71ffb42983a594a887ac9f6339266e251a08bc4a12a7e2acb88da6d6c6a",
+  "inventory_sha256": "0cf74813283ee50ea649dcd14f52eb13fd37f98ca46084cd96c0a3ac09c328ca",
+  "jsonl_unsubmitted_generated": true,
+  "jsonl_validation_passed": true,
+  "live_smoke_status": "not_run_step_2_excludes_live_calls",
+  "manifest_sha256": "a79e65e39bf622b7994acc40df5ca7ba30fea392341c3d95d6a3b2b78f72428f",
+  "manifest_valid": true,
+  "mock_qa_dryrun_passed": true,
+  "pricing_self_check_passed": true,
+  "qa_dry_run_plan_available": true,
+  "readiness_status": "PASS_READY_FOR_USER_APPROVAL",
+  "recommended_shards": 1,
+  "requires_user_approval": true,
+  "run_id": "pilot_300_v1",
+  "schema_version": "pali_pilot_300_preflight_readiness_v1",
+  "selection_content_sha256": "06f0d35a7eeebdb23c23fb5dd78bf34739a65abc41ffe45c5311212f6e12cc93",
+  "shard_recommendation": {
+    "alternative": "2 shards if Step 3 operator wants failure isolation",
+    "reason": "estimated cost under cap, 300 requests manageable",
+    "recommended_shards": 1
+  },
+  "source_commit": "49bc86914748589a2501b548cc6b3e97a8abe018",
+  "source_integrity_passed": true,
+  "under_budget": true,
+  "user_approval_received": false,
+  "warnings": [
+    "s05 (Khuddaka) is 116/300. This reflects verse/glossary-risk concentration in Khuddaka and is intentional. Step 2 cost estimate and Step 3 findings must report s05 separately.",
+    "GO status still requires explicit user approval before Step 3 submission.",
+    "Live micro-smoke is intentionally not run in Step 2.",
+    "Gold empty is expected for mock 300 dry-run because current gold seeds are disjoint from 300."
+  ]
+}

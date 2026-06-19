@@ -258,12 +258,17 @@ def _resolve_sample_seed(user_seed: str | None, keys: list[str]) -> int:
 def _evaluate_gold_current(payload: dict[str, Any], gold_set: dict[str, Any]) -> dict[str, Any]:
     by_key = {str(item.get("stable_segment_key")): item for item in _segments(payload)}
     pools = {pool: {"pass": 0, "fail": 0, "escalate": 0, "items": []} for pool in ("discovery", "regression_gold", "holdout_gold")}
+    missing_not_in_run_count = 0
     for entry in gold_set.get("entries", []) or []:
         if not isinstance(entry, dict):
             continue
+        key = str(entry.get("stable_segment_key"))
+        if key not in by_key:
+            missing_not_in_run_count += 1
+            continue
         pool = str(entry.get("pool", "discovery"))
         pools.setdefault(pool, {"pass": 0, "fail": 0, "escalate": 0, "items": []})
-        result = evaluate_against_gold(by_key.get(str(entry.get("stable_segment_key"))), entry)
+        result = evaluate_against_gold(by_key.get(key), entry)
         if result["pass"] is True:
             bucket = "pass"
         elif result["pass"] is False and result["auto_evaluable"]:
@@ -284,6 +289,7 @@ def _evaluate_gold_current(payload: dict[str, Any], gold_set: dict[str, Any]) ->
         "holdout_correctness": pools.get("holdout_gold", {"pass": 0, "fail": 0, "escalate": 0, "items": []}),
         "regression_canary": pools.get("regression_gold", {"pass": 0, "fail": 0, "escalate": 0, "items": []}),
         "discovery": pools.get("discovery", {"pass": 0, "fail": 0, "escalate": 0, "items": []}),
+        "missing_not_in_run_count": missing_not_in_run_count,
         "note": "Holdout correctness and regression canary are intentionally separate and must not be combined.",
     }
 
@@ -490,6 +496,7 @@ def _render_markdown_report(
     lines.append(
         f"- pass/fail/escalate: {holdout['pass']} / {holdout['fail']} / {holdout['escalate']}"
     )
+    lines.append(f"- gold entries not present in this run: {gold_current.get('missing_not_in_run_count', 0)}")
     lines.append("- holdout_gold는 regression_gold와 합산하지 않습니다.")
     lines.extend(["", "### Regression Canary", ""])
     if gold_regression:
@@ -499,6 +506,7 @@ def _render_markdown_report(
         lines.append(
             f"- current pass/fail/escalate: {canary['pass']} / {canary['fail']} / {canary['escalate']}"
         )
+        lines.append(f"- gold entries not present in this run: {gold_current.get('missing_not_in_run_count', 0)}")
         lines.append("- regression mode disabled: before/after verdict는 계산하지 않았습니다.")
     lines.append("")
 
