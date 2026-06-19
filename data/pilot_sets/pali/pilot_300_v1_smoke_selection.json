@@ -1,0 +1,92 @@
+{
+  "items": [
+    {
+      "chunk_type": "prose",
+      "holdout_excluded": true,
+      "length_bucket": "long",
+      "quality_signal": false,
+      "secondary_tags": [
+        "tika_long",
+        "citation_heavy",
+        "long_compound_or_dense_prose"
+      ],
+      "selection_bucket": "tika_long",
+      "selection_group": "hard",
+      "smoke_selection_reason": "tika_long",
+      "source_path": "romn/s0203t.tik.xml",
+      "source_text_hash": "6aab552b69a4185781c68e641ed5c3d829597001f640919abe15bec4c008f5ea",
+      "stable_segment_key": "vri:romn:s0203t.tik:58781e65df6a",
+      "text_layer": "tika"
+    },
+    {
+      "chunk_type": "prose",
+      "holdout_excluded": true,
+      "length_bucket": "long",
+      "quality_signal": false,
+      "secondary_tags": [
+        "atthakatha_long",
+        "citation_heavy",
+        "long_compound_or_dense_prose"
+      ],
+      "selection_bucket": "citation_heavy",
+      "selection_group": "hard",
+      "smoke_selection_reason": "atthakatha_long",
+      "source_path": "romn/s0502a.att.xml",
+      "source_text_hash": "7d7f7ab43974b276e79dee08cff7fc690eb5b14537722939518ec2f4bd0ed4c7",
+      "stable_segment_key": "vri:romn:s0502a.att:4c8a4f1eb4f5",
+      "text_layer": "atthakatha"
+    },
+    {
+      "chunk_type": "verse",
+      "holdout_excluded": true,
+      "length_bucket": "short",
+      "quality_signal": false,
+      "secondary_tags": [
+        "verse",
+        "source_text_anomaly_risk"
+      ],
+      "selection_bucket": "verse",
+      "selection_group": "hard",
+      "smoke_selection_reason": "s05_verse_or_glossary_risk",
+      "source_path": "romn/s0514m.mul.xml",
+      "source_text_hash": "e3a3005f2130e3c22d8defd59544adbb0886a3d0444e2c0d7b7094c54d4302ed",
+      "stable_segment_key": "vri:romn:s0514m.mul:48c4412decd3",
+      "text_layer": "mula"
+    },
+    {
+      "chunk_type": "prose",
+      "holdout_excluded": true,
+      "length_bucket": "short",
+      "quality_signal": false,
+      "secondary_tags": [
+        "abhidhamma_definition"
+      ],
+      "selection_bucket": "abhidhamma_definition",
+      "selection_group": "hard",
+      "smoke_selection_reason": "abhidhamma_definition",
+      "source_path": "romn/abh01m.mul.xml",
+      "source_text_hash": "fd42bf03bed2aa6c35a16eb272de9c47fd0b485f6157d3b6cacfc72e401801e3",
+      "stable_segment_key": "vri:romn:abh01m.mul:e451dddb7efc",
+      "text_layer": "mula"
+    },
+    {
+      "chunk_type": "prose",
+      "holdout_excluded": true,
+      "length_bucket": "long",
+      "quality_signal": false,
+      "secondary_tags": [],
+      "selection_bucket": "representative_stratified",
+      "selection_group": "representative",
+      "smoke_selection_reason": "representative_or_heading",
+      "source_path": "romn/abh03m5.mul.xml",
+      "source_text_hash": "c34b56ef782629618f3060d97bdb48a320e7e95b4f1f861bf700aa56ccc62c5e",
+      "stable_segment_key": "vri:romn:abh03m5.mul:45a68b1d4365",
+      "text_layer": "mula"
+    }
+  ],
+  "run_id": "pilot_300_v1_smoke",
+  "sample_count": 5,
+  "schema_version": "pali_pilot_300_smoke_selection_v1",
+  "selection_content_sha256": "06f0d35a7eeebdb23c23fb5dd78bf34739a65abc41ffe45c5311212f6e12cc93",
+  "selection_policy": "deterministic_non_holdout_bucket_coverage"
+}

@@ -1,0 +1,45 @@
+{
+  "actual_cost_usd": "0.000000",
+  "actual_usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "thinking_tokens": 0,
+    "total_tokens": 0
+  },
+  "batch_submission_allowed_now": false,
+  "blocking_reasons": [
+    "BLOCKED_MISSING_GEMINI_CREDENTIAL"
+  ],
+  "budget_usd": "0.50",
+  "credential_env_var": null,
+  "credential_present": false,
+  "credential_source": "environment_variable",
+  "credential_value_logged": false,
+  "enabled": true,
+  "estimated_cost_usd": "0.205228",
+  "items": [],
+  "limitations": [
+    "This smoke validates live model / prompt / schema / parser behavior only.",
+    "It does not validate Gemini Batch submission mechanics.",
+    "Batch submission is a separate path and must still be guarded in Step 3.",
+    "Smoke output is not a translation quality signal and must not be used for glossary/gold/prompt tuning."
+  ],
+  "model_version_drift": false,
+  "observed_model_versions": [],
+  "parse_failed_count": 0,
+  "prompt_profile": "korean_advanced_v1_schemafix_qa_patch_v2",
+  "quality_signal": false,
+  "requested_model": "models/gemini-3.1-pro-preview",
+  "run_id": "pilot_300_v1_smoke",
+  "sample_count_attempted": 0,
+  "sample_count_requested": 5,
+  "sample_count_succeeded": 0,
+  "schema_invalid_count": 0,
+  "schema_valid_count": 0,
+  "schema_version": "pali_pilot_300_live_smoke_results_v1",
+  "selection_content_sha256": "06f0d35a7eeebdb23c23fb5dd78bf34739a65abc41ffe45c5311212f6e12cc93",
+  "status": "BLOCKED",
+  "under_budget": true,
+  "user_green_light": true,
+  "warnings": []
+}

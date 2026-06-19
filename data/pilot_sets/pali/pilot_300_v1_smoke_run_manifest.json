@@ -1,0 +1,65 @@
+{
+  "batch_submission_allowed_now": false,
+  "command_line_args": {
+    "budget_usd": "0.50",
+    "cost_estimate": "data/pilot_sets/pali/pilot_300_v1_cost_estimate.json",
+    "enable_smoke": true,
+    "expected_selection_sha": "06f0d35a7eeebdb23c23fb5dd78bf34739a65abc41ffe45c5311212f6e12cc93",
+    "jsonl": "data/pilot_sets/pali/pilot_300_v1_batch_unsubmitted.jsonl",
+    "jsonl_manifest": "data/pilot_sets/pali/pilot_300_v1_batch_unsubmitted_manifest.json",
+    "manifest": "data/pilot_sets/pali/pilot_300_v1_manifest.json",
+    "max_attempts_per_segment": 3,
+    "max_segments": 5,
+    "model": "models/gemini-3.1-pro-preview",
+    "out": "data/pilot_sets/pali",
+    "pretty": true,
+    "readiness": "data/pilot_sets/pali/pilot_300_v1_batch_readiness.json",
+    "retry_backoff_seconds": 1.0,
+    "timeout_seconds": 120,
+    "user_green_light": true
+  },
+  "credential_env_var": null,
+  "credential_present": false,
+  "credential_source": "environment_variable",
+  "credential_value_logged": false,
+  "generated_at": "2026-06-19T14:42:40.386252+00:00",
+  "input_files": {
+    "cost_estimate": {
+      "exists": true,
+      "path": "data/pilot_sets/pali/pilot_300_v1_cost_estimate.json",
+      "sha256": "c919025c93843e2e180d93bb3f643a5dcc1882e067abaceace5ea75a7c0cdf27"
+    },
+    "jsonl": {
+      "exists": true,
+      "path": "data/pilot_sets/pali/pilot_300_v1_batch_unsubmitted.jsonl",
+      "sha256": "cee019ad12bb01f7e034eae5adbb92803ccf70107bb0cf1594fdf0259e423e83"
+    },
+    "jsonl_manifest": {
+      "exists": true,
+      "path": "data/pilot_sets/pali/pilot_300_v1_batch_unsubmitted_manifest.json",
+      "sha256": "227da51f92092147ab3d99937d4fb81309f39b4881218030c435514a48a69daa"
+    },
+    "manifest": {
+      "exists": true,
+      "path": "data/pilot_sets/pali/pilot_300_v1_manifest.json",
+      "sha256": "eb1c8550b87e4a6c8a38d34113d3dce73695a14faa9619e43c374e12ae9fa3ed"
+    },
+    "readiness": {
+      "exists": true,
+      "path": "data/pilot_sets/pali/pilot_300_v1_batch_readiness.json",
+      "sha256": "c01554834ad4df165521eea509d8c0e72805246c4d6dc1c6f265391c0c4599d4"
+    }
+  },
+  "network_call_type": "none_blocked_before_live_call",
+  "output_paths": {
+    "raw_jsonl": "data/pilot_sets/pali/pilot_300_v1_smoke_raw.jsonl",
+    "results": "data/pilot_sets/pali/pilot_300_v1_smoke_results.json",
+    "run_manifest": "data/pilot_sets/pali/pilot_300_v1_smoke_run_manifest.json",
+    "selection": "data/pilot_sets/pali/pilot_300_v1_smoke_selection.json",
+    "summary": "data/pilot_sets/pali/pilot_300_v1_smoke_summary.md"
+  },
+  "quality_signal": false,
+  "run_id": "pilot_300_v1_smoke",
+  "schema_version": "pali_pilot_300_smoke_run_manifest_v1",
+  "script_version": "pilot_300_live_smoke_v1"
+}
