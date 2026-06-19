@@ -18,11 +18,11 @@
     "timeout_seconds": 120,
     "user_green_light": true
   },
-  "credential_env_var": null,
-  "credential_present": false,
+  "credential_env_var": "GEMINI_API_KEY",
+  "credential_present": true,
   "credential_source": "environment_variable",
   "credential_value_logged": false,
-  "generated_at": "2026-06-19T14:42:40.386252+00:00",
+  "generated_at": "2026-06-19T15:16:50.274273+00:00",
   "input_files": {
     "cost_estimate": {
       "exists": true,
@@ -50,7 +50,7 @@
       "sha256": "c01554834ad4df165521eea509d8c0e72805246c4d6dc1c6f265391c0c4599d4"
     }
   },
-  "network_call_type": "none_blocked_before_live_call",
+  "network_call_type": "Gemini generateContent only",
   "output_paths": {
     "raw_jsonl": "data/pilot_sets/pali/pilot_300_v1_smoke_raw.jsonl",
     "results": "data/pilot_sets/pali/pilot_300_v1_smoke_results.json",

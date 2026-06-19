@@ -4,13 +4,13 @@
 Validate live model / prompt / schema / parser behavior for 3-5 selected segments before any 300 Batch submission.
 
 ## Safety Gate
-- status: `BLOCKED`
-- blocking_reasons: BLOCKED_MISSING_GEMINI_CREDENTIAL
+- status: `PASS`
+- blocking_reasons: none
 - batch_submission_allowed_now: `false`
 
 ## Credential Handling
 - credential source: environment_variable
-- credential present: False
+- credential present: True
 - credential value logged: false
 
 ## Sample Selection
@@ -23,23 +23,23 @@ Validate live model / prompt / schema / parser behavior for 3-5 selected segment
 
 ## Model / Observed modelVersion
 - requested_model: `models/gemini-3.1-pro-preview`
-- observed_model_versions: []
-- model_version_drift: False
+- observed_model_versions: ['gemini-3.1-pro-preview']
+- model_version_drift: True
 
 ## Schema Validation Result
-- schema_valid_count: 0
+- schema_valid_count: 5
 - schema_invalid_count: 0
 
 ## Parse Result
 - parse_failed_count: 0
 
 ## Token / Cost Result
-- actual_usage: {'input_tokens': 0, 'output_tokens': 0, 'thinking_tokens': 0, 'total_tokens': 0}
+- actual_usage: {'input_tokens': 17065, 'output_tokens': 5725, 'thinking_tokens': 14524, 'total_tokens': 37314}
 - estimated_cost_usd: $0.205228
-- actual_cost_usd: $0.000000
+- actual_cost_usd: $0.138559
 
 ## Estimate Divergence
-- warnings: none
+- warnings: model_version_drift
 
 ## Budget Status
 - budget_usd: $0.50
