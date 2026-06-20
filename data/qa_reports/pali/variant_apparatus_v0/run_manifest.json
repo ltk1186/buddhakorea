@@ -1,0 +1,85 @@
+{
+  "api_llm_calls": 0,
+  "args": {
+    "findings": "data/qa_reports/pali/qa_report_300_live_salvaged_integrated/findings.json",
+    "max_targets": 20,
+    "out": "data/qa_reports/pali/variant_apparatus_v0",
+    "parsed": "data/reports/pali/pilot_300_batch/pilot_300_batch_parsed_salvaged.json",
+    "review_queue_reclassified": "data/qa_reports/pali/qa_report_300_live_salvaged_integrated/review_queue_reclassified.json",
+    "source_root": "data/tipitaka-xml",
+    "targets": null,
+    "window_chars": 160
+  },
+  "created_at": "2026-06-20T13:34:43.361200+00:00",
+  "cross_script_collation": false,
+  "input_files": {
+    "findings.json": {
+      "exists": true,
+      "path": "data/qa_reports/pali/qa_report_300_live_salvaged_integrated/findings.json",
+      "sha256": "c6fb6c8e00d06443b48a9bed1dfde401f1d2a8672a8c3de6335c71553bbd3167"
+    },
+    "pilot_300_batch_parsed_salvaged.json": {
+      "exists": true,
+      "path": "data/reports/pali/pilot_300_batch/pilot_300_batch_parsed_salvaged.json",
+      "sha256": "77d38f12c4f6d70bbe803697b18ad96193ef63eb2021b09fbb1c98128bf6acf7"
+    },
+    "review_queue_reclassified.json": {
+      "exists": true,
+      "path": "data/qa_reports/pali/qa_report_300_live_salvaged_integrated/review_queue_reclassified.json",
+      "sha256": "c00e94a228bf047635a660bc4e8450c40891320e6585d64cc34868ffa1acc1e4"
+    }
+  },
+  "network_calls": 0,
+  "output_files": {
+    "apparatus": {
+      "exists": true,
+      "path": "data/qa_reports/pali/variant_apparatus_v0/variant_apparatus.json",
+      "sha256": "6fb3f991ee812247d9d03f1988a1f1b7d08e4826d5778331048bfb3d9b3dcf1d"
+    },
+    "crosscheck": {
+      "exists": true,
+      "path": "data/qa_reports/pali/variant_apparatus_v0/apparatus_qa_crosscheck.json",
+      "sha256": "abd76e32b1016efcdd9c81bdf1fffd5ccceafa72ed57b000697a45bc5080b20e"
+    },
+    "findings_md": {
+      "exists": true,
+      "path": "data/qa_reports/pali/variant_apparatus_v0/apparatus_findings.md",
+      "sha256": "d1421b678ed4aeaa3ddfabfa1385c270bb5cad912b5fe2399bda2b0835c4899b"
+    },
+    "premise": {
+      "exists": true,
+      "path": "data/qa_reports/pali/variant_apparatus_v0/apparatus_premise_check.json",
+      "sha256": "adf10144c301b812f3a7f3b63a72134da11eeb5d649bb9d444ebce2f1227e69b"
+    },
+    "run_manifest": {
+      "exists": true,
+      "path": "data/qa_reports/pali/variant_apparatus_v0/run_manifest.json",
+      "sha256": "2e137eb7934b6f4a96f6d692e571afc5cca338c362e6432fbfc997c9d3f7ef06"
+    }
+  },
+  "parsed_mutation": false,
+  "prompt_glossary_gold_mutation": false,
+  "schema_version": "pali_variant_apparatus_run_manifest_v0",
+  "script_version": "variant_apparatus_extraction_v0",
+  "source_mutation": false,
+  "summary": {
+    "apparatus_attests_variant": 1,
+    "apparatus_attribution_failed": 0,
+    "apparatus_extraction_missing_source": 0,
+    "apparatus_has_variant_nearby": 1,
+    "apparatus_loss_rate": 0.9,
+    "citation_note_records_in_300_source_scope": 1,
+    "no_apparatus_variant": 10,
+    "note_records_extracted": 14609,
+    "records_attributed_to_flagged_segments": 12,
+    "segments_with_citation_notes_in_source": 1,
+    "segments_with_variant_apparatus_in_source": 10,
+    "segments_with_variant_apparatus_missing_from_translation_input": 9,
+    "source_files_checked": 105,
+    "target_count": 12,
+    "total_segments": 300,
+    "unknown_sigla_count": 1,
+    "variant_note_records_in_300_source_scope": 12
+  },
+  "translation_mutation": false
+}

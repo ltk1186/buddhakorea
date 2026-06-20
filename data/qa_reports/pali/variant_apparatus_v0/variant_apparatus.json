@@ -1,0 +1,432 @@
+{
+  "cross_script_collation_deprecated": true,
+  "records": [
+    {
+      "anchor_text": "jhāyatisu",
+      "anchor_uncertain": true,
+      "apparatus_id": "romn/s0102m.mul.xml:note:000309",
+      "attribution_confidence": "high",
+      "auto_apply": false,
+      "char_offset": 448339,
+      "citation_refs": [],
+      "context_after": "nāmajja vediyako pabbato jalatisu nāmajja vediyako pabbato kiṃsu nāmajja vediyako pabbato atiriva obhāsajāto ambasaṇḍā ca brāhmaṇagāmo’’ti saṃviggā lomahaṭṭhajā",
+      "context_before": "jāto hoti ambasaṇḍā ca brāhmaṇagāmo yathā taṃ devānaṃ devānubhāvena. Apissudaṃ parito gāmesu manussā evamāhaṃsu – ‘‘ādittassu nāmajja vediyako pabbato jhāyatisu",
+      "evidence_strength_hint": "named_witness",
+      "is_variant_apparatus": true,
+      "main_reading": "jhāyatisu",
+      "note_type": "variant",
+      "parent_rend": "bodytext",
+      "parent_tag": "p",
+      "parent_xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='dn2']/div[@n='dn2_8']/p[@n='346']",
+      "raw_note_text": "jhāyatassu (syā.), pajjhāyitassu (sī. pī.)",
+      "sigla": [
+        "syā"
+      ],
+      "sigla_expanded": [
+        {
+          "label": "Siamese / Thai",
+          "siglum": "syā"
+        }
+      ],
+      "source_path": "romn/s0102m.mul.xml",
+      "stable_segment_key": "vri:romn:s0102m.mul:6a72ce6bb12a",
+      "unknown_sigla": [],
+      "variant_text": "jhāyatassu",
+      "xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='dn2']/div[@n='dn2_8']/p[@n='346']/note[1]"
+    },
+    {
+      "anchor_text": "jalatisu",
+      "anchor_uncertain": true,
+      "apparatus_id": "romn/s0102m.mul.xml:note:000310",
+      "attribution_confidence": "high",
+      "auto_apply": false,
+      "char_offset": 448429,
+      "citation_refs": [],
+      "context_after": "nāmajja vediyako pabbato kiṃsu nāmajja vediyako pabbato atiriva obhāsajāto ambasaṇḍā ca brāhmaṇagāmo’’ti saṃviggā lomahaṭṭhajātā ahesuṃ.",
+      "context_before": "o yathā taṃ devānaṃ devānubhāvena. Apissudaṃ parito gāmesu manussā evamāhaṃsu – ‘‘ādittassu nāmajja vediyako pabbato jhāyatisu nāmajja vediyako pabbato jalatisu",
+      "evidence_strength_hint": "named_witness",
+      "is_variant_apparatus": true,
+      "main_reading": "jalatisu",
+      "note_type": "variant",
+      "parent_rend": "bodytext",
+      "parent_tag": "p",
+      "parent_xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='dn2']/div[@n='dn2_8']/p[@n='346']",
+      "raw_note_text": "jalatassu (syā.), jalitassu (sī. pī.)",
+      "sigla": [
+        "syā"
+      ],
+      "sigla_expanded": [
+        {
+          "label": "Siamese / Thai",
+          "siglum": "syā"
+        }
+      ],
+      "source_path": "romn/s0102m.mul.xml",
+      "stable_segment_key": "vri:romn:s0102m.mul:6a72ce6bb12a",
+      "unknown_sigla": [],
+      "variant_text": "jalatassu",
+      "xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='dn2']/div[@n='dn2_8']/p[@n='346']/note[2]"
+    },
+    {
+      "anchor_text": "Janapadapadesena",
+      "anchor_uncertain": true,
+      "apparatus_id": "romn/s0301m.mul.xml:note:000164",
+      "attribution_confidence": "high",
+      "auto_apply": false,
+      "char_offset": 197649,
+      "citation_refs": [],
+      "context_after": "cepāhaṃ, bhante, labheyyaṃ ‘mā me ayyikā kālamakāsī’ti, janapadapadesampāhaṃ dadeyyaṃ – ‘mā me ayyikā kālamakāsī’ti. ‘Sabbe sattā, mahārāja, maraṇadhammā maraṇa",
+      "context_before": " ayyikā kālamakāsī’ti. Gāmavarena cepāhaṃ bhante, labheyyaṃ ‘mā me ayyikā kālamakāsī’ti, gāmavarampāhaṃ dadeyyaṃ – ‘mā me ayyikā kālamakāsī’ti. Janapadapadesena",
+      "evidence_strength_hint": "named_witness",
+      "is_variant_apparatus": true,
+      "main_reading": "Janapadapadesena",
+      "note_type": "variant",
+      "parent_rend": "bodytext",
+      "parent_tag": "p",
+      "parent_xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='sn1']/div[@n='sn1_3']/p[289]",
+      "raw_note_text": "janapadena (sī. syā. pī.)",
+      "sigla": [
+        "sī",
+        "syā",
+        "pī"
+      ],
+      "sigla_expanded": [
+        {
+          "label": "Sinhala",
+          "siglum": "sī"
+        },
+        {
+          "label": "Siamese / Thai",
+          "siglum": "syā"
+        },
+        {
+          "label": "PTS",
+          "siglum": "pī"
+        }
+      ],
+      "source_path": "romn/s0301m.mul.xml",
+      "stable_segment_key": "vri:romn:s0301m.mul:65bfa32418da",
+      "unknown_sigla": [],
+      "variant_text": "janapadena",
+      "xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='sn1']/div[@n='sn1_3']/p[289]/note[1]"
+    },
+    {
+      "anchor_text": "annadapānavatthadaṃ",
+      "anchor_uncertain": true,
+      "apparatus_id": "romn/s0402m3.mul.xml:note:000135",
+      "attribution_confidence": "high",
+      "auto_apply": false,
+      "char_offset": 120624,
+      "citation_refs": [],
+      "context_after": ",",
+      "context_before": "‘‘Evaṃ naraṃ annadapānavatthadaṃ",
+      "evidence_strength_hint": "weak_or_unspecified",
+      "is_variant_apparatus": true,
+      "main_reading": "annadapānavatthadaṃ",
+      "note_type": "variant",
+      "parent_rend": "gatha1",
+      "parent_tag": "p",
+      "parent_xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='an4']/div[@n='an4_2']/div[@n='an4_2_1']/p[12]",
+      "raw_note_text": "annapānavatthaṃ (ka.)",
+      "sigla": [
+        "ka"
+      ],
+      "sigla_expanded": [
+        {
+          "label": "ka / unspecified manuscript group",
+          "siglum": "ka"
+        }
+      ],
+      "source_path": "romn/s0402m3.mul.xml",
+      "stable_segment_key": "vri:romn:s0402m3.mul:60a0d9713cc3",
+      "unknown_sigla": [],
+      "variant_text": "annapānavatthaṃ",
+      "xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='an4']/div[@n='an4_2']/div[@n='an4_2_1']/p[12]/note[1]"
+    },
+    {
+      "anchor_text": "Vaṃsakkaḷīrova",
+      "anchor_uncertain": true,
+      "apparatus_id": "romn/s0505m.mul.xml:note:000018",
+      "attribution_confidence": "high",
+      "auto_apply": false,
+      "char_offset": 12672,
+      "citation_refs": [],
+      "context_after": "asajjamāno, eko care khaggavisāṇakappo.",
+      "context_before": "Vaṃsakkaḷīrova",
+      "evidence_strength_hint": "named_witness",
+      "is_variant_apparatus": true,
+      "main_reading": "Vaṃsakkaḷīrova",
+      "note_type": "variant",
+      "parent_rend": "gathalast",
+      "parent_tag": "p",
+      "parent_xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='kn5']/div[@n='kn5_1']/p[133]",
+      "raw_note_text": "vaṃsakaḷīrova (sī.), vaṃsākaḷīrova (syā. kaṃ. pī.), vaṃsekaḷīrova (niddesa)",
+      "sigla": [
+        "sī"
+      ],
+      "sigla_expanded": [
+        {
+          "label": "Sinhala",
+          "siglum": "sī"
+        }
+      ],
+      "source_path": "romn/s0505m.mul.xml",
+      "stable_segment_key": "vri:romn:s0505m.mul:19ae1da5c658",
+      "unknown_sigla": [],
+      "variant_text": "vaṃsakaḷīrova",
+      "xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='kn5']/div[@n='kn5_1']/p[133]/note[1]"
+    },
+    {
+      "anchor_text": "passissāmi",
+      "anchor_uncertain": true,
+      "apparatus_id": "romn/s0507m.mul.xml:note:000174",
+      "attribution_confidence": "high",
+      "auto_apply": false,
+      "char_offset": 150678,
+      "citation_refs": [],
+      "context_after": ", sabbampi tāhaṃ abhisaddaheyyaṃ;",
+      "context_before": "‘‘Yaṃ kiñcahaṃ cakkhunā passissāmi",
+      "evidence_strength_hint": "weak_or_unspecified",
+      "is_variant_apparatus": true,
+      "main_reading": "passissāmi",
+      "note_type": "variant",
+      "parent_rend": "gatha1",
+      "parent_tag": "p",
+      "parent_xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='kn7']/div[@n='kn7_4']/p[39]",
+      "raw_note_text": "passāmi (ka.)",
+      "sigla": [
+        "ka"
+      ],
+      "sigla_expanded": [
+        {
+          "label": "ka / unspecified manuscript group",
+          "siglum": "ka"
+        }
+      ],
+      "source_path": "romn/s0507m.mul.xml",
+      "stable_segment_key": "vri:romn:s0507m.mul:702e8ccd7a3d",
+      "unknown_sigla": [],
+      "variant_text": "passāmi",
+      "xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='kn7']/div[@n='kn7_4']/p[39]/note[1]"
+    },
+    {
+      "anchor_text": "kareyyāsi",
+      "anchor_uncertain": true,
+      "apparatus_id": "romn/s0507m.mul.xml:note:000175",
+      "attribution_confidence": "high",
+      "auto_apply": false,
+      "char_offset": 150812,
+      "citation_refs": [],
+      "context_after": "me yakkha niyassakamma’’nti.",
+      "context_before": "Disvāva taṃ nopi ce saddaheyyaṃ, kareyyāsi",
+      "evidence_strength_hint": "unknown",
+      "is_variant_apparatus": true,
+      "main_reading": "kareyyāsi",
+      "note_type": "variant",
+      "parent_rend": "gathalast",
+      "parent_tag": "p",
+      "parent_xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='kn7']/div[@n='kn7_4']/p[40]",
+      "raw_note_text": "karohi (katthaci)",
+      "sigla": [],
+      "sigla_expanded": [],
+      "source_path": "romn/s0507m.mul.xml",
+      "stable_segment_key": "vri:romn:s0507m.mul:702e8ccd7a3d",
+      "unknown_sigla": [
+        "katthaci"
+      ],
+      "variant_text": "karohi",
+      "xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='kn7']/div[@n='kn7_4']/p[40]/note[1]"
+    },
+    {
+      "anchor_text": "dhammakhīrañhi",
+      "anchor_uncertain": true,
+      "apparatus_id": "romn/s0510m2.mul.xml:note:000467",
+      "attribution_confidence": "high",
+      "auto_apply": false,
+      "char_offset": 608481,
+      "citation_refs": [],
+      "context_after": "pāyitā.",
+      "context_before": "Tayāhaṃ santamaccantaṃ, dhammakhīrañhi",
+      "evidence_strength_hint": "named_witness",
+      "is_variant_apparatus": true,
+      "main_reading": "dhammakhīrañhi",
+      "note_type": "variant",
+      "parent_rend": "gathalast",
+      "parent_tag": "p",
+      "parent_xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='kn11']/div[@n='kn11_2']/p[398]",
+      "raw_note_text": "dhammakhīrampi (syā., ka.)",
+      "sigla": [
+        "syā",
+        "ka"
+      ],
+      "sigla_expanded": [
+        {
+          "label": "Siamese / Thai",
+          "siglum": "syā"
+        },
+        {
+          "label": "ka / unspecified manuscript group",
+          "siglum": "ka"
+        }
+      ],
+      "source_path": "romn/s0510m2.mul.xml",
+      "stable_segment_key": "vri:romn:s0510m2.mul:ab2edba7c0ba",
+      "unknown_sigla": [],
+      "variant_text": "dhammakhīrampi",
+      "xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='kn11']/div[@n='kn11_2']/p[398]/note[1]"
+    },
+    {
+      "anchor_text": "paṭibhāsi",
+      "anchor_uncertain": true,
+      "apparatus_id": "romn/s0514m.mul.xml:note:000605",
+      "attribution_confidence": "high",
+      "auto_apply": false,
+      "char_offset": 245802,
+      "citation_refs": [],
+      "context_after": "maṃ;",
+      "context_before": "‘‘Avinicchayaññu atthesu, mandova paṭibhāsi",
+      "evidence_strength_hint": "weak_or_unspecified",
+      "is_variant_apparatus": true,
+      "main_reading": "paṭibhāsi",
+      "note_type": "variant",
+      "parent_rend": "gatha1",
+      "parent_tag": "p",
+      "parent_xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='kn14']/div[@n='kn14_21']/p[354]",
+      "raw_note_text": "paṭibhāti (ka.)",
+      "sigla": [
+        "ka"
+      ],
+      "sigla_expanded": [
+        {
+          "label": "ka / unspecified manuscript group",
+          "siglum": "ka"
+        }
+      ],
+      "source_path": "romn/s0514m.mul.xml",
+      "stable_segment_key": "vri:romn:s0514m.mul:92dcad01d3b3",
+      "unknown_sigla": [],
+      "variant_text": "paṭibhāti",
+      "xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='kn14']/div[@n='kn14_21']/p[354]/note[1]"
+    },
+    {
+      "anchor_text": "oropetvā",
+      "anchor_uncertain": true,
+      "apparatus_id": "romn/s0514m.mul.xml:note:001737",
+      "attribution_confidence": "high",
+      "auto_apply": false,
+      "char_offset": 891789,
+      "citation_refs": [],
+      "context_after": "sakaṃ janaṃ;",
+      "context_before": "‘‘Tato vessantaro rājā, oropetvā",
+      "evidence_strength_hint": "weak_or_unspecified",
+      "is_variant_apparatus": true,
+      "main_reading": "oropetvā",
+      "note_type": "variant",
+      "parent_rend": "gatha1",
+      "parent_tag": "p",
+      "parent_xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='kn14']/div[@n='kn14_22']/p[5812]",
+      "raw_note_text": "otāretvā (ka.)",
+      "sigla": [
+        "ka"
+      ],
+      "sigla_expanded": [
+        {
+          "label": "ka / unspecified manuscript group",
+          "siglum": "ka"
+        }
+      ],
+      "source_path": "romn/s0514m.mul.xml",
+      "stable_segment_key": "vri:romn:s0514m.mul:88650af1ca41",
+      "unknown_sigla": [],
+      "variant_text": "otāretvā",
+      "xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='kn14']/div[@n='kn14_22']/p[5812]/note[1]"
+    },
+    {
+      "anchor_text": "accantadiṭṭhaṃ",
+      "anchor_uncertain": true,
+      "apparatus_id": "romn/s0519m.mul.xml:note:000249",
+      "attribution_confidence": "high",
+      "auto_apply": false,
+      "char_offset": 281276,
+      "citation_refs": [],
+      "context_after": "nibbānaṃ ārādheti, atthi puggalo sukko sukkābhijātiko kaṇhaṃ dhammaṃ abhijāyati, atthi puggalo sukko sukkābhijātiko sukkaṃ dhammaṃ abhijāyati, atthi puggalo suk",
+      "context_before": " abhijāyati, atthi puggalo kaṇho kaṇhābhijātiko sukkaṃ dhammaṃ abhijāyati, atthi puggalo kaṇho kaṇhābhijātiko akaṇhaṃ asukkaṃ akaṇhaasukkavipākaṃ accantadiṭṭhaṃ",
+      "evidence_strength_hint": "named_witness",
+      "is_variant_apparatus": true,
+      "main_reading": "accantadiṭṭhaṃ",
+      "note_type": "variant",
+      "parent_rend": "bodytext",
+      "parent_tag": "p",
+      "parent_xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='kn19']/div[@n='kn19_6']/p[490]",
+      "raw_note_text": "antaṃ niṭṭhaṃ (sī.)",
+      "sigla": [
+        "sī"
+      ],
+      "sigla_expanded": [
+        {
+          "label": "Sinhala",
+          "siglum": "sī"
+        }
+      ],
+      "source_path": "romn/s0519m.mul.xml",
+      "stable_segment_key": "vri:romn:s0519m.mul:f43a9c761757",
+      "unknown_sigla": [],
+      "variant_text": "antaṃ niṭṭhaṃ",
+      "xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='kn19']/div[@n='kn19_6']/p[490]/note[1]"
+    },
+    {
+      "anchor_text": "karaṇīyena",
+      "anchor_uncertain": true,
+      "apparatus_id": "romn/vin02m1.mul.xml:note:000099",
+      "attribution_confidence": "high",
+      "auto_apply": false,
+      "char_offset": 304306,
+      "citation_refs": [],
+      "context_after": "bhesajjaṃ viññāpeti, āpatti pācittiyassa. Aññena bhesajjena karaṇīyena aññaṃ bhesajjaṃ viññāpeti, āpatti pācittiyassa. Tatuttari tatuttarisaññī bhesajjaṃ viññāp",
+      "context_before": "309. Na bhesajjena karaṇīyena",
+      "evidence_strength_hint": "named_witness",
+      "is_variant_apparatus": true,
+      "main_reading": "karaṇīyena",
+      "note_type": "variant",
+      "parent_rend": "bodytext",
+      "parent_tag": "p",
+      "parent_xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='vin2']/div[@n='vin2_1']/p[@n='309']",
+      "raw_note_text": "karaṇīye (sī. syā.)",
+      "sigla": [
+        "sī",
+        "syā"
+      ],
+      "sigla_expanded": [
+        {
+          "label": "Sinhala",
+          "siglum": "sī"
+        },
+        {
+          "label": "Siamese / Thai",
+          "siglum": "syā"
+        }
+      ],
+      "source_path": "romn/vin02m1.mul.xml",
+      "stable_segment_key": "vri:romn:vin02m1.mul:82136200591f",
+      "unknown_sigla": [],
+      "variant_text": "karaṇīye",
+      "xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='vin2']/div[@n='vin2_1']/p[@n='309']/note[1]"
+    }
+  ],
+  "schema_version": "pali_variant_apparatus_v0",
+  "scope": "pilot_300_flagged_subset_and_full_300_loss_measurement",
+  "source": "VRI XML <note> apparatus",
+  "summary": {
+    "apparatus_loss_rate": 0.9,
+    "citation_note_records_in_300_source_scope": 1,
+    "note_records_extracted": 14609,
+    "records_attributed_to_flagged_segments": 12,
+    "segments_with_citation_notes_in_source": 1,
+    "segments_with_variant_apparatus_in_source": 10,
+    "segments_with_variant_apparatus_missing_from_translation_input": 9,
+    "source_files_checked": 105,
+    "total_segments": 300,
+    "unknown_sigla_count": 1,
+    "variant_note_records_in_300_source_scope": 12
+  }
+}

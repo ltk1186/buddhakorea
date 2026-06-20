@@ -1,0 +1,1220 @@
+{
+  "case_checks": [
+    {
+      "note_text": "Source note attests a variant reading 'antaṃ niṭṭhaṃ (sī.)' near target accantadiṭṭhaṃ.",
+      "parsed_contains_note_reading": false,
+      "parsed_contains_siglum": false,
+      "premise_status": "apparatus_present_but_missing_from_translation_input",
+      "source_note_found": true,
+      "stable_segment_key": "vri:romn:s0519m.mul:f43a9c761757",
+      "target_hint": "accantadiṭṭhaṃ"
+    },
+    {
+      "note_text": "No variant apparatus was structurally attributed to this segment.",
+      "parsed_contains_note_reading": null,
+      "parsed_contains_siglum": false,
+      "premise_status": "no_apparatus_note_found_or_missing_source",
+      "source_note_found": false,
+      "stable_segment_key": "vri:romn:abh03m11.mul:4ab6e93ef3c3",
+      "target_hint": "nanabhāvanāya"
+    },
+    {
+      "note_text": "No variant apparatus was structurally attributed to this segment.",
+      "parsed_contains_note_reading": null,
+      "parsed_contains_siglum": false,
+      "premise_status": "no_apparatus_note_found_or_missing_source",
+      "source_note_found": false,
+      "stable_segment_key": "vri:romn:s0302t.tik:75cb6eb45b34",
+      "target_hint": "Tassāti pāṭhassa"
+    },
+    {
+      "note_text": "No variant apparatus was structurally attributed to this segment.",
+      "parsed_contains_note_reading": null,
+      "parsed_contains_siglum": false,
+      "premise_status": "no_apparatus_note_found_or_missing_source",
+      "source_note_found": false,
+      "stable_segment_key": "vri:romn:vin02a2.att:bfbd7f00efd4",
+      "target_hint": "Jiridanti"
+    },
+    {
+      "note_text": "No variant apparatus was structurally attributed to this segment.",
+      "parsed_contains_note_reading": null,
+      "parsed_contains_siglum": false,
+      "premise_status": "no_apparatus_note_found_or_missing_source",
+      "source_note_found": false,
+      "stable_segment_key": "vri:romn:abh03t.tik:5ce9d8787e18",
+      "target_hint": "paṭiloma"
+    },
+    {
+      "note_text": "No variant apparatus was structurally attributed to this segment.",
+      "parsed_contains_note_reading": null,
+      "parsed_contains_siglum": false,
+      "premise_status": "no_apparatus_note_found_or_missing_source",
+      "source_note_found": false,
+      "stable_segment_key": "vri:romn:s0102t.tik:691b6cc86c16",
+      "target_hint": "ettha panā"
+    },
+    {
+      "note_text": "No variant apparatus was structurally attributed to this segment.",
+      "parsed_contains_note_reading": null,
+      "parsed_contains_siglum": false,
+      "premise_status": "no_apparatus_note_found_or_missing_source",
+      "source_note_found": false,
+      "stable_segment_key": "vri:romn:s0201t.tik:cfd6c2db8704",
+      "target_hint": "samāna"
+    },
+    {
+      "note_text": "No variant apparatus was structurally attributed to this segment.",
+      "parsed_contains_note_reading": null,
+      "parsed_contains_siglum": false,
+      "premise_status": "no_apparatus_note_found_or_missing_source",
+      "source_note_found": false,
+      "stable_segment_key": "vri:romn:vin02a1.att:b56ffa453013",
+      "target_hint": "dukkaṭa"
+    },
+    {
+      "note_text": "No variant apparatus was structurally attributed to this segment.",
+      "parsed_contains_note_reading": null,
+      "parsed_contains_siglum": false,
+      "premise_status": "no_apparatus_note_found_or_missing_source",
+      "source_note_found": false,
+      "stable_segment_key": "vri:romn:s0403t.tik:0b44a6389758",
+      "target_hint": ""
+    },
+    {
+      "note_text": "No variant apparatus was structurally attributed to this segment.",
+      "parsed_contains_note_reading": null,
+      "parsed_contains_siglum": false,
+      "premise_status": "no_apparatus_note_found_or_missing_source",
+      "source_note_found": false,
+      "stable_segment_key": "vri:romn:s0513m.mul:545a4ef14103",
+      "target_hint": ""
+    },
+    {
+      "note_text": "Source XML has variant apparatus structurally attributed to this segment, but direct relation to the target hint is uncertain.",
+      "parsed_contains_note_reading": false,
+      "parsed_contains_siglum": false,
+      "premise_status": "apparatus_present_but_missing_from_translation_input",
+      "source_note_found": true,
+      "stable_segment_key": "vri:romn:s0514m.mul:88650af1ca41",
+      "target_hint": ""
+    },
+    {
+      "note_text": "No variant apparatus was structurally attributed to this segment.",
+      "parsed_contains_note_reading": null,
+      "parsed_contains_siglum": false,
+      "premise_status": "no_apparatus_note_found_or_missing_source",
+      "source_note_found": false,
+      "stable_segment_key": "vri:romn:vin01t2.tik:46bf2dc6b638",
+      "target_hint": ""
+    }
+  ],
+  "conclusion": "Use source <note> apparatus extraction instead of cross-script collation.",
+  "cross_script_collation_deprecated": true,
+  "importer_loss_location": "extract_main_text excludes note elements; exact downstream loss location not_determined",
+  "pilot_300_apparatus_loss_summary": {
+    "apparatus_loss_rate": 0.9,
+    "citation_note_records_in_300_source_scope": 1,
+    "segments_with_citation_notes_in_source": 1,
+    "segments_with_variant_apparatus_in_source": 10,
+    "segments_with_variant_apparatus_missing_from_translation_input": 9,
+    "total_segments": 300,
+    "variant_note_records_in_300_source_scope": 12
+  },
+  "reason": "Script variants are generated from a master source and are not treated as independent witnesses for source-variant detection.",
+  "recorded_apparatus_ids": [
+    "romn/s0514m.mul.xml:note:001737",
+    "romn/s0519m.mul.xml:note:000249"
+  ],
+  "schema_version": "pali_variant_apparatus_premise_check_v0",
+  "source_xml_checked": [
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/abh01a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 69,
+      "note_type_counts": {
+        "variant": 69
+      },
+      "sigla_counts": {
+        "ka": 14,
+        "syā": 37,
+        "sī": 41
+      },
+      "source_path": "romn/abh01m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/abh01t.tik.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/abh02a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 119,
+      "note_type_counts": {
+        "citation": 1,
+        "editorial": 1,
+        "unknown": 1,
+        "variant": 116
+      },
+      "sigla_counts": {
+        "ka": 30,
+        "syā": 72,
+        "sī": 55
+      },
+      "source_path": "romn/abh02m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/abh02t.tik.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/abh03a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 1,
+      "note_type_counts": {
+        "variant": 1
+      },
+      "sigla_counts": {
+        "syā": 1,
+        "sī": 1
+      },
+      "source_path": "romn/abh03m10.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 5,
+      "note_type_counts": {
+        "editorial": 1,
+        "unknown": 4
+      },
+      "sigla_counts": {},
+      "source_path": "romn/abh03m11.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 354,
+      "note_type_counts": {
+        "citation": 171,
+        "editorial": 2,
+        "unknown": 44,
+        "variant": 137
+      },
+      "sigla_counts": {
+        "ka": 44,
+        "pī": 35,
+        "syā": 63,
+        "sī": 45
+      },
+      "source_path": "romn/abh03m3.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 30,
+      "note_type_counts": {
+        "variant": 30
+      },
+      "sigla_counts": {
+        "ka": 5,
+        "pī": 1,
+        "syā": 26,
+        "sī": 11
+      },
+      "source_path": "romn/abh03m4.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 2,
+      "note_type_counts": {
+        "variant": 2
+      },
+      "sigla_counts": {
+        "ka": 1,
+        "syā": 1,
+        "sī": 2
+      },
+      "source_path": "romn/abh03m5.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 7,
+      "note_type_counts": {
+        "variant": 7
+      },
+      "sigla_counts": {
+        "ka": 4,
+        "pī": 2,
+        "syā": 5,
+        "sī": 5
+      },
+      "source_path": "romn/abh03m6.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 13,
+      "note_type_counts": {
+        "variant": 13
+      },
+      "sigla_counts": {
+        "ka": 3,
+        "syā": 9,
+        "sī": 3
+      },
+      "source_path": "romn/abh03m7.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 2,
+      "note_type_counts": {
+        "variant": 2
+      },
+      "sigla_counts": {
+        "syā": 2
+      },
+      "source_path": "romn/abh03m9.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/abh03t.tik.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/e0101n.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/e0102n.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/e0103n.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/e0104n.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0101a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 181,
+      "note_type_counts": {
+        "citation": 1,
+        "editorial": 1,
+        "unknown": 5,
+        "variant": 174
+      },
+      "sigla_counts": {
+        "ka": 79,
+        "pī": 60,
+        "syā": 69,
+        "sī": 85
+      },
+      "source_path": "romn/s0101m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0101t.tik.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0102a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 425,
+      "note_type_counts": {
+        "citation": 1,
+        "editorial": 6,
+        "unknown": 14,
+        "variant": 404
+      },
+      "sigla_counts": {
+        "ka": 131,
+        "pī": 128,
+        "syā": 230,
+        "sī": 129
+      },
+      "source_path": "romn/s0102m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0102t.tik.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0103t.tik.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0201a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 403,
+      "note_type_counts": {
+        "citation": 5,
+        "editorial": 4,
+        "unknown": 31,
+        "variant": 363
+      },
+      "sigla_counts": {
+        "ka": 139,
+        "pī": 157,
+        "syā": 157,
+        "sī": 192
+      },
+      "source_path": "romn/s0201m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0201t.tik.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0202a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0202t.tik.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0203a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 515,
+      "note_type_counts": {
+        "citation": 7,
+        "editorial": 2,
+        "unknown": 24,
+        "variant": 482
+      },
+      "sigla_counts": {
+        "ka": 164,
+        "pī": 227,
+        "syā": 185,
+        "sī": 275
+      },
+      "source_path": "romn/s0203m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0203t.tik.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 372,
+      "note_type_counts": {
+        "citation": 1,
+        "editorial": 1,
+        "unknown": 18,
+        "variant": 352
+      },
+      "sigla_counts": {
+        "ka": 104,
+        "pī": 139,
+        "syā": 149,
+        "sī": 212
+      },
+      "source_path": "romn/s0301m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0301t.tik.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 179,
+      "note_type_counts": {
+        "citation": 2,
+        "editorial": 1,
+        "unknown": 21,
+        "variant": 155
+      },
+      "sigla_counts": {
+        "ka": 48,
+        "pī": 51,
+        "syā": 45,
+        "sī": 94
+      },
+      "source_path": "romn/s0302m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0302t.tik.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0303a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 153,
+      "note_type_counts": {
+        "citation": 2,
+        "unknown": 10,
+        "variant": 141
+      },
+      "sigla_counts": {
+        "ka": 48,
+        "pī": 55,
+        "syā": 50,
+        "sī": 78
+      },
+      "source_path": "romn/s0303m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0303t.tik.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 270,
+      "note_type_counts": {
+        "citation": 4,
+        "editorial": 3,
+        "unknown": 15,
+        "variant": 248
+      },
+      "sigla_counts": {
+        "ka": 87,
+        "pī": 96,
+        "syā": 94,
+        "sī": 139
+      },
+      "source_path": "romn/s0304m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0304t.tik.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0305t.tik.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0401t.tik.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0402a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 385,
+      "note_type_counts": {
+        "citation": 38,
+        "editorial": 4,
+        "unknown": 36,
+        "variant": 307
+      },
+      "sigla_counts": {
+        "ka": 111,
+        "pī": 124,
+        "syā": 125,
+        "sī": 164
+      },
+      "source_path": "romn/s0402m3.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0402t.tik.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0403a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 446,
+      "note_type_counts": {
+        "citation": 26,
+        "editorial": 3,
+        "unknown": 25,
+        "variant": 392
+      },
+      "sigla_counts": {
+        "ka": 121,
+        "pī": 131,
+        "syā": 151,
+        "sī": 211
+      },
+      "source_path": "romn/s0403m1.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 269,
+      "note_type_counts": {
+        "citation": 17,
+        "editorial": 7,
+        "unknown": 8,
+        "variant": 237
+      },
+      "sigla_counts": {
+        "ka": 117,
+        "pī": 75,
+        "syā": 96,
+        "sī": 89
+      },
+      "source_path": "romn/s0403m2.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0403t.tik.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0404a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 250,
+      "note_type_counts": {
+        "citation": 22,
+        "editorial": 3,
+        "unknown": 25,
+        "variant": 200
+      },
+      "sigla_counts": {
+        "ka": 91,
+        "pī": 57,
+        "syā": 68,
+        "sī": 94
+      },
+      "source_path": "romn/s0404m1.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 113,
+      "note_type_counts": {
+        "citation": 11,
+        "editorial": 1,
+        "unknown": 14,
+        "variant": 87
+      },
+      "sigla_counts": {
+        "ka": 33,
+        "pī": 29,
+        "syā": 40,
+        "sī": 38
+      },
+      "source_path": "romn/s0404m2.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0404t.tik.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0501a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0502a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 191,
+      "note_type_counts": {
+        "citation": 2,
+        "editorial": 3,
+        "unknown": 19,
+        "variant": 167
+      },
+      "sigla_counts": {
+        "ka": 66,
+        "pī": 77,
+        "syā": 66,
+        "sī": 92
+      },
+      "source_path": "romn/s0502m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0503a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0504a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0505a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 475,
+      "note_type_counts": {
+        "citation": 4,
+        "editorial": 3,
+        "unknown": 20,
+        "variant": 448
+      },
+      "sigla_counts": {
+        "ka": 145,
+        "pī": 159,
+        "syā": 216,
+        "sī": 247
+      },
+      "source_path": "romn/s0505m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0506a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 324,
+      "note_type_counts": {
+        "citation": 6,
+        "unknown": 22,
+        "variant": 296
+      },
+      "sigla_counts": {
+        "ka": 119,
+        "pī": 35,
+        "syā": 120,
+        "sī": 142
+      },
+      "source_path": "romn/s0506m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0507a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 268,
+      "note_type_counts": {
+        "citation": 14,
+        "unknown": 11,
+        "variant": 243
+      },
+      "sigla_counts": {
+        "ka": 107,
+        "pī": 24,
+        "syā": 79,
+        "sī": 117
+      },
+      "source_path": "romn/s0507m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0508a1.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0508a2.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 311,
+      "note_type_counts": {
+        "citation": 53,
+        "unknown": 15,
+        "variant": 243
+      },
+      "sigla_counts": {
+        "ka": 86,
+        "pī": 26,
+        "syā": 67,
+        "sī": 148
+      },
+      "source_path": "romn/s0508m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0509a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0510a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 1033,
+      "note_type_counts": {
+        "editorial": 18,
+        "unknown": 36,
+        "variant": 979
+      },
+      "sigla_counts": {
+        "ka": 243,
+        "pī": 45,
+        "syā": 472,
+        "sī": 516
+      },
+      "source_path": "romn/s0510m1.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 693,
+      "note_type_counts": {
+        "unknown": 3,
+        "variant": 690
+      },
+      "sigla_counts": {
+        "ka": 137,
+        "pī": 225,
+        "syā": 381,
+        "sī": 320
+      },
+      "source_path": "romn/s0510m2.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0511a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 98,
+      "note_type_counts": {
+        "variant": 98
+      },
+      "sigla_counts": {
+        "ka": 27,
+        "syā": 48,
+        "sī": 44
+      },
+      "source_path": "romn/s0511m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0512a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0513a1.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0513a2.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0513a3.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0513a4.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 2025,
+      "note_type_counts": {
+        "citation": 11,
+        "editorial": 2,
+        "unknown": 32,
+        "variant": 1980
+      },
+      "sigla_counts": {
+        "ka": 547,
+        "pī": 1057,
+        "syā": 755,
+        "sī": 1170
+      },
+      "source_path": "romn/s0513m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0514a1.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0514a2.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0514a3.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 1842,
+      "note_type_counts": {
+        "citation": 3,
+        "editorial": 23,
+        "unknown": 29,
+        "variant": 1787
+      },
+      "sigla_counts": {
+        "ka": 453,
+        "pī": 1015,
+        "syā": 593,
+        "sī": 1020
+      },
+      "source_path": "romn/s0514m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0515a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 465,
+      "note_type_counts": {
+        "citation": 1,
+        "unknown": 4,
+        "variant": 460
+      },
+      "sigla_counts": {
+        "ka": 138,
+        "syā": 236,
+        "sī": 223
+      },
+      "source_path": "romn/s0515m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 546,
+      "note_type_counts": {
+        "citation": 18,
+        "editorial": 2,
+        "unknown": 8,
+        "variant": 518
+      },
+      "sigla_counts": {
+        "ka": 252,
+        "pī": 2,
+        "syā": 325,
+        "sī": 19
+      },
+      "source_path": "romn/s0516m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0517a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 278,
+      "note_type_counts": {
+        "citation": 14,
+        "editorial": 1,
+        "unknown": 5,
+        "variant": 258
+      },
+      "sigla_counts": {
+        "ka": 99,
+        "pī": 3,
+        "syā": 191,
+        "sī": 10
+      },
+      "source_path": "romn/s0517m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/s0519a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 317,
+      "note_type_counts": {
+        "citation": 62,
+        "unknown": 4,
+        "variant": 251
+      },
+      "sigla_counts": {
+        "ka": 151,
+        "sī": 177
+      },
+      "source_path": "romn/s0519m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/vin01a.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 243,
+      "note_type_counts": {
+        "citation": 12,
+        "editorial": 1,
+        "unknown": 41,
+        "variant": 189
+      },
+      "sigla_counts": {
+        "ka": 51,
+        "pī": 1,
+        "syā": 112,
+        "sī": 83
+      },
+      "source_path": "romn/vin01m.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/vin01t1.tik.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/vin01t2.tik.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/vin02a1.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/vin02a2.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/vin02a3.att.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 306,
+      "note_type_counts": {
+        "citation": 7,
+        "editorial": 3,
+        "unknown": 45,
+        "variant": 251
+      },
+      "sigla_counts": {
+        "ka": 102,
+        "syā": 98,
+        "sī": 63
+      },
+      "source_path": "romn/vin02m1.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 424,
+      "note_type_counts": {
+        "citation": 46,
+        "unknown": 41,
+        "variant": 337
+      },
+      "sigla_counts": {
+        "ka": 121,
+        "syā": 143,
+        "sī": 139
+      },
+      "source_path": "romn/vin02m2.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 207,
+      "note_type_counts": {
+        "citation": 35,
+        "editorial": 3,
+        "unknown": 41,
+        "variant": 128
+      },
+      "sigla_counts": {
+        "ka": 43,
+        "syā": 66,
+        "sī": 47
+      },
+      "source_path": "romn/vin02m4.mul.xml"
+    },
+    {
+      "exists": true,
+      "note_count": 0,
+      "note_type_counts": {},
+      "sigla_counts": {},
+      "source_path": "romn/vin02t.tik.xml"
+    }
+  ]
+}
