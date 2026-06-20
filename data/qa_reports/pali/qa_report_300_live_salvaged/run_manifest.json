@@ -1,0 +1,35 @@
+{
+  "command_line_args": [
+    "./venv/bin/python",
+    "-m",
+    "backend.pali.scripts.generate_qa_report",
+    "--parsed",
+    "data/reports/pali/pilot_300_batch/pilot_300_batch_parsed_salvaged.json",
+    "--gold",
+    "data/gold_set.json",
+    "--glossary-qa",
+    "data/reports/pali/translation_qa_v1_1_baseline_49bc869.json",
+    "--out",
+    "data/qa_reports/pali/qa_report_300_live_salvaged"
+  ],
+  "deterministic_input_fingerprint": "731962b83c8820bc6c31c4ca972ada05a5ae3bb2c5b5eb4aa3ca138185ddd792",
+  "execution_mode": "single_run",
+  "glossary_version": "controlled_glossary_v1_or_report_input",
+  "gold_set_version": "pali_gold_set_v0",
+  "input_file_sha256": {
+    "data/gold_set.json": "37a020927ac8224d741bad15d139cc9c7c2e853679ca7c6e003859da8908019c",
+    "data/reports/pali/pilot_300_batch/pilot_300_batch_parsed_salvaged.json": "77d38f12c4f6d70bbe803697b18ad96193ef63eb2021b09fbb1c98128bf6acf7",
+    "data/reports/pali/translation_qa_v1_1_baseline_49bc869.json": "953c7d31aeb40db2c27e3ef42e85f175b0b2532c2da537727b0ff402ee714725"
+  },
+  "output_paths": {
+    "review_queue": "data/qa_reports/pali/qa_report_300_live_salvaged/review_queue.json",
+    "review_report": "data/qa_reports/pali/qa_report_300_live_salvaged/review_report.md",
+    "run_manifest": "data/qa_reports/pali/qa_report_300_live_salvaged/run_manifest.json"
+  },
+  "prompt_version": "korean_advanced_v1_schemafix_qa_patch_v2",
+  "qa_infra_version": "pali_qa_infra_v1_2",
+  "sample_seed": 3189920949,
+  "schema_version": "pali_qa_run_manifest_v1_2",
+  "script_version": "qa_report_generator_v1_2",
+  "timestamp": "1970-01-01T00:00:00Z"
+}
