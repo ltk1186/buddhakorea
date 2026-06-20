@@ -1,0 +1,39 @@
+{
+  "api_network_calls": 0,
+  "args": {
+    "out": "data/qa_reports/pali/qa_report_300_live_salvaged_classified",
+    "parsed": "data/reports/pali/pilot_300_batch/pilot_300_batch_parsed_salvaged.json",
+    "pretty": true,
+    "review_queue": "data/qa_reports/pali/qa_report_300_live_salvaged/review_queue.json",
+    "review_report": "data/qa_reports/pali/qa_report_300_live_salvaged/review_report.md"
+  },
+  "created_at": "2026-06-20T11:41:32.433806+00:00",
+  "input_files": [
+    {
+      "exists": true,
+      "path": "data/qa_reports/pali/qa_report_300_live_salvaged/review_queue.json",
+      "sha256": "cbd4e8372def34c71ca4615ea2dbdba080039e071a0ed9cc038fec6486656f9d"
+    },
+    {
+      "exists": true,
+      "path": "data/qa_reports/pali/qa_report_300_live_salvaged/review_report.md",
+      "sha256": "f300566618cf6b59054e2dda16db9535132c941d085c085e39d9753a408b1d01"
+    },
+    {
+      "exists": true,
+      "path": "data/reports/pali/pilot_300_batch/pilot_300_batch_parsed_salvaged.json",
+      "sha256": "77d38f12c4f6d70bbe803697b18ad96193ef63eb2021b09fbb1c98128bf6acf7"
+    }
+  ],
+  "output_files": {
+    "findings": "data/qa_reports/pali/qa_report_300_live_salvaged_classified/findings.json",
+    "findings_md": "data/qa_reports/pali/qa_report_300_live_salvaged_classified/findings.md",
+    "pattern_decisions": "data/qa_reports/pali/qa_report_300_live_salvaged_classified/pali_qa_pattern_decisions_v1.json",
+    "review_queue_reclassified": "data/qa_reports/pali/qa_report_300_live_salvaged_classified/review_queue_reclassified.json",
+    "run_manifest": "data/qa_reports/pali/qa_report_300_live_salvaged_classified/run_manifest.json"
+  },
+  "prompt_glossary_gold_mutation": false,
+  "schema_version": "pali_qa_findings_classifier_run_manifest_v1",
+  "script_version": "pali_qa_findings_classifier_cli_v1",
+  "translation_mutation": false
+}
