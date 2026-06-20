@@ -226,6 +226,7 @@ def args_for(paths, mode="dry-run", selection_sha=None, **overrides):
         "qa_out": str(paths["qa_out"]),
         "gold": "data/gold_set.json",
         "glossary_qa": "data/reports/pali/translation_qa_v1_1_baseline_49bc869.json",
+        "pali_findings_classifier": "auto",
         "expected_selection_sha": selection_sha,
         "budget_usd": "20",
         "model": "models/gemini-3.1-pro-preview",

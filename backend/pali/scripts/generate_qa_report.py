@@ -26,6 +26,13 @@ from backend.pali.translation.reference_registry import (
 from backend.pali.translation.review_queue import build_review_queue
 from backend.pali.translation.second_model_verifier import classify_oracle_availability
 from backend.pali.translation.source_integrity import check_integrity
+from backend.pali.translation.pali_qa_findings_classifier import (
+    CORRECTNESS_CAVEAT,
+    classify_review_findings,
+    pattern_decisions,
+    reclassified_review_queue,
+    render_findings_markdown,
+)
 
 
 SCRIPT_VERSION = "qa_report_generator_v1_2"
@@ -79,6 +86,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--out", required=True, help="Output directory.")
     parser.add_argument("--sample-config", help="Optional sample config JSON path.")
     parser.add_argument("--sample-seed", help="Optional deterministic sample seed string or integer.")
+    parser.add_argument(
+        "--pali-findings-classifier",
+        choices=["auto", "on", "off"],
+        default="auto",
+        help="Run deterministic Pali findings classifier: auto, on, or off.",
+    )
     return parser
 
 
@@ -151,18 +164,38 @@ def generate_report(args: argparse.Namespace) -> dict[str, Any]:
     }
     _write_json(review_queue_path, review_queue_payload)
 
+    classifier_section = _run_pali_findings_classifier(
+        mode=str(getattr(args, "pali_findings_classifier", "auto")),
+        review_queue_payload=review_queue_payload,
+        parsed_payload=parsed_payload,
+        review_queue_path=review_queue_path,
+        review_report_path=review_report_path,
+        parsed_path=parsed_path,
+        out_dir=out_dir,
+        sample_seed=sample_seed,
+    )
+
+    output_paths = {
+        "review_queue": str(review_queue_path),
+        "review_report": str(review_report_path),
+        "run_manifest": str(run_manifest_path),
+    }
+    if classifier_section.get("outputs"):
+        output_paths.update(classifier_section["outputs"])
+
     manifest = _manifest(
         args=args,
         mode=mode,
-        output_paths={
-            "review_queue": str(review_queue_path),
-            "review_report": str(review_report_path),
-            "run_manifest": str(run_manifest_path),
-        },
+        output_paths=output_paths,
         sample_seed=sample_seed,
         input_paths=[path for path in [parsed_path, before_path, gold_path, glossary_qa_path] if path],
         optional_reference_registry=args.reference_registry,
         gold_set=gold_set,
+        qa_summary={
+            "raw_human_needed": review_queue_payload["summary"]["human_needed_count"],
+            "effective_human_needed": classifier_section["effective_human_needed"],
+        },
+        pali_findings_classifier=classifier_section,
     )
     _write_json(run_manifest_path, manifest)
 
@@ -176,6 +209,7 @@ def generate_report(args: argparse.Namespace) -> dict[str, Any]:
         oracle_summary=oracle_summary,
         representative_samples=representative_samples,
         manifest_path=run_manifest_path,
+        pali_findings_classifier=classifier_section,
     )
     review_report_path.write_text(review_report, encoding="utf-8")
 
@@ -414,6 +448,109 @@ def _run_summary(items: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _run_pali_findings_classifier(
+    *,
+    mode: str,
+    review_queue_payload: dict[str, Any],
+    parsed_payload: dict[str, Any],
+    review_queue_path: Path,
+    review_report_path: Path,
+    parsed_path: Path,
+    out_dir: Path,
+    sample_seed: int,
+) -> dict[str, Any]:
+    raw_human_needed = int(review_queue_payload.get("summary", {}).get("human_needed_count", 0))
+    base = {
+        "mode": mode,
+        "enabled": False,
+        "schema_version": "pali_qa_findings_classifier_v1",
+        "api_network_calls": 0,
+        "translation_mutation": False,
+        "prompt_glossary_gold_mutation": False,
+        "raw_human_needed": raw_human_needed,
+        "effective_human_needed": raw_human_needed,
+        "summary": {
+            "raw_human_needed": raw_human_needed,
+            "effective_human_needed": raw_human_needed,
+            "auto_allowed": 0,
+            "contains_untranslated_pali_before": 0,
+            "possible_untranslated_pali_strict": 0,
+            "grammar_uncertain_auto_accepted": 0,
+            "grammar_uncertain_retained_for_review": 0,
+            "total_pali_runs_detected": 0,
+            "covered_pali_runs": 0,
+            "uncovered_pali_runs": 0,
+        },
+    }
+    if mode not in {"auto", "on", "off"}:
+        raise RuntimeError(f"unsupported Pali findings classifier mode: {mode}")
+    if mode == "off":
+        return {**base, "skip_reason": "classifier_mode_off"}
+    if not parsed_payload.get("items"):
+        if mode == "on":
+            raise RuntimeError("Pali findings classifier requires parsed payload items")
+        return {**base, "skip_reason": "missing_parsed_payload_items"}
+    if not review_queue_payload.get("items"):
+        if mode == "on":
+            raise RuntimeError("Pali findings classifier requires review_queue items")
+        return {**base, "skip_reason": "missing_review_queue_items"}
+
+    relevant_signals = {"contains_untranslated_pali", "grammar_uncertain"}
+    has_relevant_signal = any(
+        relevant_signals & set(str(signal) for signal in item.get("signals", []) or [])
+        for item in review_queue_payload.get("items", []) or []
+        if isinstance(item, dict)
+    )
+    if mode == "auto" and not has_relevant_signal:
+        return {**base, "skip_reason": "no_contains_untranslated_pali_or_grammar_uncertain_signals"}
+
+    findings = classify_review_findings(
+        review_queue=review_queue_payload,
+        parsed_payload=parsed_payload,
+        review_report_path=str(review_report_path),
+        review_queue_path=str(review_queue_path),
+        parsed_path=str(parsed_path),
+        sample_seed=sample_seed,
+    )
+    reclassified = reclassified_review_queue(review_queue_payload, findings)
+    decisions = pattern_decisions()
+
+    outputs = {
+        "findings": str(out_dir / "findings.json"),
+        "findings_md": str(out_dir / "findings.md"),
+        "review_queue_reclassified": str(out_dir / "review_queue_reclassified.json"),
+        "pattern_decisions": str(out_dir / "pali_qa_pattern_decisions_v1.json"),
+    }
+    _write_json(Path(outputs["findings"]), findings)
+    Path(outputs["findings_md"]).write_text(render_findings_markdown(findings), encoding="utf-8")
+    _write_json(Path(outputs["review_queue_reclassified"]), reclassified)
+    _write_json(Path(outputs["pattern_decisions"]), decisions)
+
+    summary_after = findings["summary_after"]
+    subsignals = findings["subsignal_counts"]
+    coverage = findings["run_coverage_summary"]
+    summary = {
+        "raw_human_needed": raw_human_needed,
+        "effective_human_needed": summary_after["human_needed_effective"],
+        "auto_allowed": findings["sampling_recommendation"]["auto_allowed_count"],
+        "contains_untranslated_pali_before": findings["summary_before"].get("contains_untranslated_pali_count", 0),
+        "possible_untranslated_pali_strict": subsignals["possible_untranslated_pali_strict"],
+        "grammar_uncertain_auto_accepted": summary_after["grammar_uncertain_auto_accepted"],
+        "grammar_uncertain_retained_for_review": subsignals["grammar_uncertain_retained"],
+        "total_pali_runs_detected": coverage["total_pali_runs_detected"],
+        "covered_pali_runs": coverage["covered_pali_runs"],
+        "uncovered_pali_runs": coverage["uncovered_pali_runs"],
+        "recommended_sample_size": findings["sampling_recommendation"]["recommended_sample_size"],
+    }
+    return {
+        **base,
+        "enabled": True,
+        "outputs": outputs,
+        "summary": summary,
+        "effective_human_needed": summary["effective_human_needed"],
+    }
+
+
 def _render_markdown_report(
     *,
     mode: str,
@@ -425,6 +562,7 @@ def _render_markdown_report(
     oracle_summary: dict[str, Any],
     representative_samples: dict[str, list[dict[str, str]]],
     manifest_path: Path,
+    pali_findings_classifier: dict[str, Any],
 ) -> str:
     queue_summary = review_queue["summary"]
     lines = [
@@ -448,6 +586,30 @@ def _render_markdown_report(
         f"- run manifest: `{manifest_path}`",
         "",
         "Oracle 일치 = 정답 확정이 아니며, oracle 불일치 = 오역 확정이 아닙니다. 불일치는 review queue로 올리는 triage signal일 뿐입니다.",
+        "",
+        "## Pāli Findings Classifier Summary",
+        "",
+        "This deterministic classifier reduces noisy `contains_untranslated_pali` signals into allowed display-pattern signals and strict review signals.",
+        "",
+        f"Important caveat: {CORRECTNESS_CAVEAT}",
+        "",
+        "| Metric | Value |",
+        "|---|---:|",
+        f"| Raw human-needed | {pali_findings_classifier['summary']['raw_human_needed']} |",
+        f"| Effective human-needed | {pali_findings_classifier['summary']['effective_human_needed']} |",
+        f"| contains_untranslated_pali before | {pali_findings_classifier['summary']['contains_untranslated_pali_before']} |",
+        f"| Auto-allowed | {pali_findings_classifier['summary']['auto_allowed']} |",
+        f"| possible_untranslated_pali_strict | {pali_findings_classifier['summary']['possible_untranslated_pali_strict']} |",
+        f"| grammar_uncertain retained | {pali_findings_classifier['summary']['grammar_uncertain_retained_for_review']} |",
+        f"| grammar_uncertain auto-accepted | {pali_findings_classifier['summary']['grammar_uncertain_auto_accepted']} |",
+        f"| Total Pāli runs detected | {pali_findings_classifier['summary']['total_pali_runs_detected']} |",
+        f"| Covered Pāli runs | {pali_findings_classifier['summary']['covered_pali_runs']} |",
+        f"| Uncovered Pāli runs | {pali_findings_classifier['summary']['uncovered_pali_runs']} |",
+        f"| Recommended sampling size | {pali_findings_classifier['summary'].get('recommended_sample_size', 0)} |",
+        "",
+        f"- classifier mode: `{pali_findings_classifier['mode']}`",
+        f"- classifier enabled: `{str(pali_findings_classifier['enabled']).lower()}`",
+        f"- skip reason: `{pali_findings_classifier.get('skip_reason', '')}`" if not pali_findings_classifier["enabled"] else f"- findings: `{pali_findings_classifier['outputs']['findings']}`",
         "",
         "## Auto-Resolvable Summary",
         "",
@@ -533,6 +695,8 @@ def _manifest(
     input_paths: list[Path],
     optional_reference_registry: str | None,
     gold_set: dict[str, Any],
+    qa_summary: dict[str, Any],
+    pali_findings_classifier: dict[str, Any],
 ) -> dict[str, Any]:
     input_hashes = {str(path): _file_sha256(path) for path in input_paths}
     if optional_reference_registry:
@@ -548,6 +712,8 @@ def _manifest(
         "prompt_version": BASELINE_PROMPT_VERSION,
         "gold_set_version": gold_set.get("schema_version", ""),
         "glossary_version": "controlled_glossary_v1_or_report_input",
+        "qa_summary": qa_summary,
+        "pali_findings_classifier": pali_findings_classifier,
         "input_file_sha256": input_hashes,
         "output_paths": output_paths,
         "sample_seed": sample_seed,
@@ -566,6 +732,7 @@ def _args_to_command(args: argparse.Namespace) -> list[str]:
         "out",
         "sample_config",
         "sample_seed",
+        "pali_findings_classifier",
     ):
         value = getattr(args, name, None)
         if value is None:

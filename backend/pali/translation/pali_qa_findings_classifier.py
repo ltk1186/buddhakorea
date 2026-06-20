@@ -51,6 +51,11 @@ HUMAN_REVIEW_SIGNALS = {
     "raw_source_hash_mismatch",
     "normalized_source_hash_mismatch",
 }
+CORRECTNESS_CAVEAT = (
+    "Auto-allowed items are flag-level false positives, not certified-correct translations. "
+    "Translation correctness remains tracked separately through gold/holdout regression, "
+    "sampling, oracle comparison where available, and later human/expert review."
+)
 
 
 @dataclass(frozen=True)
@@ -89,6 +94,7 @@ def classify_review_findings(
     )
     return {
         "schema_version": "pali_qa_findings_classifier_v1",
+        "correctness_caveat": CORRECTNESS_CAVEAT,
         "input": {
             "review_queue": review_queue_path,
             "parsed_salvaged": parsed_path,
@@ -97,6 +103,11 @@ def classify_review_findings(
         "summary_before": {
             "human_needed": int(summary_before.get("human_needed_count") or len(input_items)),
             "priority_counts": summary_before.get("priority_counts") or {},
+            "contains_untranslated_pali_count": sum(
+                1
+                for item in input_items
+                if "contains_untranslated_pali" in set(str(signal) for signal in item.get("signals", []) or [])
+            ),
         },
         "summary_after": summary_after(classified_items),
         "subsignal_counts": subsignal_counts(classified_items),
@@ -501,6 +512,9 @@ def sampling_recommendation(items: list[dict[str, Any]], sample_seed: int) -> di
 def pattern_decisions() -> dict[str, Any]:
     return {
         "schema_version": "pali_qa_pattern_decisions_v1",
+        "record_type": "output_record_not_config",
+        "configurable": False,
+        "note": "This file records rules applied during this run. Editing it does not change classifier behavior.",
         "source": "pilot_300_batch",
         "decisions": [
             {
@@ -568,7 +582,7 @@ def render_findings_markdown(findings: dict[str, Any]) -> str:
         "",
         "This local deterministic classifier decomposes broad `contains_untranslated_pali` signals into narrower allowed-display and strict-review signals. It does not modify translations and does not certify translation correctness.",
         "",
-        "Important caveat: auto-allowed items are flag-level false positives, not certified-correct translations. Translation correctness remains tracked separately through gold/holdout regression, sampling, oracle comparison where available, and later human/expert review.",
+        f"Important caveat: {CORRECTNESS_CAVEAT}",
         "",
         "## Input Files",
         "",

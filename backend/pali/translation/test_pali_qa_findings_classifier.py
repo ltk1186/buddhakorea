@@ -9,6 +9,7 @@ from backend.pali.translation.pali_qa_findings_classifier import (
     classify_review_findings,
     classify_review_item,
     detect_pali_runs,
+    pattern_decisions,
 )
 
 
@@ -133,6 +134,13 @@ class PaliQaFindingsClassifierTests(unittest.TestCase):
         self.assertEqual(first["summary_after"]["human_needed_effective"], 0)
         self.assertEqual(first["sampling_recommendation"], second["sampling_recommendation"])
         self.assertEqual(first["run_coverage_summary"]["uncovered_pali_runs"], 0)
+        self.assertIn("correctness_caveat", first)
+        self.assertIn("not certified-correct translations", first["correctness_caveat"])
+
+    def test_pattern_decisions_is_output_record_not_config(self):
+        decisions = pattern_decisions()
+        self.assertEqual(decisions["record_type"], "output_record_not_config")
+        self.assertFalse(decisions["configurable"])
 
     def test_cli_writes_outputs_without_overwriting_inputs_and_300_fixture_reduces_queue(self):
         with tempfile.TemporaryDirectory() as tmp:

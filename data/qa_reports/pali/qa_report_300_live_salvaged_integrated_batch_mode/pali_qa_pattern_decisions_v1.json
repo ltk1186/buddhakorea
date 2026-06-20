@@ -1,0 +1,33 @@
+{
+  "configurable": false,
+  "decisions": [
+    {
+      "decision": "auto_accept_with_display_policy",
+      "description": "Korean translation followed by parenthetical Pali lemma is allowed only when all Pali runs in the segment are covered and no independent human-review signal exists.",
+      "requires_sampling_in_next_batch": true,
+      "rule_id": "allow_parenthetical_pali_after_korean_translation"
+    },
+    {
+      "decision": "auto_accept_with_display_policy",
+      "description": "Pali lemma quoted as object of explanation in atthakatha/tika is allowed only when all Pali runs are covered and no independent human-review signal exists.",
+      "requires_sampling_in_next_batch": true,
+      "rule_id": "allow_commentarial_grammar_lemma_quote"
+    },
+    {
+      "decision": "human_review",
+      "description": "Only Pali runs not covered by allowed parenthetical, grammar quote, lemma discussion, proper-name, or terms rules remain human-needed.",
+      "requires_sampling_in_next_batch": true,
+      "rule_id": "strict_untranslated_pali_by_exclusion"
+    },
+    {
+      "decision": "human_review",
+      "description": "grammar_uncertain is never auto-accepted by deterministic classifier; hints may be used only for ordering.",
+      "requires_sampling_in_next_batch": false,
+      "rule_id": "grammar_uncertain_retained_for_human_review"
+    }
+  ],
+  "note": "This file records rules applied during this run. Editing it does not change classifier behavior.",
+  "record_type": "output_record_not_config",
+  "schema_version": "pali_qa_pattern_decisions_v1",
+  "source": "pilot_300_batch"
+}

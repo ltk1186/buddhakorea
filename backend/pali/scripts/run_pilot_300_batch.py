@@ -119,6 +119,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--qa-out")
     parser.add_argument("--gold", default=DEFAULT_GOLD)
     parser.add_argument("--glossary-qa", default=DEFAULT_GLOSSARY_QA)
+    parser.add_argument("--pali-findings-classifier", choices=["auto", "on", "off"], default="auto")
     parser.add_argument("--expected-selection-sha")
     parser.add_argument("--budget-usd", default="20")
     parser.add_argument("--model", default=DEFAULT_MODEL)
@@ -303,6 +304,8 @@ def qa(args: argparse.Namespace, paths: BatchPaths) -> dict[str, Any]:
         str(glossary_qa_path),
         "--out",
         str(qa_out),
+        "--pali-findings-classifier",
+        args.pali_findings_classifier,
     ]
     completed = subprocess.run(cmd, cwd=REPO_ROOT, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=False)
     return {
