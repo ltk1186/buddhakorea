@@ -1,0 +1,281 @@
+{
+  "do_not_use_for_glossary_tuning": true,
+  "do_not_use_for_prompt_tuning": true,
+  "frozen": false,
+  "future_batch_rule": {
+    "holdout_gold_regression": 20,
+    "pilot_1000_new": 1000,
+    "rule": "1,000 new segments, disjoint from pilot_75 and pilot_300, plus 20 frozen holdout regression items intentionally re-included.",
+    "step_3g_a_selects_1000_new": false,
+    "step_3g_a_submits_batch": false,
+    "total_future_batch_requests": 1020
+  },
+  "holdout_gold_frozen": false,
+  "items": [
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "frozen": false,
+      "pool": "holdout_gold",
+      "stable_segment_key": "vri:romn:abh02m.mul:c8caabe29ead",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "frozen": false,
+      "pool": "holdout_gold",
+      "stable_segment_key": "vri:romn:abh02t.tik:7eaccfe9d5a0",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "frozen": false,
+      "pool": "holdout_gold",
+      "stable_segment_key": "vri:romn:abh03m10.mul:4d1189870043",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "frozen": false,
+      "pool": "holdout_gold",
+      "stable_segment_key": "vri:romn:abh03m10.mul:cf9f1a15cc86",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "frozen": false,
+      "pool": "holdout_gold",
+      "stable_segment_key": "vri:romn:abh03m4.mul:b43a304ba12f",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "frozen": false,
+      "pool": "holdout_gold",
+      "stable_segment_key": "vri:romn:abh03m6.mul:cd98d09085dc",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "frozen": false,
+      "pool": "holdout_gold",
+      "stable_segment_key": "vri:romn:e0101n.mul:1c6cd91e9a2a",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "frozen": false,
+      "pool": "holdout_gold",
+      "stable_segment_key": "vri:romn:s0102m.mul:6a72ce6bb12a",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "frozen": false,
+      "pool": "holdout_gold",
+      "stable_segment_key": "vri:romn:s0201t.tik:732e56d7e791",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "frozen": false,
+      "pool": "holdout_gold",
+      "stable_segment_key": "vri:romn:s0304m.mul:af0991c6383c",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "frozen": false,
+      "pool": "holdout_gold",
+      "stable_segment_key": "vri:romn:s0305t.tik:124a306b6d99",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "frozen": false,
+      "pool": "holdout_gold",
+      "stable_segment_key": "vri:romn:s0404m1.mul:370c63d8466c",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "frozen": false,
+      "pool": "holdout_gold",
+      "stable_segment_key": "vri:romn:s0502a.att:5760bcbd5256",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "frozen": false,
+      "pool": "holdout_gold",
+      "stable_segment_key": "vri:romn:s0508a1.att:8b9574445272",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "frozen": false,
+      "pool": "holdout_gold",
+      "stable_segment_key": "vri:romn:s0514a1.att:1948090bd6f5",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "frozen": false,
+      "pool": "holdout_gold",
+      "stable_segment_key": "vri:romn:s0514a1.att:9ea186253995",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "frozen": false,
+      "pool": "holdout_gold",
+      "stable_segment_key": "vri:romn:vin01m.mul:4ac66ef7e85c",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "frozen": false,
+      "pool": "holdout_gold",
+      "stable_segment_key": "vri:romn:vin01t2.tik:46bf2dc6b638",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "frozen": false,
+      "pool": "holdout_gold",
+      "stable_segment_key": "vri:romn:vin02m1.mul:0d7d37de4c19",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "frozen": false,
+      "pool": "holdout_gold",
+      "stable_segment_key": "vri:romn:vin02m4.mul:d49c727cc20c",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    }
+  ],
+  "manual_adjudication_required": true,
+  "pool": "holdout_gold",
+  "schema_version": "pali_step_3g_holdout_gold_manifest_draft_v0",
+  "status": "draft_only_not_frozen",
+  "warnings": []
+}

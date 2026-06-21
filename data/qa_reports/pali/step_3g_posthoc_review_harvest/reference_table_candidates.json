@@ -1,0 +1,43 @@
+{
+  "candidate_type": "reference_table_candidate",
+  "items": [
+    {
+      "applied_now": false,
+      "decision_source": "manual_review_seed",
+      "glossary_mutation": false,
+      "gold_set_mutation": false,
+      "review_context": {
+        "decision": "needs_human_review",
+        "review_required_after_classification": true,
+        "signals_after": [
+          "grammar_uncertain",
+          "grammar_uncertain_retained"
+        ],
+        "signals_before": [
+          "grammar_uncertain"
+        ],
+        "source_path": "romn/s0513m.mul.xml",
+        "text_layer": "mula"
+      },
+      "seed_decision": "reference_table_candidate",
+      "seed_record": {
+        "blocks_1000_pilot": false,
+        "decision_source": "manual_review_seed",
+        "expert_review_required": false,
+        "llm_retry_required": false,
+        "original_signal": "grammar_uncertain",
+        "priority": "low",
+        "rationale": "Jātaka uddāna (mnemonic catchword list). Model mapped catchwords to Jātaka titles well (mukka->Mahā-ukkusa, satacchaka->Tacchasūkara). Resolvable deterministically via a Jātaka-title lookup table.",
+        "route_note": "build_jataka_title_reference_table",
+        "seed_decision": "reference_table_candidate",
+        "stable_segment_key": "vri:romn:s0513m.mul:545a4ef14103",
+        "target_hint": "Jātaka uddāna catchwords (mukka, satacchaka)"
+      },
+      "stable_segment_key": "vri:romn:s0513m.mul:545a4ef14103",
+      "translation_mutation": false
+    }
+  ],
+  "policy": "manual seed decisions only unless a later mechanical reference rule is reviewed",
+  "schema_version": "pali_step_3g_reference_table_candidates_v0",
+  "warnings": []
+}

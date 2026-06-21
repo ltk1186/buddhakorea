@@ -1,0 +1,7 @@
+{
+  "candidate_type": "targeted_retry_candidate",
+  "items": [],
+  "policy": "manual seed decisions only; no automatic retry inference",
+  "schema_version": "pali_step_3g_targeted_retry_candidates_v0",
+  "warnings": []
+}

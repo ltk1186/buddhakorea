@@ -1,0 +1,698 @@
+{
+  "holdout_gold_frozen": false,
+  "items": [
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "apparatus": [],
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "existing_translation": {
+        "literal_ko": "(2) 그리고 다시 여래는 과거, 미래, 현재의 업의 취함들의 과보를 원인에 따라, 조건에 따라 있는 그대로 꿰뚫어 안다. 여래가 과거, 미래, 현재의 업의 취함들의 과보를 원인에 따라, 조건에 따라 있는 그대로 꿰뚫어 아는 것, 이것도 여래의 여래의 힘이니, 그 힘을 의지하여 여래는 으뜸가는 위치를 자처하고, 무리들 가운데서 사자후를 토하고, 범륜을 굴린다.",
+        "natural_ko": "(2) 또한 여래는 과거, 미래, 현재에 지은 업의 과보를 원인과 조건에 따라 있는 그대로 꿰뚫어 압니다. 여래가 과거, 미래, 현재에 지은 업의 과보를 원인과 조건에 따라 있는 그대로 꿰뚫어 아는 것, 이것도 여래가 가진 여래의 힘입니다. 여래는 이 힘을 의지하여 으뜸가는 위치를 자처하고, 무리들 가운데서 사자후를 토하며, 거룩한 수레바퀴[梵輪]를 굴립니다."
+      },
+      "frozen": false,
+      "holdout_gold_frozen": false,
+      "not_usable_for_glossary_tuning": true,
+      "not_usable_for_prompt_tuning": true,
+      "source_metadata": {
+        "chunk_type": "prose",
+        "layer": "mula",
+        "length_bucket": "long",
+        "nikaya": "Abhidhammapiṭake",
+        "pitaka": "abhidhamma",
+        "selection_bucket": "representative_stratified",
+        "source_path": "romn/abh02m.mul.xml",
+        "text_group": "representative"
+      },
+      "source_text": "(2) Puna caparaṃ tathāgato atītānāgatapaccuppannānaṃ kammasamādānānaṃ ṭhānaso hetuso vipākaṃ yathābhūtaṃ pajānāti. Yampi tathāgato atītānāgatapaccuppannānaṃ kammasamādānānaṃ ṭhānaso hetuso vipākaṃ yathābhūtaṃ pajānāti, idampi tathāgatassa tathāgatabalaṃ hoti, yaṃ balaṃ āgamma tathāgato āsabhaṃ ṭhānaṃ paṭijānāti, parisāsu sīhanādaṃ nadati, brahmacakkaṃ pavatteti.",
+      "stable_segment_key": "vri:romn:abh02m.mul:c8caabe29ead",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "apparatus": [],
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "existing_translation": {
+        "literal_ko": "'몸의 구부림'이라는 것은 몸의 다양한 방식으로의 구부림이다.",
+        "natural_ko": "'몸의 구부림'이란 몸을 다양한 방식으로 구부리는 것을 말한다."
+      },
+      "frozen": false,
+      "holdout_gold_frozen": false,
+      "not_usable_for_glossary_tuning": true,
+      "not_usable_for_prompt_tuning": true,
+      "source_metadata": {
+        "chunk_type": "prose",
+        "layer": "tika",
+        "length_bucket": "short",
+        "nikaya": "Abhidhammapiṭake",
+        "pitaka": "abhidhamma",
+        "selection_bucket": "representative_stratified",
+        "source_path": "romn/abh02t.tik.xml",
+        "text_group": "representative"
+      },
+      "source_text": "Kāyavināmanāti kāyassa vividhena ākārena nāmanā.",
+      "stable_segment_key": "vri:romn:abh02t.tik:7eaccfe9d5a0",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "apparatus": [],
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "existing_translation": {
+        "literal_ko": "원인 조건에 의해 대상이 아닌 것에 셋이다 (요약됨).",
+        "natural_ko": "원인 조건에 의해 대상이 아닌 것에 세 가지가 있다 (요약됨)."
+      },
+      "frozen": false,
+      "holdout_gold_frozen": false,
+      "not_usable_for_glossary_tuning": true,
+      "not_usable_for_prompt_tuning": true,
+      "source_metadata": {
+        "chunk_type": "prose",
+        "layer": "mula",
+        "length_bucket": "short",
+        "nikaya": "Abhidhammapiṭake",
+        "pitaka": "abhidhamma",
+        "selection_bucket": "heading_title_probe",
+        "source_path": "romn/abh03m10.mul.xml",
+        "text_group": "representative"
+      },
+      "source_text": "Hetupaccayā naārammaṇe tīṇi (saṃkhittaṃ).",
+      "stable_segment_key": "vri:romn:abh03m10.mul:4d1189870043",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "apparatus": [],
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "existing_translation": {
+        "literal_ko": "143. 원인에 9, 대상에 9, 지배에 9, ...생략..., 이전에 생겨난 것에 6, ...생략..., 업에 9, 과보에 9, ...생략..., 떠나지 않은 것에 9.",
+        "natural_ko": "143. 원인 조건에 9가지, 대상 조건에 9가지, 지배 조건에 9가지, ...생략..., 이전에 생겨난 조건에 6가지, ...생략..., 업 조건에 9가지, 과보 조건에 9가지, ...생략..., 떠나지 않은 조건에 9가지가 있다."
+      },
+      "frozen": false,
+      "holdout_gold_frozen": false,
+      "not_usable_for_glossary_tuning": true,
+      "not_usable_for_prompt_tuning": true,
+      "source_metadata": {
+        "chunk_type": "prose",
+        "layer": "mula",
+        "length_bucket": "medium",
+        "nikaya": "Abhidhammapiṭake",
+        "pitaka": "abhidhamma",
+        "selection_bucket": "representative_stratified",
+        "source_path": "romn/abh03m10.mul.xml",
+        "text_group": "representative"
+      },
+      "source_text": "143. Hetuyā nava, ārammaṇe nava, adhipatiyā nava…pe… purejāte cha…pe… kamme nava, vipāke nava…pe… avigate nava.",
+      "stable_segment_key": "vri:romn:abh03m10.mul:cf9f1a15cc86",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "apparatus": [],
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "existing_translation": {
+        "literal_ko": "어떤 마음의 직후에 최상의 도를 얻을 것인가, 그 마음이 멸하는 찰나에 있는 자들, 그리고 도를 얻을 그 밖의 자들이 죽을 때, 삶의 과정에서 마음이 멸하는 찰나에 있는 자들, 무색계에서 도와 과가 일어나는 찰나에 있는 자들, 그들에게 고성제는 일어나지 않지만, 그들에게 도성제가 멸하지 않는 것은 아니다. 최상의 도가 멸하는 찰나에 있는 자들, 아라한들의 마음이 멸하는 찰나에 있는 자들, 그리고 도를 얻지 못할 범부들이 죽을 때, 삶의 과정에서 마음이 멸하는 찰나에 있는 자들, 무색계에서 최상의 과가 일어나는 찰나에 있는 자들, 그들에게 고성제도 일어나지 않고 도성제도 멸하지 않을 것이다.",
+        "natural_ko": "어떤 마음의 직후에 최상의 도를 얻을 것인가, 그 마음이 멸하는 찰나에 있는 자들, 그리고 도를 얻을 그 밖의 자들이 죽을 때, 삶의 과정에서 마음이 멸하는 찰나에 있는 자들, 무색계에서 도와 과가 일어나는 찰나에 있는 자들, 그들에게 고성제는 일어나지 않지만, 도성제가 멸하지 않는 것은 아니다. 최상의 도가 멸하는 찰나에 있는 자들, 아라한들의 마음이 멸하는 찰나에 있는 자들, 그리고 도를 얻지 못할 범부들이 죽을 때, 삶의 과정에서 마음이 멸하는 찰나에 있는 자들, 무색계에서 최상의 과가 일어나는 찰나에 있는 자들, 그들에게 고성제도 일어나지 않고 도성제도 멸하지 않을 것이다."
+      },
+      "frozen": false,
+      "holdout_gold_frozen": false,
+      "not_usable_for_glossary_tuning": true,
+      "not_usable_for_prompt_tuning": true,
+      "source_metadata": {
+        "chunk_type": "prose",
+        "layer": "mula",
+        "length_bucket": "long",
+        "nikaya": "Abhidhammapiṭake",
+        "pitaka": "abhidhamma",
+        "selection_bucket": "representative_stratified",
+        "source_path": "romn/abh03m4.mul.xml",
+        "text_group": "representative"
+      },
+      "source_text": "Yassa cittassa anantarā aggamaggaṃ paṭilabhissanti tassa cittassa bhaṅgakkhaṇe ye caññe maggaṃ paṭilabhissanti tesaṃ cavantānaṃ pavatte cittassa bhaṅgakkhaṇe arūpe maggassa ca phalassa ca uppādakkhaṇe tesaṃ dukkhasaccaṃ nuppajjati, no ca tesaṃ maggasaccaṃ na nirujjhissati. Aggamaggassa bhaṅgakkhaṇe arahantānaṃ cittassa bhaṅgakkhaṇe ye ca puthujjanā maggaṃ na paṭilabhissanti tesaṃ cavantānaṃ pavatte cittassa bhaṅgakkhaṇe arūpe aggaphalassa uppādakkhaṇe tesaṃ dukkhasaccañca nuppajjati maggasaccañca na nirujjhissati.",
+      "stable_segment_key": "vri:romn:abh03m4.mul:b43a304ba12f",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "apparatus": [],
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "existing_translation": {
+        "literal_ko": "불선법들의 멸하는 찰나에 그들에게 그곳에서 선법들은 멸하지 않는다. 그러나 그들에게 그곳에서 불선법들이 멸하지 않는 것은 아니다. 모든 이들의 마음이 일어나는 찰나에, 선과 불상응하고 불선과 불상응하는 마음이 멸하는 찰나에, 무상유정들에게, 그들에게 그곳에서 선법들도 멸하지 않고 불선법들도 멸하지 않는다.",
+        "natural_ko": "불선법들이 멸하는 찰나에 그들에게 그곳에서 선법들은 멸하지 않지만, 불선법들이 멸하지 않는 것은 아닙니다. 모든 존재들의 마음이 일어나는 찰나에, 선과 불상응하고 불선과 불상응하는 마음이 멸하는 찰나에, 그리고 무상유정들에게, 그들에게 그곳에서 선법들도 멸하지 않고 불선법들도 멸하지 않습니다."
+      },
+      "frozen": false,
+      "holdout_gold_frozen": false,
+      "not_usable_for_glossary_tuning": true,
+      "not_usable_for_prompt_tuning": true,
+      "source_metadata": {
+        "chunk_type": "prose",
+        "layer": "mula",
+        "length_bucket": "medium",
+        "nikaya": "Abhidhammapiṭake",
+        "pitaka": "abhidhamma",
+        "selection_bucket": "representative_stratified",
+        "source_path": "romn/abh03m6.mul.xml",
+        "text_group": "representative"
+      },
+      "source_text": "Akusalānaṃ bhaṅgakkhaṇe tesaṃ tattha kusalā dhammā na nirujjhanti, no ca tesaṃ tattha akusalā dhammā na nirujjhanti. Sabbesaṃ cittassa uppādakkhaṇe kusalavippayuttaakusalavippayuttacittassa bhaṅgakkhaṇe asaññasattānaṃ tesaṃ tattha kusalā ca dhammā na nirujjhanti akusalā ca dhammā na nirujjhanti.",
+      "stable_segment_key": "vri:romn:abh03m6.mul:cd98d09085dc",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "apparatus": [],
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "existing_translation": {
+        "literal_ko": "그리고 여기서 도에 머무는 자들, 그들은 바른 도닦음을 갖추었기 때문에 잘 도닦는 자들이다. 과에 머무는 자들, 그들은 바른 도닦음에 의해 성취되어야 할 것을 성취했기 때문에 과거의 도닦음을 가리켜서 잘 도닦는 자들이라고 알아야 한다.",
+        "natural_ko": "그리고 여기서 도에 든 자들은 바른 도닦음을 갖추었기 때문에 잘 도닦는 자들이다. 과에 든 자들은 바른 도닦음에 의해 성취해야 할 것을 이미 성취했기 때문에, 과거의 도닦음을 가리켜서 잘 도닦는 자들이라고 알아야 한다."
+      },
+      "frozen": false,
+      "holdout_gold_frozen": false,
+      "not_usable_for_glossary_tuning": true,
+      "not_usable_for_prompt_tuning": true,
+      "source_metadata": {
+        "chunk_type": "prose",
+        "layer": "mula",
+        "length_bucket": "medium",
+        "nikaya": "unknown",
+        "pitaka": "extra",
+        "selection_bucket": "representative_stratified",
+        "source_path": "romn/e0101n.mul.xml",
+        "text_group": "representative"
+      },
+      "source_text": "Ettha ca ye maggaṭṭhā, te sammāpaṭipattisamaṅgitāya suppaṭipannā. Ye phalaṭṭhā, te sammāpaṭipadāya adhigantabbassa adhigatattā atītaṃ paṭipadaṃ sandhāya suppaṭipannāti veditabbā.",
+      "stable_segment_key": "vri:romn:e0101n.mul:1c6cd91e9a2a",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "apparatus": [
+        {
+          "anchor_text": "jhāyatisu",
+          "anchor_uncertain": true,
+          "apparatus_id": "romn/s0102m.mul.xml:note:000309",
+          "attribution_confidence": "high",
+          "auto_apply": false,
+          "char_offset": 448339,
+          "citation_refs": [],
+          "context_after": "nāmajja vediyako pabbato jalatisu nāmajja vediyako pabbato kiṃsu nāmajja vediyako pabbato atiriva obhāsajāto ambasaṇḍā ca brāhmaṇagāmo’’ti saṃviggā lomahaṭṭhajā",
+          "context_before": "jāto hoti ambasaṇḍā ca brāhmaṇagāmo yathā taṃ devānaṃ devānubhāvena. Apissudaṃ parito gāmesu manussā evamāhaṃsu – ‘‘ādittassu nāmajja vediyako pabbato jhāyatisu",
+          "evidence_strength_hint": "named_witness",
+          "is_variant_apparatus": true,
+          "main_reading": "jhāyatisu",
+          "note_type": "variant",
+          "parent_rend": "bodytext",
+          "parent_tag": "p",
+          "parent_xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='dn2']/div[@n='dn2_8']/p[@n='346']",
+          "raw_note_text": "jhāyatassu (syā.), pajjhāyitassu (sī. pī.)",
+          "sigla": [
+            "syā"
+          ],
+          "sigla_expanded": [
+            {
+              "label": "Siamese / Thai",
+              "siglum": "syā"
+            }
+          ],
+          "source_path": "romn/s0102m.mul.xml",
+          "stable_segment_key": "vri:romn:s0102m.mul:6a72ce6bb12a",
+          "unknown_sigla": [],
+          "variant_text": "jhāyatassu",
+          "xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='dn2']/div[@n='dn2_8']/p[@n='346']/note[1]"
+        },
+        {
+          "anchor_text": "jalatisu",
+          "anchor_uncertain": true,
+          "apparatus_id": "romn/s0102m.mul.xml:note:000310",
+          "attribution_confidence": "high",
+          "auto_apply": false,
+          "char_offset": 448429,
+          "citation_refs": [],
+          "context_after": "nāmajja vediyako pabbato kiṃsu nāmajja vediyako pabbato atiriva obhāsajāto ambasaṇḍā ca brāhmaṇagāmo’’ti saṃviggā lomahaṭṭhajātā ahesuṃ.",
+          "context_before": "o yathā taṃ devānaṃ devānubhāvena. Apissudaṃ parito gāmesu manussā evamāhaṃsu – ‘‘ādittassu nāmajja vediyako pabbato jhāyatisu nāmajja vediyako pabbato jalatisu",
+          "evidence_strength_hint": "named_witness",
+          "is_variant_apparatus": true,
+          "main_reading": "jalatisu",
+          "note_type": "variant",
+          "parent_rend": "bodytext",
+          "parent_tag": "p",
+          "parent_xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='dn2']/div[@n='dn2_8']/p[@n='346']",
+          "raw_note_text": "jalatassu (syā.), jalitassu (sī. pī.)",
+          "sigla": [
+            "syā"
+          ],
+          "sigla_expanded": [
+            {
+              "label": "Siamese / Thai",
+              "siglum": "syā"
+            }
+          ],
+          "source_path": "romn/s0102m.mul.xml",
+          "stable_segment_key": "vri:romn:s0102m.mul:6a72ce6bb12a",
+          "unknown_sigla": [],
+          "variant_text": "jalatassu",
+          "xml_node_path": "/TEI.2/text[1]/body[1]/div[@n='dn2']/div[@n='dn2_8']/p[@n='346']/note[2]"
+        }
+      ],
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "existing_translation": {
+        "literal_ko": "그때 신들의 제왕 삭까는 삼십삼천의 신들에게 둘러싸이고 건달바 천자 빤짜시카를 앞세우고, 마치 힘센 사람이 구부린 팔을 펴거나 편 팔을 구부리는 것처럼, 이와 같이 삼십삼천의 신들 사이에서 사라져서 마가다국의 라자가하 동쪽에 암바산다라는 바라문 마을이 있는데, 그 북쪽의 웨디야까 산에 나타났다. 그런데 그때 웨디야까 산과 암바산다 바라문 마을은 대단히 빛으로 가득 찼으니, 그것은 신들의 신성한 위력 때문이었다. 참으로 주변 마을의 사람들은 이와 같이 말했다. '오늘 웨디야까 산이 불타는 것인가? 오늘 웨디야까 산이 타오르는 것인가? 오늘 웨디야까 산이 화염에 휩싸인 것인가? 무슨 일로 오늘 웨디야까 산과 암바산다 바라문 마을이 대단히 빛으로 가득 찬 것인가?'라고 하며, 그들은 두려워하며 털이 곤두섰다.",
+        "natural_ko": "그때 신들의 제왕 삭까는 삼십삼천의 신들에게 둘러싸이고 건달바 천자 빤짜시카를 앞세우고, 마치 힘센 사람이 구부린 팔을 펴거나 편 팔을 구부리는 것처럼 순식간에 삼십삼천의 신들 사이에서 사라져서 마가다국의 라자가하 동쪽에 있는 암바산다라는 바라문 마을 북쪽의 웨디야까 산에 나타났다. 그런데 그때 웨디야까 산과 암바산다 바라문 마을은 신들의 신성한 위력으로 인해 대단히 밝은 빛으로 가득 찼다. 주변 마을 사람들은 '오늘 웨디야까 산이 불타는 것인가? 오늘 웨디야까 산이 타오르는 것인가? 오늘 웨디야까 산이 화염에 휩싸인 것인가? 무슨 일로 오늘 웨디야까 산과 암바산다 바라문 마을이 이토록 빛으로 가득 찬 것인가?'라고 말하며 두려움에 떨며 머리털이 곤두섰다."
+      },
+      "frozen": false,
+      "holdout_gold_frozen": false,
+      "not_usable_for_glossary_tuning": true,
+      "not_usable_for_prompt_tuning": true,
+      "source_metadata": {
+        "chunk_type": "prose",
+        "layer": "mula",
+        "length_bucket": "long",
+        "nikaya": "Dīghanikāyo",
+        "pitaka": "sutta",
+        "selection_bucket": "representative_stratified",
+        "source_path": "romn/s0102m.mul.xml",
+        "text_group": "representative"
+      },
+      "source_text": "346. Atha kho sakko devānamindo devehi tāvatiṃsehi parivuto pañcasikhena gandhabbadevaputtena purakkhato seyyathāpi nāma balavā puriso samiñjitaṃ vā bāhaṃ pasāreyya pasāritaṃ vā bāhaṃ samiñjeyya; evameva devesu tāvatiṃsesu antarahito magadhesu pācīnato rājagahassa ambasaṇḍā nāma brāhmaṇagāmo, tassuttarato vediyake pabbate paccuṭṭhāsi. Tena kho pana samayena vediyako pabbato atiriva obhāsajāto hoti ambasaṇḍā ca brāhmaṇagāmo yathā taṃ devānaṃ devānubhāvena. Apissudaṃ parito gāmesu manussā evamāhaṃsu – ‘‘ādittassu nāmajja vediyako pabbato jhāyatisu nāmajja vediyako pabbato jalatisu nāmajja vediyako pabbato kiṃsu nāmajja vediyako pabbato atiriva obhāsajāto ambasaṇḍā ca brāhmaṇagāmo’’ti saṃviggā lomahaṭṭhajātā ahesuṃ.",
+      "stable_segment_key": "vri:romn:s0102m.mul:6a72ce6bb12a",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "apparatus": [],
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "existing_translation": {
+        "literal_ko": "보살에게 밤낮의 구분이 분명하다, 심지어 라와(lava), 뚜띠(tuṭi), 찰나(khaṇa)부터 포함하여 잘 규정되었기 때문에. 그와 같이 밤낮의 부분의 구분도 스스로 해야 할 의무에 따라서, 그리고 시간을 아는 지혜에 따라서 [분명하다].",
+        "natural_ko": "보살에게는 밤낮의 구분이 분명하다. 심지어 라와(lava), 뚜띠(tuṭi), 찰나(khaṇa)와 같은 아주 짧은 시간 단위부터 잘 규정되어 있기 때문이다. 그와 같이 밤낮의 시간대 구분도 스스로 해야 할 의무와 시간을 아는 지혜에 따라 분명하다."
+      },
+      "frozen": false,
+      "holdout_gold_frozen": false,
+      "not_usable_for_glossary_tuning": true,
+      "not_usable_for_prompt_tuning": true,
+      "source_metadata": {
+        "chunk_type": "prose",
+        "layer": "tika",
+        "length_bucket": "medium",
+        "nikaya": "Majjhimanikāye",
+        "pitaka": "sutta",
+        "selection_bucket": "representative_stratified",
+        "source_path": "romn/s0201t.tik.xml",
+        "text_group": "representative"
+      },
+      "source_text": "Pākaṭo bodhisattassa rattindivaparicchedo antamaso lavatuṭikhaṇassapi upādāya suvavatthitattā, tathā rattidivasakoṭṭhāsaparicchedo attanā kātabbakiccavasena kālañāṇavasena ca.",
+      "stable_segment_key": "vri:romn:s0201t.tik:732e56d7e791",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "apparatus": [],
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "existing_translation": {
+        "literal_ko": "훌륭하십니다 ... (생략) ... 더 나아가 질문을 물었다. '대덕이시여, 그런데 인식과 느낌의 소멸에 드는 비구에게 어떤 법들이 먼저 소멸합니까? 몸의 형성입니까, 아니면 말의 형성입니까, 아니면 마음의 형성입니까?' '장자여, 인식과 느낌의 소멸에 드는 비구에게는 말의 형성이 먼저 소멸하고, 그 다음 몸의 형성이, 그 다음 마음의 형성이 소멸합니다.'",
+        "natural_ko": "'훌륭하십니다.' ... (생략) ... 더 나아가 질문을 하였다. '대덕이시여, 그런데 인식과 느낌의 소멸(상수멸)에 드는 비구에게는 어떤 법들이 먼저 소멸합니까? 몸의 형성(신행)입니까, 아니면 말의 형성(어행)입니까, 아니면 마음의 형성(심행)입니까?' '장자여, 인식과 느낌의 소멸에 드는 비구에게는 말의 형성이 먼저 소멸하고, 그 다음 몸의 형성이, 그 다음 마음의 형성이 소멸합니다.'"
+      },
+      "frozen": false,
+      "holdout_gold_frozen": false,
+      "not_usable_for_glossary_tuning": true,
+      "not_usable_for_prompt_tuning": true,
+      "source_metadata": {
+        "chunk_type": "prose",
+        "layer": "mula",
+        "length_bucket": "long",
+        "nikaya": "Saṃyuttanikāyo",
+        "pitaka": "sutta",
+        "selection_bucket": "representative_stratified",
+        "source_path": "romn/s0304m.mul.xml",
+        "text_group": "representative"
+      },
+      "source_text": "Sādhu …pe… uttariṃ pañhaṃ apucchi – ‘‘saññāvedayitanirodhaṃ samāpajjantassa pana, bhante, bhikkhuno katame dhammā paṭhamaṃ nirujjhanti, yadi vā kāyasaṅkhāro, yadi vā vacīsaṅkhāro, yadi vā cittasaṅkhāro’’ti? ‘‘Saññāvedayitanirodhaṃ samāpajjantassa kho, gahapati, bhikkhuno vacīsaṅkhāro paṭhamaṃ nirujjhati, tato kāyasaṅkhāro, tato cittasaṅkhāro’’ti.",
+      "stable_segment_key": "vri:romn:s0304m.mul:af0991c6383c",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "apparatus": [],
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "existing_translation": {
+        "literal_ko": "'유익함에 확립된 자'라는 여기서 어떤 궁극적인 유익함에 확립됨이 있다. 그것을 보여주면서 '도의 유익함에 확립된 자'라고 말했는데, 가장 낮은 도의 유익함이라는 의도이다. 그러므로 '도를 닦는다'라고 말했다. 성스러운 과야말로 법의 정수이다. '여기서 번뇌들이 부서진다'라고 하여 번뇌의 부서짐이니, 열반이다. 그 번뇌의 부서짐을 즐기는 자이다.",
+        "natural_ko": "'유익함에 확립된 자'라는 구절에서 궁극적인 유익함에 확립됨이 있다. 그것을 보여주면서 '도의 유익함에 확립된 자'라고 말했는데, 가장 낮은 도(예류도)의 유익함이라는 뜻이다. 그러므로 '도를 닦는다'라고 말했다. 성스러운 과(果)야말로 법의 정수이다. '여기서 번뇌들이 부서진다'라고 하여 번뇌의 부서짐이니, 곧 열반이다. 그 번뇌의 부서짐을 즐기는 자이다."
+      },
+      "frozen": false,
+      "holdout_gold_frozen": false,
+      "not_usable_for_glossary_tuning": true,
+      "not_usable_for_prompt_tuning": true,
+      "source_metadata": {
+        "chunk_type": "prose",
+        "layer": "tika",
+        "length_bucket": "medium",
+        "nikaya": "Saṃyuttanikāye",
+        "pitaka": "sutta",
+        "selection_bucket": "representative_stratified",
+        "source_path": "romn/s0305t.tik.xml",
+        "text_group": "representative"
+      },
+      "source_text": "1039. ‘‘Kusale patiṭṭhito’’ti ettha yaṃ accantikaṃ kusale patiṭṭhānaṃ. Taṃ dassento ‘‘maggakusale patiṭṭhito’’ti āha, heṭṭhimamaggakusaleti adhippāyo. Tenāha ‘‘bhāveti magga’’nti. Ariyaphalaṃyeva dhammasāro. Kilesā khīyanti etthāti kilesakkhayo, nibbānaṃ, tasmiṃ kilesakkhaye rato.",
+      "stable_segment_key": "vri:romn:s0305t.tik:124a306b6d99",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "apparatus": [],
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "existing_translation": {
+        "literal_ko": "남편의 집안 일들이 어떤 것이든 — 양털이든 목화이든 — 거기에 능숙하고 게으르지 않으며, 거기에 적합한 수단에 대한 궁리를 갖추어, 하기에 충분하고 처리하기에 충분하다.",
+        "natural_ko": "남편의 집안일이 양털을 다루는 것이든 목화를 다루는 것이든, 그 일에 능숙하고 게으르지 않으며, 그에 알맞은 방법을 궁리하여 일을 해내고 잘 처리할 능력을 갖춥니다."
+      },
+      "frozen": false,
+      "holdout_gold_frozen": false,
+      "not_usable_for_glossary_tuning": true,
+      "not_usable_for_prompt_tuning": true,
+      "source_metadata": {
+        "chunk_type": "prose",
+        "layer": "mula",
+        "length_bucket": "medium",
+        "nikaya": "Aṅguttaranikāyo",
+        "pitaka": "sutta",
+        "selection_bucket": "representative_stratified",
+        "source_path": "romn/s0404m1.mul.xml",
+        "text_group": "representative"
+      },
+      "source_text": "‘‘Ye te bhattu abbhantarā kammantā – uṇṇāti vā kappāsāti vā – tattha dakkhā hoti analasā tatrupāyāya vīmaṃsāya samannāgatā alaṃ kātuṃ alaṃ saṃvidhātuṃ.",
+      "stable_segment_key": "vri:romn:s0404m1.mul:370c63d8466c",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "apparatus": [],
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "existing_translation": {
+        "literal_ko": "\"마치 벌이 꽃의 색깔과 향기를 해치지 않고 꿀을 취하여 날아가듯이, 이와 같이 성자는 마을에서 다녀야 한다.\"라고.",
+        "natural_ko": "\"마치 벌이 꽃의 색깔과 향기를 다치지 않게 하고 꿀만 취하여 날아가듯, 성자는 마을에서 그와 같이 다녀야 한다.\""
+      },
+      "frozen": false,
+      "holdout_gold_frozen": false,
+      "not_usable_for_glossary_tuning": true,
+      "not_usable_for_prompt_tuning": true,
+      "source_metadata": {
+        "chunk_type": "verse",
+        "layer": "atthakatha",
+        "length_bucket": "short",
+        "nikaya": "Khuddakanikāye",
+        "pitaka": "sutta",
+        "selection_bucket": "representative_stratified",
+        "source_path": "romn/s0502a.att.xml",
+        "text_group": "representative"
+      },
+      "source_text": "49. ‘‘Yathāpi bhamaro pupphaṃ, vaṇṇagandhamaheṭhayaṃ; Paleti rasamādāya, evaṃ gāme munī care’’ti.",
+      "stable_segment_key": "vri:romn:s0502a.att:5760bcbd5256",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "apparatus": [],
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "existing_translation": {
+        "literal_ko": "거기서 '너무 춥다(atisītaṃ)'라는 것은 눈이 내리거나 먹구름이 끼는 것 등으로 인해 매우 추운 것이니, '이것이 있었다(idaṃ ahu)'를 가져와서 연결된다. '너무 덥다(ati-uṇhaṃ)'라는 것은 더위의 열기 등으로 인해 매우 더운 것이니, 이 두 가지로 기후에 의한 게으름의 근거를 말한 것이다. '너무 늦었다(atisāyaṃ)'라는 것은 낮이 저묾에 따라 매우 늦은 저녁인 것이니, 여기서 '저녁'을 취하는 것만으로 '아침' 또한 포함되며, 그 두 가지로 시간에 의한 게으름의 근거를 말한 것이다. '이와 같이(iti)'라는 것은 이러한 방식으로이다. 이것으로 \"비구들이여, 여기 비구가 해야 할 일이 있다\" 등(A.8.80; D.3.334)으로 설해진 게으름의 근거를 포괄한다. '일을 내버려 둔 자들(vissaṭṭhakammante)'이라는 것은 수행의 일을 포기한 자들을 말한다. '기회들(khaṇā)'이라는 것은 부처님의 출현 등 청정범행을 실천할 기회들이다. '지나간다(accenti)'라는 것은 지나쳐 버린다는 것이다. '사람들을(māṇave)'이라는 것은 중생들을 말한다. '풀보다 더한 것으로 여기지 않는다(tiṇā bhiyyo na maññati)'라는 것은 풀 이상으로 여기지 않는 것, 즉 풀처럼 여기는 것이니, 추위와 더위를 극복하고 자신이 해야 할 일을 하는 것이다. '하면서(karaṃ)'라는 것은 행하면서이다. '사람의 의무들을(purisakiccāni)'이라는 것은 영웅적인 사람이 해야 할 자신을 위한 이익과 남을 위한 이익들이다. '행복에서(sukhā)'라는 것은 행복으로부터이니, 열반의 행복으로부터라는 뜻이다. 세 번째 게송의 의미는 이미 앞에서 설해졌다.",
+        "natural_ko": "여기서 '너무 춥다(atisītaṃ)'라는 것은 눈이 내리거나 먹구름이 끼는 것 등으로 인해 매우 추운 것을 뜻하며, 문법적으로는 '이것이 있었다(idaṃ ahu)'를 가져와서 연결해야 한다. '너무 덥다(ati-uṇhaṃ)'라는 것은 더위의 열기 등으로 인해 매우 더운 것을 뜻하며, 이 두 가지를 통해 기후와 관련된 게으름의 근거를 말한 것이다. '너무 늦었다(atisāyaṃ)'라는 것은 낮이 저물어 매우 늦은 저녁이 된 것을 뜻하는데, 여기서 '저녁'을 언급한 것만으로 '아침' 또한 포함되며, 이 두 가지를 통해 시간과 관련된 게으름의 근거를 말한 것이다. '이와 같이(iti)'라는 것은 이러한 방식으로라는 뜻이다. 이것으로 \"비구들이여, 여기 비구가 해야 할 일이 있다\" 등(A.8.80; D.3.334)에서 설해진 게으름의 근거들을 포괄한다. '일을 내버려 둔 자들(vissaṭṭhakammante)'이란 수행의 노력을 포기한 자들을 말한다. '기회들(khaṇā)'이란 부처님의 출현 등 청정범행을 실천할 수 있는 기회들을 뜻한다. '지나간다(accenti)'라는 것은 지나쳐 버린다는 뜻이다. '사람들을(māṇave)'이란 중생들을 말한다. '풀보다 더한 것으로 여기지 않는다(tiṇā bhiyyo na maññati)'라는 것은 풀 이상으로 여기지 않는 것, 즉 풀처럼 하찮게 여기는 것이니, 추위와 더위를 극복하고 자신이 해야 할 일을 하는 것을 뜻한다. '하면서(karaṃ)'라는 것은 행하면서라는 뜻이다. '사람의 의무들을(purisakiccāni)'이란 영웅적인 사람이 마땅히 해야 할 자신을 위한 이익과 남을 위한 이익을 뜻한다. '행복에서(sukhā)'라는 것은 행복으로부터라는 뜻이니, 곧 열반의 행복으로부터라는 의미이다. 세 번째 게송의 의미는 이미 앞에서 설명하였다."
+      },
+      "frozen": false,
+      "holdout_gold_frozen": false,
+      "not_usable_for_glossary_tuning": true,
+      "not_usable_for_prompt_tuning": true,
+      "source_metadata": {
+        "chunk_type": "prose",
+        "layer": "atthakatha",
+        "length_bucket": "long",
+        "nikaya": "Khuddakanikāye",
+        "pitaka": "sutta",
+        "selection_bucket": "representative_stratified",
+        "source_path": "romn/s0508a1.att.xml",
+        "text_group": "representative"
+      },
+      "source_text": "Tattha atisītanti himapātavaddalādinā ativiya sītaṃ, idaṃ ahūti ānetvā sambandho. Atiuṇhanti dhammaparitāpādinā ativiya uṇhaṃ, ubhayenapi utuvasena kosajjavatthumāha. Atisāyanti divasassa pariṇatiyā atisāyaṃ, sāyaggahaṇeneva cettha pātopi saṅgayhati, tadubhayena kālavasena kosajjavatthumāha. Itīti iminā pakārena. Etena ‘‘idha, bhikkhave, bhikkhunā kammaṃ kattabbaṃ hotī’’tiādinā (a. ni. 8.80; dī. ni. 3.334) vuttaṃ kosajjavatthuṃ saṅgaṇhāti. Vissaṭṭhakammanteti pariccattayogakammante. Khaṇāti buddhuppādādayo brahmacariyavāsassa okāsā. Accentīti atikkamanti. Māṇaveti satte. Tiṇā bhiyyo na maññatīti tiṇato upari na maññati, tiṇaṃ viya maññati, sītuṇhāni abhibhavitvā attanā kattabbaṃ karoti. Karanti karonto. Purisakiccānīti vīrapurisena kattabbāni attahitaparahitāni. Sukhāti sukhato, nibbānasukhatoti adhippāyo. Tatiyagāthāya attho heṭṭhā vuttoyeva.",
+      "stable_segment_key": "vri:romn:s0508a1.att:8b9574445272",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "apparatus": [],
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "existing_translation": {
+        "literal_ko": "그래서 뛰어난 천신에 의해 결정되어 보내진, 황금빛 피부를 가진 네 명의 소녀들, 아사(희망)와 삿다(믿음)와 시리(영광)와 그리고 히리(양심)가 꼬시야가 있는 그 암자로 왔다.",
+        "natural_ko": "그래서 뛰어난 천신(제석천)의 뜻에 따라 보내진 황금빛 피부를 가진 네 명의 천녀들, 즉 아사(희망)와 삿다(믿음)와 시리(영광)와 히리(양심)가 꼬시야가 머무는 암자로 왔다."
+      },
+      "frozen": false,
+      "holdout_gold_frozen": false,
+      "not_usable_for_glossary_tuning": true,
+      "not_usable_for_prompt_tuning": true,
+      "source_metadata": {
+        "chunk_type": "verse",
+        "layer": "atthakatha",
+        "length_bucket": "medium",
+        "nikaya": "Khuddakanikāya",
+        "pitaka": "sutta",
+        "selection_bucket": "representative_stratified",
+        "source_path": "romn/s0514a1.att.xml",
+        "text_group": "representative"
+      },
+      "source_text": "233. ‘‘Ato matā devavarena pesitā, kaññā catasso kanakattacūpamā; Āsā ca saddhā ca sirī tato hirī, taṃ assamaṃ āgamu yattha kosiyo.",
+      "stable_segment_key": "vri:romn:s0514a1.att:1948090bd6f5",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "apparatus": [],
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "existing_translation": {
+        "literal_ko": "빨리 왕자를 데려오라, 나라를 번영하게 하는 디가우를. 그를 왕위에 관정할 것이니, 그가 너희들의 왕이 될 것이다.",
+        "natural_ko": "빨리 나라를 번영하게 할 디가우 왕자를 데려오라. 내가 그를 왕위에 오르게 할 것이니, 그가 너희들의 왕이 될 것이다."
+      },
+      "frozen": false,
+      "holdout_gold_frozen": false,
+      "not_usable_for_glossary_tuning": true,
+      "not_usable_for_prompt_tuning": true,
+      "source_metadata": {
+        "chunk_type": "verse",
+        "layer": "atthakatha",
+        "length_bucket": "short",
+        "nikaya": "Khuddakanikāya",
+        "pitaka": "sutta",
+        "selection_bucket": "representative_stratified",
+        "source_path": "romn/s0514a1.att.xml",
+        "text_group": "representative"
+      },
+      "source_text": "39. ‘‘Khippaṃ kumāramānetha, dīghāvuṃ raṭṭhavaḍḍhanaṃ; Taṃ rajje abhisiñcissaṃ, so vo rājā bhavissati.",
+      "stable_segment_key": "vri:romn:s0514a1.att:9ea186253995",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "apparatus": [],
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "existing_translation": {
+        "literal_ko": "사왓티에서 네 줌, 두 가지 남은 음식, 두 가지 풀, 승가의 것을 나눈 일곱 가지, 그리고 주인이 없는 일곱 가지.",
+        "natural_ko": "사왓티에서의 네 줌, 두 가지 남은 음식, 두 가지 풀, 승가의 것을 나눈 일곱 가지, 그리고 주인이 없는 일곱 가지 [판례들이다]."
+      },
+      "frozen": false,
+      "holdout_gold_frozen": false,
+      "not_usable_for_glossary_tuning": true,
+      "not_usable_for_prompt_tuning": true,
+      "source_metadata": {
+        "chunk_type": "verse",
+        "layer": "mula",
+        "length_bucket": "short",
+        "nikaya": "Vinayapiṭake",
+        "pitaka": "vinaya",
+        "selection_bucket": "representative_stratified",
+        "source_path": "romn/vin01m.mul.xml",
+        "text_group": "representative"
+      },
+      "source_text": "Sāvatthiyā caturo muṭṭhī, dve vighāsā duve tiṇā; Saṅghassa bhājayuṃ satta, satta ceva assāmikā.",
+      "stable_segment_key": "vri:romn:vin01m.mul:4ac66ef7e85c",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "apparatus": [],
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "existing_translation": {
+        "literal_ko": "300. \"'내기를 하는 것은 허용되지 않는다'라는 이것으로 악작이 된다고 밝힌다.\" '진 사람에 의해 주어져야 한다'라고 말해졌기 때문에, 주지 않는 자는 짐을 내려놓음으로써 처리되어야 한다. 이것의 직무가 오래지 않은 시간에 있다고 해서 '단기-직무인 것'이니, 중매이다. 또는 '단기-행위인 것'이라는 독송도 있으니, 이것의 행위, 즉 범행이 오래지 않은 시간에 있다고 해서 '단기-행위인 것'이다.",
+        "natural_ko": "300. \"'내기를 하는 것은 허용되지 않는다'라는 말로 악작(惡作)이 된다고 밝힌다.\" '진 사람이 주어야 한다'라고 말해졌기 때문에, 주지 않는 자는 책임을 포기한 것으로 처리해야 한다. 이것의 직무가 짧은 시간 안에 있다고 해서 '단기-직무인 것'이니, 중매를 뜻한다. 또는 '단기-행위인 것'이라는 이문(異文)도 있으니, 이것의 행위, 즉 위반 행위가 짧은 시간 안에 있다고 해서 '단기-행위인 것'이다."
+      },
+      "frozen": false,
+      "holdout_gold_frozen": false,
+      "not_usable_for_glossary_tuning": true,
+      "not_usable_for_prompt_tuning": true,
+      "source_metadata": {
+        "chunk_type": "prose",
+        "layer": "tika",
+        "length_bucket": "medium",
+        "nikaya": "Vinayapiṭake",
+        "pitaka": "vinaya",
+        "selection_bucket": "representative_stratified",
+        "source_path": "romn/vin01t2.tik.xml",
+        "text_group": "representative"
+      },
+      "source_text": "300. ‘‘Abbhutaṃ kātuṃ na vaṭṭatī’’ti iminā dukkaṭaṃ hotīti dīpeti. ‘‘Parājitena dātabba’’nti vuttattā adento dhuranikkhepena kāretabbo. Acirakāle adhikāro etassa atthīti acirakālādhikārikaṃ, sañcarittaṃ. ‘‘Acirakālācārika’’nti vā pāṭho, acirakāle ācāro ajjhācāro etassāti acirakālācārikaṃ.",
+      "stable_segment_key": "vri:romn:vin01t2.tik:46bf2dc6b638",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "apparatus": [],
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "existing_translation": {
+        "literal_ko": "198. 그 때에 부처님 세존께서는 사왓티에 머무셨다, 제따 숲의 아나타삔디까 승원에. 그런데 그 때에 우다이 존자의 옛 아내가 비구니들 가운데 출가해 있었다. 그녀는 우다이 존자의 곁으로 자주 온다, 우다이 존자도 그 비구니의 곁으로 자주 간다. 그런데 그 때에 우다이 존자는 그 비구니와 함께 남자 혼자 여자 혼자서 은밀한 곳에 앉음을 지었다. 소욕의 그 비구들은 …[생략]… 그들은 불평하고 비난하고 헐뜯었다. \"어찌하여 참으로 우다이 존자가 비구니와 함께 남자 혼자 여자 혼자서 은밀한 곳에 앉음을 지을 것인가?\"라고 …[생략]… \"우다이여, 네가 비구니와 함께 남자 혼자 여자 혼자서 은밀한 곳에 앉음을 지었다는 것이 참으로 사실이냐?\" \"사실입니다, 세존이시여.\" 부처님 세존께서는 꾸짖으셨다. …[생략]… \"어찌하여 참으로 너는, 어리석은 자여, 비구니와 함께 남자 혼자 여자 혼자서 은밀한 곳에 앉음을 지을 것인가! 어리석은 자여, 이것은 믿음이 없는 자들을 믿게 하기 위한 것이 아니며 …[생략]… 비구들이여, 그리고 또한 이 학습계목을 이렇게 송출해야 한다.\"",
+        "natural_ko": "198. 그 무렵 부처님 세존께서는 사왓티의 제따 숲 아나타삔디까 승원에 머무셨다. 그런데 그 무렵 우다이 존자의 옛 아내가 비구니로 출가해 있었다. 그녀는 우다이 존자에게 자주 찾아왔고, 우다이 존자도 그 비구니에게 자주 찾아갔다. 그런데 그 무렵 우다이 존자는 그 비구니와 단둘이서 은밀한 곳에 앉아 있었다. 욕심이 적은 비구들은 …[생략]… 불평하고 비난하고 헐뜯었다. \"어찌하여 우다이 존자가 비구니와 단둘이서 은밀한 곳에 앉아 있을 수 있단 말인가?\"라고. …[생략]… \"우다이여, 네가 비구니와 단둘이서 은밀한 곳에 앉아 있었다는 것이 사실이냐?\" \"사실입니다, 세존이시여.\" 부처님 세존께서 꾸짖으셨다. …[생략]… \"어리석은 자여, 어찌하여 너는 비구니와 단둘이서 은밀한 곳에 앉아 있을 수 있단 말인가! 어리석은 자여, 이것은 믿음이 없는 자들에게 믿음을 일으키게 하는 것이 아니며 …[생략]… 비구들이여, 그러므로 이 학습계목을 이와 같이 송출해야 한다.\""
+      },
+      "frozen": false,
+      "holdout_gold_frozen": false,
+      "not_usable_for_glossary_tuning": true,
+      "not_usable_for_prompt_tuning": true,
+      "source_metadata": {
+        "chunk_type": "prose",
+        "layer": "mula",
+        "length_bucket": "long",
+        "nikaya": "Vinayapiṭake",
+        "pitaka": "vinaya",
+        "selection_bucket": "representative_stratified",
+        "source_path": "romn/vin02m1.mul.xml",
+        "text_group": "representative"
+      },
+      "source_text": "198. Tena samayena buddho bhagavā sāvatthiyaṃ viharati jetavane anāthapiṇḍikassa ārāme. Tena kho pana samayena āyasmato udāyissa purāṇadutiyikā bhikkhunīsu pabbajitā hoti. Sā āyasmato udāyissa santike abhikkhaṇaṃ āgacchati, āyasmāpi udāyī tassā bhikkhuniyā santike abhikkhaṇaṃ gacchati. Tena kho pana samayena āyasmā udāyī tassā bhikkhuniyā saddhiṃ eko ekāya raho nisajjaṃ kappesi. Ye te bhikkhū appicchā…pe… te ujjhāyanti khiyyanti vipācenti – ‘‘kathañhi nāma āyasmā udāyī bhikkhuniyā saddhiṃ eko ekāya raho nisajjaṃ kappessatī’’ti…pe… saccaṃ kira tvaṃ, udāyi, bhikkhuniyā saddhiṃ eko ekāya raho nisajjaṃ kappesīti? ‘‘Saccaṃ, bhagavā’’ti. Vigarahi buddho bhagavā…pe… kathañhi nāma tvaṃ, moghapurisa, bhikkhuniyā saddhiṃ eko ekāya raho nisajjaṃ kappessasi! Netaṃ, moghapurisa appasannānaṃ vā pasādāya…pe… evañca pana, bhikkhave, imaṃ sikkhāpadaṃ uddiseyyātha –",
+      "stable_segment_key": "vri:romn:vin02m1.mul:0d7d37de4c19",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    },
+    {
+      "adjudication_status": "needs_human_adjudication",
+      "apparatus": [],
+      "do_not_use_for_glossary_tuning": true,
+      "do_not_use_for_prompt_tuning": true,
+      "existing_translation": {
+        "literal_ko": "자신감 있는 깔라수마나, 그리고 디가라는 이름의 장로, 그리고 현자인 디가수마나.",
+        "natural_ko": "자신감 있는 깔라수마나, 디가라는 이름의 장로, 그리고 현자인 디가수마나."
+      },
+      "frozen": false,
+      "holdout_gold_frozen": false,
+      "not_usable_for_glossary_tuning": true,
+      "not_usable_for_prompt_tuning": true,
+      "source_metadata": {
+        "chunk_type": "verse",
+        "layer": "mula",
+        "length_bucket": "short",
+        "nikaya": "Vinayapiṭake",
+        "pitaka": "vinaya",
+        "selection_bucket": "representative_stratified",
+        "source_path": "romn/vin02m4.mul.xml",
+        "text_group": "representative"
+      },
+      "source_text": "Visārado kāḷasumano, thero ca dīghanāmako; Dīghasumano ca paṇḍito.",
+      "stable_segment_key": "vri:romn:vin02m4.mul:d49c727cc20c",
+      "suggested_acceptance_types": [
+        "constraint",
+        "exact",
+        "reference"
+      ]
+    }
+  ],
+  "needs_human_adjudication": true,
+  "not_usable_for_glossary_tuning": true,
+  "not_usable_for_prompt_tuning": true,
+  "schema_version": "pali_step_3g_holdout_adjudication_template_v0",
+  "status": "draft_not_frozen",
+  "warnings": []
+}

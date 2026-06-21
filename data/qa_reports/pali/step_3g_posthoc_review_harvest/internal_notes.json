@@ -1,0 +1,282 @@
+{
+  "auto_modify_source": false,
+  "auto_modify_translation": false,
+  "items": [
+    {
+      "apparatus_id": "romn/s0102m.mul.xml:note:000309",
+      "apparatus_status": "source_variant_apparatus_present",
+      "auto_apply": false,
+      "auto_modify_source": false,
+      "auto_modify_translation": false,
+      "evidence_strength_hint": "named_witness",
+      "internal_note_type": "source_variant_apparatus",
+      "llm_retry_required": false,
+      "main_reading": "jhāyatisu",
+      "raw_note_text": "jhāyatassu (syā.), pajjhāyitassu (sī. pī.)",
+      "reader_facing_public_note": false,
+      "review_policy": "internal_note_only",
+      "sigla": [
+        "syā"
+      ],
+      "source_path": "romn/s0102m.mul.xml",
+      "stable_segment_key": "vri:romn:s0102m.mul:6a72ce6bb12a",
+      "unknown_sigla": [],
+      "variant_reading": "jhāyatassu",
+      "visibility": "internal"
+    },
+    {
+      "apparatus_id": "romn/s0102m.mul.xml:note:000310",
+      "apparatus_status": "source_variant_apparatus_present",
+      "auto_apply": false,
+      "auto_modify_source": false,
+      "auto_modify_translation": false,
+      "evidence_strength_hint": "named_witness",
+      "internal_note_type": "source_variant_apparatus",
+      "llm_retry_required": false,
+      "main_reading": "jalatisu",
+      "raw_note_text": "jalatassu (syā.), jalitassu (sī. pī.)",
+      "reader_facing_public_note": false,
+      "review_policy": "internal_note_only",
+      "sigla": [
+        "syā"
+      ],
+      "source_path": "romn/s0102m.mul.xml",
+      "stable_segment_key": "vri:romn:s0102m.mul:6a72ce6bb12a",
+      "unknown_sigla": [],
+      "variant_reading": "jalatassu",
+      "visibility": "internal"
+    },
+    {
+      "apparatus_id": "romn/s0301m.mul.xml:note:000164",
+      "apparatus_status": "source_variant_apparatus_present",
+      "auto_apply": false,
+      "auto_modify_source": false,
+      "auto_modify_translation": false,
+      "evidence_strength_hint": "named_witness",
+      "internal_note_type": "source_variant_apparatus",
+      "llm_retry_required": false,
+      "main_reading": "Janapadapadesena",
+      "raw_note_text": "janapadena (sī. syā. pī.)",
+      "reader_facing_public_note": false,
+      "review_policy": "internal_note_only",
+      "sigla": [
+        "sī",
+        "syā",
+        "pī"
+      ],
+      "source_path": "romn/s0301m.mul.xml",
+      "stable_segment_key": "vri:romn:s0301m.mul:65bfa32418da",
+      "unknown_sigla": [],
+      "variant_reading": "janapadena",
+      "visibility": "internal"
+    },
+    {
+      "apparatus_id": "romn/s0402m3.mul.xml:note:000135",
+      "apparatus_status": "source_variant_apparatus_present",
+      "auto_apply": false,
+      "auto_modify_source": false,
+      "auto_modify_translation": false,
+      "evidence_strength_hint": "weak_or_unspecified",
+      "internal_note_type": "source_variant_apparatus",
+      "llm_retry_required": false,
+      "main_reading": "annadapānavatthadaṃ",
+      "raw_note_text": "annapānavatthaṃ (ka.)",
+      "reader_facing_public_note": false,
+      "review_policy": "internal_note_only",
+      "sigla": [
+        "ka"
+      ],
+      "source_path": "romn/s0402m3.mul.xml",
+      "stable_segment_key": "vri:romn:s0402m3.mul:60a0d9713cc3",
+      "unknown_sigla": [],
+      "variant_reading": "annapānavatthaṃ",
+      "visibility": "internal"
+    },
+    {
+      "apparatus_id": "romn/s0505m.mul.xml:note:000018",
+      "apparatus_status": "source_variant_apparatus_present",
+      "auto_apply": false,
+      "auto_modify_source": false,
+      "auto_modify_translation": false,
+      "evidence_strength_hint": "named_witness",
+      "internal_note_type": "source_variant_apparatus",
+      "llm_retry_required": false,
+      "main_reading": "Vaṃsakkaḷīrova",
+      "raw_note_text": "vaṃsakaḷīrova (sī.), vaṃsākaḷīrova (syā. kaṃ. pī.), vaṃsekaḷīrova (niddesa)",
+      "reader_facing_public_note": false,
+      "review_policy": "internal_note_only",
+      "sigla": [
+        "sī"
+      ],
+      "source_path": "romn/s0505m.mul.xml",
+      "stable_segment_key": "vri:romn:s0505m.mul:19ae1da5c658",
+      "unknown_sigla": [],
+      "variant_reading": "vaṃsakaḷīrova",
+      "visibility": "internal"
+    },
+    {
+      "apparatus_id": "romn/s0507m.mul.xml:note:000174",
+      "apparatus_status": "source_variant_apparatus_present",
+      "auto_apply": false,
+      "auto_modify_source": false,
+      "auto_modify_translation": false,
+      "evidence_strength_hint": "weak_or_unspecified",
+      "internal_note_type": "source_variant_apparatus",
+      "llm_retry_required": false,
+      "main_reading": "passissāmi",
+      "raw_note_text": "passāmi (ka.)",
+      "reader_facing_public_note": false,
+      "review_policy": "internal_note_only",
+      "sigla": [
+        "ka"
+      ],
+      "source_path": "romn/s0507m.mul.xml",
+      "stable_segment_key": "vri:romn:s0507m.mul:702e8ccd7a3d",
+      "unknown_sigla": [],
+      "variant_reading": "passāmi",
+      "visibility": "internal"
+    },
+    {
+      "apparatus_id": "romn/s0507m.mul.xml:note:000175",
+      "apparatus_status": "source_variant_apparatus_present",
+      "auto_apply": false,
+      "auto_modify_source": false,
+      "auto_modify_translation": false,
+      "evidence_strength_hint": "unknown",
+      "internal_note_type": "source_variant_apparatus",
+      "llm_retry_required": false,
+      "main_reading": "kareyyāsi",
+      "raw_note_text": "karohi (katthaci)",
+      "reader_facing_public_note": false,
+      "review_policy": "internal_note_only",
+      "sigla": [],
+      "source_path": "romn/s0507m.mul.xml",
+      "stable_segment_key": "vri:romn:s0507m.mul:702e8ccd7a3d",
+      "unknown_sigla": [
+        "katthaci"
+      ],
+      "variant_reading": "karohi",
+      "visibility": "internal"
+    },
+    {
+      "apparatus_id": "romn/s0510m2.mul.xml:note:000467",
+      "apparatus_status": "source_variant_apparatus_present",
+      "auto_apply": false,
+      "auto_modify_source": false,
+      "auto_modify_translation": false,
+      "evidence_strength_hint": "named_witness",
+      "internal_note_type": "source_variant_apparatus",
+      "llm_retry_required": false,
+      "main_reading": "dhammakhīrañhi",
+      "raw_note_text": "dhammakhīrampi (syā., ka.)",
+      "reader_facing_public_note": false,
+      "review_policy": "internal_note_only",
+      "sigla": [
+        "syā",
+        "ka"
+      ],
+      "source_path": "romn/s0510m2.mul.xml",
+      "stable_segment_key": "vri:romn:s0510m2.mul:ab2edba7c0ba",
+      "unknown_sigla": [],
+      "variant_reading": "dhammakhīrampi",
+      "visibility": "internal"
+    },
+    {
+      "apparatus_id": "romn/s0514m.mul.xml:note:001737",
+      "apparatus_status": "apparatus_has_variant_nearby",
+      "auto_apply": false,
+      "auto_modify_source": false,
+      "auto_modify_translation": false,
+      "evidence_strength_hint": "weak_or_unspecified",
+      "internal_note_type": "source_variant_apparatus",
+      "llm_retry_required": false,
+      "main_reading": "oropetvā",
+      "raw_note_text": "otāretvā (ka.)",
+      "reader_facing_public_note": false,
+      "review_policy": "internal_note_only",
+      "sigla": [
+        "ka"
+      ],
+      "source_path": "romn/s0514m.mul.xml",
+      "stable_segment_key": "vri:romn:s0514m.mul:88650af1ca41",
+      "unknown_sigla": [],
+      "variant_reading": "otāretvā",
+      "visibility": "internal"
+    },
+    {
+      "apparatus_id": "romn/s0514m.mul.xml:note:000605",
+      "apparatus_status": "source_variant_apparatus_present",
+      "auto_apply": false,
+      "auto_modify_source": false,
+      "auto_modify_translation": false,
+      "evidence_strength_hint": "weak_or_unspecified",
+      "internal_note_type": "source_variant_apparatus",
+      "llm_retry_required": false,
+      "main_reading": "paṭibhāsi",
+      "raw_note_text": "paṭibhāti (ka.)",
+      "reader_facing_public_note": false,
+      "review_policy": "internal_note_only",
+      "sigla": [
+        "ka"
+      ],
+      "source_path": "romn/s0514m.mul.xml",
+      "stable_segment_key": "vri:romn:s0514m.mul:92dcad01d3b3",
+      "unknown_sigla": [],
+      "variant_reading": "paṭibhāti",
+      "visibility": "internal"
+    },
+    {
+      "apparatus_id": "romn/s0519m.mul.xml:note:000249",
+      "apparatus_status": "apparatus_attests_variant",
+      "auto_apply": false,
+      "auto_modify_source": false,
+      "auto_modify_translation": false,
+      "evidence_strength_hint": "named_witness",
+      "internal_note_type": "source_variant_apparatus",
+      "llm_retry_required": false,
+      "main_reading": "accantadiṭṭhaṃ",
+      "raw_note_text": "antaṃ niṭṭhaṃ (sī.)",
+      "reader_facing_public_note": false,
+      "review_policy": "internal_note_only",
+      "sigla": [
+        "sī"
+      ],
+      "source_path": "romn/s0519m.mul.xml",
+      "stable_segment_key": "vri:romn:s0519m.mul:f43a9c761757",
+      "unknown_sigla": [],
+      "variant_reading": "antaṃ niṭṭhaṃ",
+      "visibility": "internal"
+    },
+    {
+      "apparatus_id": "romn/vin02m1.mul.xml:note:000099",
+      "apparatus_status": "source_variant_apparatus_present",
+      "auto_apply": false,
+      "auto_modify_source": false,
+      "auto_modify_translation": false,
+      "evidence_strength_hint": "named_witness",
+      "internal_note_type": "source_variant_apparatus",
+      "llm_retry_required": false,
+      "main_reading": "karaṇīyena",
+      "raw_note_text": "karaṇīye (sī. syā.)",
+      "reader_facing_public_note": false,
+      "review_policy": "internal_note_only",
+      "sigla": [
+        "sī",
+        "syā"
+      ],
+      "source_path": "romn/vin02m1.mul.xml",
+      "stable_segment_key": "vri:romn:vin02m1.mul:82136200591f",
+      "unknown_sigla": [],
+      "variant_reading": "karaṇīye",
+      "visibility": "internal"
+    }
+  ],
+  "llm_retry_required": false,
+  "policy": "apparatus-aware QA/review metadata only",
+  "schema_version": "pali_step_3g_internal_notes_v0",
+  "summary": {
+    "note_records": 12,
+    "segments": 10
+  },
+  "visibility": "internal"
+}
