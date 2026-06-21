@@ -77,6 +77,8 @@ glossary_candidates.json
 reference_table_candidates.json
 targeted_retry_candidates.json
 expert_review_candidates.json
+resolved_items.json
+remaining_routing_index.json
 ```
 
 Candidate policy:
@@ -85,6 +87,10 @@ Candidate policy:
 - reference table candidates require explicit manual seed decisions or later reviewed mechanical reference rules
 - targeted retry candidates require explicit manual seed decisions
 - expert review candidates require manual seed decisions or pre-existing expert-review flags
+- seeded `low_severity` and `no_action` decisions go to `resolved_items.json`
+- seeded `apparatus_internal_note` decisions are represented in `remaining_routing_index.json` and linked to `internal_notes.json`
+- when a manual seed decision exists for a `stable_segment_key`, it overrides stale pre-existing flags
+- pre-existing expert flags are fallback only for unseeded items
 
 The current step records candidates; it does not apply them.
 
@@ -146,6 +152,8 @@ data/qa_reports/pali/step_3g_posthoc_review_harvest/
   reference_table_candidates.json
   targeted_retry_candidates.json
   expert_review_candidates.json
+  resolved_items.json
+  remaining_routing_index.json
   holdout_adjudication_template.json
   holdout_gold_manifest_draft.json
   step_3g_summary.md

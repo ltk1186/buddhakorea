@@ -4,8 +4,11 @@
     {
       "applied_now": false,
       "decision_source": "manual_review_seed",
+      "expert_review_required": true,
       "glossary_mutation": false,
       "gold_set_mutation": false,
+      "priority": "low",
+      "rationale": "Paṭṭhāna paṭiloma (negative method) quadruple-negative logic; translation is defensible but the reasoning is deep Abhidhamma. Genuinely expert territory, but low-impact niche tika.",
       "review_context": {
         "decision": "needs_human_review",
         "review_required_after_classification": true,
@@ -21,6 +24,7 @@
         "source_path": "romn/abh03t.tik.xml",
         "text_layer": "tika"
       },
+      "route_note": null,
       "seed_decision": "expert_review_candidate",
       "seed_record": {
         "apparatus_classification": "no_apparatus_variant",
@@ -36,13 +40,17 @@
         "target_hint": "abhūtuppādanirodhābhāvo"
       },
       "stable_segment_key": "vri:romn:abh03t.tik:5ce9d8787e18",
+      "target_hint": "abhūtuppādanirodhābhāvo",
       "translation_mutation": false
     },
     {
       "applied_now": false,
       "decision_source": "manual_review_seed",
+      "expert_review_required": true,
       "glossary_mutation": false,
       "gold_set_mutation": false,
+      "priority": "medium",
+      "rationale": "Negation scope in the recursive definition 'X-ti natthi etassa Y-ti appaṭipuggalo' can flip meaning. Translation is reasonable; worth an authoritative ruling but deferrable.",
       "review_context": {
         "decision": "needs_human_review",
         "review_required_after_classification": true,
@@ -58,6 +66,7 @@
         "source_path": "romn/s0201t.tik.xml",
         "text_layer": "tika"
       },
+      "route_note": null,
       "seed_decision": "expert_review_candidate",
       "seed_record": {
         "apparatus_classification": "no_apparatus_variant",
@@ -73,13 +82,17 @@
         "target_hint": "appaṭipuggala (negation scope)"
       },
       "stable_segment_key": "vri:romn:s0201t.tik:cfd6c2db8704",
+      "target_hint": "appaṭipuggala (negation scope)",
       "translation_mutation": false
     },
     {
       "applied_now": false,
       "decision_source": "manual_review_seed",
+      "expert_review_required": true,
       "glossary_mutation": false,
       "gold_set_mutation": false,
+      "priority": "low",
+      "rationale": "Rare/hapax verb form; the commentary glosses it via jīrati and the model followed that, but the exact form/etymology is genuinely uncertain. Low impact.",
       "review_context": {
         "decision": "needs_human_review",
         "review_required_after_classification": true,
@@ -97,6 +110,7 @@
         "source_path": "romn/vin02a2.att.xml",
         "text_layer": "atthakatha"
       },
+      "route_note": null,
       "seed_decision": "expert_review_candidate",
       "seed_record": {
         "apparatus_classification": "no_apparatus_variant",
@@ -112,184 +126,8 @@
         "target_hint": "Jiridanti"
       },
       "stable_segment_key": "vri:romn:vin02a2.att:bfbd7f00efd4",
+      "target_hint": "Jiridanti",
       "translation_mutation": false
-    },
-    {
-      "applied_now": false,
-      "decision_source": "pre_existing_expert_question_candidate_flag",
-      "review_context": {
-        "decision": "needs_human_review",
-        "review_required_after_classification": true,
-        "signals_after": [
-          "grammar_uncertain",
-          "grammar_uncertain_retained",
-          "pali_parenthetical_allowed"
-        ],
-        "signals_before": [
-          "contains_untranslated_pali",
-          "grammar_uncertain"
-        ],
-        "source_path": "romn/s0102t.tik.xml",
-        "text_layer": "tika"
-      },
-      "seed_decision": null,
-      "stable_segment_key": "vri:romn:s0102t.tik:691b6cc86c16"
-    },
-    {
-      "applied_now": false,
-      "decision_source": "pre_existing_expert_question_candidate_flag",
-      "review_context": {
-        "decision": "needs_human_review",
-        "review_required_after_classification": true,
-        "signals_after": [
-          "grammar_uncertain",
-          "grammar_uncertain_retained",
-          "pali_parenthetical_allowed"
-        ],
-        "signals_before": [
-          "contains_untranslated_pali",
-          "grammar_uncertain"
-        ],
-        "source_path": "romn/s0302t.tik.xml",
-        "text_layer": "tika"
-      },
-      "seed_decision": null,
-      "stable_segment_key": "vri:romn:s0302t.tik:75cb6eb45b34"
-    },
-    {
-      "applied_now": false,
-      "decision_source": "pre_existing_expert_question_candidate_flag",
-      "review_context": {
-        "decision": "needs_human_review",
-        "review_required_after_classification": true,
-        "signals_after": [
-          "grammar_uncertain",
-          "grammar_uncertain_retained",
-          "pali_parenthetical_allowed"
-        ],
-        "signals_before": [
-          "contains_untranslated_pali",
-          "grammar_uncertain"
-        ],
-        "source_path": "romn/vin02a1.att.xml",
-        "text_layer": "atthakatha"
-      },
-      "seed_decision": null,
-      "stable_segment_key": "vri:romn:vin02a1.att:b56ffa453013"
-    },
-    {
-      "applied_now": false,
-      "decision_source": "pre_existing_expert_question_candidate_flag",
-      "review_context": {
-        "decision": "needs_human_review",
-        "review_required_after_classification": true,
-        "signals_after": [
-          "grammar_uncertain",
-          "grammar_uncertain_retained"
-        ],
-        "signals_before": [
-          "grammar_uncertain"
-        ],
-        "source_path": "romn/abh03m11.mul.xml",
-        "text_layer": "mula"
-      },
-      "seed_decision": null,
-      "stable_segment_key": "vri:romn:abh03m11.mul:4ab6e93ef3c3"
-    },
-    {
-      "applied_now": false,
-      "decision_source": "pre_existing_expert_question_candidate_flag",
-      "review_context": {
-        "decision": "needs_human_review",
-        "review_required_after_classification": true,
-        "signals_after": [
-          "grammar_uncertain",
-          "grammar_uncertain_retained"
-        ],
-        "signals_before": [
-          "grammar_uncertain"
-        ],
-        "source_path": "romn/s0403t.tik.xml",
-        "text_layer": "tika"
-      },
-      "seed_decision": null,
-      "stable_segment_key": "vri:romn:s0403t.tik:0b44a6389758"
-    },
-    {
-      "applied_now": false,
-      "decision_source": "pre_existing_expert_question_candidate_flag",
-      "review_context": {
-        "decision": "needs_human_review",
-        "review_required_after_classification": true,
-        "signals_after": [
-          "grammar_uncertain",
-          "grammar_uncertain_retained"
-        ],
-        "signals_before": [
-          "grammar_uncertain"
-        ],
-        "source_path": "romn/s0513m.mul.xml",
-        "text_layer": "mula"
-      },
-      "seed_decision": null,
-      "stable_segment_key": "vri:romn:s0513m.mul:545a4ef14103"
-    },
-    {
-      "applied_now": false,
-      "decision_source": "pre_existing_expert_question_candidate_flag",
-      "review_context": {
-        "decision": "needs_human_review",
-        "review_required_after_classification": true,
-        "signals_after": [
-          "grammar_uncertain",
-          "grammar_uncertain_retained"
-        ],
-        "signals_before": [
-          "grammar_uncertain"
-        ],
-        "source_path": "romn/s0514m.mul.xml",
-        "text_layer": "mula"
-      },
-      "seed_decision": null,
-      "stable_segment_key": "vri:romn:s0514m.mul:88650af1ca41"
-    },
-    {
-      "applied_now": false,
-      "decision_source": "pre_existing_expert_question_candidate_flag",
-      "review_context": {
-        "decision": "needs_human_review",
-        "review_required_after_classification": true,
-        "signals_after": [
-          "grammar_uncertain",
-          "grammar_uncertain_retained"
-        ],
-        "signals_before": [
-          "grammar_uncertain"
-        ],
-        "source_path": "romn/s0519m.mul.xml",
-        "text_layer": "mula"
-      },
-      "seed_decision": null,
-      "stable_segment_key": "vri:romn:s0519m.mul:f43a9c761757"
-    },
-    {
-      "applied_now": false,
-      "decision_source": "pre_existing_expert_question_candidate_flag",
-      "review_context": {
-        "decision": "needs_human_review",
-        "review_required_after_classification": true,
-        "signals_after": [
-          "grammar_uncertain",
-          "grammar_uncertain_retained"
-        ],
-        "signals_before": [
-          "grammar_uncertain"
-        ],
-        "source_path": "romn/vin01t2.tik.xml",
-        "text_layer": "tika"
-      },
-      "seed_decision": null,
-      "stable_segment_key": "vri:romn:vin01t2.tik:46bf2dc6b638"
     }
   ],
   "policy": "manual seed decisions or pre-existing expert-review flags only",

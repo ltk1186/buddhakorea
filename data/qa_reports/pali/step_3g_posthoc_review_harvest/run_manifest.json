@@ -1,17 +1,22 @@
 {
   "api_llm_calls": 0,
   "counts": {
-    "expert_review_candidates": 12,
+    "apparatus_internal_note_routes": 3,
+    "expert_review_candidates": 3,
     "glossary_candidates": 2,
     "holdout_template_items": 20,
     "internal_note_records": 12,
     "internal_note_segments": 10,
     "reference_table_candidates": 1,
     "remaining_review_items": 12,
+    "resolved_items": 3,
+    "routing_duplicates": 0,
+    "routing_missing": 0,
+    "seed_decision_null_leaks": 0,
     "seed_decisions_ingested": 12,
     "targeted_retry_candidates": 0
   },
-  "created_at": "2026-06-21T11:12:41.930239+00:00",
+  "created_at": "2026-06-21T12:14:13.030796+00:00",
   "future_batch_rule": {
     "holdout_gold_regression": 20,
     "pilot_1000_new": 1000,
@@ -72,12 +77,12 @@
     "expert_review_candidates": {
       "exists": true,
       "path": "data/qa_reports/pali/step_3g_posthoc_review_harvest/expert_review_candidates.json",
-      "sha256": "3a57d66d670988bdc29e377013ddcc04cf0959ededc1a71da9e44e1e4b824053"
+      "sha256": "c2dd74b8f3fc018b97368d94ef15c9461d391280489072a5b045c335697e62a5"
     },
     "glossary_candidates": {
       "exists": true,
       "path": "data/qa_reports/pali/step_3g_posthoc_review_harvest/glossary_candidates.json",
-      "sha256": "2cee6e26153bd49bbb7e0ce483ff3ad14096fbaa2e151bd4317eafecc36b1625"
+      "sha256": "0915a907cc5754c48886934c04dccea9b001e214d0e89864d48ada188047f1e3"
     },
     "holdout_adjudication_template": {
       "exists": true,
@@ -97,7 +102,22 @@
     "reference_table_candidates": {
       "exists": true,
       "path": "data/qa_reports/pali/step_3g_posthoc_review_harvest/reference_table_candidates.json",
-      "sha256": "7ab3d25e7381ddfe87d9ec7e35bd5c0a5f52943a8f24bb7ad2750f4c0391c40b"
+      "sha256": "81d394348fcd3d88f62b7167fc42bde5c3f34bb40a7169724eb17e4927e48caa"
+    },
+    "remaining_routing_index": {
+      "exists": true,
+      "path": "data/qa_reports/pali/step_3g_posthoc_review_harvest/remaining_routing_index.json",
+      "sha256": "18bb0d6625d9a9c4e97cc712edc734c5731b0e74a77e7d4f1ca244f384b38dd0"
+    },
+    "resolved_items": {
+      "exists": true,
+      "path": "data/qa_reports/pali/step_3g_posthoc_review_harvest/resolved_items.json",
+      "sha256": "849d12dde4933953aec08e3f57caaf678de2efac252bb10413cdf000b24bb5d9"
+    },
+    "run_manifest": {
+      "exists": true,
+      "path": "data/qa_reports/pali/step_3g_posthoc_review_harvest/run_manifest.json",
+      "sha256": "5cda6db918459ad4e26fe18f8722af2563c2584efbfd7e74b1cc3a3c312443f0"
     },
     "seed_decisions_ingested": {
       "exists": true,
@@ -107,7 +127,7 @@
     "step_3g_summary": {
       "exists": true,
       "path": "data/qa_reports/pali/step_3g_posthoc_review_harvest/step_3g_summary.md",
-      "sha256": "25f5a0d8db18a14858243737f669bf0894ad00c7d7a43075ba536417f213c95f"
+      "sha256": "d65c527e6f6a2241bddeb67c44bac89a99d891851de191e657de3fb21956b744"
     },
     "targeted_retry_candidates": {
       "exists": true,

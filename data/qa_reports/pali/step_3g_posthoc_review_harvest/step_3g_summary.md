@@ -14,13 +14,18 @@ Step 3G-A prepares review harvest artifacts only. It does not freeze holdout gol
 
 ## Counts
 
-- expert_review_candidates: 12
+- apparatus_internal_note_routes: 3
+- expert_review_candidates: 3
 - glossary_candidates: 2
 - holdout_template_items: 20
 - internal_note_records: 12
 - internal_note_segments: 10
 - reference_table_candidates: 1
 - remaining_review_items: 12
+- resolved_items: 3
+- routing_duplicates: 0
+- routing_missing: 0
+- seed_decision_null_leaks: 0
 - seed_decisions_ingested: 12
 - targeted_retry_candidates: 0
 

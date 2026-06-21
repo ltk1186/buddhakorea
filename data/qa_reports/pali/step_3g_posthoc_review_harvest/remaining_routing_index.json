@@ -1,0 +1,206 @@
+{
+  "items": [
+    {
+      "duplicate_route": false,
+      "missing_route": false,
+      "output_file": "expert_review_candidates.json",
+      "review_required_after_classification": true,
+      "route_bucket": "expert_review_candidate",
+      "seed_decision": "expert_review_candidate",
+      "seed_decision_null_leak": false,
+      "signals_after": [
+        "needs_human_review",
+        "pali_parenthetical_allowed",
+        "terms_explained_pali_allowed"
+      ],
+      "stable_segment_key": "vri:romn:abh03t.tik:5ce9d8787e18",
+      "supporting_internal_note_count": 0
+    },
+    {
+      "duplicate_route": false,
+      "missing_route": false,
+      "output_file": "glossary_candidates.json",
+      "review_required_after_classification": true,
+      "route_bucket": "glossary_candidate",
+      "seed_decision": "glossary_candidate",
+      "seed_decision_null_leak": false,
+      "signals_after": [
+        "grammar_uncertain",
+        "grammar_uncertain_retained",
+        "pali_parenthetical_allowed"
+      ],
+      "stable_segment_key": "vri:romn:s0102t.tik:691b6cc86c16",
+      "supporting_internal_note_count": 0
+    },
+    {
+      "duplicate_route": false,
+      "missing_route": false,
+      "output_file": "expert_review_candidates.json",
+      "review_required_after_classification": true,
+      "route_bucket": "expert_review_candidate",
+      "seed_decision": "expert_review_candidate",
+      "seed_decision_null_leak": false,
+      "signals_after": [
+        "grammar_uncertain",
+        "grammar_uncertain_retained",
+        "pali_parenthetical_allowed"
+      ],
+      "stable_segment_key": "vri:romn:s0201t.tik:cfd6c2db8704",
+      "supporting_internal_note_count": 0
+    },
+    {
+      "duplicate_route": false,
+      "missing_route": false,
+      "output_file": "internal_notes.json",
+      "review_required_after_classification": true,
+      "route_bucket": "apparatus_internal_note",
+      "seed_decision": "apparatus_internal_note",
+      "seed_decision_null_leak": false,
+      "signals_after": [
+        "grammar_uncertain",
+        "grammar_uncertain_retained",
+        "pali_parenthetical_allowed"
+      ],
+      "stable_segment_key": "vri:romn:s0302t.tik:75cb6eb45b34",
+      "supporting_internal_note_count": 0
+    },
+    {
+      "duplicate_route": false,
+      "missing_route": false,
+      "output_file": "resolved_items.json",
+      "review_required_after_classification": true,
+      "route_bucket": "resolved",
+      "seed_decision": "low_severity",
+      "seed_decision_null_leak": false,
+      "signals_after": [
+        "grammar_uncertain",
+        "grammar_uncertain_retained",
+        "pali_parenthetical_allowed"
+      ],
+      "stable_segment_key": "vri:romn:vin02a1.att:b56ffa453013",
+      "supporting_internal_note_count": 0
+    },
+    {
+      "duplicate_route": false,
+      "missing_route": false,
+      "output_file": "expert_review_candidates.json",
+      "review_required_after_classification": true,
+      "route_bucket": "expert_review_candidate",
+      "seed_decision": "expert_review_candidate",
+      "seed_decision_null_leak": false,
+      "signals_after": [
+        "grammar_uncertain",
+        "grammar_uncertain_retained",
+        "pali_grammar_quote_allowed",
+        "pali_parenthetical_allowed",
+        "terms_explained_pali_allowed"
+      ],
+      "stable_segment_key": "vri:romn:vin02a2.att:bfbd7f00efd4",
+      "supporting_internal_note_count": 0
+    },
+    {
+      "duplicate_route": false,
+      "missing_route": false,
+      "output_file": "internal_notes.json",
+      "review_required_after_classification": true,
+      "route_bucket": "apparatus_internal_note",
+      "seed_decision": "apparatus_internal_note",
+      "seed_decision_null_leak": false,
+      "signals_after": [
+        "grammar_uncertain",
+        "grammar_uncertain_retained"
+      ],
+      "stable_segment_key": "vri:romn:abh03m11.mul:4ab6e93ef3c3",
+      "supporting_internal_note_count": 0
+    },
+    {
+      "duplicate_route": false,
+      "missing_route": false,
+      "output_file": "resolved_items.json",
+      "review_required_after_classification": true,
+      "route_bucket": "resolved",
+      "seed_decision": "low_severity",
+      "seed_decision_null_leak": false,
+      "signals_after": [
+        "grammar_uncertain",
+        "grammar_uncertain_retained"
+      ],
+      "stable_segment_key": "vri:romn:s0403t.tik:0b44a6389758",
+      "supporting_internal_note_count": 0
+    },
+    {
+      "duplicate_route": false,
+      "missing_route": false,
+      "output_file": "reference_table_candidates.json",
+      "review_required_after_classification": true,
+      "route_bucket": "reference_table_candidate",
+      "seed_decision": "reference_table_candidate",
+      "seed_decision_null_leak": false,
+      "signals_after": [
+        "grammar_uncertain",
+        "grammar_uncertain_retained"
+      ],
+      "stable_segment_key": "vri:romn:s0513m.mul:545a4ef14103",
+      "supporting_internal_note_count": 0
+    },
+    {
+      "duplicate_route": false,
+      "missing_route": false,
+      "output_file": "resolved_items.json",
+      "review_required_after_classification": true,
+      "route_bucket": "resolved",
+      "seed_decision": "low_severity",
+      "seed_decision_null_leak": false,
+      "signals_after": [
+        "grammar_uncertain",
+        "grammar_uncertain_retained"
+      ],
+      "stable_segment_key": "vri:romn:s0514m.mul:88650af1ca41",
+      "supporting_internal_note_count": 1
+    },
+    {
+      "duplicate_route": false,
+      "missing_route": false,
+      "output_file": "internal_notes.json",
+      "review_required_after_classification": true,
+      "route_bucket": "apparatus_internal_note",
+      "seed_decision": "apparatus_internal_note",
+      "seed_decision_null_leak": false,
+      "signals_after": [
+        "grammar_uncertain",
+        "grammar_uncertain_retained"
+      ],
+      "stable_segment_key": "vri:romn:s0519m.mul:f43a9c761757",
+      "supporting_internal_note_count": 1
+    },
+    {
+      "duplicate_route": false,
+      "missing_route": false,
+      "output_file": "glossary_candidates.json",
+      "review_required_after_classification": true,
+      "route_bucket": "glossary_candidate",
+      "seed_decision": "glossary_candidate",
+      "seed_decision_null_leak": false,
+      "signals_after": [
+        "grammar_uncertain",
+        "grammar_uncertain_retained"
+      ],
+      "stable_segment_key": "vri:romn:vin01t2.tik:46bf2dc6b638",
+      "supporting_internal_note_count": 0
+    }
+  ],
+  "policy": "manual seed decisions override stale pre-existing flags; fallback flags only apply to unseeded items",
+  "schema_version": "pali_step_3g_remaining_routing_index_v0",
+  "summary": {
+    "apparatus_internal_note": 3,
+    "duplicates": 0,
+    "expert_review_candidate": 3,
+    "glossary_candidate": 2,
+    "missing": 0,
+    "reference_table_candidate": 1,
+    "resolved": 3,
+    "seed_decision_null_leaks": 0,
+    "targeted_retry_candidate": 0,
+    "total": 12
+  }
+}

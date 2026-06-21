@@ -175,6 +175,142 @@ def run_fixture(root: Path, *, seed=None):
     return out, result
 
 
+def twelve_seed_records():
+    decisions = [
+        ("expert-1", "expert_review_candidate"),
+        ("expert-2", "expert_review_candidate"),
+        ("expert-3", "expert_review_candidate"),
+        ("glossary-1", "glossary_candidate"),
+        ("glossary-2", "glossary_candidate"),
+        ("reference-1", "reference_table_candidate"),
+        ("resolved-1", "low_severity"),
+        ("resolved-2", "low_severity"),
+        ("resolved-3", "no_action"),
+        ("apparatus-1", "apparatus_internal_note"),
+        ("apparatus-2", "apparatus_internal_note"),
+        ("apparatus-3", "apparatus_internal_note"),
+    ]
+    return {
+        "schema_version": "seed_test",
+        "decisions": [
+            {
+                "stable_segment_key": key,
+                "seed_decision": decision,
+                "decision_source": "manual_review_seed",
+                "rationale": f"rationale for {key}",
+                "priority": "low",
+                "target_hint": f"hint-{key}",
+                "expert_review_required": decision == "expert_review_candidate",
+                "llm_retry_required": decision == "targeted_retry_candidate",
+            }
+            for key, decision in decisions
+        ],
+    }
+
+
+def review_queue_from_seed(seed_payload, *, stale_expert_flags=True):
+    return {
+        "schema_version": "pali_review_queue_reclassified_v1",
+        "items": [
+            {
+                "stable_segment_key": record["stable_segment_key"],
+                "source_path": "romn/test.mul.xml",
+                "text_layer": "mula",
+                "signals_before": ["grammar_uncertain"],
+                "signals_after": ["grammar_uncertain"],
+                "decision": "needs_human_review",
+                "review_required_after_classification": True,
+                "expert_question_candidate": stale_expert_flags,
+            }
+            for record in seed_payload["decisions"]
+        ],
+    }
+
+
+def parsed_from_seed(seed_payload):
+    return {
+        "items": [
+            {
+                "stable_segment_key": record["stable_segment_key"],
+                "source_path": "romn/test.mul.xml",
+                "text_layer": "mula",
+                "original_text": "test",
+                "literal_ko": "직역",
+                "natural_ko": "자연역",
+            }
+            for record in seed_payload["decisions"]
+        ]
+    }
+
+
+def run_twelve_route_fixture(root: Path, *, seed=None, stale_expert_flags=True):
+    seed = seed if seed is not None else twelve_seed_records()
+    input_paths = {
+        "review_queue_reclassified": root / "review.json",
+        "findings": root / "findings.json",
+        "parsed": root / "parsed.json",
+        "apparatus_crosscheck": root / "cross.json",
+        "variant_apparatus": root / "apparatus.json",
+        "pilot_300_manifest": root / "manifest.json",
+        "gold_set": root / "gold.json",
+        "seed_decisions": root / "seed.json",
+    }
+    review_queue = review_queue_from_seed(seed, stale_expert_flags=stale_expert_flags)
+    parsed = parsed_from_seed(seed)
+    variant = {
+        "records": [
+            {
+                "apparatus_id": f"id-{index}",
+                "stable_segment_key": key,
+                "source_path": "romn/test.mul.xml",
+                "main_reading": "main",
+                "variant_text": "variant",
+                "raw_note_text": "variant (sī.)",
+                "sigla": ["sī"],
+            }
+            for index, key in enumerate(["apparatus-1", "apparatus-2", "apparatus-3"], start=1)
+        ]
+    }
+    manifest = {
+        "items": [
+            {
+                "stable_segment_key": "holdout-1",
+                "source_path": "romn/test.mul.xml",
+                "gold_candidate": True,
+                "pool_candidate": "holdout_gold",
+                "do_not_use_for_tuning_until_reviewed": True,
+            }
+        ]
+    }
+    for name, payload in [
+        ("review_queue_reclassified", review_queue),
+        ("findings", {"items": review_queue["items"]}),
+        ("parsed", parsed),
+        ("apparatus_crosscheck", {"items": []}),
+        ("variant_apparatus", variant),
+        ("pilot_300_manifest", manifest),
+        ("gold_set", {"entries": []}),
+        ("seed_decisions", seed),
+    ]:
+        input_paths[name].write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    out = root / "out"
+    run_posthoc_review_harvest(
+        review_queue_reclassified=review_queue,
+        findings={"items": review_queue["items"]},
+        parsed_payload=parsed,
+        apparatus_crosscheck={"items": []},
+        variant_apparatus=variant,
+        pilot_300_manifest=manifest,
+        gold_set={"entries": []},
+        seed_decisions=seed,
+        seed_decisions_path=input_paths["seed_decisions"],
+        out_dir=out,
+        input_paths=input_paths,
+        pretty=True,
+    )
+    return out
+
+
 class PosthocReviewHarvestTests(unittest.TestCase):
     def test_internal_notes_created_without_mutation(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -224,11 +360,6 @@ class PosthocReviewHarvestTests(unittest.TestCase):
                     "llm_retry_required": True,
                     "expert_review_required": False,
                 },
-                {
-                    "stable_segment_key": "seg-other",
-                    "seed_decision": "glossary_candidate",
-                    "decision_source": "manual_review_seed",
-                },
             ],
         }
         with tempfile.TemporaryDirectory() as tmp:
@@ -236,9 +367,7 @@ class PosthocReviewHarvestTests(unittest.TestCase):
             ingested = json.loads((out / "seed_decisions_ingested.json").read_text(encoding="utf-8"))
             self.assertEqual(ingested, seed)
             targeted = json.loads((out / "targeted_retry_candidates.json").read_text(encoding="utf-8"))
-            glossary = json.loads((out / "glossary_candidates.json").read_text(encoding="utf-8"))
             self.assertEqual([item["stable_segment_key"] for item in targeted["items"]], ["seg-app"])
-            self.assertEqual([item["stable_segment_key"] for item in glossary["items"]], ["seg-other"])
 
     def test_targeted_retry_not_inferred_automatically(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -318,12 +447,98 @@ class PosthocReviewHarvestTests(unittest.TestCase):
                 "reference_table_candidates.json",
                 "targeted_retry_candidates.json",
                 "expert_review_candidates.json",
+                "resolved_items.json",
+                "remaining_routing_index.json",
                 "holdout_adjudication_template.json",
                 "holdout_gold_manifest_draft.json",
                 "step_3g_summary.md",
                 "run_manifest.json",
             ]:
                 self.assertTrue((paths["out"] / name).exists())
+
+    def test_seeded_expert_routing_overrides_stale_expert_flags(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = run_twelve_route_fixture(Path(tmp), stale_expert_flags=True)
+            experts = json.loads((out / "expert_review_candidates.json").read_text(encoding="utf-8"))
+            keys = [item["stable_segment_key"] for item in experts["items"]]
+            self.assertEqual(keys, ["expert-1", "expert-2", "expert-3"])
+            self.assertTrue(all(item["seed_decision"] == "expert_review_candidate" for item in experts["items"]))
+            self.assertTrue(all(item["expert_review_required"] is True for item in experts["items"]))
+            for item in experts["items"]:
+                self.assertIn("rationale", item)
+                self.assertIn("priority", item)
+                self.assertIn("target_hint", item)
+                self.assertEqual(item["decision_source"], "manual_review_seed")
+
+    def test_seeded_non_experts_do_not_leak_with_stale_expert_flags(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = run_twelve_route_fixture(Path(tmp), stale_expert_flags=True)
+            experts = json.loads((out / "expert_review_candidates.json").read_text(encoding="utf-8"))
+            leaked = [item for item in experts["items"] if item.get("seed_decision") != "expert_review_candidate"]
+            self.assertEqual(leaked, [])
+            self.assertFalse(any(item.get("seed_decision") is None for item in experts["items"]))
+
+    def test_review_required_alone_does_not_create_expert_candidate(self):
+        seed = {"decisions": [{"stable_segment_key": "plain", "seed_decision": "low_severity"}]}
+        with tempfile.TemporaryDirectory() as tmp:
+            out = run_twelve_route_fixture(Path(tmp), seed=seed, stale_expert_flags=False)
+            experts = json.loads((out / "expert_review_candidates.json").read_text(encoding="utf-8"))
+            self.assertEqual(experts["items"], [])
+
+    def test_resolved_items_contains_low_severity_and_no_action(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = run_twelve_route_fixture(Path(tmp))
+            resolved = json.loads((out / "resolved_items.json").read_text(encoding="utf-8"))
+            keys = [item["stable_segment_key"] for item in resolved["items"]]
+            self.assertEqual(keys, ["resolved-1", "resolved-2", "resolved-3"])
+            self.assertTrue(all(item["seed_decision"] in {"low_severity", "no_action"} for item in resolved["items"]))
+            self.assertTrue(all(item["review_required"] is False for item in resolved["items"]))
+
+    def test_remaining_routing_index_has_exactly_one_route_per_remaining_item(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = run_twelve_route_fixture(Path(tmp))
+            routing = json.loads((out / "remaining_routing_index.json").read_text(encoding="utf-8"))
+            self.assertEqual(len(routing["items"]), 12)
+            summary = routing["summary"]
+            self.assertEqual(summary["expert_review_candidate"], 3)
+            self.assertEqual(summary["glossary_candidate"], 2)
+            self.assertEqual(summary["reference_table_candidate"], 1)
+            self.assertEqual(summary["targeted_retry_candidate"], 0)
+            self.assertEqual(summary["resolved"], 3)
+            self.assertEqual(summary["apparatus_internal_note"], 3)
+            self.assertEqual(summary["duplicates"], 0)
+            self.assertEqual(summary["missing"], 0)
+            self.assertEqual(summary["seed_decision_null_leaks"], 0)
+
+    def test_apparatus_internal_note_items_are_only_routing_index_entries(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = run_twelve_route_fixture(Path(tmp))
+            routing = json.loads((out / "remaining_routing_index.json").read_text(encoding="utf-8"))
+            apparatus = [item for item in routing["items"] if item["route_bucket"] == "apparatus_internal_note"]
+            self.assertEqual([item["stable_segment_key"] for item in apparatus], ["apparatus-1", "apparatus-2", "apparatus-3"])
+            self.assertTrue(all(item["output_file"] == "internal_notes.json" for item in apparatus))
+            experts = json.loads((out / "expert_review_candidates.json").read_text(encoding="utf-8"))
+            expert_keys = {item["stable_segment_key"] for item in experts["items"]}
+            self.assertFalse(expert_keys & {item["stable_segment_key"] for item in apparatus})
+
+    def test_manifest_counts_match_output_lengths(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = run_twelve_route_fixture(Path(tmp))
+            manifest = json.loads((out / "run_manifest.json").read_text(encoding="utf-8"))
+            counts = manifest["counts"]
+            for key, filename in [
+                ("expert_review_candidates", "expert_review_candidates.json"),
+                ("glossary_candidates", "glossary_candidates.json"),
+                ("reference_table_candidates", "reference_table_candidates.json"),
+                ("targeted_retry_candidates", "targeted_retry_candidates.json"),
+                ("resolved_items", "resolved_items.json"),
+            ]:
+                payload = json.loads((out / filename).read_text(encoding="utf-8"))
+                self.assertEqual(counts[key], len(payload["items"]))
+            routing = json.loads((out / "remaining_routing_index.json").read_text(encoding="utf-8"))
+            self.assertEqual(counts["routing_duplicates"], routing["summary"]["duplicates"])
+            self.assertEqual(counts["routing_missing"], routing["summary"]["missing"])
+            self.assertEqual(counts["seed_decision_null_leaks"], routing["summary"]["seed_decision_null_leaks"])
 
 
 if __name__ == "__main__":

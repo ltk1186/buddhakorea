@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -94,10 +94,15 @@ def run_posthoc_review_harvest(
 
     seed_template = build_seed_decisions_template(remaining_items)
     internal_notes = build_internal_notes(apparatus_by_key, crosscheck_by_key)
-    candidate_payloads = build_candidate_payloads(seed_records, remaining_items)
+    routed = build_routed_outputs(seed_records, remaining_items)
+    candidate_payloads = routed["candidate_payloads"]
+    resolved_items = routed["resolved_items"]
+    routing_index = routed["routing_index"]
+    attach_internal_note_counts(routing_index, internal_notes)
     if not seed_exists:
         for payload in candidate_payloads.values():
             payload["warnings"].append("manual_seed_decisions_missing_candidates_not_inferred")
+        resolved_items["warnings"].append("manual_seed_decisions_missing_resolved_items_not_inferred")
 
     holdout_items, holdout_warnings = build_holdout_items(
         pilot_300_manifest=pilot_300_manifest,
@@ -114,6 +119,8 @@ def run_posthoc_review_harvest(
         "reference_table_candidates": out_dir / "reference_table_candidates.json",
         "targeted_retry_candidates": out_dir / "targeted_retry_candidates.json",
         "expert_review_candidates": out_dir / "expert_review_candidates.json",
+        "resolved_items": out_dir / "resolved_items.json",
+        "remaining_routing_index": out_dir / "remaining_routing_index.json",
         "holdout_adjudication_template": out_dir / "holdout_adjudication_template.json",
         "holdout_gold_manifest_draft": out_dir / "holdout_gold_manifest_draft.json",
         "step_3g_summary": out_dir / "step_3g_summary.md",
@@ -134,6 +141,8 @@ def run_posthoc_review_harvest(
     write_json(outputs["internal_notes"], internal_notes, pretty=pretty)
     for name, payload in candidate_payloads.items():
         write_json(outputs[name], payload, pretty=pretty)
+    write_json(outputs["resolved_items"], resolved_items, pretty=pretty)
+    write_json(outputs["remaining_routing_index"], routing_index, pretty=pretty)
 
     holdout_template = build_holdout_template(holdout_items, warnings)
     holdout_draft = build_holdout_manifest_draft(holdout_items, warnings)
@@ -149,6 +158,11 @@ def run_posthoc_review_harvest(
         "reference_table_candidates": len(candidate_payloads["reference_table_candidates"]["items"]),
         "targeted_retry_candidates": len(candidate_payloads["targeted_retry_candidates"]["items"]),
         "expert_review_candidates": len(candidate_payloads["expert_review_candidates"]["items"]),
+        "resolved_items": len(resolved_items["items"]),
+        "apparatus_internal_note_routes": routing_index["summary"]["apparatus_internal_note"],
+        "routing_duplicates": routing_index["summary"]["duplicates"],
+        "routing_missing": routing_index["summary"]["missing"],
+        "seed_decision_null_leaks": routing_index["summary"]["seed_decision_null_leaks"],
         "holdout_template_items": len(holdout_items),
     }
 
@@ -180,6 +194,9 @@ def run_posthoc_review_harvest(
         "seed_decisions_ingested": len(seed_records),
         "internal_note_records": len(internal_notes["items"]),
         "holdout_template_items": len(holdout_items),
+        "routing_duplicates": routing_index["summary"]["duplicates"],
+        "routing_missing": routing_index["summary"]["missing"],
+        "seed_decision_null_leaks": routing_index["summary"]["seed_decision_null_leaks"],
         "warnings": warnings,
         "out": str(out_dir),
     }
@@ -286,11 +303,12 @@ def build_internal_notes(
     }
 
 
-def build_candidate_payloads(
+def build_routed_outputs(
     seed_records: list[dict[str, Any]],
     remaining_items: list[dict[str, Any]],
-) -> dict[str, dict[str, Any]]:
+) -> dict[str, Any]:
     review_by_key = {item.get("stable_segment_key"): item for item in remaining_items if item.get("stable_segment_key")}
+    seed_by_key = {record.get("stable_segment_key"): record for record in seed_records if record.get("stable_segment_key")}
     definitions = {
         "glossary_candidates": {
             "candidate_type": "glossary_candidate",
@@ -327,40 +345,228 @@ def build_candidate_payloads(
         }
         for name, definition in definitions.items()
     }
-    for record in seed_records:
-        decision = str(record.get("seed_decision", ""))
-        key = record.get("stable_segment_key")
-        for name, definition in definitions.items():
-            explicit = decision in definition["decision_values"] or any(record.get(field) is True for field in definition["flag_fields"])
-            if not explicit:
-                continue
-            payloads[name]["items"].append(
-                {
-                    "stable_segment_key": key,
-                    "seed_decision": record.get("seed_decision"),
-                    "decision_source": record.get("decision_source", "manual_review_seed"),
-                    "seed_record": record,
-                    "review_context": compact_review_context(review_by_key.get(key, {})),
-                    "applied_now": False,
-                    "translation_mutation": False,
-                    "glossary_mutation": False,
-                    "gold_set_mutation": False,
-                }
+    resolved_items = {
+        "schema_version": "pali_step_3g_resolved_items_v0",
+        "candidate_type": "resolved_item",
+        "policy": "manual seed decisions low_severity/no_action only",
+        "items": [],
+        "warnings": [],
+    }
+    route_items = []
+    output_membership: dict[str, list[str]] = defaultdict(list)
+
+    for review_item in remaining_items:
+        key = review_item.get("stable_segment_key")
+        record = seed_by_key.get(key)
+        if record is not None:
+            route = route_for_seed_decision(record.get("seed_decision"))
+            append_seeded_route(
+                key=key,
+                route=route,
+                seed_record=record,
+                review_item=review_item,
+                payloads=payloads,
+                resolved_items=resolved_items,
+                output_membership=output_membership,
             )
-    for item in remaining_items:
-        if item.get("expert_question_candidate") is True:
-            key = item.get("stable_segment_key")
-            if not any(candidate.get("stable_segment_key") == key for candidate in payloads["expert_review_candidates"]["items"]):
-                payloads["expert_review_candidates"]["items"].append(
-                    {
-                        "stable_segment_key": key,
-                        "seed_decision": None,
-                        "decision_source": "pre_existing_expert_question_candidate_flag",
-                        "review_context": compact_review_context(item),
-                        "applied_now": False,
-                    }
-                )
-    return payloads
+            route_items.append(route_index_item(key, record.get("seed_decision"), route, review_item))
+            continue
+
+        route = fallback_route_for_unseeded_item(review_item)
+        if route["route_bucket"] == "expert_review_candidate":
+            payloads["expert_review_candidates"]["items"].append(
+                fallback_expert_item(review_item)
+            )
+            output_membership[key].append("expert_review_candidates.json")
+        route_items.append(route_index_item(key, "unadjudicated", route, review_item, missing_route=route["missing_route"]))
+
+    apply_routing_integrity(route_items, output_membership, seed_by_key, payloads, resolved_items)
+    return {
+        "candidate_payloads": payloads,
+        "resolved_items": resolved_items,
+        "routing_index": {
+            "schema_version": "pali_step_3g_remaining_routing_index_v0",
+            "policy": "manual seed decisions override stale pre-existing flags; fallback flags only apply to unseeded items",
+            "items": route_items,
+            "summary": routing_summary(route_items),
+        },
+    }
+
+
+def route_for_seed_decision(seed_decision: Any) -> dict[str, Any]:
+    decision = str(seed_decision or "")
+    mapping = {
+        "expert_review_candidate": ("expert_review_candidate", "expert_review_candidates.json", False),
+        "glossary_candidate": ("glossary_candidate", "glossary_candidates.json", False),
+        "reference_table_candidate": ("reference_table_candidate", "reference_table_candidates.json", False),
+        "targeted_retry_candidate": ("targeted_retry_candidate", "targeted_retry_candidates.json", False),
+        "low_severity": ("resolved", "resolved_items.json", False),
+        "no_action": ("resolved", "resolved_items.json", False),
+        "apparatus_internal_note": ("apparatus_internal_note", "internal_notes.json", False),
+    }
+    route_bucket, output_file, missing = mapping.get(decision, ("unadjudicated", "", True))
+    return {"route_bucket": route_bucket, "output_file": output_file, "missing_route": missing}
+
+
+def append_seeded_route(
+    *,
+    key: str,
+    route: dict[str, Any],
+    seed_record: dict[str, Any],
+    review_item: dict[str, Any],
+    payloads: dict[str, dict[str, Any]],
+    resolved_items: dict[str, Any],
+    output_membership: dict[str, list[str]],
+) -> None:
+    bucket = route["route_bucket"]
+    output_file = route["output_file"]
+    if bucket == "glossary_candidate":
+        payloads["glossary_candidates"]["items"].append(candidate_item(seed_record, review_item))
+    elif bucket == "reference_table_candidate":
+        payloads["reference_table_candidates"]["items"].append(candidate_item(seed_record, review_item))
+    elif bucket == "targeted_retry_candidate":
+        payloads["targeted_retry_candidates"]["items"].append(candidate_item(seed_record, review_item))
+    elif bucket == "expert_review_candidate":
+        payloads["expert_review_candidates"]["items"].append(candidate_item(seed_record, review_item))
+    elif bucket == "resolved":
+        resolved_items["items"].append(resolved_item(seed_record, review_item))
+    elif bucket == "apparatus_internal_note":
+        pass
+    if output_file:
+        output_membership[key].append(output_file)
+
+
+def candidate_item(seed_record: dict[str, Any], review_item: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "stable_segment_key": seed_record.get("stable_segment_key"),
+        "seed_decision": seed_record.get("seed_decision"),
+        "decision_source": seed_record.get("decision_source", "manual_review_seed"),
+        "expert_review_required": seed_record.get("expert_review_required", False),
+        "rationale": seed_record.get("rationale", ""),
+        "priority": seed_record.get("priority"),
+        "target_hint": seed_record.get("target_hint"),
+        "route_note": seed_record.get("route_note") or seed_record.get("note"),
+        "seed_record": seed_record,
+        "review_context": compact_review_context(review_item),
+        "applied_now": False,
+        "translation_mutation": False,
+        "glossary_mutation": False,
+        "gold_set_mutation": False,
+    }
+
+
+def resolved_item(seed_record: dict[str, Any], review_item: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "stable_segment_key": seed_record.get("stable_segment_key"),
+        "seed_decision": seed_record.get("seed_decision"),
+        "decision_source": seed_record.get("decision_source", "manual_review_seed"),
+        "review_required": False,
+        "rationale": seed_record.get("rationale", ""),
+        "priority": seed_record.get("priority"),
+        "target_hint": seed_record.get("target_hint"),
+        "route_note": seed_record.get("route_note") or seed_record.get("note"),
+        "seed_record": seed_record,
+        "review_context": compact_review_context(review_item),
+        "applied_now": False,
+        "translation_mutation": False,
+        "glossary_mutation": False,
+        "gold_set_mutation": False,
+    }
+
+
+def fallback_route_for_unseeded_item(review_item: dict[str, Any]) -> dict[str, Any]:
+    if review_item.get("expert_question_candidate") is True:
+        return {
+            "route_bucket": "expert_review_candidate",
+            "output_file": "expert_review_candidates.json",
+            "missing_route": False,
+        }
+    return {
+        "route_bucket": "unadjudicated",
+        "output_file": "",
+        "missing_route": True,
+    }
+
+
+def fallback_expert_item(review_item: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "stable_segment_key": review_item.get("stable_segment_key"),
+        "seed_decision": None,
+        "decision_source": "pre_existing_expert_question_candidate_flag",
+        "review_context": compact_review_context(review_item),
+        "applied_now": False,
+        "translation_mutation": False,
+        "glossary_mutation": False,
+        "gold_set_mutation": False,
+    }
+
+
+def route_index_item(
+    key: str,
+    seed_decision: Any,
+    route: dict[str, Any],
+    review_item: dict[str, Any],
+    *,
+    missing_route: bool | None = None,
+) -> dict[str, Any]:
+    return {
+        "stable_segment_key": key,
+        "seed_decision": seed_decision,
+        "route_bucket": route["route_bucket"],
+        "output_file": route["output_file"],
+        "supporting_internal_note_count": 0,
+        "duplicate_route": False,
+        "missing_route": route["missing_route"] if missing_route is None else missing_route,
+        "signals_after": review_item.get("signals_after", []),
+        "review_required_after_classification": review_item.get("review_required_after_classification"),
+    }
+
+
+def apply_routing_integrity(
+    route_items: list[dict[str, Any]],
+    output_membership: dict[str, list[str]],
+    seed_by_key: dict[str, dict[str, Any]],
+    payloads: dict[str, dict[str, Any]],
+    resolved_items: dict[str, Any],
+) -> None:
+    for item in route_items:
+        key = item.get("stable_segment_key")
+        membership = output_membership.get(key, [])
+        item["duplicate_route"] = len(membership) > 1
+        if item["route_bucket"] != "apparatus_internal_note":
+            item["missing_route"] = item["missing_route"] or len(membership) == 0
+    seeded_keys = set(seed_by_key)
+    null_leak_keys = set()
+    for payload in list(payloads.values()) + [resolved_items]:
+        for payload_item in payload.get("items", []):
+            key = payload_item.get("stable_segment_key")
+            if key in seeded_keys and payload_item.get("seed_decision") is None:
+                null_leak_keys.add(key)
+    for item in route_items:
+        item["seed_decision_null_leak"] = item.get("stable_segment_key") in null_leak_keys
+
+
+def routing_summary(route_items: list[dict[str, Any]]) -> dict[str, int]:
+    bucket_counts = Counter(item.get("route_bucket") for item in route_items)
+    return {
+        "total": len(route_items),
+        "expert_review_candidate": bucket_counts["expert_review_candidate"],
+        "glossary_candidate": bucket_counts["glossary_candidate"],
+        "reference_table_candidate": bucket_counts["reference_table_candidate"],
+        "targeted_retry_candidate": bucket_counts["targeted_retry_candidate"],
+        "resolved": bucket_counts["resolved"],
+        "apparatus_internal_note": bucket_counts["apparatus_internal_note"],
+        "duplicates": sum(1 for item in route_items if item.get("duplicate_route")),
+        "missing": sum(1 for item in route_items if item.get("missing_route")),
+        "seed_decision_null_leaks": sum(1 for item in route_items if item.get("seed_decision_null_leak")),
+    }
+
+
+def attach_internal_note_counts(routing_index: dict[str, Any], internal_notes: dict[str, Any]) -> None:
+    counts = Counter(item["stable_segment_key"] for item in internal_notes.get("items", []))
+    for item in routing_index.get("items", []):
+        item["supporting_internal_note_count"] = counts[item["stable_segment_key"]]
+    routing_index["summary"] = routing_summary(routing_index.get("items", []))
 
 
 def compact_review_context(item: dict[str, Any]) -> dict[str, Any]:

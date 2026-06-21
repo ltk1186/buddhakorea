@@ -1,0 +1,18 @@
+{
+  "api_llm_calls": 0,
+  "generated_at": "2026-06-21T12:11:11.034825+00:00",
+  "input_files": {
+    "parsed": "data/reports/pali/pilot_300_batch/pilot_300_batch_parsed_salvaged.json",
+    "pilot_300_manifest": "data/pilot_sets/pali/pilot_300_v1_manifest.json"
+  },
+  "network_calls": 0,
+  "output_files": {
+    "markdown": "data/qa_reports/pali/translation_outputs_300_readable/pali_300_translation_outputs.md",
+    "tsv": "data/qa_reports/pali/translation_outputs_300_readable/pali_300_translation_outputs.tsv"
+  },
+  "prompt_mutation": false,
+  "schema_version": "pali_300_translation_outputs_readable_manifest_v1",
+  "segment_count": 300,
+  "source_mutation": false,
+  "translation_mutation": false
+}

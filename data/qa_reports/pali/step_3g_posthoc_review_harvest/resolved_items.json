@@ -1,0 +1,129 @@
+{
+  "candidate_type": "resolved_item",
+  "items": [
+    {
+      "applied_now": false,
+      "decision_source": "manual_review_seed",
+      "glossary_mutation": false,
+      "gold_set_mutation": false,
+      "priority": "low",
+      "rationale": "Translation is correct; the Vinaya rule reads clearly. The 'vā' connective ambiguity is minor and was resolved sensibly. Over-cautious flag.",
+      "review_context": {
+        "decision": "needs_human_review",
+        "review_required_after_classification": true,
+        "signals_after": [
+          "grammar_uncertain",
+          "grammar_uncertain_retained",
+          "pali_parenthetical_allowed"
+        ],
+        "signals_before": [
+          "contains_untranslated_pali",
+          "grammar_uncertain"
+        ],
+        "source_path": "romn/vin02a1.att.xml",
+        "text_layer": "atthakatha"
+      },
+      "review_required": false,
+      "route_note": null,
+      "seed_decision": "low_severity",
+      "seed_record": {
+        "blocks_1000_pilot": false,
+        "decision_source": "manual_review_seed",
+        "expert_review_required": false,
+        "llm_retry_required": false,
+        "original_signal": "grammar_uncertain",
+        "priority": "low",
+        "rationale": "Translation is correct; the Vinaya rule reads clearly. The 'vā' connective ambiguity is minor and was resolved sensibly. Over-cautious flag.",
+        "seed_decision": "low_severity",
+        "stable_segment_key": "vri:romn:vin02a1.att:b56ffa453013",
+        "target_hint": "pucchitvā paṭiggahetvā vā (vā connection)"
+      },
+      "stable_segment_key": "vri:romn:vin02a1.att:b56ffa453013",
+      "target_hint": "pucchitvā paṭiggahetvā vā (vā connection)",
+      "translation_mutation": false
+    },
+    {
+      "applied_now": false,
+      "decision_source": "manual_review_seed",
+      "glossary_mutation": false,
+      "gold_set_mutation": false,
+      "priority": "low",
+      "rationale": "Contextually correct ('dung/filth heap') in the stock impurity verse. Etymology uncertain but rendering is fine.",
+      "review_context": {
+        "decision": "needs_human_review",
+        "review_required_after_classification": true,
+        "signals_after": [
+          "grammar_uncertain",
+          "grammar_uncertain_retained"
+        ],
+        "signals_before": [
+          "grammar_uncertain"
+        ],
+        "source_path": "romn/s0403t.tik.xml",
+        "text_layer": "tika"
+      },
+      "review_required": false,
+      "route_note": "stock_verse_translation_memory_candidate (this impurity verse is cited across multiple commentaries; future TM target for once-and-reuse)",
+      "seed_decision": "low_severity",
+      "seed_record": {
+        "blocks_1000_pilot": false,
+        "decision_source": "manual_review_seed",
+        "expert_review_required": false,
+        "llm_retry_required": false,
+        "original_signal": "grammar_uncertain",
+        "priority": "low",
+        "rationale": "Contextually correct ('dung/filth heap') in the stock impurity verse. Etymology uncertain but rendering is fine.",
+        "route_note": "stock_verse_translation_memory_candidate (this impurity verse is cited across multiple commentaries; future TM target for once-and-reuse)",
+        "seed_decision": "low_severity",
+        "stable_segment_key": "vri:romn:s0403t.tik:0b44a6389758",
+        "target_hint": "tadalikkhandha"
+      },
+      "stable_segment_key": "vri:romn:s0403t.tik:0b44a6389758",
+      "target_hint": "tadalikkhandha",
+      "translation_mutation": false
+    },
+    {
+      "applied_now": false,
+      "decision_source": "manual_review_seed",
+      "glossary_mutation": false,
+      "gold_set_mutation": false,
+      "priority": "low",
+      "rationale": "Vessantara Jātaka verse. Literal 'assāsayi' (consoled) vs contextual 'gave (the chariot)'; the interpretive choice is defensible. Real but minor crux.",
+      "review_context": {
+        "decision": "needs_human_review",
+        "review_required_after_classification": true,
+        "signals_after": [
+          "grammar_uncertain",
+          "grammar_uncertain_retained"
+        ],
+        "signals_before": [
+          "grammar_uncertain"
+        ],
+        "source_path": "romn/s0514m.mul.xml",
+        "text_layer": "mula"
+      },
+      "review_required": false,
+      "route_note": "cc0_oracle_resolvable: Cowell Jātaka translation is public domain and can confirm this rendering",
+      "seed_decision": "low_severity",
+      "seed_record": {
+        "blocks_1000_pilot": false,
+        "decision_source": "manual_review_seed",
+        "expert_review_required": false,
+        "llm_retry_required": false,
+        "original_signal": "grammar_uncertain",
+        "priority": "low",
+        "rationale": "Vessantara Jātaka verse. Literal 'assāsayi' (consoled) vs contextual 'gave (the chariot)'; the interpretive choice is defensible. Real but minor crux.",
+        "route_note": "cc0_oracle_resolvable: Cowell Jātaka translation is public domain and can confirm this rendering",
+        "seed_decision": "low_severity",
+        "stable_segment_key": "vri:romn:s0514m.mul:88650af1ca41",
+        "target_hint": "Assāsayi"
+      },
+      "stable_segment_key": "vri:romn:s0514m.mul:88650af1ca41",
+      "target_hint": "Assāsayi",
+      "translation_mutation": false
+    }
+  ],
+  "policy": "manual seed decisions low_severity/no_action only",
+  "schema_version": "pali_step_3g_resolved_items_v0",
+  "warnings": []
+}
