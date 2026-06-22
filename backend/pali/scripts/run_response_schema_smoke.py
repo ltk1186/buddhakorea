@@ -50,6 +50,7 @@ from backend.pali.translation.response_schema_smoke import (
     stable_json_dumps,
     step4_paths,
     summarize_selection_for_stdout,
+    validate_response_schema_dialect,
     write_json,
     write_jsonl,
 )
@@ -77,6 +78,7 @@ def build_parser() -> argparse.ArgumentParser:
     mode.add_argument("--dry-run", action="store_true", help="Build local artifacts only. This is the default.")
     mode.add_argument("--estimate-only", action="store_true", help="Build selection/schema/cost only.")
     mode.add_argument("--submit", action="store_true", help="Submit Arm A and Arm B Gemini Batch jobs after cap checks.")
+    mode.add_argument("--submit-arm", choices=["A", "B"], help="Submit only one arm. Use B to retry response_schema after Arm A already exists.")
     mode.add_argument("--poll", action="store_true", help="Poll existing provider batch ids from status files or args.")
     mode.add_argument("--fetch", action="store_true", help="Fetch inline results from existing provider batch ids.")
     mode.add_argument("--parse", action="store_true", help="Parse fetched raw result files.")
@@ -115,7 +117,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if args.estimate_only:
         return prepare(args, write_all_placeholders=False)
     if args.submit:
-        return submit(args)
+        return submit(args, arm=None)
+    if args.submit_arm:
+        return submit(args, arm=args.submit_arm)
     if args.poll:
         return poll_or_fetch(args, fetch=False)
     if args.fetch:
@@ -175,10 +179,21 @@ def prepare(args: argparse.Namespace, *, write_all_placeholders: bool) -> dict[s
         encoding="utf-8",
     )
     if write_all_placeholders:
-        placeholder_json_outputs(paths, pretty=args.pretty)
+        placeholder_json_outputs(paths, pretty=args.pretty, preserve_provider_status=True)
+    arm_state = current_arm_state(paths)
     manifest = build_run_manifest(
         batch_requests_planned=planned_requests,
         cost_estimate=step4_cost,
+        submitted=arm_state["submitted"],
+        batch_requests_submitted=arm_state["batch_requests_submitted"],
+        api_llm_calls=arm_state["batch_requests_submitted"],
+        arm_a_status=arm_state["arm_a_status"],
+        arm_b_status=arm_state["arm_b_status"],
+        arm_a_provider_batch_id=arm_state["arm_a_provider_batch_id"],
+        arm_b_provider_batch_id=arm_state["arm_b_provider_batch_id"],
+        arm_a_requests_submitted=arm_state["arm_a_requests_submitted"],
+        arm_b_requests_submitted=arm_state["arm_b_requests_submitted"],
+        remaining_cap_usd=remaining_cap_usd(step4_cost, paths),
         output_paths=output_paths(paths),
         warnings=["dry_run_only_no_api_calls"],
     )
@@ -186,7 +201,7 @@ def prepare(args: argparse.Namespace, *, write_all_placeholders: bool) -> dict[s
     return summarize_selection_for_stdout(selection, step4_cost, paths)
 
 
-def submit(args: argparse.Namespace) -> dict[str, Any]:
+def submit(args: argparse.Namespace, *, arm: str | None) -> dict[str, Any]:
     prep = prepare(args, write_all_placeholders=True)
     paths = step4_paths(Path(args.out))
     cost_estimate = read_json(paths.cost_estimate)
@@ -195,42 +210,75 @@ def submit(args: argparse.Namespace) -> dict[str, Any]:
     total_requests = int(cost_estimate.get("total_request_count") or 0)
     if total_requests > MAX_REQUESTS_WITHOUT_OVERRIDE and not args.allow_over_100:
         raise Step4Blocked("BLOCKED_TOO_MANY_REQUESTS", "more than 100 requests requires --allow-over-100")
+    state = current_arm_state(paths)
+    if arm is None and state["arm_a_provider_batch_id"]:
+        raise Step4Blocked(
+            "BLOCKED_ARM_A_ALREADY_SUBMITTED",
+            f"Arm A already has provider_batch_id {state['arm_a_provider_batch_id']}; use --submit-arm B for retry.",
+        )
+    if arm == "A" and state["arm_a_provider_batch_id"]:
+        raise Step4Blocked(
+            "BLOCKED_ARM_A_ALREADY_SUBMITTED",
+            f"Arm A already has provider_batch_id {state['arm_a_provider_batch_id']}.",
+        )
+    if arm == "B" and state["arm_b_provider_batch_id"]:
+        raise Step4Blocked(
+            "BLOCKED_ARM_B_ALREADY_SUBMITTED",
+            f"Arm B already has provider_batch_id {state['arm_b_provider_batch_id']}.",
+        )
+
+    if arm in {None, "B"}:
+        validate_arm_b_schema_or_block(paths)
+    if arm == "B":
+        check_remaining_cap_for_arm_b(cost_estimate, paths)
+
     credential = resolve_gemini_api_key()
     if not credential:
         raise Step4Blocked("BLOCKED_MISSING_GEMINI_CREDENTIAL", "Gemini credential must be provided by environment or local configured source")
     client = GeminiBatchRestClient(api_key=credential)
     result: dict[str, Any] = {"status": "SUBMIT_ATTEMPTED", "arm_a": None, "arm_b": None}
     submitted = 0
-    try:
-        arm_a_status = submit_arm(paths.arm_a_jsonl, client=client, display_name="pali-step4-response-schema-arm-a")
-        submitted += len(read_jsonl(paths.arm_a_jsonl))
-        write_json(paths.provider_status_arm_a, arm_a_status, pretty=args.pretty)
-        result["arm_a"] = arm_a_status
-    except RuntimeError as exc:
-        status = {"arm": "A", "status": "provider_error", "error": str(exc)}
-        write_json(paths.provider_status_arm_a, status, pretty=args.pretty)
-        result["arm_a"] = status
-    try:
-        arm_b_status = submit_arm(paths.arm_b_jsonl, client=client, display_name="pali-step4-response-schema-arm-b")
-        submitted += len(read_jsonl(paths.arm_b_jsonl))
-        write_json(paths.provider_status_arm_b, arm_b_status, pretty=args.pretty)
-        result["arm_b"] = arm_b_status
-    except RuntimeError as exc:
-        status = {
-            "arm": "B",
-            "status": "provider_rejected_response_schema" if "schema" in str(exc).lower() else "provider_error",
-            "error": str(exc),
-        }
-        write_json(paths.provider_status_arm_b, status, pretty=args.pretty)
-        result["arm_b"] = status
+    if arm in {None, "A"}:
+        try:
+            arm_a_status = submit_arm(paths.arm_a_jsonl, client=client, display_name="pali-step4-response-schema-arm-a", arm="A")
+            submitted += len(read_jsonl(paths.arm_a_jsonl))
+            write_json(paths.provider_status_arm_a, arm_a_status, pretty=args.pretty)
+            result["arm_a"] = arm_a_status
+        except RuntimeError as exc:
+            status = {"arm": "A", "status": "provider_error", "provider_batch_id": None, "error": str(exc)}
+            write_json(paths.provider_status_arm_a, status, pretty=args.pretty)
+            result["arm_a"] = status
+    else:
+        result["arm_a"] = read_json(paths.provider_status_arm_a) if paths.provider_status_arm_a.exists() else {"status": "not_submitted"}
+    if arm in {None, "B"}:
+        try:
+            arm_b_status = submit_arm(paths.arm_b_jsonl, client=client, display_name="pali-step4-response-schema-arm-b", arm="B")
+            submitted += len(read_jsonl(paths.arm_b_jsonl))
+            write_json(paths.provider_status_arm_b, arm_b_status, pretty=args.pretty)
+            result["arm_b"] = arm_b_status
+        except RuntimeError as exc:
+            status = {
+                "arm": "B",
+                "status": "provider_rejected_response_schema" if "schema" in str(exc).lower() else "provider_error",
+                "provider_batch_id": None,
+                "error": str(exc),
+            }
+            write_json(paths.provider_status_arm_b, status, pretty=args.pretty)
+            result["arm_b"] = status
+    state_after = current_arm_state(paths)
     manifest = build_run_manifest(
         batch_requests_planned=total_requests,
-        batch_requests_submitted=submitted,
-        api_llm_calls=submitted,
+        batch_requests_submitted=state_after["batch_requests_submitted"],
+        api_llm_calls=state_after["batch_requests_submitted"],
         cost_estimate=cost_estimate,
-        submitted=submitted > 0,
-        arm_a_status=str((result["arm_a"] or {}).get("status")),
-        arm_b_status=str((result["arm_b"] or {}).get("status")),
+        submitted=state_after["submitted"],
+        arm_a_status=state_after["arm_a_status"],
+        arm_b_status=state_after["arm_b_status"],
+        arm_a_provider_batch_id=state_after["arm_a_provider_batch_id"],
+        arm_b_provider_batch_id=state_after["arm_b_provider_batch_id"],
+        arm_a_requests_submitted=state_after["arm_a_requests_submitted"],
+        arm_b_requests_submitted=state_after["arm_b_requests_submitted"],
+        remaining_cap_usd=remaining_cap_usd(cost_estimate, paths),
         output_paths=output_paths(paths),
     )
     write_json(paths.run_manifest, manifest, pretty=args.pretty)
@@ -239,13 +287,15 @@ def submit(args: argparse.Namespace) -> dict[str, Any]:
     return result
 
 
-def submit_arm(path: Path, *, client: GeminiBatchRestClient, display_name: str) -> dict[str, Any]:
+def submit_arm(path: Path, *, client: GeminiBatchRestClient, display_name: str, arm: str) -> dict[str, Any]:
     provider_lines = read_jsonl(path)
     requests = [build_inline_request_from_provider_line(line) for line in provider_lines]
     response = client.create_inline_batch(model=DEFAULT_MODEL, requests=requests, display_name=display_name)
     return {
+        "arm": arm,
         "status": "submitted",
         "provider_batch_id": extract_batch_name(response),
+        "request_count": len(provider_lines),
         "provider_status": status_snapshot(response),
     }
 
@@ -354,6 +404,80 @@ def provider_batch_id_from_status(path: Path) -> str | None:
         return None
     data = read_json(path)
     return data.get("provider_batch_id")
+
+
+def current_arm_state(paths: Any) -> dict[str, Any]:
+    arm_a = read_json(paths.provider_status_arm_a) if paths.provider_status_arm_a.exists() else {}
+    arm_b = read_json(paths.provider_status_arm_b) if paths.provider_status_arm_b.exists() else {}
+    arm_a_provider_id = arm_a.get("provider_batch_id")
+    arm_b_provider_id = arm_b.get("provider_batch_id")
+    arm_a_submitted = 50 if arm_a_provider_id else 0
+    arm_b_submitted = 50 if arm_b_provider_id else 0
+    return {
+        "submitted": bool(arm_a_provider_id or arm_b_provider_id),
+        "batch_requests_submitted": arm_a_submitted + arm_b_submitted,
+        "arm_a_status": arm_a.get("status") or ("submitted" if arm_a_provider_id else "not_submitted"),
+        "arm_b_status": arm_b.get("status") or ("submitted" if arm_b_provider_id else "not_submitted"),
+        "arm_a_provider_batch_id": arm_a_provider_id,
+        "arm_b_provider_batch_id": arm_b_provider_id,
+        "arm_a_requests_submitted": arm_a_submitted,
+        "arm_b_requests_submitted": arm_b_submitted,
+    }
+
+
+def validate_arm_b_schema_or_block(paths: Any) -> None:
+    provider_lines = read_jsonl(paths.arm_b_jsonl)
+    schemas = []
+    for line in provider_lines:
+        schema = (
+            line.get("request", {})
+            .get("generation_config", {})
+            .get("response_schema")
+        )
+        if schema:
+            schemas.append(schema)
+    if not schemas:
+        raise Step4Blocked("BLOCKED_MISSING_RESPONSE_SCHEMA", "Arm B JSONL does not contain response_schema")
+    for schema in schemas:
+        guard = validate_response_schema_dialect(schema)
+        if not guard["valid"]:
+            report = {
+                "status": "BLOCKED_UNSUPPORTED_RESPONSE_SCHEMA_KEYWORD",
+                **guard,
+            }
+            write_json(paths.provider_status_arm_b, {"arm": "B", **report}, pretty=True)
+            raise Step4Blocked("BLOCKED_UNSUPPORTED_RESPONSE_SCHEMA_KEYWORD", json.dumps(report, ensure_ascii=False))
+
+
+def check_remaining_cap_for_arm_b(cost_estimate: dict[str, Any], paths: Any) -> None:
+    arm_b_estimate = Decimal(str(cost_estimate.get("arm_b", {}).get("planning_p90", {}).get("official_cost_usd") or "0"))
+    remaining = Decimal(remaining_cap_usd(cost_estimate, paths))
+    if arm_b_estimate > remaining:
+        raise Step4Blocked(
+            "BLOCKED_REMAINING_CAP_EXCEEDED",
+            f"Arm B p90 estimate {arm_b_estimate} exceeds remaining cap {remaining}",
+        )
+
+
+def remaining_cap_usd(cost_estimate: dict[str, Any], paths: Any) -> str:
+    hard_cap = Decimal(str(cost_estimate.get("hard_cap_usd") or "4"))
+    arm_a_estimate = Decimal(str(cost_estimate.get("arm_a", {}).get("planning_p90", {}).get("official_cost_usd") or "0"))
+    arm_a_actual = known_arm_actual_cost(paths.arm_a_parsed)
+    reserved = max(arm_a_estimate, arm_a_actual)
+    remaining = hard_cap - reserved
+    if remaining < 0:
+        remaining = Decimal("0")
+    return str(remaining.quantize(Decimal("0.000001")))
+
+
+def known_arm_actual_cost(parsed_path: Path) -> Decimal:
+    if not parsed_path.exists():
+        return Decimal("0")
+    try:
+        data = read_json(parsed_path)
+    except Exception:
+        return Decimal("0")
+    return sum((Decimal(str(item.get("actual_cost_usd") or "0")) for item in data.get("items") or []), Decimal("0"))
 
 
 if __name__ == "__main__":

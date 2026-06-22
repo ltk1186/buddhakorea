@@ -20,6 +20,34 @@ experiment copy of the current translation output schema under
 The prompt text is not re-rendered. The experiment reads the existing verified
 300-pilot unsubmitted JSONL and selects lines from it.
 
+## Gemini Schema Dialect
+
+The first live Arm B attempt showed that the current Gemini Batch REST path
+recognized `response_schema`, but rejected the JSON Schema keyword
+`additionalProperties` inside `generation_config.response_schema`.
+
+This is treated as an empirical dialect incompatibility for this Batch path,
+not as a universal statement about Gemini schema support.
+
+The experiment schema now uses only the narrow Gemini-compatible dialect needed
+for this test:
+
+- `type`
+- `format`
+- `description`
+- `nullable`
+- `enum`
+- `items`
+- `properties`
+- `required`
+- `minItems`
+- `maxItems`
+- `propertyOrdering`
+
+Unsupported keywords are recursively blocked before credential resolution and
+before any provider call. A blocked schema reports
+`BLOCKED_UNSUPPORTED_RESPONSE_SCHEMA_KEYWORD`.
+
 ## Default Safety
 
 Default execution is dry-run and local-only:
@@ -37,6 +65,43 @@ data/reports/pali/step4_response_schema_smoke/
 ```
 
 No API call is made unless `--submit` is explicitly supplied.
+
+If one arm has already been submitted, use the arm-specific retry command.
+Plain `--submit` refuses to resubmit Arm A when an Arm A provider batch id is
+already recorded.
+
+Expected Arm B-only retry command:
+
+```bash
+./venv/bin/python -m backend.pali.scripts.run_response_schema_smoke \
+  --out data/reports/pali/step4_response_schema_smoke \
+  --submit-arm B \
+  --pretty
+```
+
+After both arms have provider ids, use:
+
+```bash
+./venv/bin/python -m backend.pali.scripts.run_response_schema_smoke \
+  --out data/reports/pali/step4_response_schema_smoke \
+  --poll \
+  --pretty
+
+./venv/bin/python -m backend.pali.scripts.run_response_schema_smoke \
+  --out data/reports/pali/step4_response_schema_smoke \
+  --fetch \
+  --pretty
+
+./venv/bin/python -m backend.pali.scripts.run_response_schema_smoke \
+  --out data/reports/pali/step4_response_schema_smoke \
+  --parse \
+  --pretty
+
+./venv/bin/python -m backend.pali.scripts.run_response_schema_smoke \
+  --out data/reports/pali/step4_response_schema_smoke \
+  --compare \
+  --pretty
+```
 
 ## Hard Cap
 
@@ -89,4 +154,3 @@ Step 4 does not modify:
 - source XML
 - existing 300 parsed outputs
 - holdout gold state
-

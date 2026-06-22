@@ -45,6 +45,43 @@ MAX_REQUESTS_WITHOUT_OVERRIDE = 100
 
 SILVER_CANARY_STATUS = "advisory_only_not_gold_accuracy"
 SILVER_CANARY_NEEDS_PALI_EXPERT_POLICY = "needs_review_not_fail"
+ALLOWED_RESPONSE_SCHEMA_KEYWORDS = {
+    "type",
+    "format",
+    "description",
+    "nullable",
+    "enum",
+    "items",
+    "properties",
+    "required",
+    "minItems",
+    "maxItems",
+    "propertyOrdering",
+}
+UNSUPPORTED_RESPONSE_SCHEMA_KEYWORDS = {
+    "additionalProperties",
+    "$schema",
+    "definitions",
+    "$defs",
+    "patternProperties",
+    "dependencies",
+    "dependentRequired",
+    "allOf",
+    "anyOf",
+    "oneOf",
+    "not",
+    "if",
+    "then",
+    "else",
+    "const",
+    "pattern",
+    "minimum",
+    "maximum",
+    "exclusiveMinimum",
+    "exclusiveMaximum",
+    "minLength",
+    "maxLength",
+}
 
 CITATION_MARKER_RE = re.compile(
     r"\b(?:dī\. ni\.|ma\. ni\.|saṃ\. ni\.|aṅ\. ni\.|a\. ni\.|khu\. pā\.|"
@@ -155,7 +192,15 @@ def build_response_schema_experiment() -> dict[str, Any]:
         "production_schema_file_mutation": False,
         "response_schema": {
             "type": "object",
-            "additionalProperties": False,
+            "propertyOrdering": [
+                "literal_ko",
+                "natural_ko",
+                "terms",
+                "grammar_notes",
+                "doctrinal_notes",
+                "uncertainties",
+                "quality_flags",
+            ],
             "required": [
                 "literal_ko",
                 "natural_ko",
@@ -172,7 +217,7 @@ def build_response_schema_experiment() -> dict[str, Any]:
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "additionalProperties": False,
+                        "propertyOrdering": ["pali", "ko", "gloss", "note"],
                         "required": ["pali", "ko", "gloss", "note"],
                         "properties": {
                             "pali": {"type": "string"},
@@ -189,6 +234,67 @@ def build_response_schema_experiment() -> dict[str, Any]:
             },
         },
     }
+
+
+def validate_response_schema_dialect(schema: dict[str, Any]) -> dict[str, Any]:
+    """Validate the Gemini Batch response_schema dialect used by this experiment."""
+    unsupported: list[dict[str, str]] = []
+    disallowed: list[dict[str, str]] = []
+    inspect_schema_keywords(schema, "$.response_schema", unsupported=unsupported, disallowed=disallowed)
+    return {
+        "valid": not unsupported and not disallowed,
+        "unsupported_keywords": unsupported,
+        "disallowed_keywords": disallowed,
+        "allowed_keywords": sorted(ALLOWED_RESPONSE_SCHEMA_KEYWORDS),
+    }
+
+
+def inspect_schema_keywords(
+    value: Any,
+    path: str,
+    *,
+    unsupported: list[dict[str, str]],
+    disallowed: list[dict[str, str]],
+) -> None:
+    if isinstance(value, dict):
+        for key, nested in value.items():
+            key_path = f"{path}.{key}"
+            if key in UNSUPPORTED_RESPONSE_SCHEMA_KEYWORDS:
+                unsupported.append({"keyword": key, "path": key_path})
+            if looks_like_schema_keyword_context(path) and key not in ALLOWED_RESPONSE_SCHEMA_KEYWORDS and key not in property_name_exceptions(path):
+                disallowed.append({"keyword": key, "path": key_path})
+            inspect_schema_keywords(nested, key_path, unsupported=unsupported, disallowed=disallowed)
+    elif isinstance(value, list):
+        for index, nested in enumerate(value):
+            inspect_schema_keywords(nested, f"{path}[{index}]", unsupported=unsupported, disallowed=disallowed)
+
+
+def looks_like_schema_keyword_context(path: str) -> bool:
+    return (
+        path == "$.response_schema"
+        or path.endswith(".items")
+        or path.endswith(".value")
+        or ".items." in path
+        or ".properties." not in path
+    )
+
+
+def property_name_exceptions(path: str) -> set[str]:
+    if path.endswith(".properties"):
+        return {
+            "literal_ko",
+            "natural_ko",
+            "terms",
+            "grammar_notes",
+            "doctrinal_notes",
+            "uncertainties",
+            "quality_flags",
+            "pali",
+            "ko",
+            "gloss",
+            "note",
+        }
+    return set()
 
 
 def select_step4_items(
@@ -386,6 +492,9 @@ def build_arm_jsonl(
     provider_lines: list[dict[str, Any]],
     response_schema_payload: dict[str, Any],
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    dialect = validate_response_schema_dialect(response_schema_payload["response_schema"])
+    if not dialect["valid"]:
+        raise RuntimeError(f"BLOCKED_UNSUPPORTED_RESPONSE_SCHEMA_KEYWORD: {dialect}")
     provider_by_key = {line.get("key"): line for line in provider_lines}
     arm_a: list[dict[str, Any]] = []
     arm_b: list[dict[str, Any]] = []
@@ -586,6 +695,10 @@ def compare_arms(arm_a: dict[str, Any], arm_b: dict[str, Any]) -> dict[str, Any]
         "schema_version": "pali_step4_response_schema_comparison_v1",
         "arm_a_metrics": metrics_a,
         "arm_b_metrics": metrics_b,
+        "bucket_metrics": {
+            "arm_a": bucket_metrics(arm_a),
+            "arm_b": bucket_metrics(arm_b),
+        },
         "paired_success_count": len(pair_checks),
         "content_impact_checks": pair_checks,
         "content_suppression_flag_counts": dict(sorted(suppression_flags.items())),
@@ -613,6 +726,8 @@ def content_impact_check(a: dict[str, Any], b: dict[str, Any]) -> dict[str, Any]
     optional_fields = ("grammar_notes", "doctrinal_notes", "uncertainties", "quality_flags")
     if any((a.get(field) or []) and not (b.get(field) or []) for field in optional_fields):
         flags.append("arm_b_optional_arrays_emptied")
+    if any(not (a.get(field) or []) and (b.get(field) or []) for field in optional_fields):
+        flags.append("arm_b_forced_optional_array_filling")
     if not str(b.get("literal_ko") or "").strip() or not str(b.get("natural_ko") or "").strip():
         flags.append("arm_b_empty_translation_field")
     return {
@@ -648,6 +763,20 @@ def recommendation_from_metrics(
         "decision": "keep_current_free_form_json_plus_salvage_cascade",
         "reason": "Response schema did not meet all adoption criteria or results are not yet available.",
     }
+
+
+def bucket_metrics(parsed: dict[str, Any]) -> dict[str, Any]:
+    items = parsed.get("items") or []
+    output: dict[str, Any] = {}
+    for field in ("text_layer", "chunk_type", "length_bucket", "selection_reason"):
+        grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        for item in items:
+            grouped[str(item.get(field) or "unknown")].append(item)
+        output[f"by_{field}"] = {
+            bucket: arm_metrics({"items": bucket_items})
+            for bucket, bucket_items in sorted(grouped.items())
+        }
+    return output
 
 
 def required_fields_present(item: dict[str, Any]) -> bool:
@@ -687,6 +816,11 @@ def build_run_manifest(
     api_llm_calls: int = 0,
     arm_a_status: str = "not_submitted",
     arm_b_status: str = "not_submitted",
+    arm_a_provider_batch_id: str | None = None,
+    arm_b_provider_batch_id: str | None = None,
+    arm_a_requests_submitted: int = 0,
+    arm_b_requests_submitted: int = 0,
+    remaining_cap_usd: str | None = None,
     output_paths: dict[str, str] | None = None,
     warnings: list[str] | None = None,
 ) -> dict[str, Any]:
@@ -704,6 +838,10 @@ def build_run_manifest(
         "submitted": submitted,
         "arm_a_status": arm_a_status,
         "arm_b_status": arm_b_status,
+        "arm_a_provider_batch_id": arm_a_provider_batch_id,
+        "arm_b_provider_batch_id": arm_b_provider_batch_id,
+        "arm_a_requests_submitted": arm_a_requests_submitted,
+        "arm_b_requests_submitted": arm_b_requests_submitted,
         "prompt_mutation": False,
         "glossary_mutation": False,
         "gold_set_mutation": False,
@@ -714,6 +852,9 @@ def build_run_manifest(
         "silver_canary_status": SILVER_CANARY_STATUS,
         "silver_canary_needs_pali_expert_policy": SILVER_CANARY_NEEDS_PALI_EXPERT_POLICY,
         "future_total_batch_requests": 1020,
+        "response_schema_dialect_fixed": True,
+        "unsupported_schema_keyword_guard_enabled": True,
+        "remaining_cap_usd": remaining_cap_usd,
         "output_paths": output_paths or {},
         "warnings": warnings or [],
     }
@@ -751,12 +892,13 @@ def render_submit_plan(
             "",
             "## Submit Later",
             "",
-            "Run only after reviewing this dry-run package and confirming the $4 cap:",
+            "If neither arm has been submitted, `--submit` may be used after reviewing this package and confirming the $4 cap.",
+            "If Arm A already has a provider batch id, do not use plain `--submit`; retry Arm B only:",
             "",
             "```bash",
             "./venv/bin/python -m backend.pali.scripts.run_response_schema_smoke \\",
             f"  --out {out_dir} \\",
-            "  --submit \\",
+            "  --submit-arm B \\",
             "  --pretty",
             "```",
             "",
@@ -804,16 +946,24 @@ def render_comparison_markdown(comparison: dict[str, Any]) -> str:
     ) + "\n"
 
 
-def placeholder_json_outputs(paths: Step4Paths, *, pretty: bool = False) -> None:
+def placeholder_json_outputs(paths: Step4Paths, *, pretty: bool = False, preserve_provider_status: bool = True) -> None:
     status = {"status": "not_submitted", "submitted": False, "provider_batch_id": None}
-    write_json(paths.provider_status_arm_a, {"arm": "A", **status}, pretty=pretty)
-    write_json(paths.provider_status_arm_b, {"arm": "B", **status}, pretty=pretty)
-    paths.arm_a_raw_results.write_text("", encoding="utf-8")
-    paths.arm_b_raw_results.write_text("", encoding="utf-8")
-    write_json(paths.arm_a_parsed, {"schema_version": "pali_step4_response_schema_arm_parsed_v1", "arm": "A", "status": "not_submitted", "items": []}, pretty=pretty)
-    write_json(paths.arm_b_parsed, {"schema_version": "pali_step4_response_schema_arm_parsed_v1", "arm": "B", "status": "not_submitted", "items": []}, pretty=pretty)
-    write_json(paths.arm_a_salvage_report, {"arm": "A", "status": "not_submitted"}, pretty=pretty)
-    write_json(paths.arm_b_salvage_report, {"arm": "B", "status": "not_submitted"}, pretty=pretty)
+    if not preserve_provider_status or not paths.provider_status_arm_a.exists():
+        write_json(paths.provider_status_arm_a, {"arm": "A", **status}, pretty=pretty)
+    if not preserve_provider_status or not paths.provider_status_arm_b.exists():
+        write_json(paths.provider_status_arm_b, {"arm": "B", **status}, pretty=pretty)
+    if not preserve_provider_status or not paths.arm_a_raw_results.exists():
+        paths.arm_a_raw_results.write_text("", encoding="utf-8")
+    if not preserve_provider_status or not paths.arm_b_raw_results.exists():
+        paths.arm_b_raw_results.write_text("", encoding="utf-8")
+    if not preserve_provider_status or not paths.arm_a_parsed.exists():
+        write_json(paths.arm_a_parsed, {"schema_version": "pali_step4_response_schema_arm_parsed_v1", "arm": "A", "status": "not_submitted", "items": []}, pretty=pretty)
+    if not preserve_provider_status or not paths.arm_b_parsed.exists():
+        write_json(paths.arm_b_parsed, {"schema_version": "pali_step4_response_schema_arm_parsed_v1", "arm": "B", "status": "not_submitted", "items": []}, pretty=pretty)
+    if not preserve_provider_status or not paths.arm_a_salvage_report.exists():
+        write_json(paths.arm_a_salvage_report, {"arm": "A", "status": "not_submitted"}, pretty=pretty)
+    if not preserve_provider_status or not paths.arm_b_salvage_report.exists():
+        write_json(paths.arm_b_salvage_report, {"arm": "B", "status": "not_submitted"}, pretty=pretty)
     comparison = {
         "schema_version": "pali_step4_response_schema_comparison_v1",
         "status": "not_submitted",

@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from backend.pali.scripts import run_response_schema_smoke as smoke_cli
 from backend.pali.scripts.run_response_schema_smoke import Step4Blocked, build_parser, run
 from backend.pali.translation.response_schema_smoke import (
     build_arm_jsonl,
@@ -15,6 +16,7 @@ from backend.pali.translation.response_schema_smoke import (
     estimate_step4_cost,
     recommendation_from_metrics,
     select_step4_items,
+    validate_response_schema_dialect,
 )
 
 
@@ -168,6 +170,60 @@ def test_arm_b_schema_added_without_prompt_change() -> None:
     assert "response_schema" not in arm_a[0]["request"]["generation_config"]
     assert arm_b[0]["request"]["generation_config"]["response_schema"]["properties"]["literal_ko"]["type"] == "string"
     assert arm_b[0]["request"]["generation_config"]["response_schema"]["properties"]["terms"]["items"]["type"] == "object"
+    assert "additionalProperties" not in json.dumps(arm_b[0]["request"]["generation_config"]["response_schema"])
+    assert arm_b[0]["request"]["generation_config"]["response_schema"]["propertyOrdering"] == [
+        "literal_ko",
+        "natural_ko",
+        "terms",
+        "grammar_notes",
+        "doctrinal_notes",
+        "uncertainties",
+        "quality_flags",
+    ]
+    assert arm_b[0]["request"]["generation_config"]["response_schema"]["properties"]["terms"]["items"]["propertyOrdering"] == [
+        "pali",
+        "ko",
+        "gloss",
+        "note",
+    ]
+
+
+def test_response_schema_dialect_guard_blocks_unsupported_keywords() -> None:
+    for keyword in [
+        "additionalProperties",
+        "$schema",
+        "definitions",
+        "$defs",
+        "patternProperties",
+        "allOf",
+        "anyOf",
+        "oneOf",
+        "not",
+    ]:
+        schema = build_response_schema_experiment()["response_schema"]
+        schema[keyword] = False
+        guard = validate_response_schema_dialect(schema)
+        assert guard["valid"] is False
+        assert any(item["keyword"] == keyword for item in guard["unsupported_keywords"])
+
+
+def test_response_schema_preserves_required_fields_and_types() -> None:
+    schema = build_response_schema_experiment()["response_schema"]
+    assert schema["required"] == [
+        "literal_ko",
+        "natural_ko",
+        "terms",
+        "grammar_notes",
+        "doctrinal_notes",
+        "uncertainties",
+        "quality_flags",
+    ]
+    assert schema["properties"]["literal_ko"]["type"] == "string"
+    assert schema["properties"]["natural_ko"]["type"] == "string"
+    assert schema["properties"]["terms"]["type"] == "array"
+    assert schema["properties"]["terms"]["items"]["type"] == "object"
+    assert schema["properties"]["terms"]["items"]["required"] == ["pali", "ko", "gloss", "note"]
+    assert schema["properties"]["terms"]["items"]["properties"]["pali"]["type"] == "string"
 
 
 def test_cost_cap_blocks_submit_before_credentials(tmp_path: Path) -> None:
@@ -221,6 +277,128 @@ def test_default_mode_writes_dry_run_without_submit(tmp_path: Path) -> None:
     assert (paths["out"] / "arm_b_batch_input.jsonl").exists()
 
 
+def test_submit_refuses_to_duplicate_arm_a_when_provider_id_exists(tmp_path: Path) -> None:
+    paths = write_fixture_files(tmp_path)
+    out = paths["out"]
+    out.mkdir()
+    write_json(out / "provider_status_arm_a.json", {"arm": "A", "status": "submitted", "provider_batch_id": "batches/existing-a"})
+    args = build_parser().parse_args(
+        [
+            "--submit",
+            "--parsed-salvaged",
+            str(paths["parsed"]),
+            "--cost-estimate-input",
+            str(paths["cost"]),
+            "--jsonl",
+            str(paths["jsonl"]),
+            "--jsonl-manifest",
+            str(paths["manifest"]),
+            "--out",
+            str(out),
+        ]
+    )
+    with pytest.raises(Step4Blocked) as exc:
+        run(args)
+    assert exc.value.status == "BLOCKED_ARM_A_ALREADY_SUBMITTED"
+    assert json.loads((out / "provider_status_arm_a.json").read_text())["provider_batch_id"] == "batches/existing-a"
+
+
+def test_submit_arm_b_preserves_existing_arm_a_status(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    paths = write_fixture_files(tmp_path)
+    out = paths["out"]
+    out.mkdir()
+    write_json(out / "provider_status_arm_a.json", {"arm": "A", "status": "submitted", "provider_batch_id": "batches/existing-a"})
+
+    class FakeClient:
+        def __init__(self, *, api_key: str):
+            self.api_key = api_key
+
+        def create_inline_batch(self, *, model: str, requests: list[dict], display_name: str) -> dict:
+            assert display_name.endswith("arm-b")
+            assert len(requests) == 50
+            return {"name": "batches/new-b", "state": "BATCH_STATE_PENDING"}
+
+    monkeypatch.setattr(smoke_cli, "resolve_gemini_api_key", lambda: "fake-key")
+    monkeypatch.setattr(smoke_cli, "GeminiBatchRestClient", FakeClient)
+    args = build_parser().parse_args(
+        [
+            "--submit-arm",
+            "B",
+            "--parsed-salvaged",
+            str(paths["parsed"]),
+            "--cost-estimate-input",
+            str(paths["cost"]),
+            "--jsonl",
+            str(paths["jsonl"]),
+            "--jsonl-manifest",
+            str(paths["manifest"]),
+            "--out",
+            str(out),
+            "--pretty",
+        ]
+    )
+    result = run(args)
+    assert result["batch_requests_submitted"] == 50
+    assert json.loads((out / "provider_status_arm_a.json").read_text())["provider_batch_id"] == "batches/existing-a"
+    assert json.loads((out / "provider_status_arm_b.json").read_text())["provider_batch_id"] == "batches/new-b"
+    manifest = json.loads((out / "run_manifest.json").read_text())
+    assert manifest["arm_a_provider_batch_id"] == "batches/existing-a"
+    assert manifest["arm_b_provider_batch_id"] == "batches/new-b"
+    assert manifest["arm_a_requests_submitted"] == 50
+    assert manifest["arm_b_requests_submitted"] == 50
+
+
+def test_submit_arm_b_remaining_cap_blocks_before_credentials(tmp_path: Path) -> None:
+    paths = write_fixture_files(tmp_path)
+    out = paths["out"]
+    out.mkdir()
+    write_json(out / "provider_status_arm_a.json", {"arm": "A", "status": "submitted", "provider_batch_id": "batches/existing-a"})
+    write_json(out / "arm_a_parsed.json", {"items": [{"actual_cost_usd": "3.950000"}]})
+    args = build_parser().parse_args(
+        [
+            "--submit-arm",
+            "B",
+            "--parsed-salvaged",
+            str(paths["parsed"]),
+            "--cost-estimate-input",
+            str(paths["cost"]),
+            "--jsonl",
+            str(paths["jsonl"]),
+            "--jsonl-manifest",
+            str(paths["manifest"]),
+            "--out",
+            str(out),
+        ]
+    )
+    with pytest.raises(Step4Blocked) as exc:
+        run(args)
+    assert exc.value.status == "BLOCKED_REMAINING_CAP_EXCEEDED"
+
+
+def test_poll_uses_existing_provider_batch_ids(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    paths = write_fixture_files(tmp_path)
+    out = paths["out"]
+    out.mkdir()
+    write_json(out / "provider_status_arm_a.json", {"arm": "A", "status": "submitted", "provider_batch_id": "batches/existing-a"})
+    write_json(out / "provider_status_arm_b.json", {"arm": "B", "status": "submitted", "provider_batch_id": "batches/existing-b"})
+    seen: list[str] = []
+
+    class FakeClient:
+        def __init__(self, *, api_key: str):
+            self.api_key = api_key
+
+        def get_batch(self, provider_batch_id: str) -> dict:
+            seen.append(provider_batch_id)
+            return {"name": provider_batch_id, "state": "BATCH_STATE_RUNNING"}
+
+    monkeypatch.setattr(smoke_cli, "resolve_gemini_api_key", lambda: "fake-key")
+    monkeypatch.setattr(smoke_cli, "GeminiBatchRestClient", FakeClient)
+    args = build_parser().parse_args(["--poll", "--out", str(out)])
+    result = run(args)
+    assert result["status"] == "POLLED"
+    assert seen == ["batches/existing-a", "batches/existing-b"]
+
+
 def test_content_suppression_flags_and_recommendation() -> None:
     arm_a = {
         "items": [
@@ -258,7 +436,45 @@ def test_content_suppression_flags_and_recommendation() -> None:
     flags = comparison["content_suppression_flag_counts"]
     assert flags["arm_b_literal_much_shorter"] == 1
     assert flags["arm_b_terms_dropped"] == 1
+    assert flags["arm_b_optional_arrays_emptied"] == 1
     assert comparison["recommendation"]["decision"] == "keep_current_free_form_json_plus_salvage_cascade"
+
+
+def test_forced_optional_array_filling_flag() -> None:
+    arm_a = {
+        "items": [
+            {
+                "stable_segment_key": "k1",
+                "schema_valid": True,
+                "parse_method": "strict_json",
+                "literal_ko": "충분한 직역",
+                "natural_ko": "충분한 자연역",
+                "terms": [],
+                "grammar_notes": [],
+                "doctrinal_notes": [],
+                "uncertainties": [],
+                "quality_flags": [],
+            }
+        ]
+    }
+    arm_b = {
+        "items": [
+            {
+                "stable_segment_key": "k1",
+                "schema_valid": True,
+                "parse_method": "strict_json",
+                "literal_ko": "충분한 직역",
+                "natural_ko": "충분한 자연역",
+                "terms": [],
+                "grammar_notes": [],
+                "doctrinal_notes": ["보일러플레이트"],
+                "uncertainties": ["강제 채움"],
+                "quality_flags": [],
+            }
+        ]
+    }
+    comparison = compare_arms(arm_a, arm_b)
+    assert comparison["content_suppression_flag_counts"]["arm_b_forced_optional_array_filling"] == 1
 
 
 def test_provider_rejection_is_valid_recommendation_state() -> None:
@@ -286,4 +502,3 @@ def test_estimate_step4_cost_passes_normal_cap() -> None:
     estimate = estimate_step4_cost(selection_manifest=selection, hard_cap_usd=Decimal("4"))
     assert estimate["total_request_count"] == 100
     assert estimate["cap_passed_before_submit"] is True
-
