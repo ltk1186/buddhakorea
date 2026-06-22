@@ -65,6 +65,8 @@ TEXT_LAYER_BY_SUFFIX = {
     "nrf": "nrf",
 }
 
+ROMAN_TOKEN_RE = re.compile(r"[A-Za-zāīūṅñṭḍṇḷṃĀĪŪṄÑṬḌṆḶṂ][A-Za-zāīūṅñṭḍṇḷṃĀĪŪṄÑṬḌṆḶṂ'-]*")
+
 
 @dataclass(frozen=True)
 class VriXmlImportConfig:
@@ -75,6 +77,7 @@ class VriXmlImportConfig:
     limit: int | None = None
     include_token_report: bool = False
     token_profiles_path: Path | None = None
+    preserve_source_apparatus: bool = True
 
 
 @dataclass(frozen=True)
@@ -347,6 +350,7 @@ class VriXmlParser:
             f"{short_hash(key_material)}"
         )
         edition_refs = collect_edition_refs(nodes)
+        source_apparatus = collect_source_apparatus(nodes, path_map) if self.config.preserve_source_apparatus else None
 
         first_paragraph_number = next(
             (node.attrib.get("n") for node in nodes if node.attrib.get("n")),
@@ -354,7 +358,7 @@ class VriXmlParser:
         )
         paragraph_number = first_paragraph_number or state["paragraph_counter"]
 
-        return {
+        segment = {
             "stable_segment_key": stable_segment_key,
             "literature_id": literature["literature_id"],
             "literature_name": literature["literature_name"],
@@ -390,6 +394,9 @@ class VriXmlParser:
             "sutta_name": state.get("sutta_name"),
             "paragraph_id": state["paragraph_counter"],
         }
+        if self.config.preserve_source_apparatus:
+            segment["source_apparatus"] = source_apparatus or []
+        return segment
 
     def _record_empty_candidate(self, nodes: list[ET.Element]) -> str:
         classifications = [classify_empty_node(node) for node in nodes]
@@ -477,6 +484,9 @@ class VriXmlParser:
             "sort_order_unique": len(sort_orders) == len(set(sort_orders)),
             "sort_order_contiguous": sort_orders == list(range(1, len(sort_orders) + 1)),
             "notes_excluded_from_original_text": True,
+            "source_apparatus_preserved_as_metadata": self.config.preserve_source_apparatus,
+            "source_apparatus_not_prompt_input": True,
+            "source_apparatus_record_count": sum(len(segment.get("source_apparatus", [])) for segment in segments),
             "page_refs_excluded_from_original_text": True,
             "warnings": self.warnings,
             "errors": self.errors,
@@ -492,6 +502,7 @@ def parse_vri_xml(
     limit: int | None = None,
     include_token_report: bool = False,
     token_profiles_path: str | Path | None = None,
+    preserve_source_apparatus: bool = True,
 ) -> dict[str, Any]:
     """Compatibility helper returning a plain dict artifact."""
 
@@ -503,6 +514,7 @@ def parse_vri_xml(
         limit=limit,
         include_token_report=include_token_report,
         token_profiles_path=Path(token_profiles_path) if token_profiles_path else None,
+        preserve_source_apparatus=preserve_source_apparatus,
     )
     return VriXmlParser(config).parse().to_dict()
 
@@ -713,6 +725,80 @@ def collect_notes(nodes: list[ET.Element]) -> list[str]:
     return notes
 
 
+def collect_source_apparatus(nodes: list[ET.Element], path_map: dict[int, str]) -> list[dict[str, Any]]:
+    """Collect XML note apparatus as source metadata only.
+
+    ``source_apparatus`` is preserved for QA/review and future internal notes.
+    It is not part of ``original_text`` and must not alter translation prompt
+    input. Classification reuses Step 3F apparatus rules so citations such as
+    ``ma. ni. 1.55`` are not mistaken for variant sigla.
+    """
+
+    from backend.pali.translation.variant_apparatus import classify_note, expand_sigla
+
+    records: list[dict[str, Any]] = []
+    for node in nodes:
+        parent_path = path_map.get(id(node), "")
+        for note in node.iter():
+            if strip_namespace(note.tag) != "note":
+                continue
+            raw_note_text = normalize_whitespace("".join(note.itertext()))
+            if not raw_note_text:
+                continue
+            classification = classify_note(raw_note_text)
+            before = text_before_target(node, note)
+            anchor = preceding_token(before)
+            records.append(
+                {
+                    "note_type": classification.note_type,
+                    "is_variant_apparatus": classification.is_variant_apparatus,
+                    "raw_note_text": raw_note_text,
+                    "variant_text": classification.variant_text,
+                    "sigla": classification.sigla,
+                    "sigla_expanded": expand_sigla(classification.sigla),
+                    "unknown_sigla": classification.unknown_sigla,
+                    "citation_refs": classification.citation_refs,
+                    "anchor_text": anchor,
+                    "main_reading": anchor,
+                    "xml_node_path": path_map.get(id(note), ""),
+                    "parent_xml_node_path": parent_path,
+                    "char_offset": len(normalize_whitespace(before)),
+                    "evidence_strength_hint": classification.evidence_strength_hint,
+                    "auto_apply": False,
+                }
+            )
+    return records
+
+
+def text_before_target(root: ET.Element, target: ET.Element) -> str:
+    parts: list[str] = []
+    found = False
+
+    def walk(node: ET.Element) -> None:
+        nonlocal found
+        if found:
+            return
+        if node is target:
+            found = True
+            return
+        if node.text:
+            parts.append(node.text)
+        for child in list(node):
+            walk(child)
+            if found:
+                return
+            if child.tail:
+                parts.append(child.tail)
+
+    walk(root)
+    return "".join(parts)
+
+
+def preceding_token(text: str) -> str:
+    tokens = ROMAN_TOKEN_RE.findall(text)
+    return tokens[-1] if tokens else ""
+
+
 def classify_empty_node(node: ET.Element) -> str:
     child_tags = [strip_namespace(child.tag) for child in list(node)]
     has_pb = any(strip_namespace(element.tag) == "pb" for element in node.iter())
@@ -812,6 +898,7 @@ def main() -> None:
     parser.add_argument("--token-report")
     parser.add_argument("--token-profiles")
     parser.add_argument("--limit", type=int)
+    parser.add_argument("--without-source-apparatus", action="store_true")
     parser.add_argument("--pretty", action="store_true")
     args = parser.parse_args()
 
@@ -824,6 +911,7 @@ def main() -> None:
         limit=args.limit,
         include_token_report=include_token_report,
         token_profiles_path=args.token_profiles,
+        preserve_source_apparatus=not args.without_source_apparatus,
     )
 
     if args.out:
