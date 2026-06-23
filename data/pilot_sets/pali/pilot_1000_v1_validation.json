@@ -1,0 +1,61 @@
+{
+  "apparatus_bearing_count": 80,
+  "by_chunk_type": {
+    "prose": 804,
+    "verse": 196
+  },
+  "by_length_bucket": {
+    "long": 401,
+    "medium": 302,
+    "short": 297
+  },
+  "by_selection_bucket": {
+    "apparatus_bearing": 40,
+    "atthakatha_long": 70,
+    "citation_heavy_or_commentarial_dense": 35,
+    "mula_long_or_dense_abhidhamma": 40,
+    "representative_stratified": 700,
+    "tika_long": 80,
+    "verse_or_mixed": 35
+  },
+  "by_selection_group": {
+    "hard": 300,
+    "representative": 700
+  },
+  "by_text_layer": {
+    "atthakatha": 373,
+    "mula": 469,
+    "tika": 158
+  },
+  "duplicate_count": 0,
+  "gold_holdout_count": 0,
+  "hard_count": 300,
+  "hard_errors": [],
+  "inventory_source_commit": "49bc86914748589a2501b548cc6b3e97a8abe018",
+  "long_count": 401,
+  "manifest_sha256": "e52c7f786bcbd3162fd29c573a5dafa6b28028c1940b4d4e5fe637ec48d7f004",
+  "missing_source_path_count": 0,
+  "missing_source_text_hash_count": 0,
+  "missing_stable_segment_key_count": 0,
+  "overlap_with_300_count": 0,
+  "overlap_with_75_count": 0,
+  "overlap_with_step4_count": 0,
+  "representative_count": 700,
+  "response_schema_default_for_1000": true,
+  "salvage_cascade_fallback": true,
+  "schema_version": "pali_pilot_1000_selection_validation_v1",
+  "selected_count": 1000,
+  "selection_content_sha256": "0a3e82dc96b380db5d0a56858d208f074377e5ef6a461e5d708801f1dd876251",
+  "short_count": 297,
+  "silver_canary_in_main_manifest_count": 0,
+  "tika_count": 158,
+  "validation_status": "PASS_WITH_WARNINGS",
+  "verse_or_mixed_count": 196,
+  "warnings": [
+    "representative cell ('atthakatha', 'long', 'verse') underfilled: target 22, selected 2",
+    "representative cell ('mula', 'long', 'verse') underfilled: target 30, selected 8",
+    "representative cell ('tika', 'long', 'verse') underfilled: target 6, selected 0",
+    "representative group used deterministic backfill count 48",
+    "pinned inventory contains duplicate stable_segment_key rows; deduped 8354 rows across 2724 keys"
+  ]
+}
