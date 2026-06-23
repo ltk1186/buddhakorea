@@ -72,8 +72,9 @@ Do not add doctrinal conclusions that are not in the source. Do not hide uncerta
 
 natural_ko는 literal_ko를 단순히 다듬은 문장이 아니다. 현대 한국어 불교서 독자가 읽을 수 있는 문장으로 다시 구성한다. 교리적 의미, 지시 관계, 논리 관계는 보존하되, 빠알리 어순, 반복적인 lemma 풀이 구조, 지나치게 직역적인 절 구조는 보존하지 않는다.
 
-Do not add reader_ko or any new output field. Keep the existing output schema exactly.
+Do not add any new output field. Keep the existing output schema exactly.
 """
+NATURAL_KO_V2_MARKER = "natural_ko_v2 calibration instruction"
 
 
 def stable_sort_key(seed: str, key: str, salt: str = "") -> str:
@@ -642,6 +643,7 @@ def calibration_item_payload(item: dict[str, Any]) -> dict[str, Any]:
     return {
         "stable_segment_key": item.get("stable_segment_key"),
         "source_path": item.get("source_path"),
+        "source_text_hash": item.get("source_text_hash"),
         "text_layer": item.get("text_layer"),
         "chunk_type": item.get("chunk_type"),
         "length_bucket": item.get("length_bucket"),
@@ -672,7 +674,7 @@ def build_request_previews(selection: dict[str, Any]) -> tuple[list[dict[str, An
         segment = {
             "stable_segment_key": item["stable_segment_key"],
             "source_path": item.get("source_path"),
-            "source_text_hash": None,
+            "source_text_hash": item.get("source_text_hash"),
             "text_layer": item.get("text_layer"),
             "chunk_type": item.get("chunk_type"),
             "length_bucket": item.get("length_bucket"),
@@ -682,16 +684,27 @@ def build_request_previews(selection: dict[str, Any]) -> tuple[list[dict[str, An
             "heading_path": [],
         }
         prompt_v1 = render_korean_advanced_prompt_v1(segment)
-        prompt_v2 = f"{prompt_v1}\n\n---\n{NATURAL_KO_V2_INSTRUCTION.strip()}\n"
+        prompt_v2 = render_natural_ko_v2_prompt(prompt_v1)
         base_config = {
             "response_mime_type": "application/json",
             "response_schema": schema,
+        }
+        metadata = {
+            "stable_segment_key": item["stable_segment_key"],
+            "source_path": item.get("source_path"),
+            "source_text_hash": item.get("source_text_hash"),
+            "text_layer": item.get("text_layer"),
+            "chunk_type": item.get("chunk_type"),
+            "length_bucket": item.get("length_bucket"),
+            "calibration_role": item.get("calibration_role"),
+            "selection_reason": item.get("selection_reason"),
         }
         arm_v1.append(
             {
                 "key": item["stable_segment_key"],
                 "arm": "A_prime_natural_ko_v1_response_schema",
                 "calibration_role": item["calibration_role"],
+                "metadata": metadata,
                 "request": {
                     "model": KOREAN_ADVANCED_PROMPT_MODEL,
                     "contents": [{"role": "user", "parts": [{"text": prompt_v1}]}],
@@ -704,6 +717,7 @@ def build_request_previews(selection: dict[str, Any]) -> tuple[list[dict[str, An
                 "key": item["stable_segment_key"],
                 "arm": "B_natural_ko_v2_response_schema",
                 "calibration_role": item["calibration_role"],
+                "metadata": metadata,
                 "request": {
                     "model": KOREAN_ADVANCED_PROMPT_MODEL,
                     "contents": [{"role": "user", "parts": [{"text": prompt_v2}]}],
@@ -714,12 +728,26 @@ def build_request_previews(selection: dict[str, Any]) -> tuple[list[dict[str, An
     return arm_v1, arm_v2
 
 
+def render_natural_ko_v2_prompt(prompt_v1: str) -> str:
+    """Replace the production natural_ko guidance with the v2 calibration block."""
+    start = prompt_v1.find("natural_ko 작성 원칙:")
+    end = prompt_v1.find("\n\n용어 정책:", start)
+    replacement = (
+        "natural_ko 작성 원칙 (v2 calibration override):\n"
+        "The following block replaces the production v1 natural_ko guidance for this calibration arm.\n\n"
+        f"{NATURAL_KO_V2_INSTRUCTION.strip()}"
+    )
+    if start == -1 or end == -1:
+        return f"{prompt_v1}\n\n---\n{replacement}\n"
+    return f"{prompt_v1[:start]}{replacement}{prompt_v1[end:]}"
+
+
 def render_prompt_variant() -> str:
     return f"""# natural_ko_v2 Prompt Variant
 
 Status: experiment-only prompt variant for Step 5.5-C/D. This file is not a production prompt replacement.
 
-Output schema: unchanged. Do not add `reader_ko`.
+Output schema: unchanged. Do not add any new output field.
 
 ```text
 {NATURAL_KO_V2_INSTRUCTION.strip()}

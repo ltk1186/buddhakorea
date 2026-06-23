@@ -67,6 +67,64 @@ Step 5.5-C/D should check:
 - Human/scholar fidelity: B `natural_ko` must be checked against `literal_ko` and original Pāli for dropped, added, or distorted doctrinal content. Automated metrics are supporting signals only.
 - Readability by role: improvement targets should become more readable; convergence controls should remain faithful and not be artificially rewritten.
 
+## Step 5.5-C/D Controlled Smoke Harness
+
+Step 5.5-C/D adds a guarded live-smoke harness. The default command is preflight only and makes no API calls.
+
+Preflight validates:
+
+- 30 selected items
+- 2 arms
+- 60 planned provider requests
+- `source_text_hash` preserved from selection into request previews
+- response_schema present in both arms
+- no `reader_ko` field in response schema
+- A′ uses production prompt v1 natural_ko guidance unchanged
+- B replaces the production natural_ko guidance with the v2 calibration block
+- generation_config parity between arms
+- estimated cost under the $4 cap
+
+Operator sequence:
+
+```bash
+./venv/bin/python -m backend.pali.scripts.run_natural_ko_calibration_smoke \
+  --out data/reports/pali/natural_ko_calibration_v1 \
+  --preflight \
+  --pretty
+
+./venv/bin/python -m backend.pali.scripts.run_natural_ko_calibration_smoke \
+  --out data/reports/pali/natural_ko_calibration_v1 \
+  --submit \
+  --pretty
+
+./venv/bin/python -m backend.pali.scripts.run_natural_ko_calibration_smoke \
+  --out data/reports/pali/natural_ko_calibration_v1 \
+  --poll \
+  --pretty
+
+./venv/bin/python -m backend.pali.scripts.run_natural_ko_calibration_smoke \
+  --out data/reports/pali/natural_ko_calibration_v1 \
+  --fetch \
+  --pretty
+
+./venv/bin/python -m backend.pali.scripts.run_natural_ko_calibration_smoke \
+  --out data/reports/pali/natural_ko_calibration_v1 \
+  --parse \
+  --pretty
+
+./venv/bin/python -m backend.pali.scripts.run_natural_ko_calibration_smoke \
+  --out data/reports/pali/natural_ko_calibration_v1 \
+  --compare \
+  --pretty
+
+./venv/bin/python -m backend.pali.scripts.run_natural_ko_calibration_smoke \
+  --out data/reports/pali/natural_ko_calibration_v1 \
+  --finalize \
+  --pretty
+```
+
+Finalization remains conditional. Automatic metrics can prepare a recommendation, but adoption requires operator readability review and Pāli-capable fidelity review.
+
 ## Non-Mutation Guarantees
 
 Step 5.5-A/B does not modify:
@@ -81,4 +139,3 @@ Step 5.5-A/B does not modify:
 - existing 300 output files
 
 Step 6 remains blocked until the natural_ko_v2 smoke is reviewed.
-
