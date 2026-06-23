@@ -10,11 +10,13 @@ from backend.pali.scripts import run_response_schema_smoke as smoke_cli
 from backend.pali.scripts.run_response_schema_smoke import Step4Blocked, build_parser, run
 from backend.pali.translation.response_schema_smoke import (
     build_arm_jsonl,
+    build_final_decision,
     build_response_schema_experiment,
     build_run_manifest,
     compare_arms,
     estimate_step4_cost,
     recommendation_from_metrics,
+    render_step5_handoff,
     select_step4_items,
     validate_response_schema_dialect,
 )
@@ -405,7 +407,7 @@ def test_content_suppression_flags_and_recommendation() -> None:
             {
                 "stable_segment_key": "k1",
                 "schema_valid": True,
-                "parse_method": "strict_json",
+                "parse_method": "raw_decode",
                 "literal_ko": "가" * 100,
                 "natural_ko": "나" * 100,
                 "terms": [{"pali": "sati"}] * 3,
@@ -446,7 +448,7 @@ def test_forced_optional_array_filling_flag() -> None:
             {
                 "stable_segment_key": "k1",
                 "schema_valid": True,
-                "parse_method": "strict_json",
+                "parse_method": "raw_decode",
                 "literal_ko": "충분한 직역",
                 "natural_ko": "충분한 자연역",
                 "terms": [],
@@ -475,6 +477,174 @@ def test_forced_optional_array_filling_flag() -> None:
     }
     comparison = compare_arms(arm_a, arm_b)
     assert comparison["content_suppression_flag_counts"]["arm_b_forced_optional_array_filling"] == 1
+    assert comparison["recommendation"]["decision"] == "adopt_response_schema_for_1000_pilot_with_salvage_fallback"
+    assert comparison["recommendation"]["warning_flags"] == ["arm_b_forced_optional_array_filling"]
+    assert comparison["recommendation"]["fatal_flags"] == []
+
+
+def test_optional_array_warning_only_does_not_block_response_schema() -> None:
+    metrics_a = {
+        "strict_parse_rate": "0.780000",
+        "schema_valid_rate": "1.000000",
+        "truncation_rate": "0.000000",
+        "empty_translation_rate": "0.000000",
+        "provider_error_rate": "0.000000",
+    }
+    metrics_b = {
+        "strict_parse_rate": "1.000000",
+        "schema_valid_rate": "1.000000",
+        "truncation_rate": "0.000000",
+        "empty_translation_rate": "0.000000",
+        "provider_error_rate": "0.000000",
+    }
+    rec = recommendation_from_metrics(metrics_a, metrics_b, {"arm_b_optional_arrays_emptied": 3})
+    assert rec["decision"] == "adopt_response_schema_for_1000_pilot_with_salvage_fallback"
+    assert rec["warning_policy"] == "adopt_with_optional_array_warning_tracking"
+    assert rec["warning_flags"] == ["arm_b_optional_arrays_emptied"]
+    assert rec["fatal_flags"] == []
+
+
+@pytest.mark.parametrize(
+    "flag",
+    [
+        "arm_b_literal_much_shorter",
+        "arm_b_natural_much_shorter",
+        "arm_b_empty_translation_field",
+        "arm_b_terms_dropped",
+    ],
+)
+def test_fatal_content_flags_block_response_schema(flag: str) -> None:
+    metrics_a = {"strict_parse_rate": "0.780000", "schema_valid_rate": "1.000000"}
+    metrics_b = {
+        "strict_parse_rate": "1.000000",
+        "schema_valid_rate": "1.000000",
+        "truncation_rate": "0.000000",
+        "empty_translation_rate": "0.000000",
+        "provider_error_rate": "0.000000",
+    }
+    rec = recommendation_from_metrics(metrics_a, metrics_b, {flag: 1})
+    assert rec["decision"] == "keep_current_free_form_json_plus_salvage_cascade"
+    assert rec["fatal_flags"] == [flag]
+
+
+def test_metric_regressions_block_response_schema() -> None:
+    metrics_a = {
+        "strict_parse_rate": "0.980000",
+        "schema_valid_rate": "1.000000",
+        "truncation_rate": "0.000000",
+        "empty_translation_rate": "0.000000",
+        "provider_error_rate": "0.000000",
+    }
+    metrics_b = {
+        "strict_parse_rate": "0.970000",
+        "schema_valid_rate": "0.990000",
+        "truncation_rate": "0.000000",
+        "empty_translation_rate": "0.000000",
+        "provider_error_rate": "0.000000",
+    }
+    rec = recommendation_from_metrics(metrics_a, metrics_b, {})
+    assert rec["decision"] == "keep_current_free_form_json_plus_salvage_cascade"
+    assert "arm_b_strict_parse_not_improved" in rec["metric_blockers"]
+    assert "arm_b_strict_parse_not_near_perfect" in rec["metric_blockers"]
+    assert "arm_b_schema_validity_regressed" in rec["metric_blockers"]
+
+
+def test_fatal_flags_are_emitted_by_pair_builder() -> None:
+    arm_a = {
+        "items": [
+            {
+                "stable_segment_key": "k1",
+                "schema_valid": True,
+                "parse_method": "strict_json",
+                "literal_ko": "가" * 100,
+                "natural_ko": "나" * 100,
+                "terms": [{"pali": "a"}, {"pali": "b"}, {"pali": "c"}],
+                "grammar_notes": [],
+                "doctrinal_notes": [],
+                "uncertainties": [],
+                "quality_flags": [],
+            },
+            {
+                "stable_segment_key": "k2",
+                "schema_valid": True,
+                "parse_method": "strict_json",
+                "literal_ko": "직역",
+                "natural_ko": "자연역",
+                "terms": [{"pali": "d"}, {"pali": "e"}, {"pali": "f"}, {"pali": "g"}],
+                "grammar_notes": [],
+                "doctrinal_notes": [],
+                "uncertainties": [],
+                "quality_flags": [],
+            },
+        ]
+    }
+    arm_b = {
+        "items": [
+            {
+                "stable_segment_key": "k1",
+                "schema_valid": True,
+                "parse_method": "strict_json",
+                "literal_ko": "짧음",
+                "natural_ko": "",
+                "terms": [],
+                "grammar_notes": [],
+                "doctrinal_notes": [],
+                "uncertainties": [],
+                "quality_flags": [],
+            },
+            {
+                "stable_segment_key": "k2",
+                "schema_valid": True,
+                "parse_method": "strict_json",
+                "literal_ko": "직역",
+                "natural_ko": "자연역",
+                "terms": [{"pali": "d"}],
+                "grammar_notes": [],
+                "doctrinal_notes": [],
+                "uncertainties": [],
+                "quality_flags": [],
+            },
+        ]
+    }
+    flags = compare_arms(arm_a, arm_b)["content_suppression_flag_counts"]
+    assert flags["arm_b_literal_much_shorter"] == 1
+    assert flags["arm_b_natural_much_shorter"] == 1
+    assert flags["arm_b_empty_translation_field"] == 1
+    assert flags["arm_b_terms_dropped"] == 2
+
+
+def test_final_decision_payload_and_step5_handoff() -> None:
+    decision = build_final_decision(
+        {
+            "arm_a_metrics": {
+                "strict_parse_rate": "0.780000",
+                "salvage_needed_rate": "0.220000",
+                "schema_valid_rate": "1.000000",
+                "cost_actual_usd": "1.475682",
+                "thinking_tokens": 175427,
+            },
+            "arm_b_metrics": {
+                "strict_parse_rate": "1.000000",
+                "salvage_needed_rate": "0.000000",
+                "schema_valid_rate": "1.000000",
+                "cost_actual_usd": "1.173312",
+                "thinking_tokens": 124496,
+            },
+        }
+    )
+    assert decision["operator_decision"] == "adopt_response_schema_for_1000_pilot_with_salvage_fallback"
+    assert decision["response_schema_default_for_1000"] is True
+    assert decision["salvage_cascade_fallback"] is True
+    assert decision["gold_accuracy_available"] is False
+    assert decision["silver_canary_status"] == "advisory_only_not_gold_accuracy"
+
+    handoff = render_step5_handoff()
+    assert "Gold holdout is not frozen" in handoff
+    assert "Production-NEW = 1,000 segments" in handoff
+    assert "total up to 1,020 requests" in handoff
+    assert "advisory_only_not_gold_accuracy" in handoff
+    assert "response_schema as the default output mode" in handoff
+    assert "Salvage cascade remains enabled as fallback" in handoff
 
 
 def test_provider_rejection_is_valid_recommendation_state() -> None:

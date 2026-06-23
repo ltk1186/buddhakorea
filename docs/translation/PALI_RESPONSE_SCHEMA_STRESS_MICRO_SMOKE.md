@@ -154,3 +154,40 @@ Step 4 does not modify:
 - source XML
 - existing 300 parsed outputs
 - holdout gold state
+
+## Final Step 4 Decision
+
+Step 4 completed as an A/B batch-path micro-smoke.
+
+Arm B `response_schema`, after the Gemini dialect patch, completed successfully
+and achieved:
+
+- strict_parse_rate: 1.000000
+- salvage_needed_rate: 0.000000
+- schema_valid_rate: 1.000000
+- truncation_rate: 0.000000
+- empty_translation_rate: 0.000000
+- lower actual cost than Arm A
+- lower thinking token count than Arm A
+
+Manual review found no fatal content suppression. Optional array changes were
+observed and will be tracked as QA warnings.
+
+Final operator decision:
+
+`response_schema` will be used as the default output mode for the 1,000 pilot,
+while the existing salvage cascade remains enabled as a fallback.
+
+This decision is operational, not a gold accuracy claim. Gold holdout remains
+unavailable/not frozen. Step 3G-B Silver remains advisory only and is not gold
+accuracy.
+
+The reduced thinking-token usage in Arm B is promising but not conclusive. The
+1,000 pilot must track whether reduced thinking-token usage under
+`response_schema` degrades translation quality in hard buckets such as long
+ṭīkā and dense Abhidhamma passages.
+
+Future schema option: the observed uncertainty-field decrease may stem from all
+seven fields being required. A later schema v2 can evaluate making optional
+annotation fields non-required or nullable, but Step 4 does not apply that
+change.

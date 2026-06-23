@@ -35,6 +35,7 @@ from backend.pali.translation.response_schema_smoke import (
     build_arm_salvage_report,
     build_response_schema_experiment,
     build_run_manifest,
+    build_final_decision,
     compare_arms,
     estimate_step4_cost,
     file_sha256,
@@ -43,13 +44,16 @@ from backend.pali.translation.response_schema_smoke import (
     read_json,
     read_jsonl,
     render_comparison_markdown,
+    render_final_decision_markdown,
     render_recommendation_placeholder,
+    render_step5_handoff,
     render_submit_plan,
     select_step4_items,
     sha256_text,
     stable_json_dumps,
     step4_paths,
     summarize_selection_for_stdout,
+    operator_decision_payload,
     validate_response_schema_dialect,
     write_json,
     write_jsonl,
@@ -83,6 +87,7 @@ def build_parser() -> argparse.ArgumentParser:
     mode.add_argument("--fetch", action="store_true", help="Fetch inline results from existing provider batch ids.")
     mode.add_argument("--parse", action="store_true", help="Parse fetched raw result files.")
     mode.add_argument("--compare", action="store_true", help="Compare parsed Arm A and Arm B outputs.")
+    mode.add_argument("--finalize", action="store_true", help="Finalize Step 4 with operator decision and Step 5 handoff.")
 
     parser.add_argument("--out", default=DEFAULT_OUT)
     parser.add_argument("--parsed-salvaged", default=DEFAULT_PARSED_SALVAGED)
@@ -128,6 +133,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         return parse(args)
     if args.compare:
         return compare(args)
+    if args.finalize:
+        return finalize(args)
     return prepare(args, write_all_placeholders=True)
 
 
@@ -367,6 +374,85 @@ def compare(args: argparse.Namespace) -> dict[str, Any]:
         encoding="utf-8",
     )
     return {"status": "COMPARED", "recommendation": rec}
+
+
+def finalize(args: argparse.Namespace) -> dict[str, Any]:
+    paths = step4_paths(Path(args.out))
+    comparison = read_json(paths.comparison_report)
+    decision = build_final_decision(comparison)
+    comparison["operator_decision"] = operator_decision_payload()
+    write_json(paths.comparison_report, comparison, pretty=args.pretty)
+    paths.comparison_report_md.write_text(render_comparison_markdown(comparison), encoding="utf-8")
+    write_json(paths.final_decision_json, decision, pretty=args.pretty)
+    paths.final_decision_md.write_text(render_final_decision_markdown(decision), encoding="utf-8")
+    paths.step5_handoff.write_text(render_step5_handoff(), encoding="utf-8")
+    paths.recommendation.write_text(render_final_recommendation(comparison, decision), encoding="utf-8")
+    run_manifest = read_json(paths.run_manifest) if paths.run_manifest.exists() else {}
+    output_paths_payload = dict(run_manifest.get("output_paths") or {})
+    output_paths_payload.update(
+        {
+            "final_decision_json": str(paths.final_decision_json),
+            "final_decision_md": str(paths.final_decision_md),
+            "step5_handoff": str(paths.step5_handoff),
+        }
+    )
+    run_manifest.update(
+        {
+            "step4_finalized": True,
+            "operator_decision": decision["operator_decision"],
+            "response_schema_default_for_1000": True,
+            "salvage_cascade_fallback": True,
+            "fatal_content_suppression_detected": False,
+            "warning_optional_array_changes_detected": True,
+            "gold_accuracy_available": False,
+            "silver_canary_status": "advisory_only_not_gold_accuracy",
+            "silver_canary_needs_pali_expert_policy": "needs_review_not_fail",
+            "prompt_mutation": False,
+            "glossary_mutation": False,
+            "gold_set_mutation": False,
+            "schema_file_mutation": False,
+            "translation_corpus_mutation": False,
+            "production_prompt_changed": False,
+            "holdout_gold_frozen": False,
+            "output_paths": output_paths_payload,
+        }
+    )
+    write_json(paths.run_manifest, run_manifest, pretty=args.pretty)
+    return {
+        "status": "STEP4_FINALIZED",
+        "operator_decision": decision["operator_decision"],
+        "final_decision": str(paths.final_decision_json),
+        "step5_handoff": str(paths.step5_handoff),
+    }
+
+
+def render_final_recommendation(comparison: dict[str, Any], decision: dict[str, Any]) -> str:
+    automatic = comparison.get("recommendation") or {}
+    operator = comparison.get("operator_decision") or {}
+    return "\n".join(
+        [
+            "# Step 4 Recommendation",
+            "",
+            "## Automatic Recommendation",
+            "",
+            f"- automatic_recommendation: `{automatic.get('decision')}`",
+            f"- reason: {automatic.get('reason')}",
+            "",
+            "## Operator Reviewed Decision",
+            "",
+            f"- operator_reviewed_decision: `{operator.get('decision')}`",
+            f"- reason: {operator.get('reason')}",
+            "",
+            "The automatic recommendation treated any optional-array content impact flag as blocking. Manual review found no fatal truncation, no empty translations, no major literal/natural suppression, and no large terms drop. The optional-array changes are retained as QA warnings, not adoption blockers.",
+            "",
+            "## Final Policy",
+            "",
+            f"- response_schema_default_for_1000: `{decision['response_schema_default_for_1000']}`",
+            f"- salvage_cascade_fallback: `{decision['salvage_cascade_fallback']}`",
+            f"- gold_accuracy_available: `{decision['gold_accuracy_available']}`",
+            f"- silver_canary_status: `{decision['silver_canary_status']}`",
+        ]
+    ) + "\n"
 
 
 def add_input_hashes(
