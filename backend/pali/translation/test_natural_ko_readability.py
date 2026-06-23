@@ -21,6 +21,7 @@ from backend.pali.translation.natural_ko_readability import (
     render_prompt_variant,
     render_prompt_variant_v2_1,
     render_prompt_variant_v2_2,
+    render_natural_ko_v2_2_prompt,
     run_calibration_prep,
     select_calibration_items,
 )
@@ -267,6 +268,54 @@ def test_natural_ko_v2_2_prompt_has_marker_glossary_and_guards(tmp_path: Path) -
     assert "용어 정책:" in d_prompt
     assert arm_d[0]["metadata"]["source_text_hash"] == selection["items"][0]["source_text_hash"]
     assert "Glossary Lock" in render_glossary_lock_v2_2_md()
+
+
+def test_natural_ko_v2_2_known_failure_guards_are_item_specific() -> None:
+    def item_guard(prompt: str) -> str:
+        return prompt.split("## Item-Specific Known-Failure Guard", 1)[1].split("## Glossary", 1)[0]
+
+    prompt_v1 = (
+        "literal_ko 작성 원칙:\n- 직역입니다.\n\n"
+        "natural_ko 작성 원칙:\n- 독자용 자연역입니다.\n\n"
+        "용어 정책:\n- 용어는 보존합니다."
+    )
+    accenti_prompt = render_natural_ko_v2_2_prompt(
+        prompt_v1,
+        {"stable_segment_key": "vri:romn:s0508a1.att:8b9574445272", "text_layer": "atthakatha"},
+    )
+    kharena_prompt = render_natural_ko_v2_2_prompt(
+        prompt_v1,
+        {"stable_segment_key": "vri:romn:s0507a.att:f303db8f57dc", "text_layer": "atthakatha"},
+    )
+    unrelated_prompt = render_natural_ko_v2_2_prompt(
+        prompt_v1,
+        {"stable_segment_key": "vri:romn:other.mul:000", "text_layer": "mula"},
+    )
+    accenti_guard = item_guard(accenti_prompt)
+    kharena_guard = item_guard(kharena_prompt)
+    unrelated_guard = item_guard(unrelated_prompt)
+    assert "지나간다/지나쳐 버린다" in accenti_guard
+    assert "상처에" not in accenti_guard
+    assert "세속적인" not in accenti_guard
+    assert "상처에" in kharena_guard
+    assert "지나간다/지나쳐 버린다" not in kharena_guard
+    assert "No known item-specific failure guard" in unrelated_guard
+    assert "선업이 청정하기 때문에" not in unrelated_guard
+    assert "상처에" not in unrelated_guard
+    assert "지나간다/지나쳐 버린다" not in unrelated_guard
+
+
+def test_natural_ko_v2_2_prompt_includes_glossary_tiers() -> None:
+    prompt_v1 = (
+        "literal_ko 작성 원칙:\n- 직역입니다.\n\n"
+        "natural_ko 작성 원칙:\n- 독자용 자연역입니다.\n\n"
+        "용어 정책:\n- 용어는 보존합니다."
+    )
+    d_prompt = render_natural_ko_v2_2_prompt(prompt_v1, {"stable_segment_key": "vri:romn:other.mul:000"})
+    glossary_md = render_glossary_lock_v2_2_md()
+    assert "[hard/high]" in d_prompt
+    assert "[advisory/needs_expert_confirm]" in d_prompt
+    assert "| Enforcement | Confidence |" in glossary_md
 
 
 def test_dry_run_plan_and_manifest_record_no_calls(tmp_path: Path) -> None:

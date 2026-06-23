@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from backend.pali.translation.natural_ko_v2_2_quality import (
+    detect_advisory_glossary_warnings,
     detect_bracket_violations,
     detect_glossary_violations,
     detect_known_omissions,
@@ -48,15 +49,42 @@ def test_known_unsupported_insertions_are_segment_scoped() -> None:
 def test_known_accenti_omission_is_detected_for_specific_item() -> None:
     missing = d_item("vri:romn:s0508a1.att:8b9574445272", natural="기회가 사라진다.")
     present = d_item("vri:romn:s0508a1.att:8b9574445272", natural="기회가 지나간다.")
-    assert detect_known_omissions(missing) == ["missing_accenti_jinaganda"]
+    assert detect_known_omissions(missing) == ["missing_accenti_predicate_in_natural_ko"]
     assert detect_known_omissions(present) == []
+
+
+def test_accenti_omission_checks_natural_ko_not_literal_ko() -> None:
+    literal_only = d_item(
+        "vri:romn:s0508a1.att:8b9574445272",
+        literal="기회가 지나간다.",
+        natural="기회가 사라진다.",
+    )
+    natural_present = d_item(
+        "vri:romn:s0508a1.att:8b9574445272",
+        literal="다른 말.",
+        natural="기회가 지나쳐 버린다.",
+    )
+    assert detect_known_omissions(literal_only) == ["missing_accenti_predicate_in_natural_ko"]
+    assert detect_known_omissions(natural_present) == []
 
 
 def test_glossary_lock_flags_disallowed_renderings_but_not_gongbujieum() -> None:
     assert detect_glossary_violations(d_item("x", natural="통찰지를 위로 하는 수행이다."))
     assert detect_glossary_violations(d_item("x", natural="처음-상태를 말한다."))
     assert detect_glossary_violations(d_item("x", natural="세속적인 일을 즐김이다."))
+    assert detect_glossary_violations(d_item("x", natural="상처에 잿물을 뿌렸다."))
+    assert detect_glossary_violations(d_item("x", natural="번뇌를 동반하지 않으며 그렇다."))
     assert detect_glossary_violations(d_item("x", natural="공부지음이다.")) == []
+
+
+def test_advisory_glossary_warnings_do_not_count_as_hard_violations() -> None:
+    item = d_item("x", natural="맥락 없는 들어감이라고 옮겼다.")
+    evaluation = evaluate_d_arm_item(item)
+    assert detect_glossary_violations(item) == []
+    assert detect_advisory_glossary_warnings(item) == ["otaraṇā:맥락 없는 들어감"]
+    assert evaluation["glossary_violation"] is False
+    assert evaluation["advisory_glossary_warning"] is True
+    assert evaluation["advisory_glossary_warning_details"] == ["otaraṇā:맥락 없는 들어감"]
 
 
 def test_patthana_double_negation_unsupported_bunnoe_is_high_risk() -> None:

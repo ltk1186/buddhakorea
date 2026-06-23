@@ -138,8 +138,6 @@ NATURAL_KO_V2_2_INSTRUCTION = f"""[{NATURAL_KO_V2_2_MARKER}]
 ## v2.2 Repair Policy
 
 {NATURAL_KO_V2_2_CORE_POLICY.strip()}
-
-{NATURAL_KO_V2_2_KNOWN_FAILURE_GUARD.strip()}
 """
 
 
@@ -926,6 +924,8 @@ def render_natural_ko_v2_2_prompt(prompt_v1: str, item: dict[str, Any] | None = 
         f"{NATURAL_KO_V2_2_INSTRUCTION.strip()}\n\n"
         "## Item-Specific Genre Mode\n\n"
         f"{genre_mode_block_v2_2(item).strip()}\n\n"
+        "## Item-Specific Known-Failure Guard\n\n"
+        f"{known_failure_guard_block_v2_2(item).strip()}\n\n"
         "## Glossary Lock Extract for This D-arm\n\n"
         f"{glossary_lock_prompt_block_v2_2().strip()}"
     )
@@ -973,6 +973,9 @@ Output schema: unchanged. Do not add any new output field.
 ## Genre mode is injected per item
 {genre_mode_block_v2_2({'text_layer': 'tika', 'chunk_type': 'prose', 'source_path': 'romn/example.tik.xml'}).strip()}
 
+## Known-failure guard is injected per item
+{known_failure_guard_block_v2_2({'stable_segment_key': 'vri:romn:s0513a3.att:8cd09caf90eb'}).strip()}
+
 ## Glossary lock is injected into each D-arm request
 {glossary_lock_prompt_block_v2_2().strip()}
 ```
@@ -1017,18 +1020,38 @@ def genre_mode_block_v2_2(item: dict[str, Any]) -> str:
 - Do not add motivation, emotional coloring, or narrative detail not present in the source."""
 
 
+def known_failure_guard_block_v2_2(item: dict[str, Any]) -> str:
+    key = str(item.get("stable_segment_key") or "")
+    if "abh03m11.mul:4ab6e93ef3c3" in key:
+        return "Paṭṭhāna/double-negation guard: do not introduce '번뇌를 동반하지 않으며' or similar language unless the source explicitly says it. Preserve the logic of not having a cause to be abandoned by seeing or by development; if uncertain, add a fidelity-risk flag."
+    if "abh02m.mul:a8d464d40a45" in key:
+        return "kammārāmatā guard: render as '일을 즐김'. Do not add '세속적인' unless source/context explicitly supports it."
+    if "s0507a.att:f303db8f57dc" in key:
+        return "khārena paripphositvā guard: render as '잿물을 뿌리고서'. Do not add '상처에' unless source/context explicitly says wound."
+    if "s0508a1.att:8b9574445272" in key:
+        return "accenti guard: preserve the predicate '지나간다/지나쳐 버린다' in natural_ko. If natural_ko compresses the passage, it still must include that opportunities pass by."
+    if "s0514m.mul:88650af1ca41" in key:
+        return "Assāsayi guard: avoid unsupported '기꺼이', '말을 쉬게', or similar embellishment. Keep ambiguous verb handling conservative and record uncertainty when needed."
+    if "s0513a3.att:8cd09caf90eb" in key:
+        return "Causal insertion guard: do not add '선업이 청정하기 때문에' or any newly supplied causal bridge when the source only gives a connective."
+    return "No known item-specific failure guard for this segment; apply the general fidelity and no-insertion rules."
+
+
 def glossary_lock_prompt_block_v2_2() -> str:
     from backend.pali.translation.natural_ko_v2_2_quality import glossary_lock_payload_v2_2
 
     lines = [
         "Use these D-arm glossary locks where relevant. They steer this smoke test and are not yet promoted to the project glossary.",
-        "Do not use disallowed renderings.",
+        "Hard entries are binding for this D-arm smoke. Advisory entries are guidance only and require expert confirmation before production glossary promotion.",
+        "Do not use hard-disallowed renderings.",
     ]
     for entry in glossary_lock_payload_v2_2()["entries"]:
         preferred = ", ".join(entry["preferred_ko"])
         disallowed = ", ".join(entry["disallowed_renderings"]) or "none"
         status = entry["lock_status"]
-        lines.append(f"- {entry['pali']}: prefer {preferred}; disallow {disallowed}; status={status}.")
+        tier = entry["enforcement_level"]
+        confidence = entry["confidence"]
+        lines.append(f"- [{tier}/{confidence}] {entry['pali']}: prefer {preferred}; disallow {disallowed}; status={status}.")
     return "\n".join(lines)
 
 
@@ -1038,7 +1061,7 @@ def render_glossary_lock_v2_2_md() -> str:
     rows = []
     for entry in glossary_lock_payload_v2_2()["entries"]:
         rows.append(
-            f"| {entry['pali']} | {', '.join(entry['preferred_ko'])} | "
+            f"| {entry['pali']} | {entry['enforcement_level']} | {entry['confidence']} | {', '.join(entry['preferred_ko'])} | "
             f"{', '.join(entry['allowed_alternatives']) or '-'} | "
             f"{', '.join(entry['disallowed_renderings']) or '-'} | {entry['lock_status']} | {entry['notes']} |"
         )
@@ -1048,8 +1071,8 @@ def render_glossary_lock_v2_2_md() -> str:
             "",
             "Status: D-arm test lock, not yet promoted to the project glossary.",
             "",
-            "| Pāli | Preferred Korean | Allowed alternatives | Disallowed | Status | Notes |",
-            "|---|---|---|---|---|---|",
+            "| Pāli | Enforcement | Confidence | Preferred Korean | Allowed alternatives | Disallowed | Status | Notes |",
+            "|---|---|---|---|---|---|---|---|",
             *rows,
             "",
         ]

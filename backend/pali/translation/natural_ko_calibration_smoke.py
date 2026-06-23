@@ -1348,7 +1348,9 @@ def compare_v2_2_d_arm(
                 "insertion_risk": "unsupported_insertion" if gates["unsupported_insertion"] else "none_detected_by_objective_gate",
                 "omission_risk": "known_content_omission" if gates["known_content_omission"] else "general_omission_pending_scholar_review",
                 "negation_risk": "negation_scope_risk" if gates["negation_scope_risk"] else "pending_scholar_review",
-                "glossary_compliance": "glossary_violation" if gates["glossary_violation"] else "ok_for_locked_terms",
+                "glossary_compliance": "glossary_violation"
+                if gates["glossary_violation"]
+                else ("advisory_warning" if gates.get("advisory_glossary_warning") else "ok_for_locked_terms"),
                 "bracket_violation": gates["bracket_violation"],
                 "final_item_verdict": "pending_operator_and_scholar_review",
                 "objective_gates": gates,
@@ -1362,6 +1364,7 @@ def compare_v2_2_d_arm(
         and gate_summary["bracket_violations"] == 0
         and gate_summary["unsupported_insertions"] == 0
         and gate_summary["known_content_omissions"] == 0
+        and gate_summary["negation_scope_risks"] == 0
         and gate_summary["glossary_violations"] == 0
     )
     return {

@@ -9,6 +9,7 @@ import pytest
 from backend.pali.translation.budget import PriceProfile
 from backend.pali.translation.natural_ko_calibration_smoke import (
     NaturalKoSmokeBlocked,
+    compare_v2_2_d_arm,
     compare_v2_1_arms,
     compare_parsed_arms,
     finalize_v2_1_recommendation,
@@ -354,6 +355,32 @@ def test_v2_1_compare_computes_overreach_flags() -> None:
     assert comparison["overreach_summary"]["added_causal_or_doctrinal_phrase_flag"] == 1
     assert any("added_causal_or_doctrinal_phrase_flag" in item["warnings"] for item in comparison["pair_checks"])
     assert any("control_forced_divergence_warning" in item["warnings"] for item in comparison["pair_checks"])
+
+
+def test_v2_2_objective_gate_fails_on_negation_scope_risk() -> None:
+    d_items = [
+        parsed_item(
+            "vri:romn:abh03m11.mul:4ab6e93ef3c3",
+            "improvement_target",
+            "직역입니다.",
+            "번뇌를 동반하지 않으며 그렇다.",
+        )
+    ]
+    d_items.extend(parsed_item(f"d-{index}", "improvement_target", "직역입니다.", "자연역입니다.") for index in range(29))
+    comparison = compare_v2_2_d_arm(parsed_arm(d_items, "D_natural_ko_v2_2"), None, None, None)
+    assert comparison["objective_gate_summary"]["negation_scope_risks"] == 1
+    assert comparison["objective_gate_status"] == "FAIL"
+
+
+def test_v2_2_objective_gate_allows_advisory_glossary_warnings() -> None:
+    d_items = [parsed_item("advisory", "improvement_target", "직역입니다.", "맥락 없는 들어감이다.")]
+    d_items.extend(parsed_item(f"d-{index}", "improvement_target", "직역입니다.", "자연역입니다.") for index in range(29))
+    comparison = compare_v2_2_d_arm(parsed_arm(d_items, "D_natural_ko_v2_2"), None, None, None)
+    assert comparison["objective_gate_summary"]["advisory_glossary_warnings"] == 1
+    assert comparison["objective_gate_summary"]["glossary_violations"] == 0
+    assert comparison["objective_gate_status"] == "PASS"
+    advisory_row = next(row for row in comparison["comparison_rows"] if row["stable_segment_key"] == "advisory")
+    assert advisory_row["glossary_compliance"] == "advisory_warning"
 
 
 def test_compare_reports_unpaired_keys() -> None:
