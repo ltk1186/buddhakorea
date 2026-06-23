@@ -58,7 +58,9 @@ RANEUN_GEOT_PHRASES = (
     "라는 뜻",
 )
 
-NATURAL_KO_V2_INSTRUCTION = """natural_ko_v2 calibration instruction:
+NATURAL_KO_V2_MARKER = "NATURAL_KO_V2_CALIBRATION_INSTRUCTION"
+
+NATURAL_KO_V2_INSTRUCTION = f"""[{NATURAL_KO_V2_MARKER}]
 
 For natural_ko, do not merely polish literal_ko. Rewrite the passage into readable modern Korean suitable for a serious Buddhist book. Preserve the doctrinal meaning, referents, and logical relations, but do not preserve Pāli word order, repetitive lemma-gloss syntax, or overly literal clause structure.
 
@@ -72,9 +74,9 @@ Do not add doctrinal conclusions that are not in the source. Do not hide uncerta
 
 natural_ko는 literal_ko를 단순히 다듬은 문장이 아니다. 현대 한국어 불교서 독자가 읽을 수 있는 문장으로 다시 구성한다. 교리적 의미, 지시 관계, 논리 관계는 보존하되, 빠알리 어순, 반복적인 lemma 풀이 구조, 지나치게 직역적인 절 구조는 보존하지 않는다.
 
+Do not add `reader_ko`.
 Do not add any new output field. Keep the existing output schema exactly.
 """
-NATURAL_KO_V2_MARKER = "natural_ko_v2 calibration instruction"
 
 
 def stable_sort_key(seed: str, key: str, salt: str = "") -> str:

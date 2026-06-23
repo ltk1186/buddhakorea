@@ -179,7 +179,7 @@ def test_prompt_variant_and_previews_do_not_add_reader_ko(tmp_path: Path) -> Non
     audit = audit_items(rows, tmp_path / "fixture.md")
     selection = select_calibration_items(audit)
     prompt = render_prompt_variant()
-    assert "reader_ko" not in prompt
+    assert "Do not add `reader_ko`" in prompt
     assert "Do not add any new output field" in prompt
     arm_v1, arm_v2 = build_request_previews(selection)
     assert len(arm_v1) == 30
@@ -190,7 +190,7 @@ def test_prompt_variant_and_previews_do_not_add_reader_ko(tmp_path: Path) -> Non
     schema_v2 = arm_v2[0]["request"]["generation_config"]["response_schema"]
     assert "reader_ko" not in schema_v1["properties"]
     assert "reader_ko" not in schema_v2["properties"]
-    assert "reader_ko" not in arm_v2[0]["request"]["contents"][0]["parts"][0]["text"]
+    assert "Do not add `reader_ko`" in arm_v2[0]["request"]["contents"][0]["parts"][0]["text"]
     assert arm_v1[0]["metadata"]["source_text_hash"] == selection["items"][0]["source_text_hash"]
     assert arm_v2[0]["metadata"]["source_text_hash"] == selection["items"][0]["source_text_hash"]
 

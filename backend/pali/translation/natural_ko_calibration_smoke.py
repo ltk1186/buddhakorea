@@ -8,6 +8,7 @@ Step 5 selection, glossary, gold, source XML, or the translation corpus.
 from __future__ import annotations
 
 import json
+import re
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_HALF_UP
@@ -252,7 +253,7 @@ def run_preflight(
     price_profile, price_profile_raw = load_price_profile(price_profile_path, price_profile_id)
     cost_estimate = estimate_preview_cost(arm_a, arm_b, price_profile)
     errors, warnings = validate_preflight(selection, arm_a, arm_b)
-    if paths.prompt_variant.exists() and "reader_ko" in paths.prompt_variant.read_text(encoding="utf-8"):
+    if paths.prompt_variant.exists() and prompt_requests_reader_ko(paths.prompt_variant.read_text(encoding="utf-8")):
         errors.append("BLOCKED_READER_KO_IN_PROMPT_VARIANT")
     preflight = {
         "schema_version": "natural_ko_v2_smoke_preflight_v1",
@@ -329,7 +330,7 @@ def validate_preflight(
             errors.append("BLOCKED_ARM_A_MISSING_ORIGINAL_NATURAL_KO_GUIDANCE")
         if "natural_ko 작성 원칙:\n- 독자용 자연역입니다." in b_prompt:
             errors.append("BLOCKED_ARM_B_RETAINS_CONFLICTING_V1_NATURAL_KO_GUIDANCE")
-        if "reader_ko" in a_prompt or "reader_ko" in b_prompt:
+        if prompt_requests_reader_ko(a_prompt) or prompt_requests_reader_ko(b_prompt):
             errors.append("BLOCKED_READER_KO_IN_PROMPT")
     for left, right in zip(arm_a, arm_b, strict=False):
         if left.get("key") != right.get("key"):
@@ -350,6 +351,41 @@ def response_schema_for_row(row: dict[str, Any]) -> dict[str, Any] | None:
 
 def prompt_for_row(row: dict[str, Any]) -> str:
     return row.get("request", {}).get("contents", [{}])[0].get("parts", [{}])[0].get("text", "")
+
+
+def prompt_requests_reader_ko(prompt: str) -> bool:
+    """Return True only for positive/additive reader_ko prompt instructions."""
+    normalized = re.sub(r"[`*]", "", (prompt or "").lower())
+    if "reader_ko" not in normalized:
+        return False
+    negative_patterns = (
+        "do not add reader_ko",
+        "dont add reader_ko",
+        "do not create reader_ko",
+        "do not include reader_ko",
+        "do not output reader_ko",
+        "reader_ko is not being added",
+        "reader_ko_added = false",
+        "reader_ko: not added",
+        "no reader_ko",
+    )
+    positive_patterns = (
+        r"\badd\s+(?:a\s+|the\s+)?reader_ko\b",
+        r"\bcreate\s+(?:a\s+|the\s+)?reader_ko\b",
+        r"\binclude\s+(?:a\s+|the\s+)?reader_ko\b",
+        r"\boutput\s+(?:a\s+|the\s+)?reader_ko\b",
+        r"\bfield\s+reader_ko\b",
+        r"\breader_ko\s+field\b",
+    )
+    chunks = re.split(r"[\n.!?。！？]+", normalized)
+    for chunk in chunks:
+        if "reader_ko" not in chunk:
+            continue
+        if any(pattern in chunk for pattern in negative_patterns):
+            continue
+        if any(re.search(pattern, chunk) for pattern in positive_patterns):
+            return True
+    return False
 
 
 def render_preflight_markdown(preflight: dict[str, Any]) -> str:

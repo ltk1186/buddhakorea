@@ -12,6 +12,7 @@ from backend.pali.translation.natural_ko_calibration_smoke import (
     compare_parsed_arms,
     finalize_recommendation,
     parse_arm,
+    prompt_requests_reader_ko,
     run_preflight,
     smoke_paths,
     submit_smoke,
@@ -67,6 +68,16 @@ def test_preflight_passes_and_preserves_source_text_hash(tmp_path: Path) -> None
     assert preflight["planned_provider_requests"] == 60
     assert preflight["cap_passed_before_submit"] is True
     assert arm_a[0]["metadata"]["source_text_hash"] == selection["items"][0]["source_text_hash"]
+    assert "Do not add `reader_ko`" in paths.prompt_variant.read_text(encoding="utf-8")
+
+
+def test_prompt_requests_reader_ko_allows_negative_and_blocks_positive() -> None:
+    assert prompt_requests_reader_ko("Do not add `reader_ko`.") is False
+    assert prompt_requests_reader_ko("reader_ko is not being added") is False
+    assert prompt_requests_reader_ko("reader_ko: not added") is False
+    assert prompt_requests_reader_ko("Please add reader_ko to the output.") is True
+    assert prompt_requests_reader_ko("Create `reader_ko` as a third field.") is True
+    assert prompt_requests_reader_ko("Output reader_ko in the JSON.") is True
 
 
 def test_preflight_fails_if_arm_counts_or_total_are_wrong() -> None:
@@ -89,6 +100,14 @@ def test_preflight_fails_if_response_schema_missing_or_reader_ko_present() -> No
     assert any(error.startswith("BLOCKED_READER_KO_IN_RESPONSE_SCHEMA") for error in errors)
 
 
+def test_preflight_fails_if_prompt_positively_requests_reader_ko() -> None:
+    selection = fixture_selection()
+    arm_a, arm_b = build_request_previews(selection)
+    arm_b[0]["request"]["contents"][0]["parts"][0]["text"] += "\nPlease add reader_ko to the output JSON."
+    errors, _ = validate_preflight(selection, arm_a, arm_b)
+    assert "BLOCKED_READER_KO_IN_PROMPT" in errors
+
+
 def test_preflight_fails_if_source_text_hash_key_is_dropped() -> None:
     selection = fixture_selection()
     del selection["items"][0]["source_text_hash"]
@@ -102,6 +121,13 @@ def test_preflight_checks_prompt_override_and_generation_config_parity() -> None
     arm_a, arm_b = build_request_previews(selection)
     errors, _ = validate_preflight(selection, arm_a, arm_b)
     assert not errors
+    a_prompt = arm_a[0]["request"]["contents"][0]["parts"][0]["text"]
+    b_prompt = arm_b[0]["request"]["contents"][0]["parts"][0]["text"]
+    assert "NATURAL_KO_V2_CALIBRATION_INSTRUCTION" not in a_prompt
+    assert "NATURAL_KO_V2_CALIBRATION_INSTRUCTION" in b_prompt
+    assert "natural_ko 작성 원칙:\n- 독자용 자연역입니다." in a_prompt
+    assert "natural_ko 작성 원칙:\n- 독자용 자연역입니다." not in b_prompt
+    assert "용어 정책:" in b_prompt
     arm_b[0]["request"]["generation_config"]["temperature"] = 0.9
     errors, _ = validate_preflight(selection, arm_a, arm_b)
     assert any(error.startswith("BLOCKED_GENERATION_CONFIG_MISMATCH") for error in errors)
