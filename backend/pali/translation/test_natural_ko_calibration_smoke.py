@@ -9,19 +9,30 @@ import pytest
 from backend.pali.translation.budget import PriceProfile
 from backend.pali.translation.natural_ko_calibration_smoke import (
     NaturalKoSmokeBlocked,
+    compare_v2_1_arms,
     compare_parsed_arms,
+    finalize_v2_1_recommendation,
     finalize_recommendation,
     parse_arm,
     prompt_requests_reader_ko,
     run_preflight,
+    run_preflight_v2_1,
+    run_preflight_v2_2,
     smoke_paths,
+    submit_c_arm,
     submit_smoke,
     validate_preflight,
+    validate_preflight_v2_1,
+    validate_preflight_v2_2,
     write_json,
     write_jsonl,
 )
 from backend.pali.translation.natural_ko_readability import (
+    NATURAL_KO_V2_1_MARKER,
+    NATURAL_KO_V2_2_MARKER,
     audit_items,
+    build_request_preview_v2_1,
+    build_request_preview_v2_2,
     build_request_previews,
     select_calibration_items,
 )
@@ -71,6 +82,44 @@ def test_preflight_passes_and_preserves_source_text_hash(tmp_path: Path) -> None
     assert "Do not add `reader_ko`" in paths.prompt_variant.read_text(encoding="utf-8")
 
 
+def test_v2_1_preflight_passes_for_c_only_and_preserves_hash(tmp_path: Path) -> None:
+    selection = write_selection(tmp_path)
+    preflight = run_preflight_v2_1(out_dir=tmp_path, pretty=True)
+    paths = smoke_paths(tmp_path)
+    arm_c = [json.loads(line) for line in paths.arm_c_jsonl.read_text(encoding="utf-8").splitlines()]
+    manifest = json.loads(paths.run_manifest.read_text(encoding="utf-8"))
+    assert preflight["status"] == "PASS"
+    assert preflight["planned_provider_requests"] == 30
+    assert preflight["a_prime_reused"] is True
+    assert preflight["b_kept_reference"] is True
+    assert preflight["api_llm_calls"] == 0
+    assert arm_c[0]["metadata"]["source_text_hash"] == selection["items"][0]["source_text_hash"]
+    assert NATURAL_KO_V2_1_MARKER in paths.prompt_variant_v2_1.read_text(encoding="utf-8")
+    assert manifest["prompt_variant_v2_1_created"] is True
+    assert manifest["c_arm_planned_requests"] == 30
+    assert manifest["step6_started"] is False
+
+
+def test_v2_2_preflight_writes_d_arm_outputs_without_api(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    out = tmp_path / "out"
+    selection = write_selection(source)
+    preflight = run_preflight_v2_2(out_dir=out, calibration_source_dir=source, pretty=True)
+    paths = smoke_paths(out)
+    arm_d = [json.loads(line) for line in paths.arm_d_jsonl.read_text(encoding="utf-8").splitlines()]
+    manifest = json.loads(paths.arm_d_run_manifest.read_text(encoding="utf-8"))
+    assert preflight["status"] == "PASS"
+    assert preflight["planned_provider_requests"] == 30
+    assert preflight["api_llm_calls"] == 0
+    assert arm_d[0]["metadata"]["source_text_hash"] == selection["items"][0]["source_text_hash"]
+    assert NATURAL_KO_V2_2_MARKER in paths.prompt_variant_v2_2.read_text(encoding="utf-8")
+    assert paths.glossary_lock_v2_2_json.exists()
+    assert paths.arm_d_submit_plan.exists()
+    assert paths.d_no_api_executed_md.exists()
+    assert manifest["api_llm_calls"] == 0
+    assert manifest["step6_started"] is False
+
+
 def test_prompt_requests_reader_ko_allows_negative_and_blocks_positive() -> None:
     assert prompt_requests_reader_ko("Do not add `reader_ko`.") is False
     assert prompt_requests_reader_ko("reader_ko is not being added") is False
@@ -98,6 +147,41 @@ def test_preflight_fails_if_response_schema_missing_or_reader_ko_present() -> No
     arm_b[0]["request"]["generation_config"]["response_schema"]["properties"]["reader_ko"] = {"type": "string"}
     errors, _ = validate_preflight(selection, arm_a, arm_b)
     assert any(error.startswith("BLOCKED_READER_KO_IN_RESPONSE_SCHEMA") for error in errors)
+
+
+def test_v2_1_preflight_fails_if_c_schema_or_marker_invalid() -> None:
+    selection = fixture_selection()
+    arm_a, arm_b = build_request_previews(selection)
+    arm_c = build_request_preview_v2_1(selection)
+    errors, _ = validate_preflight_v2_1(selection, arm_a, arm_b, arm_c)
+    assert not errors
+    arm_c[0]["request"]["generation_config"]["response_schema"]["properties"]["reader_ko"] = {"type": "string"}
+    errors, _ = validate_preflight_v2_1(selection, arm_a, arm_b, arm_c)
+    assert any(error.startswith("BLOCKED_READER_KO_IN_RESPONSE_SCHEMA") for error in errors)
+    arm_c = build_request_preview_v2_1(selection)
+    arm_c[0]["request"]["contents"][0]["parts"][0]["text"] = arm_c[0]["request"]["contents"][0]["parts"][0]["text"].replace(
+        NATURAL_KO_V2_1_MARKER, ""
+    )
+    errors, _ = validate_preflight_v2_1(selection, arm_a, arm_b, arm_c)
+    assert "BLOCKED_ARM_C_MISSING_V2_1_MARKER" in errors
+
+
+def test_v2_2_preflight_validates_schema_marker_and_hash() -> None:
+    selection = fixture_selection()
+    arm_a, arm_b = build_request_previews(selection)
+    arm_c = build_request_preview_v2_1(selection)
+    arm_d = build_request_preview_v2_2(selection)
+    errors, _ = validate_preflight_v2_2(selection, arm_a, arm_b, arm_c, arm_d)
+    assert not errors
+    arm_d[0]["request"]["generation_config"]["response_schema"]["properties"]["reader_ko"] = {"type": "string"}
+    errors, _ = validate_preflight_v2_2(selection, arm_a, arm_b, arm_c, arm_d)
+    assert any(error.startswith("BLOCKED_READER_KO_IN_RESPONSE_SCHEMA") for error in errors)
+    arm_d = build_request_preview_v2_2(selection)
+    arm_d[0]["request"]["contents"][0]["parts"][0]["text"] = arm_d[0]["request"]["contents"][0]["parts"][0]["text"].replace(
+        NATURAL_KO_V2_2_MARKER, ""
+    )
+    errors, _ = validate_preflight_v2_2(selection, arm_a, arm_b, arm_c, arm_d)
+    assert any(error.startswith("BLOCKED_ARM_D_MISSING_V2_2_MARKER") for error in errors)
 
 
 def test_preflight_fails_if_prompt_positively_requests_reader_ko() -> None:
@@ -145,6 +229,15 @@ def test_duplicate_submission_is_blocked_if_provider_ids_exist(tmp_path: Path) -
     with pytest.raises(NaturalKoSmokeBlocked) as exc:
         submit_smoke(out_dir=tmp_path, client=ExplodingClient())  # type: ignore[arg-type]
     assert exc.value.status == "BLOCKED_ALREADY_SUBMITTED"
+
+
+def test_duplicate_c_submission_is_blocked_if_provider_id_exists(tmp_path: Path) -> None:
+    write_selection(tmp_path)
+    paths = smoke_paths(tmp_path)
+    write_json(paths.provider_status_arm_c, {"provider_batch_id": "batches/existing-c"}, pretty=True)
+    with pytest.raises(NaturalKoSmokeBlocked) as exc:
+        submit_c_arm(out_dir=tmp_path, client=ExplodingClient())  # type: ignore[arg-type]
+    assert exc.value.status == "BLOCKED_ARM_C_ALREADY_SUBMITTED"
 
 
 def raw_result(key: str, payload: dict) -> dict:
@@ -238,6 +331,31 @@ def test_compare_computes_deltas_literal_warnings_and_roles() -> None:
     assert any("control_forced_divergence_warning" in item["warnings"] for item in comparison["pair_checks"])
 
 
+def test_v2_1_compare_computes_overreach_flags() -> None:
+    a_items = [
+        parsed_item("a", "improvement_target", "직역입니다.", "그러므로 갔다."),
+        parsed_item("b", "convergence_control", "첫째 법 둘째 법입니다.", "첫째 법 둘째 법입니다."),
+    ]
+    b_items = [
+        parsed_item("a", "improvement_target", "직역입니다.", "선업이 청정하기 때문에 갔다."),
+        parsed_item("b", "convergence_control", "첫째 법 둘째 법입니다.", "크게 풀어쓴 자연역입니다."),
+    ]
+    c_items = [
+        parsed_item("a", "improvement_target", "직역입니다.", "선업이 청정하기 때문에 갔다."),
+        parsed_item("b", "convergence_control", "첫째 법 둘째 법입니다.", "크게 풀어쓴 자연역입니다."),
+    ]
+    comparison = compare_v2_1_arms(
+        parsed_arm(a_items, "A_prime"),
+        parsed_arm(c_items, "C_natural_ko_v2_1"),
+        parsed_arm(b_items, "B_natural_ko_v2"),
+    )
+    assert comparison["paired_count"] == 2
+    assert comparison["b_reference_paired_count"] == 2
+    assert comparison["overreach_summary"]["added_causal_or_doctrinal_phrase_flag"] == 1
+    assert any("added_causal_or_doctrinal_phrase_flag" in item["warnings"] for item in comparison["pair_checks"])
+    assert any("control_forced_divergence_warning" in item["warnings"] for item in comparison["pair_checks"])
+
+
 def test_compare_reports_unpaired_keys() -> None:
     a = parsed_arm([parsed_item("a", "improvement_target", "직역", "자연")], "A_prime")
     b = parsed_arm([parsed_item("b", "improvement_target", "직역", "자연")], "B_natural_ko_v2")
@@ -257,3 +375,12 @@ def test_finalize_pending_operator_review_without_human_review(tmp_path: Path) -
     write_json(paths.comparison_json, comparison, pretty=True)
     result = finalize_recommendation(out_dir=tmp_path, pretty=True)
     assert result["recommendation"]["decision"] == "pending_operator_readability_review"
+
+
+def test_finalize_v2_1_pending_until_operator_and_scholar_review(tmp_path: Path) -> None:
+    paths = smoke_paths(tmp_path)
+    paths.out_dir.mkdir(parents=True, exist_ok=True)
+    result = finalize_v2_1_recommendation(out_dir=tmp_path, pretty=True)
+    assert result["recommendation"]["decision"] == "pending_operator_and_scholar_review"
+    assert result["recommendation"]["step6_prompt_variant"] == "natural_ko_v2_1"
+    assert result["recommendation"]["gold_accuracy_available"] is False

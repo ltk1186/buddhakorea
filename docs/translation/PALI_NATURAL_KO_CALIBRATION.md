@@ -125,6 +125,132 @@ Operator sequence:
 
 Finalization remains conditional. Automatic metrics can prepare a recommendation, but adoption requires operator readability review and Pāli-capable fidelity review.
 
+## v2.1 Guard Patch + Verification
+
+The first natural_ko_v2 controlled smoke showed a real readability gain, but review also found targeted fidelity-risk cases. The important finding was not a broad prompt failure: literal movement can reflect normal generation variance, so it should be interpreted with structural checks rather than raw character similarity alone. The relevant checks are whether literal lemma-gloss structure, parenthetical retention, and source-facing literal behavior remain structurally intact while natural_ko becomes more readable.
+
+Two targeted low-severity issues drive the v2.1 guard:
+
+- `s0513a3.att:8cd09caf90eb`: an unsupported causal insertion risk, such as expanding a bare "therefore" into a reason like "선업이 청정하기 때문에".
+- `s0514m.mul:88650af1ca41`: an ambiguous-verb risk around `Assāsayi`, where natural_ko must avoid over-committing or adding narrative embellishment.
+
+natural_ko_v2.1 keeps the v2 readability guidance and adds a narrow fidelity guard:
+
+- the guidance applies only to `natural_ko`;
+- `literal_ko` remains a strict scholarly literal translation;
+- do not add source-unsupported causal explanations, doctrinal evaluations, interpretive conclusions, or narrative detail;
+- keep ambiguous readings conservative and record uncertainty in `uncertainties`;
+- paragraph merging is allowed, but overlong Korean sentences should be split.
+
+The C-arm verification reuses the existing A′ baseline and keeps B as reference. It submits only C when the operator explicitly runs `--submit-arm C`; default/preflight remains local-only. C uses the same 30 diagnostic items, response_schema, salvage fallback, and generation_config parity with A′. `reader_ko` is still not added.
+
+Operator sequence for v2.1:
+
+```bash
+./venv/bin/python -m backend.pali.scripts.run_natural_ko_calibration_smoke \
+  --out data/reports/pali/natural_ko_calibration_v1 \
+  --preflight \
+  --pretty
+
+./venv/bin/python -m backend.pali.scripts.run_natural_ko_calibration_smoke \
+  --out data/reports/pali/natural_ko_calibration_v1 \
+  --submit-arm C \
+  --pretty
+
+./venv/bin/python -m backend.pali.scripts.run_natural_ko_calibration_smoke \
+  --out data/reports/pali/natural_ko_calibration_v1 \
+  --poll \
+  --pretty
+
+./venv/bin/python -m backend.pali.scripts.run_natural_ko_calibration_smoke \
+  --out data/reports/pali/natural_ko_calibration_v1 \
+  --fetch \
+  --pretty
+
+./venv/bin/python -m backend.pali.scripts.run_natural_ko_calibration_smoke \
+  --out data/reports/pali/natural_ko_calibration_v1 \
+  --parse \
+  --pretty
+
+./venv/bin/python -m backend.pali.scripts.run_natural_ko_calibration_smoke \
+  --out data/reports/pali/natural_ko_calibration_v1 \
+  --compare-v2-1 \
+  --pretty
+
+./venv/bin/python -m backend.pali.scripts.run_natural_ko_calibration_smoke \
+  --out data/reports/pali/natural_ko_calibration_v1 \
+  --finalize-v2-1 \
+  --pretty
+```
+
+`--finalize-v2-1` should be run only after operator readability review and Pāli-capable scholar fidelity review. If C preserves the readability gain and fixes the targeted causal/over-commit risks, Step 6 may proceed with `natural_ko_v2_1`. If causal insertion, ambiguous-verb overcommit, or over-paraphrase remains, revise to v2.2 and retest.
+
+## v2.2 D-arm Repair
+
+natural_ko_v2.2 is a D-arm prompt repair for the same 30 diagnostic items. It is not a production prompt mutation and it does not start Step 6.
+
+The D-arm goal is narrower than "make Korean more natural":
+
+- preserve C v2.1's fidelity discipline;
+- recover B v2's readability and paragraph-level recomposition;
+- preserve A′/baseline literal conservatism where needed;
+- avoid B-style unsupported additions;
+- avoid C-style omission, double-negation failure, small inserted qualifiers, and literal-regression;
+- keep established Korean Buddhist terminology conventions;
+- remove awkward square-bracket supplementation such as `[뜻이다]`, `[이다]`, `[마찬가지이다]`, `[설해지지]`, and `[이것을]`.
+
+The D prompt injects only the relevant genre-mode block per item, rather than all genre policies in every request. This is intentional: it reduces over-constraint and avoids pushing the model back into literal-regression.
+
+The D prompt also embeds `glossary_lock_v2_2` in the request. The lock steers the model and the post-hoc objective gate verifies disallowed renderings. High-confidence locks include `sikkhā → 공부지음`, `cāritta → 작지`, `vāritta → 지지`, `paññuttara → 통찰지를 으뜸으로 삼는/최상으로 삼는`, `ādibhāva → 처음이 됨/시작이 됨`, and `accenti → 지나간다/지나쳐 버린다`. Context-sensitive items such as `yama/niyama`, `viññatti`, `otaraṇā`, `appavatti`, and `ājīvika` remain marked for expert confirmation.
+
+Objective gates are separate from human verdicts:
+
+- automatic hard gates: schema validity, cost cap, bracket violations, locked glossary violations, known per-item unsupported insertion strings, known `accenti` omission;
+- operator review: readability and literal-regression judgment;
+- scholar review: fidelity, negation scope, and general content omission.
+
+The D-arm recommendation remains `pending_operator_and_scholar_review` until the review sheet is filled. The tool must not auto-adopt v2.2 from metrics alone.
+
+Operator sequence for D:
+
+```bash
+./venv/bin/python -m backend.pali.scripts.run_natural_ko_calibration_smoke \
+  --out data/reports/pali/natural_ko_calibration_v2_2 \
+  --calibration-source-dir data/reports/pali/natural_ko_calibration_v1 \
+  --preflight-v2-2 \
+  --pretty
+
+./venv/bin/python -m backend.pali.scripts.run_natural_ko_calibration_smoke \
+  --out data/reports/pali/natural_ko_calibration_v2_2 \
+  --calibration-source-dir data/reports/pali/natural_ko_calibration_v1 \
+  --submit-arm D \
+  --pretty
+
+./venv/bin/python -m backend.pali.scripts.run_natural_ko_calibration_smoke \
+  --out data/reports/pali/natural_ko_calibration_v2_2 \
+  --calibration-source-dir data/reports/pali/natural_ko_calibration_v1 \
+  --poll \
+  --pretty
+
+./venv/bin/python -m backend.pali.scripts.run_natural_ko_calibration_smoke \
+  --out data/reports/pali/natural_ko_calibration_v2_2 \
+  --calibration-source-dir data/reports/pali/natural_ko_calibration_v1 \
+  --fetch \
+  --pretty
+
+./venv/bin/python -m backend.pali.scripts.run_natural_ko_calibration_smoke \
+  --out data/reports/pali/natural_ko_calibration_v2_2 \
+  --calibration-source-dir data/reports/pali/natural_ko_calibration_v1 \
+  --parse \
+  --pretty
+
+./venv/bin/python -m backend.pali.scripts.run_natural_ko_calibration_smoke \
+  --out data/reports/pali/natural_ko_calibration_v2_2 \
+  --calibration-source-dir data/reports/pali/natural_ko_calibration_v1 \
+  --compare-v2-2 \
+  --pretty
+```
+
 ## Non-Mutation Guarantees
 
 Step 5.5-A/B does not modify:

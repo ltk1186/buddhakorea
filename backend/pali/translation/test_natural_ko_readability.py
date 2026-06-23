@@ -5,12 +5,22 @@ from pathlib import Path
 
 from backend.pali.translation.natural_ko_readability import (
     DEFAULT_INPUT,
+    NATURAL_KO_V2_1_MARKER,
+    NATURAL_KO_V2_1_INSTRUCTION,
+    NATURAL_KO_V2_2_MARKER,
+    NATURAL_KO_V2_2_INSTRUCTION,
     audit_items,
+    build_request_preview_v2_1,
+    build_request_preview_v2_2,
     build_request_previews,
     parse_readable_markdown,
     readability_metrics,
+    render_natural_ko_v2_1_prompt,
     render_dry_run_plan,
+    render_glossary_lock_v2_2_md,
     render_prompt_variant,
+    render_prompt_variant_v2_1,
+    render_prompt_variant_v2_2,
     run_calibration_prep,
     select_calibration_items,
 )
@@ -193,6 +203,70 @@ def test_prompt_variant_and_previews_do_not_add_reader_ko(tmp_path: Path) -> Non
     assert "Do not add `reader_ko`" in arm_v2[0]["request"]["contents"][0]["parts"][0]["text"]
     assert arm_v1[0]["metadata"]["source_text_hash"] == selection["items"][0]["source_text_hash"]
     assert arm_v2[0]["metadata"]["source_text_hash"] == selection["items"][0]["source_text_hash"]
+
+
+def test_natural_ko_v2_1_marker_guard_and_prompt_replacement(tmp_path: Path) -> None:
+    rows = [item(f"mula-{index}", "mula", "직역", "자연역") for index in range(10)]
+    rows += [item(f"att-{index}", "atthakatha", "직역", "자연역") for index in range(10)]
+    rows += [item(f"tika-{index}", "tika", "직역", "자연역") for index in range(10)]
+    audit = audit_items(rows, tmp_path / "fixture.md")
+    selection = select_calibration_items(audit)
+    arm_v1, _ = build_request_previews(selection)
+    arm_c = build_request_preview_v2_1(selection)
+    a_prompt = arm_v1[0]["request"]["contents"][0]["parts"][0]["text"]
+    c_prompt = arm_c[0]["request"]["contents"][0]["parts"][0]["text"]
+    variant = render_prompt_variant_v2_1()
+    assert NATURAL_KO_V2_1_MARKER == "NATURAL_KO_V2_1_CALIBRATION_INSTRUCTION"
+    assert NATURAL_KO_V2_1_MARKER in NATURAL_KO_V2_1_INSTRUCTION
+    assert NATURAL_KO_V2_1_MARKER in variant
+    assert "선업이 청정하기 때문에" in variant
+    assert "therefore" in variant
+    assert "Assāsayi" in variant
+    assert "Do not add reader_ko" in variant
+    assert "reader_ko" not in arm_c[0]["request"]["generation_config"]["response_schema"]["properties"]
+    assert NATURAL_KO_V2_1_MARKER not in a_prompt
+    assert NATURAL_KO_V2_1_MARKER in c_prompt
+    assert "natural_ko 작성 원칙:\n- 독자용 자연역입니다." in a_prompt
+    assert "natural_ko 작성 원칙:\n- 독자용 자연역입니다." not in c_prompt
+    assert "용어 정책:" in c_prompt
+    assert arm_c[0]["metadata"]["source_text_hash"] == selection["items"][0]["source_text_hash"]
+
+
+def test_render_natural_ko_v2_1_prompt_preserves_non_natural_sections() -> None:
+    prompt_v1 = (
+        "literal_ko 작성 원칙:\n- 직역입니다.\n\n"
+        "natural_ko 작성 원칙:\n- 독자용 자연역입니다.\n\n"
+        "용어 정책:\n- 용어는 보존합니다."
+    )
+    c_prompt = render_natural_ko_v2_1_prompt(prompt_v1)
+    assert "literal_ko 작성 원칙" in c_prompt
+    assert "용어 정책:" in c_prompt
+    assert "natural_ko 작성 원칙:\n- 독자용 자연역입니다." not in c_prompt
+    assert NATURAL_KO_V2_1_MARKER in c_prompt
+
+
+def test_natural_ko_v2_2_prompt_has_marker_glossary_and_guards(tmp_path: Path) -> None:
+    rows = [item(f"mula-{index}", "mula", "직역", "자연역") for index in range(10)]
+    rows += [item(f"att-{index}", "atthakatha", "직역", "자연역") for index in range(10)]
+    rows += [item(f"tika-{index}", "tika", "직역", "자연역", source_path=f"romn/s{index}.tik.xml") for index in range(10)]
+    audit = audit_items(rows, tmp_path / "fixture.md")
+    selection = select_calibration_items(audit)
+    arm_d = build_request_preview_v2_2(selection)
+    d_prompt = arm_d[0]["request"]["contents"][0]["parts"][0]["text"]
+    variant = render_prompt_variant_v2_2()
+    assert NATURAL_KO_V2_2_MARKER in NATURAL_KO_V2_2_INSTRUCTION
+    assert NATURAL_KO_V2_2_MARKER in variant
+    assert NATURAL_KO_V2_2_MARKER in d_prompt
+    assert "선업이 청정하기 때문에" in variant
+    assert "통찰지를 위로" in variant
+    assert "처음-상태" in variant
+    assert "공부지음" in variant
+    assert "Do not add reader_ko" in variant
+    assert "reader_ko" not in arm_d[0]["request"]["generation_config"]["response_schema"]["properties"]
+    assert "natural_ko 작성 원칙:\n- 독자용 자연역입니다." not in d_prompt
+    assert "용어 정책:" in d_prompt
+    assert arm_d[0]["metadata"]["source_text_hash"] == selection["items"][0]["source_text_hash"]
+    assert "Glossary Lock" in render_glossary_lock_v2_2_md()
 
 
 def test_dry_run_plan_and_manifest_record_no_calls(tmp_path: Path) -> None:

@@ -59,6 +59,8 @@ RANEUN_GEOT_PHRASES = (
 )
 
 NATURAL_KO_V2_MARKER = "NATURAL_KO_V2_CALIBRATION_INSTRUCTION"
+NATURAL_KO_V2_1_MARKER = "NATURAL_KO_V2_1_CALIBRATION_INSTRUCTION"
+NATURAL_KO_V2_2_MARKER = "NATURAL_KO_V2_2_CALIBRATION_INSTRUCTION"
 
 NATURAL_KO_V2_INSTRUCTION = f"""[{NATURAL_KO_V2_MARKER}]
 
@@ -76,6 +78,68 @@ natural_ko는 literal_ko를 단순히 다듬은 문장이 아니다. 현대 한�
 
 Do not add `reader_ko`.
 Do not add any new output field. Keep the existing output schema exactly.
+"""
+
+NATURAL_KO_V2_1_GUARD = """This guidance applies only to natural_ko. Do not change the role of literal_ko. literal_ko must remain a strict scholarly literal translation preserving source structure, Pāli referents, grammatical relations, and clause order as far as Korean allows.
+
+In natural_ko, do not add causal explanations, doctrinal evaluations, interpretive conclusions, or narrative detail unless explicitly present in the source. Do not turn a bare connective such as "therefore" (tasmā/hi) into a newly supplied doctrinal cause. For example, if the source says only "therefore", do not expand it into "because their wholesome kamma was pure" unless that cause is explicit. Do not add adverbs or events the source does not state (e.g. "gladly", "after resting the horse").
+
+If a word or construction is grammatically or semantically uncertain, keep natural_ko conservative and record the uncertainty in 'uncertainties'. Do not smooth over uncertainty by choosing a vivid but unconfirmed reading, and do not silently settle an ambiguous verb (e.g. Assāsayi) as if decided.
+
+You may combine related lemma explanations into a coherent paragraph, but do not merge them into long, overloaded Korean sentences. When a Korean sentence grows long, split it into two or more shorter sentences.
+
+Do not add reader_ko. Do not add any new output field. Keep the existing output schema exactly.
+
+natural_ko는 읽히는 한국어로 재구성하되, 원문에 명시되지 않은 인과·교리적 평가·해석적 결론·서사 세부를 본문에 추가하지 않는다. 원문이 단지 '그러므로'라고만 하면 '선업이 청정하기 때문에'처럼 이유를 새로 보충하지 않는다. 애매한 구문은 보수적으로 옮기고 uncertainties에 기록한다. literal_ko의 역할은 바꾸지 않는다. 그런 해설이 필요하면 doctrinal_notes/uncertainties에 둔다.
+"""
+
+NATURAL_KO_V2_1_INSTRUCTION = f"""[{NATURAL_KO_V2_1_MARKER}]
+
+{NATURAL_KO_V2_INSTRUCTION.strip()}
+
+## v2.1 Fidelity Guard
+
+{NATURAL_KO_V2_1_GUARD.strip()}
+"""
+
+NATURAL_KO_V2_2_CORE_POLICY = """Core v2.2 policy:
+
+literal_ko is a scholarly literal translation, not broken Korean. Preserve source structure, referents, negation, conditionals, lists, technical terms, and lemma-gloss logic when the source is commentary or subcommentary. Use established Korean Buddhist terminology where the project convention exists. Do not add concepts not present in the source.
+
+Do not use square-bracket supplementation in literal_ko or natural_ko. Do not output bracketed grammatical fillers such as [뜻이다], [이다], [설해지지], [마찬가지이다], [이것을], or [그러하다]. If Korean grammar needs an implied copula or object, absorb it into a normal Korean sentence.
+
+natural_ko is a publishable modern Korean Buddhist-book translation. Preserve doctrinal meaning, referents, logical relations, negation, and scope. Transform lemma-gloss chains into readable Korean explanation, split overly long sentences, and reduce unnecessary Pāli parentheses in the running Korean. Do not add unsupported causal explanations, unsupported doctrinal phrases, unsupported objects or locations, emotional coloring, or narrative detail.
+
+Maintain established Korean Buddhist terminology. In particular, 공부지음 is allowed for sikkhā in project-convention contexts and must not be treated as broken Korean. Avoid awkward calques such as 통찰지를 위로 하는 for paññuttara or 처음-상태 for ādibhāva.
+
+If a construction is uncertain, keep the rendering conservative and record the uncertainty in uncertainties or quality_flags. Do not create false certainty.
+
+Do not add reader_ko. Do not add any new output field. Keep the existing output schema exactly.
+"""
+
+NATURAL_KO_V2_2_KNOWN_FAILURE_GUARD = """Known D-arm guard cases:
+
+- Paṭṭhāna double negation: for abh03m11.mul:4ab6e93ef3c3, do not introduce "번뇌를 동반하지 않으며" or similar language unless the source explicitly says it. Preserve the logic of not having a cause to be abandoned by seeing or by development; if uncertain, add a fidelity-risk flag.
+- kammārāmatā: for abh02m.mul:a8d464d40a45, render as "일을 즐김"; do not add "세속적인" unless source/context explicitly supports it.
+- khārena paripphositvā: for s0507a.att:f303db8f57dc, render as "잿물을 뿌리고서"; do not add "상처에" unless source/context explicitly says wound.
+- accenti: for s0508a1.att:8b9574445272, preserve "지나간다/지나쳐 버린다"; do not omit this predicate.
+- s0514m.mul:88650af1ca41: avoid unsupported "기꺼이", "말을 쉬게", or similar embellishment.
+- s0513a3.att:8cd09caf90eb: do not add "선업이 청정하기 때문에" or a newly supplied causal bridge when the source only gives a connective.
+"""
+
+NATURAL_KO_V2_2_INSTRUCTION = f"""[{NATURAL_KO_V2_2_MARKER}]
+
+{NATURAL_KO_V2_INSTRUCTION.strip()}
+
+## v2.1 Fidelity Discipline Retained
+
+{NATURAL_KO_V2_1_GUARD.strip()}
+
+## v2.2 Repair Policy
+
+{NATURAL_KO_V2_2_CORE_POLICY.strip()}
+
+{NATURAL_KO_V2_2_KNOWN_FAILURE_GUARD.strip()}
 """
 
 
@@ -727,7 +791,100 @@ def build_request_previews(selection: dict[str, Any]) -> tuple[list[dict[str, An
                 },
             }
         )
+    # Keep the historical two-arm API for existing Step 5.5-C/D callers.
     return arm_v1, arm_v2
+
+
+def build_request_preview_v2_1(selection: dict[str, Any]) -> list[dict[str, Any]]:
+    schema = build_response_schema_experiment()["response_schema"]
+    rows: list[dict[str, Any]] = []
+    for item in selection["items"]:
+        segment = {
+            "stable_segment_key": item["stable_segment_key"],
+            "source_path": item.get("source_path"),
+            "source_text_hash": item.get("source_text_hash"),
+            "text_layer": item.get("text_layer"),
+            "chunk_type": item.get("chunk_type"),
+            "length_bucket": item.get("length_bucket"),
+            "original_text": item.get("original_text"),
+            "normalized_text": item.get("original_text"),
+            "canonical_ref": "",
+            "heading_path": [],
+        }
+        prompt_v1 = render_korean_advanced_prompt_v1(segment)
+        metadata = {
+            "stable_segment_key": item["stable_segment_key"],
+            "source_path": item.get("source_path"),
+            "source_text_hash": item.get("source_text_hash"),
+            "text_layer": item.get("text_layer"),
+            "chunk_type": item.get("chunk_type"),
+            "length_bucket": item.get("length_bucket"),
+            "calibration_role": item.get("calibration_role"),
+            "selection_reason": item.get("selection_reason"),
+        }
+        rows.append(
+            {
+                "key": item["stable_segment_key"],
+                "arm": "C_natural_ko_v2_1_response_schema",
+                "calibration_role": item["calibration_role"],
+                "metadata": metadata,
+                "request": {
+                    "model": KOREAN_ADVANCED_PROMPT_MODEL,
+                    "contents": [{"role": "user", "parts": [{"text": render_natural_ko_v2_1_prompt(prompt_v1)}]}],
+                    "generation_config": {
+                        "response_mime_type": "application/json",
+                        "response_schema": schema,
+                    },
+                },
+            }
+        )
+    return rows
+
+
+def build_request_preview_v2_2(selection: dict[str, Any]) -> list[dict[str, Any]]:
+    schema = build_response_schema_experiment()["response_schema"]
+    rows: list[dict[str, Any]] = []
+    for item in selection["items"]:
+        segment = {
+            "stable_segment_key": item["stable_segment_key"],
+            "source_path": item.get("source_path"),
+            "source_text_hash": item.get("source_text_hash"),
+            "text_layer": item.get("text_layer"),
+            "chunk_type": item.get("chunk_type"),
+            "length_bucket": item.get("length_bucket"),
+            "original_text": item.get("original_text"),
+            "normalized_text": item.get("original_text"),
+            "canonical_ref": "",
+            "heading_path": [],
+        }
+        prompt_v1 = render_korean_advanced_prompt_v1(segment)
+        metadata = {
+            "stable_segment_key": item["stable_segment_key"],
+            "source_path": item.get("source_path"),
+            "source_text_hash": item.get("source_text_hash"),
+            "text_layer": item.get("text_layer"),
+            "chunk_type": item.get("chunk_type"),
+            "length_bucket": item.get("length_bucket"),
+            "calibration_role": item.get("calibration_role"),
+            "selection_reason": item.get("selection_reason"),
+        }
+        rows.append(
+            {
+                "key": item["stable_segment_key"],
+                "arm": "D_natural_ko_v2_2_response_schema",
+                "calibration_role": item["calibration_role"],
+                "metadata": metadata,
+                "request": {
+                    "model": KOREAN_ADVANCED_PROMPT_MODEL,
+                    "contents": [{"role": "user", "parts": [{"text": render_natural_ko_v2_2_prompt(prompt_v1, item)}]}],
+                    "generation_config": {
+                        "response_mime_type": "application/json",
+                        "response_schema": schema,
+                    },
+                },
+            }
+        )
+    return rows
 
 
 def render_natural_ko_v2_prompt(prompt_v1: str) -> str:
@@ -738,6 +895,39 @@ def render_natural_ko_v2_prompt(prompt_v1: str) -> str:
         "natural_ko 작성 원칙 (v2 calibration override):\n"
         "The following block replaces the production v1 natural_ko guidance for this calibration arm.\n\n"
         f"{NATURAL_KO_V2_INSTRUCTION.strip()}"
+    )
+    if start == -1 or end == -1:
+        return f"{prompt_v1}\n\n---\n{replacement}\n"
+    return f"{prompt_v1[:start]}{replacement}{prompt_v1[end:]}"
+
+
+def render_natural_ko_v2_1_prompt(prompt_v1: str) -> str:
+    """Replace the production natural_ko guidance with the v2.1 guarded calibration block."""
+    start = prompt_v1.find("natural_ko 작성 원칙:")
+    end = prompt_v1.find("\n\n용어 정책:", start)
+    replacement = (
+        "natural_ko 작성 원칙 (v2.1 calibration override):\n"
+        "The following block replaces the production v1 natural_ko guidance for this C-arm verification.\n\n"
+        f"{NATURAL_KO_V2_1_INSTRUCTION.strip()}"
+    )
+    if start == -1 or end == -1:
+        return f"{prompt_v1}\n\n---\n{replacement}\n"
+    return f"{prompt_v1[:start]}{replacement}{prompt_v1[end:]}"
+
+
+def render_natural_ko_v2_2_prompt(prompt_v1: str, item: dict[str, Any] | None = None) -> str:
+    """Replace production natural_ko guidance with the v2.2 D-arm repair block."""
+    item = item or {}
+    start = prompt_v1.find("natural_ko 작성 원칙:")
+    end = prompt_v1.find("\n\n용어 정책:", start)
+    replacement = (
+        "natural_ko 작성 원칙 (v2.2 D-arm calibration override):\n"
+        "The following block replaces production v1 natural_ko guidance for this D-arm test.\n\n"
+        f"{NATURAL_KO_V2_2_INSTRUCTION.strip()}\n\n"
+        "## Item-Specific Genre Mode\n\n"
+        f"{genre_mode_block_v2_2(item).strip()}\n\n"
+        "## Glossary Lock Extract for This D-arm\n\n"
+        f"{glossary_lock_prompt_block_v2_2().strip()}"
     )
     if start == -1 or end == -1:
         return f"{prompt_v1}\n\n---\n{replacement}\n"
@@ -755,6 +945,115 @@ Output schema: unchanged. Do not add any new output field.
 {NATURAL_KO_V2_INSTRUCTION.strip()}
 ```
 """
+
+
+def render_prompt_variant_v2_1() -> str:
+    return f"""# natural_ko_v2.1 Prompt Variant
+
+Status: experiment-only C-arm guard patch for Step 5.5-E. This file is not a production prompt replacement.
+
+Output schema: unchanged. Do not add any new output field.
+
+```text
+{NATURAL_KO_V2_1_INSTRUCTION.strip()}
+```
+"""
+
+
+def render_prompt_variant_v2_2() -> str:
+    return f"""# natural_ko_v2.2 Prompt Variant
+
+Status: experiment-only D-arm repair prompt for Step 5.5-H/I. This file is not a production prompt replacement.
+
+Output schema: unchanged. Do not add any new output field.
+
+```text
+{NATURAL_KO_V2_2_INSTRUCTION.strip()}
+
+## Genre mode is injected per item
+{genre_mode_block_v2_2({'text_layer': 'tika', 'chunk_type': 'prose', 'source_path': 'romn/example.tik.xml'}).strip()}
+
+## Glossary lock is injected into each D-arm request
+{glossary_lock_prompt_block_v2_2().strip()}
+```
+"""
+
+
+def genre_mode_block_v2_2(item: dict[str, Any]) -> str:
+    source_path = str(item.get("source_path") or "")
+    layer = str(item.get("text_layer") or "unknown")
+    chunk = str(item.get("chunk_type") or "unknown")
+    if "abh" in source_path or source_path.startswith("romn/abh"):
+        return """Abhidhamma matrix / formulaic mode:
+- Literal and natural may stay close if the source is terse, matrix-like, or a question-answer formula.
+- Do not force readability by inserting explanations.
+- Preserve logical polarity and double negation. Protect the scope of na, no ca, nanabhāvanāya, pahātabbahetuka, and related Paṭṭhāna logic.
+- If uncertain, add uncertainty/quality flag rather than guessing."""
+    if "vin" in source_path:
+        return """Vinaya technical/legal prose mode:
+- Preserve conditions, exceptions, liability/no-liability claims, and legal scope.
+- Do not omit legal predicates.
+- Prefer clear legal Korean over ornamental prose.
+- Avoid unsupported architectural, bodily, or procedural details."""
+    if layer == "tika":
+        return """Ṭīkā / subcommentary mode:
+- Prioritize accurate unpacking of dense lemma-gloss and logic.
+- natural_ko should be paragraph-level explanation, not word-by-word Korean.
+- Do not add unsupported explanatory bridges.
+- If the source defines alternative meanings of a term, preserve the alternatives."""
+    if layer == "atthakatha":
+        return """Atthakathā / commentary mode:
+- Convert repetitive X means Y chains into readable explanation.
+- Keep important lemma terms where useful, but do not overload natural_ko with parenthetical Pāli.
+- Preserve commentarial distinctions such as cāritta/vāritta and vikkhambhana/tadaṅga/samuccheda."""
+    if chunk in {"verse", "mixed"}:
+        return """Verse mode:
+- Preserve meaning and compactness.
+- Do not add interpretive causal phrases unless explicit.
+- Do not add object/location detail such as "상처에" unless the source explicitly says it."""
+    return """Sutta prose / narrative mode:
+- natural_ko should be smooth and readable.
+- Dialogue may use quotation marks when it improves readability.
+- Do not add motivation, emotional coloring, or narrative detail not present in the source."""
+
+
+def glossary_lock_prompt_block_v2_2() -> str:
+    from backend.pali.translation.natural_ko_v2_2_quality import glossary_lock_payload_v2_2
+
+    lines = [
+        "Use these D-arm glossary locks where relevant. They steer this smoke test and are not yet promoted to the project glossary.",
+        "Do not use disallowed renderings.",
+    ]
+    for entry in glossary_lock_payload_v2_2()["entries"]:
+        preferred = ", ".join(entry["preferred_ko"])
+        disallowed = ", ".join(entry["disallowed_renderings"]) or "none"
+        status = entry["lock_status"]
+        lines.append(f"- {entry['pali']}: prefer {preferred}; disallow {disallowed}; status={status}.")
+    return "\n".join(lines)
+
+
+def render_glossary_lock_v2_2_md() -> str:
+    from backend.pali.translation.natural_ko_v2_2_quality import glossary_lock_payload_v2_2
+
+    rows = []
+    for entry in glossary_lock_payload_v2_2()["entries"]:
+        rows.append(
+            f"| {entry['pali']} | {', '.join(entry['preferred_ko'])} | "
+            f"{', '.join(entry['allowed_alternatives']) or '-'} | "
+            f"{', '.join(entry['disallowed_renderings']) or '-'} | {entry['lock_status']} | {entry['notes']} |"
+        )
+    return "\n".join(
+        [
+            "# natural_ko_v2.2 Glossary Lock",
+            "",
+            "Status: D-arm test lock, not yet promoted to the project glossary.",
+            "",
+            "| Pāli | Preferred Korean | Allowed alternatives | Disallowed | Status | Notes |",
+            "|---|---|---|---|---|---|",
+            *rows,
+            "",
+        ]
+    )
 
 
 def render_audit_markdown(audit: dict[str, Any]) -> str:
