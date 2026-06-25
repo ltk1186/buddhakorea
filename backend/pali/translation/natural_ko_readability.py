@@ -102,19 +102,43 @@ NATURAL_KO_V2_1_INSTRUCTION = f"""[{NATURAL_KO_V2_1_MARKER}]
 {NATURAL_KO_V2_1_GUARD.strip()}
 """
 
-NATURAL_KO_V2_2_CORE_POLICY = """Core v2.2 policy:
+NATURAL_KO_V2_2_CORE_POLICY = """## 번역 철학
 
-literal_ko is a scholarly literal translation, not broken Korean. Preserve source structure, referents, negation, conditionals, lists, technical terms, and lemma-gloss logic when the source is commentary or subcommentary. Use established Korean Buddhist terminology where the project convention exists. Do not add concepts not present in the source.
+충실하다는 것은 빠알리 어순을 그대로 따라가는 것이 아닙니다.
+원문이 말한 것과 말하지 않은 것을 정확히 지키는 것이 충실입니다.
+Fidelity means preserving what the source says and does not say — not Pāli word order.
 
-Do not use square-bracket supplementation in literal_ko or natural_ko. Do not output bracketed grammatical fillers such as [뜻이다], [이다], [설해지지], [마찬가지이다], [이것을], or [그러하다]. If Korean grammar needs an implied copula or object, absorb it into a normal Korean sentence.
+## literal_ko 작성 원칙
+- 검수자·연구자를 위한 원문 대응 직역입니다. 원문↔번역 대조가 가능해야 합니다.
+- 핵심 술어, 격 관계, 부정 범위, 조건·원인 관계, 지시 관계, 논리 구조가 한국어로 확인되어야 합니다.
+- 단, 빠알리 어순을 기계적으로 따라 한국어 문장을 깨뜨리지 마십시오. literal_ko도 문법적으로 완전한 한국어 문장이어야 합니다(직역투는 허용하되, 비한국어식 calque나 교정 전 초안처럼 보이면 안 됩니다).
+- 주석·복주석의 표제어-주석(lemma-gloss) 구조는 literal_ko에서 보존하십시오. 즉 "'표제어(pali)'라는 것은 …이다" 형식을 유지해, 어느 단어가 풀이 대상인지 드러나게 하십시오. 이 표제어-주석을 문단으로 푸는 것은 natural_ko에서만 합니다.
+- 대괄호 보충([뜻이다], [이다], [그러하다], [이것을], [설해지지] 등)은 사용하지 마십시오. 필요한 술어/조사는 자연스러운 한국어로 흡수하십시오. 그러나 핵심 술어의 빠알리 로마자 병기 "(sīlena)", "(paccuppannā)"는 대조용으로 literal_ko에서 유지·권장합니다. 금지 대상은 대괄호[] 보충이지, 빠알리 괄호()가 아닙니다.
+- 글자단위 calque(예: "통찰지를 위로", "처음-상태")를 쓰지 말고 뜻이 통하는 한국어 술어를 쓰십시오.
+- 생략된 성분을 무리하게 보충하지 마십시오.
+- 원문에 없는 해설·의역·현대적 심리화·감성적 윤색·대승적 재해석을 넣지 마십시오.
 
-natural_ko is a publishable modern Korean Buddhist-book translation. Preserve doctrinal meaning, referents, logical relations, negation, and scope. Transform lemma-gloss chains into readable Korean explanation, split overly long sentences, and reduce unnecessary Pāli parentheses in the running Korean. Do not add unsupported causal explanations, unsupported doctrinal phrases, unsupported objects or locations, emotional coloring, or narrative detail.
+## natural_ko 작성 원칙
+- natural_ko는 literal_ko를 단순히 다듬은 문장이 아닙니다. 같은 빠알리 원문을 바탕으로, 현대 한국어 불교서 독자가 읽을 수 있는 문장으로 다시 번역하십시오. 목표는 충실하면서도 잘 읽히는 번역입니다.
+- literal_ko의 어순·절 구조를 따라갈 필요가 없습니다. 주석의 표제어-주석 반복은 자연스러운 설명 문단으로 재구성해도 됩니다(단 원문 내용을 빠뜨리거나 더하지 않는 선에서).
+- 원문의 의미, 지시 관계, 부정 범위, 조건·원인 관계, 논리 관계, 핵심 술어, 교리적 경계는 바꾸거나 빠뜨리지 마십시오.
+- 원문에 없는 인과 설명, 교리적 평가, 해석적 결론, 서사 세부, 감정 표현을 추가하지 마십시오.
+- 빠알리 원어는 이해에 꼭 필요하거나 그 단어 자체가 논의 대상일 때만 본문에 남기고, 나머지는 terms/grammar_notes/doctrinal_notes로 보내십시오.
+- 긴 문장은 두세 문장으로 나누십시오.
+- 애매한 부분은 자연스럽게 확정하지 말고 uncertainties에 기록하십시오.
+- reader_ko를 추가하지 마십시오. 새 출력 필드를 만들지 마십시오. 기존 출력 스키마를 그대로 유지하십시오.
 
-Maintain established Korean Buddhist terminology. In particular, 공부지음 is allowed for sikkhā in project-convention contexts and must not be treated as broken Korean. Avoid awkward calques such as 통찰지를 위로 하는 for paññuttara or 처음-상태 for ādibhāva.
-
-If a construction is uncertain, keep the rendering conservative and record the uncertainty in uncertainties or quality_flags. Do not create false certainty.
-
-Do not add reader_ko. Do not add any new output field. Keep the existing output schema exactly.
+## literal_ko / natural_ko 대비 예시
+[예시] 원문: "'Āsevantassā'ti garukārena āsevantassa pavattentassa. 'Bhāventassā'ti vaḍḍhentassa."
+- literal_ko (표제어-주석 보존 + 빠알리 병기 + 문법적 한국어, 대괄호 없음):
+  "'닦아 행하는 자의(āsevantassa)'라는 것은 존중하는 마음으로 닦아 행하며 지속시키는 자를 말한다.
+   '수행하는 자의(bhāventassa)'라는 것은 증장시키는 자를 말한다."
+- natural_ko (한 문단으로 재구성, 충실·무첨가):
+  "'닦아 행하는 자'란 존중하는 마음으로 거듭 실천하며 그 수행을 이어가는 사람을, '수행하는 자'란 그 수행을 늘려 가는 사람을 뜻한다."
+[나쁜 예 — 금지]
+- "…것들의 [뜻이다]"처럼 대괄호로 보충하지 마십시오.
+- "통찰지를 위로 하고", "처음-상태"처럼 글자단위 calque를 쓰지 마십시오.
+- natural_ko에 "선업이 청정하기 때문에"처럼 원문에 없는 인과를 추가하지 마십시오.
 """
 
 NATURAL_KO_V2_2_KNOWN_FAILURE_GUARD = """Known D-arm guard cases:
@@ -128,14 +152,6 @@ NATURAL_KO_V2_2_KNOWN_FAILURE_GUARD = """Known D-arm guard cases:
 """
 
 NATURAL_KO_V2_2_INSTRUCTION = f"""[{NATURAL_KO_V2_2_MARKER}]
-
-{NATURAL_KO_V2_INSTRUCTION.strip()}
-
-## v2.1 Fidelity Discipline Retained
-
-{NATURAL_KO_V2_1_GUARD.strip()}
-
-## v2.2 Repair Policy
 
 {NATURAL_KO_V2_2_CORE_POLICY.strip()}
 """
@@ -916,17 +932,20 @@ def render_natural_ko_v2_1_prompt(prompt_v1: str) -> str:
 def render_natural_ko_v2_2_prompt(prompt_v1: str, item: dict[str, Any] | None = None) -> str:
     """Replace production natural_ko guidance with the v2.2 D-arm repair block."""
     item = item or {}
-    start = prompt_v1.find("natural_ko 작성 원칙:")
-    end = prompt_v1.find("\n\n용어 정책:", start)
+    start = prompt_v1.find("literal_ko 작성 원칙:")
+    end = prompt_v1.find("\n\nterms 작성 원칙:", start)
+    if start == -1 or end == -1:
+        start = prompt_v1.find("natural_ko 작성 원칙:")
+        end = prompt_v1.find("\n\nterms 작성 원칙:", start)
     replacement = (
-        "natural_ko 작성 원칙 (v2.2 D-arm calibration override):\n"
-        "The following block replaces production v1 natural_ko guidance for this D-arm test.\n\n"
+        "D-arm v2.2 번역 지침(실험용):\n"
+        "아래 블록은 이 D-arm 실험에서 production v1의 literal/natural/glossary 지침을 대체합니다.\n\n"
         f"{NATURAL_KO_V2_2_INSTRUCTION.strip()}\n\n"
-        "## Item-Specific Genre Mode\n\n"
+        "## 세그먼트별 장르 모드\n\n"
         f"{genre_mode_block_v2_2(item).strip()}\n\n"
-        "## Item-Specific Known-Failure Guard\n\n"
+        "## 세그먼트별 알려진 실패 가드\n\n"
         f"{known_failure_guard_block_v2_2(item).strip()}\n\n"
-        "## Glossary Lock Extract for This D-arm\n\n"
+        "## 단일 용어 잠금 블록\n\n"
         f"{glossary_lock_prompt_block_v2_2().strip()}"
     )
     if start == -1 or end == -1:
@@ -970,13 +989,13 @@ Output schema: unchanged. Do not add any new output field.
 ```text
 {NATURAL_KO_V2_2_INSTRUCTION.strip()}
 
-## Genre mode is injected per item
+## 장르 모드는 세그먼트별로 주입됩니다
 {genre_mode_block_v2_2({'text_layer': 'tika', 'chunk_type': 'prose', 'source_path': 'romn/example.tik.xml'}).strip()}
 
-## Known-failure guard is injected per item
+## 알려진 실패 가드는 세그먼트별로 주입됩니다
 {known_failure_guard_block_v2_2({'stable_segment_key': 'vri:romn:s0513a3.att:8cd09caf90eb'}).strip()}
 
-## Glossary lock is injected into each D-arm request
+## 단일 용어 잠금 블록은 각 D-arm 요청에 주입됩니다
 {glossary_lock_prompt_block_v2_2().strip()}
 ```
 """
@@ -987,63 +1006,61 @@ def genre_mode_block_v2_2(item: dict[str, Any]) -> str:
     layer = str(item.get("text_layer") or "unknown")
     chunk = str(item.get("chunk_type") or "unknown")
     if "abh" in source_path or source_path.startswith("romn/abh"):
-        return """Abhidhamma matrix / formulaic mode:
-- Literal and natural may stay close if the source is terse, matrix-like, or a question-answer formula.
-- Do not force readability by inserting explanations.
-- Preserve logical polarity and double negation. Protect the scope of na, no ca, nanabhāvanāya, pahātabbahetuka, and related Paṭṭhāna logic.
-- If uncertain, add uncertainty/quality flag rather than guessing."""
+        return """Abhidhamma matrix / 정형구:
+- natural_ko가 literal_ko에 가까워도 됩니다. 짧은 매트릭스나 문답 정형구를 억지로 풀어 쓰지 마십시오.
+- 논리 구조와 이중 부정 범위를 보존하십시오. na, no ca, nanabhāvanāya, pahātabbahetuka 등 Paṭṭhāna식 논리 범위를 보호하십시오.
+- 확실하지 않으면 추측하지 말고 uncertainties 또는 quality_flags에 기록하십시오."""
     if "vin" in source_path:
-        return """Vinaya technical/legal prose mode:
-- Preserve conditions, exceptions, liability/no-liability claims, and legal scope.
-- Do not omit legal predicates.
-- Prefer clear legal Korean over ornamental prose.
-- Avoid unsupported architectural, bodily, or procedural details."""
+        return """율장(Vinaya) 기술/법률 산문:
+- 명확한 법률 한국어를 우선하십시오.
+- 조건·예외·범죄/무범·범위를 보존하고 법률 술어를 누락하지 마십시오.
+- 원문에 없는 건축·신체·절차 세부를 추가하지 마십시오."""
     if layer == "tika":
-        return """Ṭīkā / subcommentary mode:
-- Prioritize accurate unpacking of dense lemma-gloss and logic.
-- natural_ko should be paragraph-level explanation, not word-by-word Korean.
-- Do not add unsupported explanatory bridges.
-- If the source defines alternative meanings of a term, preserve the alternatives."""
+        return """복주석(ṭīkā):
+- 조밀한 표제어-주석과 논리를 정확히 풀어내십시오.
+- natural_ko는 단어별 한국어가 아니라 문단 단위 설명이어야 합니다.
+- 근거 없는 설명 다리를 추가하지 마십시오.
+- 원문이 한 용어의 대안적 의미를 정의하면 그 대안들을 보존하십시오."""
     if layer == "atthakatha":
-        return """Atthakathā / commentary mode:
-- Convert repetitive X means Y chains into readable explanation.
-- Keep important lemma terms where useful, but do not overload natural_ko with parenthetical Pāli.
-- Preserve commentarial distinctions such as cāritta/vāritta and vikkhambhana/tadaṅga/samuccheda."""
+        return """주석(aṭṭhakathā):
+- natural_ko는 대개 literal_ko보다 읽혀야 합니다.
+- 반복되는 표제어-주석을 관련된 설명 문단으로 묶되, 내용 누락·무근거 첨가는 없어야 합니다.
+- cāritta/vāritta, vikkhambhana/tadaṅga/samuccheda 같은 주석적 구분은 보존하십시오."""
     if chunk in {"verse", "mixed"}:
-        return """Verse mode:
-- Preserve meaning and compactness.
-- Do not add interpretive causal phrases unless explicit.
-- Do not add object/location detail such as "상처에" unless the source explicitly says it."""
-    return """Sutta prose / narrative mode:
-- natural_ko should be smooth and readable.
-- Dialogue may use quotation marks when it improves readability.
-- Do not add motivation, emotional coloring, or narrative detail not present in the source."""
+        return """게송(verse):
+- 간결성과 의미를 보존하십시오.
+- 원문에 없는 감정·인과·서사 세부를 추가하지 마십시오.
+- 자연스러운 한국어는 허용하되 시적 확장은 불필요합니다."""
+    return """경장 산문/서사:
+- natural_ko는 부드럽고 읽히는 한국어여야 합니다.
+- 대화는 가독성을 높일 때 따옴표를 사용할 수 있습니다.
+- 원문에 없는 동기·감정·서사 세부를 추가하지 마십시오."""
 
 
 def known_failure_guard_block_v2_2(item: dict[str, Any]) -> str:
     key = str(item.get("stable_segment_key") or "")
     if "abh03m11.mul:4ab6e93ef3c3" in key:
-        return "Paṭṭhāna/double-negation guard: do not introduce '번뇌를 동반하지 않으며' or similar language unless the source explicitly says it. Preserve the logic of not having a cause to be abandoned by seeing or by development; if uncertain, add a fidelity-risk flag."
+        return "Paṭṭhāna 이중부정 보호: 원문이 명시하지 않으면 '번뇌를 동반하지 않으며' 같은 표현을 넣지 마십시오. 견해나 닦음으로 버려져야 할 원인을 가지지 않는다는 논리 구조를 보존하고, 확실하지 않으면 fidelity-risk를 표시하십시오."
     if "abh02m.mul:a8d464d40a45" in key:
-        return "kammārāmatā guard: render as '일을 즐김'. Do not add '세속적인' unless source/context explicitly supports it."
+        return "kammārāmatā 보호: '일을 즐김'으로 옮기십시오. 원문이나 제공된 문맥이 명시하지 않으면 '세속적인'을 추가하지 마십시오."
     if "s0507a.att:f303db8f57dc" in key:
-        return "khārena paripphositvā guard: render as '잿물을 뿌리고서'. Do not add '상처에' unless source/context explicitly says wound."
+        return "khārena paripphositvā 보호: '잿물을 뿌리고서'로 옮기십시오. 원문이나 제공된 문맥이 상처를 말하지 않으면 '상처에'를 추가하지 마십시오."
     if "s0508a1.att:8b9574445272" in key:
-        return "accenti guard: preserve the predicate '지나간다/지나쳐 버린다' in natural_ko. If natural_ko compresses the passage, it still must include that opportunities pass by."
+        return "accenti 보호: natural_ko에도 '지나간다/지나쳐 버린다'에 해당하는 술어를 보존하십시오. 문장을 압축하더라도 기회가 지나간다는 사실은 포함해야 합니다."
     if "s0514m.mul:88650af1ca41" in key:
-        return "Assāsayi guard: avoid unsupported '기꺼이', '말을 쉬게', or similar embellishment. Keep ambiguous verb handling conservative and record uncertainty when needed."
+        return "Assāsayi 보호: 근거 없는 '기꺼이', '말을 쉬게' 같은 윤색을 피하십시오. 동사가 애매하면 보수적으로 옮기고 필요하면 uncertainty를 기록하십시오."
     if "s0513a3.att:8cd09caf90eb" in key:
-        return "Causal insertion guard: do not add '선업이 청정하기 때문에' or any newly supplied causal bridge when the source only gives a connective."
-    return "No known item-specific failure guard for this segment; apply the general fidelity and no-insertion rules."
+        return "인과 추가 보호: 원문이 접속만 제시하면 '선업이 청정하기 때문에'나 새로 보충한 인과 다리를 넣지 마십시오."
+    return "이 세그먼트에는 별도 알려진 실패 가드가 없습니다. 일반 충실성·무첨가 원칙을 적용하십시오."
 
 
 def glossary_lock_prompt_block_v2_2() -> str:
     from backend.pali.translation.natural_ko_v2_2_quality import glossary_lock_payload_v2_2
 
     lines = [
-        "Use these D-arm glossary locks where relevant. They steer this smoke test and are not yet promoted to the project glossary.",
-        "Hard entries are binding for this D-arm smoke. Advisory entries are guidance only and require expert confirmation before production glossary promotion.",
-        "Do not use hard-disallowed renderings.",
+        "이 단일 용어 잠금 블록을 사용하십시오. 이 블록은 D-arm 실험용이며 아직 production glossary로 승격된 것이 아닙니다.",
+        "hard 항목은 이번 D-arm에서 구속력 있는 잠금입니다. advisory/needs_expert_confirm 항목은 지침이지만 production glossary 승격 전 전문가 확인이 필요합니다.",
+        "hard 금지 번역은 사용하지 마십시오.",
     ]
     for entry in glossary_lock_payload_v2_2()["entries"]:
         preferred = ", ".join(entry["preferred_ko"])
@@ -1051,7 +1068,7 @@ def glossary_lock_prompt_block_v2_2() -> str:
         status = entry["lock_status"]
         tier = entry["enforcement_level"]
         confidence = entry["confidence"]
-        lines.append(f"- [{tier}/{confidence}] {entry['pali']}: prefer {preferred}; disallow {disallowed}; status={status}.")
+        lines.append(f"- [{tier}/{confidence}] {entry['pali']}: 권장 {preferred}; 금지 {disallowed}; 상태={status}.")
     return "\n".join(lines)
 
 

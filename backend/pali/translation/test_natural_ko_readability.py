@@ -262,17 +262,18 @@ def test_natural_ko_v2_2_prompt_has_marker_glossary_and_guards(tmp_path: Path) -
     assert "통찰지를 위로" in variant
     assert "처음-상태" in variant
     assert "공부지음" in variant
-    assert "Do not add reader_ko" in variant
+    assert "reader_ko를 추가하지 마십시오" in variant
     assert "reader_ko" not in arm_d[0]["request"]["generation_config"]["response_schema"]["properties"]
     assert "natural_ko 작성 원칙:\n- 독자용 자연역입니다." not in d_prompt
-    assert "용어 정책:" in d_prompt
+    assert "용어 정책:" not in d_prompt
+    assert "단일 용어 잠금 블록" in d_prompt
     assert arm_d[0]["metadata"]["source_text_hash"] == selection["items"][0]["source_text_hash"]
     assert "Glossary Lock" in render_glossary_lock_v2_2_md()
 
 
 def test_natural_ko_v2_2_known_failure_guards_are_item_specific() -> None:
     def item_guard(prompt: str) -> str:
-        return prompt.split("## Item-Specific Known-Failure Guard", 1)[1].split("## Glossary", 1)[0]
+        return prompt.split("## 세그먼트별 알려진 실패 가드", 1)[1].split("## 단일 용어 잠금 블록", 1)[0]
 
     prompt_v1 = (
         "literal_ko 작성 원칙:\n- 직역입니다.\n\n"
@@ -299,7 +300,7 @@ def test_natural_ko_v2_2_known_failure_guards_are_item_specific() -> None:
     assert "세속적인" not in accenti_guard
     assert "상처에" in kharena_guard
     assert "지나간다/지나쳐 버린다" not in kharena_guard
-    assert "No known item-specific failure guard" in unrelated_guard
+    assert "별도 알려진 실패 가드가 없습니다" in unrelated_guard
     assert "선업이 청정하기 때문에" not in unrelated_guard
     assert "상처에" not in unrelated_guard
     assert "지나간다/지나쳐 버린다" not in unrelated_guard
@@ -316,6 +317,50 @@ def test_natural_ko_v2_2_prompt_includes_glossary_tiers() -> None:
     assert "[hard/high]" in d_prompt
     assert "[advisory/needs_expert_confirm]" in d_prompt
     assert "| Enforcement | Confidence |" in glossary_md
+
+
+def test_natural_ko_v2_2_rendered_prompt_architecture() -> None:
+    prompt_v1 = (
+        "헤더\n\n"
+        "literal_ko 작성 원칙:\n"
+        "- 빠알리 문장 구조와 어순을 가능한 한 보존하십시오.\n"
+        "- 한국어가 다소 어색해도 괜찮습니다.\n\n"
+        "natural_ko 작성 원칙:\n- 독자용 자연역입니다.\n\n"
+        "용어 정책:\n- sati → 마음챙김\n- paññā → 통찰지\n\n"
+        "terms 작성 원칙:\n- terms를 작성합니다."
+    )
+    d_prompt = render_natural_ko_v2_2_prompt(prompt_v1, {"stable_segment_key": "vri:romn:other.mul:000"})
+    assert "빠알리 문장 구조와 어순을 가능한 한 보존하십시오" not in d_prompt
+    assert "한국어가 다소 어색해도 괜찮습니다" not in d_prompt
+    assert "1차 초벌" not in d_prompt
+    assert "완벽한 문장이 아니라" not in d_prompt
+    assert "충실하다는 것은 빠알리 어순을 그대로 따라가는 것이 아닙니다" in d_prompt
+    assert "literal_ko도 문법적으로 완전한 한국어 문장이어야" in d_prompt
+    assert "표제어-주석(lemma-gloss) 구조는 literal_ko에서 보존" in d_prompt
+    assert "대괄호 보충([뜻이다], [이다], [그러하다], [이것을], [설해지지] 등)은 사용하지 마십시오" in d_prompt
+    assert '"(sīlena)", "(paccuppannā)"' in d_prompt
+    assert "natural_ko는 literal_ko를 단순히 다듬은 문장이 아닙니다" in d_prompt
+    assert "현대 한국어 불교서 독자가 읽을 수 있는 문장으로 다시 번역" in d_prompt
+    assert "'Āsevantassā'ti garukārena āsevantassa pavattentassa" in d_prompt
+    assert "'닦아 행하는 자의(āsevantassa)'라는 것은" in d_prompt
+    assert "통찰지를 위로 하고" in d_prompt
+    assert "처음-상태" in d_prompt
+    assert "terms 작성 원칙:" in d_prompt
+
+
+def test_natural_ko_v2_2_rendered_prompt_has_single_glossary_source() -> None:
+    prompt_v1 = (
+        "헤더\n\n"
+        "literal_ko 작성 원칙:\n- 직역입니다.\n\n"
+        "natural_ko 작성 원칙:\n- 독자용 자연역입니다.\n\n"
+        "용어 정책:\n- sati → 마음챙김\n- paññā → 통찰지\n\n"
+        "terms 작성 원칙:\n- terms를 작성합니다."
+    )
+    d_prompt = render_natural_ko_v2_2_prompt(prompt_v1, {"stable_segment_key": "vri:romn:other.mul:000"})
+    assert "용어 정책:" not in d_prompt
+    assert d_prompt.count("## 단일 용어 잠금 블록") == 1
+    assert d_prompt.count("sati:") == 1
+    assert d_prompt.count("paññā:") == 1
 
 
 def test_dry_run_plan_and_manifest_record_no_calls(tmp_path: Path) -> None:
