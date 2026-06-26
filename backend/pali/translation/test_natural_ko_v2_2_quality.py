@@ -11,11 +11,20 @@ from backend.pali.translation.natural_ko_v2_2_quality import (
 )
 
 
-def d_item(key: str, literal: str = "", natural: str = "") -> dict:
+def d_item(
+    key: str,
+    literal: str = "",
+    natural: str = "",
+    *,
+    original_text: str = "",
+    terms: list[dict] | None = None,
+) -> dict:
     return {
         "stable_segment_key": key,
+        "original_text": original_text,
         "literal_ko": literal,
         "natural_ko": natural,
+        "terms": terms or [],
     }
 
 
@@ -69,22 +78,66 @@ def test_accenti_omission_checks_natural_ko_not_literal_ko() -> None:
 
 
 def test_glossary_lock_flags_disallowed_renderings_but_not_gongbujieum() -> None:
-    assert detect_glossary_violations(d_item("x", natural="통찰지를 위로 하는 수행이다."))
-    assert detect_glossary_violations(d_item("x", natural="처음-상태를 말한다."))
-    assert detect_glossary_violations(d_item("x", natural="세속적인 일을 즐김이다."))
-    assert detect_glossary_violations(d_item("x", natural="상처에 잿물을 뿌렸다."))
-    assert detect_glossary_violations(d_item("x", natural="번뇌를 동반하지 않으며 그렇다."))
+    assert detect_glossary_violations(d_item("x", natural="통찰지를 위로 하는 수행이다.", original_text="paññuttara"))
+    assert detect_glossary_violations(d_item("x", natural="처음-상태를 말한다.", original_text="ādibhāvo"))
+    assert detect_glossary_violations(d_item("x", natural="세속적인 일을 즐김이다.", original_text="kammārāmatā"))
+    assert detect_glossary_violations(d_item("x", natural="상처에 잿물을 뿌렸다.", original_text="khārena paripphositvā"))
+    assert detect_glossary_violations(d_item("x", natural="번뇌를 동반하지 않으며 그렇다.", original_text="nanabhāvanāya"))
     assert detect_glossary_violations(d_item("x", natural="공부지음이다.")) == []
 
 
 def test_advisory_glossary_warnings_do_not_count_as_hard_violations() -> None:
-    item = d_item("x", natural="맥락 없는 들어감이라고 옮겼다.")
+    item = d_item("x", natural="맥락 없는 들어감이라고 옮겼다.", original_text="otaraṇā")
     evaluation = evaluate_d_arm_item(item)
     assert detect_glossary_violations(item) == []
     assert detect_advisory_glossary_warnings(item) == ["otaraṇā:맥락 없는 들어감"]
     assert evaluation["glossary_violation"] is False
     assert evaluation["advisory_glossary_warning"] is True
     assert evaluation["advisory_glossary_warning_details"] == ["otaraṇā:맥락 없는 들어감"]
+
+
+def test_khandha_false_positive_is_fixed_without_trigger() -> None:
+    item = d_item(
+        "vri:romn:abh02m.mul:a8d464d40a45",
+        original_text="saṅgaṇikārāmatā ... kammārāmatā ...",
+        literal="무리와 어울림, 일을 즐김이다.",
+        natural="무리와 어울리고 일을 즐기는 것이다.",
+        terms=[{"pali": "kammārāmatā", "ko": "일을 즐김"}],
+    )
+    assert "khandha:무리" not in detect_glossary_violations(item)
+    bad_kammarama = dict(item)
+    bad_kammarama["natural_ko"] = "세속적인 일을 즐김이다."
+    assert "kammārāmatā:세속적인 일을 즐김" in detect_glossary_violations(bad_kammarama)
+
+
+def test_real_khandha_violation_is_still_caught_when_triggered() -> None:
+    item = d_item(
+        "x",
+        original_text="pañcakkhandhā ...",
+        literal="다섯 무리이다.",
+        natural="다섯 무리이다.",
+        terms=[{"pali": "khandha", "ko": "무리"}],
+    )
+    assert "khandha:무리" in detect_glossary_violations(item)
+
+
+def test_term_specific_bad_calque_requires_trigger() -> None:
+    untriggered = d_item("x", natural="통찰지를 위로 하는 수행이다.")
+    triggered = d_item("x", original_text="paññuttara", natural="통찰지를 위로 하는 수행이다.")
+    assert detect_glossary_violations(untriggered) == []
+    assert "paññuttara:통찰지를 위로" in detect_glossary_violations(triggered)
+
+
+def test_advisory_warning_requires_trigger_and_stays_advisory() -> None:
+    untriggered = d_item("x", natural="맥락 없는 들어감이라고 옮겼다.")
+    triggered = d_item("x", original_text="otaraṇā", natural="맥락 없는 들어감이라고 옮겼다.")
+    assert detect_advisory_glossary_warnings(untriggered) == []
+    assert detect_glossary_violations(triggered) == []
+    assert detect_advisory_glossary_warnings(triggered) == ["otaraṇā:맥락 없는 들어감"]
+
+
+def test_bracket_remains_hard_objective_violation() -> None:
+    assert detect_bracket_violations(d_item("x", literal="[그것은] 설해진다."))
 
 
 def test_patthana_double_negation_unsupported_bunnoe_is_high_risk() -> None:

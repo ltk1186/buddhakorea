@@ -292,7 +292,15 @@ def parsed_arm(items: list[dict], arm: str) -> dict:
     return {"arm": arm, "items": items}
 
 
-def parsed_item(key: str, role: str, literal: str, natural: str, *, layer: str = "mula") -> dict:
+def parsed_item(
+    key: str,
+    role: str,
+    literal: str,
+    natural: str,
+    *,
+    layer: str = "mula",
+    original_text: str = "Evaṃ me sutaṃ.",
+) -> dict:
     return {
         "stable_segment_key": key,
         "source_path": f"romn/{key}.xml",
@@ -301,7 +309,7 @@ def parsed_item(key: str, role: str, literal: str, natural: str, *, layer: str =
         "chunk_type": "prose",
         "length_bucket": "medium",
         "calibration_role": role,
-        "original_text": "Evaṃ me sutaṃ.",
+        "original_text": original_text,
         "literal_ko": literal,
         "natural_ko": natural,
         "terms": [{"pali": "sati", "ko": "마음챙김", "gloss": "", "note": ""}],
@@ -373,7 +381,7 @@ def test_v2_2_objective_gate_fails_on_negation_scope_risk() -> None:
 
 
 def test_v2_2_objective_gate_allows_advisory_glossary_warnings() -> None:
-    d_items = [parsed_item("advisory", "improvement_target", "직역입니다.", "맥락 없는 들어감이다.")]
+    d_items = [parsed_item("advisory", "improvement_target", "직역입니다.", "맥락 없는 들어감이다.", original_text="otaraṇā")]
     d_items.extend(parsed_item(f"d-{index}", "improvement_target", "직역입니다.", "자연역입니다.") for index in range(29))
     comparison = compare_v2_2_d_arm(parsed_arm(d_items, "D_natural_ko_v2_2"), None, None, None)
     assert comparison["objective_gate_summary"]["advisory_glossary_warnings"] == 1

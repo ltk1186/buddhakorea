@@ -74,6 +74,26 @@ class GlossaryQATest(unittest.TestCase):
         conflicts = detect_avoid_ko_conflicts(segment, self.glossary)
         self.assertEqual(conflicts, [])
 
+    def test_khandha_avoid_ko_requires_source_or_terms_trigger(self):
+        no_khandha = self.segment(
+            "saṅgaṇikārāmatā kammārāmatā",
+            [{"pali": "kammārāmatā", "ko": "일을 즐김"}],
+            literal_ko="무리와 어울림과 일을 즐김이다.",
+            natural_ko="무리와 어울리고 일을 즐기는 것이다.",
+        )
+        self.assertEqual(detect_avoid_ko_conflicts(no_khandha, self.glossary), [])
+
+        terms_trigger = self.segment(
+            "pañca",
+            [{"pali": "khandha", "ko": "무리"}],
+            literal_ko="다섯 무리이다.",
+            natural_ko="다섯 무리이다.",
+        )
+        conflicts = detect_avoid_ko_conflicts(terms_trigger, self.glossary)
+        self.assertEqual(len(conflicts), 1)
+        self.assertEqual(conflicts[0]["pali"], "khandha")
+        self.assertEqual(conflicts[0]["avoid_ko"], "무리")
+
     def test_parenthetical_pali_is_reclassified_allowed(self):
         segment = self.segment(
             "yoniso manasikāra",

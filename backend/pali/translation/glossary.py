@@ -169,6 +169,44 @@ def extract_translation_head_terms(
     return extracted
 
 
+def source_or_terms_text(parsed_segment: dict[str, Any]) -> str:
+    """Return normalized Pali-bearing text used to scope glossary QA checks.
+
+    This deliberately uses source text and declared Pali term heads, not Korean
+    body text, so avoid/disallowed Korean renderings are only evaluated when the
+    relevant Pali term is actually present in the segment context.
+    """
+    parts = [
+        str(parsed_segment.get("original_text") or parsed_segment.get("source_text") or ""),
+    ]
+    translation = _translation_payload(parsed_segment)
+    for term in translation.get("terms") or []:
+        if isinstance(term, dict):
+            parts.append(str(term.get("pali") or ""))
+    for field in ("grammar_notes", "doctrinal_notes", "uncertainties"):
+        value = translation.get(field) or []
+        if isinstance(value, list):
+            parts.extend(str(item) for item in value)
+        elif isinstance(value, str):
+            parts.append(value)
+    return _norm("\n".join(parts))
+
+
+def glossary_entry_is_triggered(entry: GlossaryEntry, parsed_segment: dict[str, Any]) -> bool:
+    """Return True when a glossary entry is present in source or terms metadata."""
+    trigger_text = source_or_terms_text(parsed_segment)
+    if not trigger_text:
+        return False
+    term = _norm(entry.pali)
+    tokens = [_norm(token) for token in TOKEN_RE.findall(trigger_text)]
+    if any(_token_matches_term(token, term) for token in tokens):
+        return True
+    for pali, _ko in extract_translation_head_terms(parsed_segment, Glossary("", (entry,), {_norm(entry.pali): entry})):
+        if _norm(pali) == term:
+            return True
+    return False
+
+
 def calculate_term_consistency(
     parsed_segments: Iterable[dict[str, Any]] | dict[str, Any],
     glossary: Glossary,
@@ -209,7 +247,7 @@ def calculate_term_consistency(
         body_text = _body_translation_text(segment)
         for entry in glossary.entries:
             key = _norm(entry.pali)
-            if key not in source_match_keys:
+            if key not in source_match_keys and not glossary_entry_is_triggered(entry, segment):
                 continue
             if any(_norm(cross) in source_match_keys for cross in entry.cross_avoid):
                 continue

@@ -15,6 +15,7 @@ from .glossary import (
     Glossary,
     detect_glossary_terms,
     extract_translation_head_terms,
+    glossary_entry_is_triggered,
 )
 
 
@@ -160,15 +161,19 @@ def detect_avoid_ko_conflicts(
     glossary: Glossary,
 ) -> list[dict[str, Any]]:
     source_matches = detect_glossary_terms(_source_text(parsed_segment), glossary)
+    triggered_entries = [
+        entry for entry in glossary.entries if glossary_entry_is_triggered(entry, parsed_segment)
+    ]
     source_keys = {_norm(entry.pali) for entry in source_matches}
+    triggered_keys = {_norm(entry.pali) for entry in triggered_entries}
     body = _body_translation_text(parsed_segment)
     observed_terms = dict(extract_translation_head_terms(parsed_segment, glossary))
     conflicts: list[dict[str, Any]] = []
     stable_key = str(parsed_segment.get("stable_segment_key") or "")
 
-    for entry in source_matches:
+    for entry in triggered_entries:
         entry_key = _norm(entry.pali)
-        if any(_norm(cross) in source_keys for cross in entry.cross_avoid):
+        if any(_norm(cross) in source_keys or _norm(cross) in triggered_keys for cross in entry.cross_avoid):
             continue
         for avoided in entry.avoid_ko:
             if not avoided:
