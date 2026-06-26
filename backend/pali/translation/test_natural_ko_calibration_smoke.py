@@ -14,6 +14,9 @@ from backend.pali.translation.natural_ko_calibration_smoke import (
     compare_parsed_arms,
     finalize_v2_1_recommendation,
     finalize_recommendation,
+    gate_is_blocking,
+    gate_is_pass,
+    gate_requires_retry,
     parse_arm,
     prompt_requests_reader_ko,
     run_preflight,
@@ -377,7 +380,9 @@ def test_v2_2_objective_gate_fails_on_negation_scope_risk() -> None:
     d_items.extend(parsed_item(f"d-{index}", "improvement_target", "직역입니다.", "자연역입니다.") for index in range(29))
     comparison = compare_v2_2_d_arm(parsed_arm(d_items, "D_natural_ko_v2_2"), None, None, None)
     assert comparison["objective_gate_summary"]["negation_scope_risks"] == 1
-    assert comparison["objective_gate_status"] == "FAIL"
+    assert comparison["objective_gate_status"] == "FAIL_BLOCKING"
+    assert gate_is_blocking(comparison["objective_gate_status"]) is True
+    assert any(failure["type"] == "negation_scope_risk" for failure in comparison["blocking_failures"])
 
 
 def test_v2_2_objective_gate_allows_advisory_glossary_warnings() -> None:
@@ -387,8 +392,94 @@ def test_v2_2_objective_gate_allows_advisory_glossary_warnings() -> None:
     assert comparison["objective_gate_summary"]["advisory_glossary_warnings"] == 1
     assert comparison["objective_gate_summary"]["glossary_violations"] == 0
     assert comparison["objective_gate_status"] == "PASS"
+    assert gate_is_pass(comparison["objective_gate_status"]) is True
     advisory_row = next(row for row in comparison["comparison_rows"] if row["stable_segment_key"] == "advisory")
     assert advisory_row["glossary_compliance"] == "advisory_warning"
+
+
+def test_v2_2_objective_gate_passes_without_violations() -> None:
+    d_items = [parsed_item(f"d-{index}", "improvement_target", "직역입니다.", "자연역입니다.") for index in range(30)]
+    comparison = compare_v2_2_d_arm(parsed_arm(d_items, "D_natural_ko_v2_2"), None, None, None)
+    assert comparison["objective_gate_status"] == "PASS"
+    assert comparison["blocking_failures"] == []
+    assert comparison["retry_only_failures"] == []
+
+
+def test_v2_2_objective_gate_retry_only_for_bracket_only() -> None:
+    d_items = [parsed_item("bracket", "improvement_target", "[그것은] 설해진다.", "자연역입니다.")]
+    d_items.extend(parsed_item(f"d-{index}", "improvement_target", "직역입니다.", "자연역입니다.") for index in range(29))
+    comparison = compare_v2_2_d_arm(parsed_arm(d_items, "D_natural_ko_v2_2"), None, None, None)
+    assert comparison["objective_gate_status"] == "FAIL_RETRY_ONLY"
+    assert gate_requires_retry(comparison["objective_gate_status"]) is True
+    assert comparison["blocking_failures"] == []
+    assert comparison["retry_only_failures"][0]["type"] == "bracket_violation"
+
+
+def test_v2_2_objective_gate_blocks_unsupported_insertion() -> None:
+    d_items = [
+        parsed_item(
+            "vri:romn:abh02m.mul:a8d464d40a45",
+            "improvement_target",
+            "직역입니다.",
+            "세속적인 일을 즐김이다.",
+            original_text="kammārāmatā",
+        )
+    ]
+    d_items.extend(parsed_item(f"d-{index}", "improvement_target", "직역입니다.", "자연역입니다.") for index in range(29))
+    comparison = compare_v2_2_d_arm(parsed_arm(d_items, "D_natural_ko_v2_2"), None, None, None)
+    assert comparison["objective_gate_status"] == "FAIL_BLOCKING"
+    assert any(failure["type"] == "unsupported_insertion" for failure in comparison["blocking_failures"])
+
+
+def test_v2_2_objective_gate_blocks_hard_glossary_violation_with_trigger() -> None:
+    d_items = [
+        parsed_item(
+            "khandha",
+            "improvement_target",
+            "다섯 무리이다.",
+            "다섯 무리이다.",
+            original_text="pañcakkhandhā",
+        )
+    ]
+    d_items[0]["terms"] = [{"pali": "khandha", "ko": "무리"}]
+    d_items.extend(parsed_item(f"d-{index}", "improvement_target", "직역입니다.", "자연역입니다.") for index in range(29))
+    comparison = compare_v2_2_d_arm(parsed_arm(d_items, "D_natural_ko_v2_2"), None, None, None)
+    assert comparison["objective_gate_status"] == "FAIL_BLOCKING"
+    assert any(failure["type"] == "hard_glossary_violation" for failure in comparison["blocking_failures"])
+
+
+def test_v2_2_objective_gate_blocking_wins_over_retry_only() -> None:
+    d_items = [
+        parsed_item(
+            "vri:romn:abh02m.mul:a8d464d40a45",
+            "improvement_target",
+            "[그것은] 직역입니다.",
+            "세속적인 일을 즐김이다.",
+            original_text="kammārāmatā",
+        )
+    ]
+    d_items.extend(parsed_item(f"d-{index}", "improvement_target", "직역입니다.", "자연역입니다.") for index in range(29))
+    comparison = compare_v2_2_d_arm(parsed_arm(d_items, "D_natural_ko_v2_2"), None, None, None)
+    assert comparison["objective_gate_status"] == "FAIL_BLOCKING"
+    assert comparison["blocking_failures"]
+    assert comparison["retry_only_failures"]
+
+
+def test_v2_2_objective_gate_blocks_empty_translation() -> None:
+    d_items = [parsed_item("empty", "improvement_target", "직역입니다.", "")]
+    d_items.extend(parsed_item(f"d-{index}", "improvement_target", "직역입니다.", "자연역입니다.") for index in range(29))
+    comparison = compare_v2_2_d_arm(parsed_arm(d_items, "D_natural_ko_v2_2"), None, None, None)
+    assert comparison["objective_gate_status"] == "FAIL_BLOCKING"
+    assert any(failure["type"] == "empty_translation" for failure in comparison["blocking_failures"])
+
+
+def test_v2_2_objective_gate_blocks_schema_invalid() -> None:
+    d_items = [parsed_item("schema", "improvement_target", "직역입니다.", "자연역입니다.")]
+    d_items[0]["schema_valid"] = False
+    d_items.extend(parsed_item(f"d-{index}", "improvement_target", "직역입니다.", "자연역입니다.") for index in range(29))
+    comparison = compare_v2_2_d_arm(parsed_arm(d_items, "D_natural_ko_v2_2"), None, None, None)
+    assert comparison["objective_gate_status"] == "FAIL_BLOCKING"
+    assert any(failure["type"] == "schema_invalid" for failure in comparison["blocking_failures"])
 
 
 def test_compare_reports_unpaired_keys() -> None:

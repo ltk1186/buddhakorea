@@ -6,6 +6,7 @@ operator readability review or Pali-capable scholar fidelity review.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import Any, Literal
 
@@ -157,6 +158,7 @@ def has_key_fragment(stable_segment_key: str, fragment: str) -> bool:
 def detect_bracket_violations(item: dict[str, Any]) -> list[str]:
     text = output_text(item)
     violations = [pattern for pattern in BRACKET_SUPPLEMENT_PATTERNS if pattern in text]
+    violations.extend(re.findall(r"\[[^\[\]]+\]", text))
     if "[" in text or "]" in text:
         violations.append("square_bracket_present")
     return sorted(set(violations))

@@ -1231,6 +1231,130 @@ def arm_metrics(parsed: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def gate_is_pass(status: str) -> bool:
+    return status == "PASS"
+
+
+def gate_is_blocking(status: str) -> bool:
+    return status == "FAIL_BLOCKING"
+
+
+def gate_requires_retry(status: str) -> bool:
+    return status == "FAIL_RETRY_ONLY"
+
+
+def gate_status_from_failures(blocking_failures: list[dict[str, Any]], retry_only_failures: list[dict[str, Any]]) -> str:
+    if not blocking_failures and not retry_only_failures:
+        return "PASS"
+    if not blocking_failures and retry_only_failures:
+        return "FAIL_RETRY_ONLY"
+    return "FAIL_BLOCKING"
+
+
+def gate_failure_record(
+    item: dict[str, Any],
+    failure_type: str,
+    details: list[Any],
+    *,
+    field: str | None = None,
+) -> dict[str, Any]:
+    record: dict[str, Any] = {
+        "stable_segment_key": item.get("stable_segment_key"),
+        "type": failure_type,
+        "details": details,
+    }
+    if field:
+        record["field"] = field
+    if "parse_method" in item:
+        record["parse_method"] = item.get("parse_method")
+    if "schema_valid" in item:
+        record["schema_valid"] = item.get("schema_valid")
+    if item.get("provider_error"):
+        record["provider_error"] = item.get("provider_error")
+    return record
+
+
+def classify_d_arm_gate_failures(items: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+    blocking_failures: list[dict[str, Any]] = []
+    retry_only_failures: list[dict[str, Any]] = []
+    for item in items:
+        gates = evaluate_d_arm_item(item)
+        if item.get("provider_error") or item.get("status") == "failed":
+            blocking_failures.append(
+                gate_failure_record(
+                    item,
+                    "provider_error",
+                    [str(item.get("provider_error") or item.get("status") or "provider_error")],
+                )
+            )
+        if item.get("schema_valid") is not True:
+            blocking_failures.append(
+                gate_failure_record(
+                    item,
+                    "schema_invalid",
+                    [f"schema_valid={item.get('schema_valid')!r}"],
+                )
+            )
+        empty_fields = [
+            field
+            for field in ("literal_ko", "natural_ko")
+            if not str(item.get(field) or "").strip()
+        ]
+        if empty_fields:
+            blocking_failures.append(
+                gate_failure_record(
+                    item,
+                    "empty_translation",
+                    empty_fields,
+                    field=",".join(empty_fields),
+                )
+            )
+        if gates["unsupported_insertion"]:
+            blocking_failures.append(
+                gate_failure_record(
+                    item,
+                    "unsupported_insertion",
+                    gates["unsupported_insertion_details"],
+                )
+            )
+        if gates["known_content_omission"]:
+            blocking_failures.append(
+                gate_failure_record(
+                    item,
+                    "known_content_omission",
+                    gates["known_content_omission_details"],
+                )
+            )
+        if gates["negation_scope_risk"]:
+            blocking_failures.append(
+                gate_failure_record(
+                    item,
+                    "negation_scope_risk",
+                    gates["negation_scope_risk_details"],
+                )
+            )
+        if gates["glossary_violation"]:
+            blocking_failures.append(
+                gate_failure_record(
+                    item,
+                    "hard_glossary_violation",
+                    gates["glossary_violation_details"],
+                )
+            )
+        if gates["bracket_violation"]:
+            retry_only_failures.append(
+                gate_failure_record(
+                    item,
+                    "bracket_violation",
+                    gates["bracket_violation_details"],
+                )
+            )
+    return {
+        "blocking_failures": blocking_failures,
+        "retry_only_failures": retry_only_failures,
+    }
+
+
 def compare_smoke(*, out_dir: Path, pretty: bool = False) -> dict[str, Any]:
     paths = smoke_paths(out_dir)
     arm_a = read_json(paths.arm_a_parsed)
@@ -1358,20 +1482,26 @@ def compare_v2_2_d_arm(
                 "references_present": {label: key in mapping for label, mapping in refs.items()},
             }
         )
-    objective_pass = (
-        len(d_items) == 30
-        and arm_metrics(arm_d)["schema_valid_rate"] == "1.000000"
-        and gate_summary["bracket_violations"] == 0
-        and gate_summary["unsupported_insertions"] == 0
-        and gate_summary["known_content_omissions"] == 0
-        and gate_summary["negation_scope_risks"] == 0
-        and gate_summary["glossary_violations"] == 0
+    classified_failures = classify_d_arm_gate_failures(d_items)
+    if len(d_items) != 30:
+        classified_failures["blocking_failures"].append(
+            {
+                "stable_segment_key": None,
+                "type": "item_count_mismatch",
+                "details": [f"d_item_count={len(d_items)}", "expected=30"],
+            }
+        )
+    objective_gate_status = gate_status_from_failures(
+        classified_failures["blocking_failures"],
+        classified_failures["retry_only_failures"],
     )
     return {
         "schema_version": "natural_ko_v2_2_d_arm_comparison_v1",
         "d_item_count": len(d_items),
         "arm_d_metrics": arm_metrics(arm_d),
-        "objective_gate_status": "PASS" if objective_pass else "FAIL",
+        "objective_gate_status": objective_gate_status,
+        "blocking_failures": classified_failures["blocking_failures"],
+        "retry_only_failures": classified_failures["retry_only_failures"],
         "objective_gate_summary": gate_summary,
         "manual_gates": {
             "readability_gate": "pending_operator_review",
@@ -1847,6 +1977,19 @@ def render_d_arm_comparison_markdown(comparison: dict[str, Any]) -> str:
             "",
             "```json",
             json.dumps(comparison["objective_gate_summary"], ensure_ascii=False, indent=2),
+            "```",
+            "",
+            "## Classified Gate Failures",
+            "",
+            "```json",
+            json.dumps(
+                {
+                    "blocking_failures": comparison.get("blocking_failures", []),
+                    "retry_only_failures": comparison.get("retry_only_failures", []),
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
             "```",
             "",
             "## Item Table",

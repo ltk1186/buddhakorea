@@ -137,7 +137,9 @@ def test_advisory_warning_requires_trigger_and_stays_advisory() -> None:
 
 
 def test_bracket_remains_hard_objective_violation() -> None:
-    assert detect_bracket_violations(d_item("x", literal="[그것은] 설해진다."))
+    violations = detect_bracket_violations(d_item("x", literal="[그것은] 설해진다."))
+    assert "[그것은]" in violations
+    assert "square_bracket_present" in violations
 
 
 def test_patthana_double_negation_unsupported_bunnoe_is_high_risk() -> None:
