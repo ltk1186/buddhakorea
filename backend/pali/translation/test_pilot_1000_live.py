@@ -4,6 +4,8 @@ import json
 from decimal import Decimal
 from pathlib import Path
 
+import pytest
+
 from backend.pali.scripts.submit_pilot_1000_batch import main as live_main
 from backend.pali.translation.natural_ko_readability import NATURAL_KO_V2_2_MARKER
 from backend.pali.translation.pilot_1000_live import (
@@ -21,6 +23,7 @@ from backend.pali.translation.pilot_1000_live import (
     submit_live_batch,
     poll_live_batch,
 )
+from backend.pali.translation.natural_ko_v2_2_quality import evaluate_d_arm_item
 from backend.pali.translation.response_schema_smoke import build_response_schema_experiment
 
 
@@ -291,6 +294,8 @@ def test_salvage_content_preservation_guard_rejects_string_mutation() -> None:
 
 def test_qa_classifies_retry_blocking_advisory_and_khandha_false_positive() -> None:
     bracket = {**output_payload(literal_ko="[그것은] 직역이다."), "stable_segment_key": "b", "original_text": "dhamma", "schema_valid": True, "status": "succeeded"}
+    source_bracket = {**output_payload(literal_ko="[66] 직역이다."), "stable_segment_key": "sb", "original_text": "[66] 6. title", "schema_valid": True, "status": "succeeded"}
+    hanja_bracket = {**output_payload(literal_ko="[善趣] 직역이다."), "stable_segment_key": "hb", "original_text": "sugati", "schema_valid": True, "status": "succeeded"}
     insertion = {**output_payload(natural_ko="세속적인 일을 즐김이다."), "stable_segment_key": "vri:romn:abh02m.mul:a8d464d40a45", "original_text": "kammārāmatā", "terms": [{"pali": "kammārāmatā", "ko": "일을 즐김"}], "schema_valid": True, "status": "succeeded"}
     omission = {**output_payload(), "stable_segment_key": "vri:romn:s0508a1.att:8b9574445272", "original_text": "accenti", "schema_valid": True, "status": "succeeded"}
     negation = {**output_payload(natural_ko="번뇌를 동반하지 않으며"), "stable_segment_key": "vri:romn:abh03m11.mul:4ab6e93ef3c3", "original_text": "pahātabbahetuka", "schema_valid": True, "status": "succeeded"}
@@ -299,6 +304,9 @@ def test_qa_classifies_retry_blocking_advisory_and_khandha_false_positive() -> N
     khandha_false = {**output_payload(natural_ko="무리와 어울린다."), "stable_segment_key": "k", "original_text": "saṅgaṇikārāmatā", "terms": [{"pali": "kammārāmatā", "ko": "일을 즐김"}], "schema_valid": True, "status": "succeeded"}
     khandha_real = {**output_payload(natural_ko="다섯 무리이다."), "stable_segment_key": "kr", "original_text": "pañcakkhandhā", "terms": [{"pali": "khandha", "ko": "무리"}], "schema_valid": True, "status": "succeeded"}
     assert classify_item_gate(bracket)["status"] == "FAIL_RETRY_ONLY"
+    assert classify_item_gate(source_bracket)["status"] == "PASS"
+    assert classify_item_gate(hanja_bracket)["status"] == "PASS"
+    assert classify_item_gate(hanja_bracket)["advisory_warnings"][0]["type"] == "bracket_advisory"
     for item in (insertion, omission, negation, glossary, khandha_real):
         assert classify_item_gate(item)["status"] == "FAIL_BLOCKING"
     assert classify_item_gate(advisory)["status"] == "PASS"
@@ -357,3 +365,28 @@ def test_default_cli_runs_preflight_only_and_raw_results_path_is_gitignored(tmp_
     assert not step7_paths(out).submit_run_manifest.exists()
 
 
+def test_local_pilot_1000_parsed_checker_smoke_if_available() -> None:
+    parsed_path = Path("data/reports/pali/pilot_1000_batch/pilot_1000_parsed.json")
+    if not parsed_path.exists():
+        pytest.skip("local pilot_1000_parsed.json is not available")
+    parsed = json.loads(parsed_path.read_text(encoding="utf-8"))
+    blocking = []
+    retry = []
+    khandha_advisory = []
+    for item in parsed.get("items") or []:
+        classification = classify_item_gate(item)
+        blocking.extend(classification["blocking_failures"])
+        retry.extend(classification["retry_only_failures"])
+        gates = evaluate_d_arm_item(item)
+        for detail in gates.get("advisory_glossary_warning_details") or []:
+            if detail == "khandha:무리":
+                khandha_advisory.append(item.get("stable_segment_key"))
+        for failure in classification["retry_only_failures"]:
+            if failure["type"] == "bracket_violation":
+                assert all(
+                    isinstance(detail, dict) and detail.get("bracket_type") == "SUPPLIED_KOREAN"
+                    for detail in failure.get("details") or []
+                )
+    assert blocking == []
+    assert len(khandha_advisory) == 5
+    assert retry

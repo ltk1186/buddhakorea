@@ -780,11 +780,28 @@ def classify_item_gate(item: dict[str, Any]) -> dict[str, Any]:
         blocking.append(gate_failure_record(item, "hard_glossary_violation", gates["glossary_violation_details"]))
     if gates["bracket_violation"]:
         retry_only.append(gate_failure_record(item, "bracket_violation", gates["bracket_violation_details"]))
+    advisory_warnings: list[dict[str, Any]] = []
+    for detail in gates.get("advisory_glossary_warning_details") or []:
+        advisory_warnings.append(
+            {
+                "stable_segment_key": item.get("stable_segment_key"),
+                "type": "glossary_disallowed_advisory",
+                "details": [detail],
+            }
+        )
+    for detail in gates.get("bracket_advisory_warning_details") or []:
+        advisory_warnings.append(
+            {
+                "stable_segment_key": item.get("stable_segment_key"),
+                "type": "bracket_advisory",
+                "details": [detail],
+            }
+        )
     return {
         "status": gate_status_from_failures(blocking, retry_only),
         "blocking_failures": blocking,
         "retry_only_failures": retry_only,
-        "advisory_warnings": gates.get("advisory_glossary_warning_details") or [],
+        "advisory_warnings": advisory_warnings,
         "objective_gates": gates,
     }
 
@@ -805,8 +822,7 @@ def run_qa(*, out_dir: Path = DEFAULT_OUT, pretty: bool = False) -> dict[str, An
         counts[classification["status"]] += 1
         blocking_failures.extend(classification["blocking_failures"])
         retry_only_failures.extend(classification["retry_only_failures"])
-        for warning in classification["advisory_warnings"]:
-            advisory_warnings.append({"stable_segment_key": item.get("stable_segment_key"), "type": "advisory_glossary_warning", "details": [warning]})
+        advisory_warnings.extend(classification["advisory_warnings"])
         item_statuses.append(
             {
                 "stable_segment_key": item.get("stable_segment_key"),
@@ -1089,4 +1105,3 @@ def render_retry_bracket_markdown(payload: dict[str, Any]) -> str:
             *[f"- `{key}`" for key in payload.get("retry_stable_segment_keys") or []],
         ]
     ) + "\n"
-

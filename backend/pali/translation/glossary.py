@@ -12,7 +12,7 @@ import re
 import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Literal
 
 
 TOKEN_RE = re.compile(r"[A-Za-zāīūṅñṭḍṇḷṃĀĪŪṄÑṬḌṆḶṂ]+")
@@ -81,6 +81,8 @@ class GlossaryEntry:
     canonical_ko: str = ""
     natural_ko_allowed: tuple[str, ...] = ()
     avoid_ko: tuple[str, ...] = ()
+    avoid_ko_enforcement: Literal["hard", "aligned_hard", "advisory"] = "hard"
+    avoid_ko_confidence: Literal["high", "needs_expert_confirm"] = "high"
     variants: tuple[GlossaryVariant, ...] = ()
     candidate_ko: tuple[str, ...] = ()
     note: str = ""
@@ -207,6 +209,56 @@ def glossary_entry_is_triggered(entry: GlossaryEntry, parsed_segment: dict[str, 
     return False
 
 
+def glossary_avoid_enforcement(entry: GlossaryEntry, avoided: str) -> Literal["hard", "aligned_hard", "advisory"]:
+    if _norm(entry.pali) == "khandha" and avoided == "무리":
+        return "aligned_hard"
+    if entry.type == "needs_human":
+        return "advisory"
+    return entry.avoid_ko_enforcement
+
+
+def term_pali_matches_entry(pali: str, entry: GlossaryEntry) -> bool:
+    normalized = _norm(pali)
+    term = _norm(entry.pali)
+    if _token_matches_term(normalized, term):
+        return True
+    stem = _stem(term)
+    return bool(stem and stem in normalized)
+
+
+def terms_align_avoid_ko(parsed_segment: dict[str, Any], entry: GlossaryEntry, avoided: str) -> bool:
+    translation = _translation_payload(parsed_segment)
+    for term in translation.get("terms") or []:
+        if not isinstance(term, dict):
+            continue
+        pali = str(term.get("pali") or "")
+        ko = str(term.get("ko") or "")
+        if term_pali_matches_entry(pali, entry) and avoided in ko:
+            return True
+    return False
+
+
+def classify_avoid_ko_hit(
+    parsed_segment: dict[str, Any],
+    entry: GlossaryEntry,
+    avoided: str,
+    *,
+    location: str,
+) -> dict[str, Any]:
+    enforcement = glossary_avoid_enforcement(entry, avoided)
+    aligned = terms_align_avoid_ko(parsed_segment, entry, avoided)
+    hard_gate = enforcement == "hard" or (enforcement == "aligned_hard" and aligned)
+    return {
+        "stable_segment_key": str(parsed_segment.get("stable_segment_key") or ""),
+        "avoid_ko": avoided,
+        "location": location,
+        "enforcement": "hard" if hard_gate else "advisory",
+        "configured_enforcement": enforcement,
+        "aligned_by_terms": aligned,
+        "hard_gate": hard_gate,
+    }
+
+
 def calculate_term_consistency(
     parsed_segments: Iterable[dict[str, Any]] | dict[str, Any],
     glossary: Glossary,
@@ -236,13 +288,7 @@ def calculate_term_consistency(
             entry = glossary.by_pali[_norm(pali)]
             for avoided in entry.avoid_ko:
                 if avoided and avoided in ko:
-                    report["avoid_hits"].append(
-                        {
-                            "stable_segment_key": stable_key,
-                            "avoid_ko": avoided,
-                            "location": "terms.ko",
-                        }
-                    )
+                    report["avoid_hits"].append(classify_avoid_ko_hit(segment, entry, avoided, location="terms.ko"))
 
         body_text = _body_translation_text(segment)
         for entry in glossary.entries:
@@ -254,11 +300,7 @@ def calculate_term_consistency(
             for avoided in entry.avoid_ko:
                 if avoided and avoided in body_text:
                     term_reports[entry.pali]["avoid_hits"].append(
-                        {
-                            "stable_segment_key": stable_key,
-                            "avoid_ko": avoided,
-                            "location": "literal_or_natural",
-                        }
+                        classify_avoid_ko_hit(segment, entry, avoided, location="literal_or_natural")
                     )
 
     summary = {
@@ -279,7 +321,7 @@ def calculate_term_consistency(
             violations = []
             if len(observed) > 1:
                 violations.append("multiple_observed_ko")
-            if report["avoid_hits"]:
+            if any(hit.get("hard_gate") for hit in report["avoid_hits"]):
                 violations.append("avoid_ko_observed")
             report["violations"] = violations
             report["consistent"] = not violations
@@ -354,6 +396,8 @@ def _entry_from_dict(item: dict[str, Any]) -> GlossaryEntry:
         canonical_ko=str(item.get("canonical_ko", "")),
         natural_ko_allowed=tuple(str(value) for value in item.get("natural_ko_allowed", [])),
         avoid_ko=tuple(str(value) for value in item.get("avoid_ko", [])),
+        avoid_ko_enforcement=str(item.get("avoid_ko_enforcement", "hard")),
+        avoid_ko_confidence=str(item.get("avoid_ko_confidence", "high")),
         variants=variants,
         candidate_ko=tuple(str(value) for value in item.get("candidate_ko", [])),
         note=str(item.get("note", "")),

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from backend.pali.translation.natural_ko_v2_2_quality import (
+    classify_bracket_spans,
     detect_advisory_glossary_warnings,
+    detect_bracket_advisories,
     detect_bracket_violations,
     detect_glossary_violations,
     detect_known_omissions,
@@ -31,7 +33,9 @@ def d_item(
 def test_bracket_supplementation_is_detected() -> None:
     for bracket in ("[뜻이다]", "[이다]", "[설해지지]", "[이것을]"):
         item = d_item("vri:romn:test", literal=f"이것은 {bracket}.")
-        assert detect_bracket_violations(item)
+        violations = detect_bracket_violations(item)
+        assert violations
+        assert violations[0]["bracket_type"] == "SUPPLIED_KOREAN"
 
 
 def test_known_unsupported_insertions_are_segment_scoped() -> None:
@@ -110,7 +114,19 @@ def test_khandha_false_positive_is_fixed_without_trigger() -> None:
     assert "kammārāmatā:세속적인 일을 즐김" in detect_glossary_violations(bad_kammarama)
 
 
-def test_real_khandha_violation_is_still_caught_when_triggered() -> None:
+def test_khandha_trigger_with_canonical_terms_is_advisory_not_hard() -> None:
+    item = d_item(
+        "x",
+        original_text="pañcakkhandhā ... gaṇo ...",
+        literal="다섯 무더기와 무리이다.",
+        natural="다섯 무더기와 무리이다.",
+        terms=[{"pali": "khandha", "ko": "무더기"}],
+    )
+    assert "khandha:무리" not in detect_glossary_violations(item)
+    assert "khandha:무리" in detect_advisory_glossary_warnings(item)
+
+
+def test_real_khandha_violation_is_still_caught_when_aligned_in_terms() -> None:
     item = d_item(
         "x",
         original_text="pañcakkhandhā ...",
@@ -138,8 +154,36 @@ def test_advisory_warning_requires_trigger_and_stays_advisory() -> None:
 
 def test_bracket_remains_hard_objective_violation() -> None:
     violations = detect_bracket_violations(d_item("x", literal="[그것은] 설해진다."))
-    assert "[그것은]" in violations
-    assert "square_bracket_present" in violations
+    assert violations[0]["bracket_text"] == "[그것은]"
+    assert violations[0]["bracket_type"] == "SUPPLIED_KOREAN"
+    assert violations[0]["gating"] is True
+
+
+def test_source_faithful_numeric_bracket_is_allowed() -> None:
+    item = d_item("x", original_text="[66] 6. Mudulakkhaṇajātakavaṇṇanā", literal="[66] 무둘락카나 자타카 주석")
+    findings = classify_bracket_spans(item)
+    assert findings == [
+        {
+            "bracket_text": "[66]",
+            "bracket_type": "SOURCE_FAITHFUL",
+            "in_source": True,
+            "gating": False,
+        }
+    ]
+    assert detect_bracket_violations(item) == []
+    assert detect_bracket_advisories(item) == []
+
+
+def test_non_source_number_hanja_and_other_brackets_are_advisory() -> None:
+    number = d_item("x", literal="[99] 항목이다.")
+    hanja = d_item("x", literal="[善趣]이다.")
+    other = d_item("x", literal="[SN 12.1] 참조.")
+    assert detect_bracket_violations(number) == []
+    assert detect_bracket_advisories(number)[0]["bracket_type"] == "SUPPLIED_NUMBER"
+    assert detect_bracket_violations(hanja) == []
+    assert detect_bracket_advisories(hanja)[0]["bracket_type"] == "HANJA_GLOSS"
+    assert detect_bracket_violations(other) == []
+    assert detect_bracket_advisories(other)[0]["bracket_type"] == "OTHER_BRACKET"
 
 
 def test_patthana_double_negation_unsupported_bunnoe_is_high_risk() -> None:

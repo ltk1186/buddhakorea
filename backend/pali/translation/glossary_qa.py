@@ -13,6 +13,7 @@ from typing import Any, Iterable
 
 from .glossary import (
     Glossary,
+    classify_avoid_ko_hit,
     detect_glossary_terms,
     extract_translation_head_terms,
     glossary_entry_is_triggered,
@@ -185,14 +186,19 @@ def detect_avoid_ko_conflicts(
                 locations.append("terms.ko")
             if not locations:
                 continue
+            classification = classify_avoid_ko_hit(parsed_segment, entry, avoided, location=",".join(locations))
             conflicts.append(
                 {
                     "signal": QA_SIGNAL_AVOID_KO_CONFLICT,
-                    "severity": "review",
+                    "severity": "hard" if classification["hard_gate"] else "review",
                     "stable_segment_key": stable_key,
                     "pali": entry.pali,
                     "avoid_ko": avoided,
                     "locations": locations,
+                    "enforcement": classification["enforcement"],
+                    "configured_enforcement": classification["configured_enforcement"],
+                    "aligned_by_terms": classification["aligned_by_terms"],
+                    "hard_gate": classification["hard_gate"],
                 }
             )
     return conflicts
@@ -328,6 +334,8 @@ def build_glossary_qa_report(
             "total_segments": len(segments),
             "cross_term_collision_review_count": cross_metrics["same_segment_collision_count"],
             "avoid_ko_conflict_count": len(avoid_conflicts),
+            "avoid_ko_hard_conflict_count": sum(1 for item in avoid_conflicts if item.get("hard_gate")),
+            "avoid_ko_advisory_conflict_count": sum(1 for item in avoid_conflicts if not item.get("hard_gate")),
             "contains_untranslated_pali_before_count": before_flag_count,
             "contains_untranslated_pali_possible_true_after_count": after_possible_true,
             "citation_candidate_count": len(citations),

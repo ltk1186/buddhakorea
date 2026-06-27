@@ -93,6 +93,22 @@ class GlossaryQATest(unittest.TestCase):
         self.assertEqual(len(conflicts), 1)
         self.assertEqual(conflicts[0]["pali"], "khandha")
         self.assertEqual(conflicts[0]["avoid_ko"], "무리")
+        self.assertTrue(conflicts[0]["hard_gate"])
+        self.assertEqual(conflicts[0]["enforcement"], "hard")
+
+    def test_khandha_muri_with_canonical_terms_is_advisory_not_hard(self):
+        segment = self.segment(
+            "pañcakkhandhā gaṇo",
+            [{"pali": "khandha", "ko": "무더기"}],
+            literal_ko="다섯 무더기와 무리이다.",
+            natural_ko="다섯 무더기와 무리이다.",
+        )
+        conflicts = detect_avoid_ko_conflicts(segment, self.glossary)
+        self.assertEqual(len(conflicts), 1)
+        self.assertEqual(conflicts[0]["pali"], "khandha")
+        self.assertEqual(conflicts[0]["avoid_ko"], "무리")
+        self.assertFalse(conflicts[0]["hard_gate"])
+        self.assertEqual(conflicts[0]["enforcement"], "advisory")
 
     def test_parenthetical_pali_is_reclassified_allowed(self):
         segment = self.segment(
