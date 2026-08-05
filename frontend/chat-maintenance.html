@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghosa AI 시스템 정비 안내 | Buddha Korea</title>
+    <meta name="description" content="Ghosa AI가 더 정확하고 신뢰할 수 있는 불교 문헌 안내를 위해 시스템을 업그레이드하고 있습니다.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+    <style>
+        :root {
+            --sage: #5a9a6e;
+            --sage-dark: #3f7651;
+            --sage-light: #8cb89c;
+            --sage-pale: #e8f0eb;
+            --surface: rgba(255, 255, 255, 0.88);
+            --text: #1d1d1f;
+            --text-secondary: #65686b;
+            --border: rgba(90, 154, 110, 0.18);
+            --font: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            min-height: 100%;
+            margin: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            min-height: 100dvh;
+            font-family: var(--font);
+            color: var(--text);
+            background:
+                radial-gradient(circle at 15% 10%, rgba(140, 184, 156, 0.28), transparent 34rem),
+                radial-gradient(circle at 88% 84%, rgba(184, 212, 194, 0.32), transparent 30rem),
+                #fbfcfb;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .site-header {
+            height: 70px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        .header-inner {
+            width: min(1120px, calc(100% - 40px));
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--sage-dark);
+            font-size: 17px;
+            font-weight: 650;
+            text-decoration: none;
+        }
+
+        .brand img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+        }
+
+        .header-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        main {
+            min-height: calc(100vh - 70px);
+            min-height: calc(100dvh - 70px);
+            display: grid;
+            place-items: center;
+            padding: 48px 20px 64px;
+        }
+
+        .maintenance-card {
+            position: relative;
+            width: min(680px, 100%);
+            padding: 64px 58px 56px;
+            overflow: hidden;
+            text-align: center;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            box-shadow: 0 24px 70px rgba(48, 86, 61, 0.10);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        .maintenance-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 160px;
+            height: 3px;
+            transform: translateX(-50%);
+            border-radius: 0 0 8px 8px;
+            background: linear-gradient(90deg, var(--sage-light), var(--sage));
+        }
+
+        .symbol {
+            width: 76px;
+            height: 76px;
+            margin: 0 auto 28px;
+            display: grid;
+            place-items: center;
+            border-radius: 24px;
+            background: linear-gradient(145deg, #f5faf6, var(--sage-pale));
+            box-shadow: inset 0 0 0 1px rgba(90, 154, 110, 0.12);
+        }
+
+        .symbol img {
+            width: 44px;
+            height: 44px;
+            object-fit: contain;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 7px 13px;
+            color: var(--sage-dark);
+            font-size: 13px;
+            font-weight: 650;
+            letter-spacing: -0.01em;
+            background: var(--sage-pale);
+            border-radius: 999px;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--sage);
+            box-shadow: 0 0 0 4px rgba(90, 154, 110, 0.12);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(30px, 5vw, 42px);
+            line-height: 1.25;
+            letter-spacing: -0.045em;
+            font-weight: 720;
+        }
+
+        .description {
+            max-width: 520px;
+            margin: 24px auto 0;
+            color: var(--text-secondary);
+            font-size: 17px;
+            line-height: 1.8;
+            letter-spacing: -0.018em;
+        }
+
+        .apology {
+            display: block;
+            margin-top: 10px;
+            color: #4b4e50;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 36px;
+        }
+
+        .button {
+            min-width: 150px;
+            padding: 13px 20px;
+            border-radius: 999px;
+            font-size: 15px;
+            font-weight: 620;
+            text-decoration: none;
+            transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+        }
+
+        .button-primary {
+            color: #fff;
+            background: var(--sage);
+            box-shadow: 0 10px 24px rgba(90, 154, 110, 0.22);
+        }
+
+        .button-primary:hover {
+            background: var(--sage-dark);
+        }
+
+        .button-secondary {
+            color: #4c554f;
+            background: rgba(255, 255, 255, 0.78);
+            box-shadow: inset 0 0 0 1px var(--border);
+        }
+
+        .button-secondary:hover {
+            background: #fff;
+        }
+
+        .note {
+            margin: 32px 0 0;
+            padding-top: 26px;
+            color: #85888a;
+            font-size: 13px;
+            line-height: 1.6;
+            border-top: 1px solid rgba(90, 154, 110, 0.12);
+        }
+
+        @media (max-width: 600px) {
+            .site-header {
+                height: 62px;
+            }
+
+            .header-inner {
+                width: min(100% - 32px, 1120px);
+            }
+
+            .header-label {
+                display: none;
+            }
+
+            main {
+                min-height: calc(100dvh - 62px);
+                padding: 28px 16px 40px;
+            }
+
+            .maintenance-card {
+                padding: 46px 24px 38px;
+                border-radius: 24px;
+            }
+
+            .symbol {
+                width: 68px;
+                height: 68px;
+                margin-bottom: 24px;
+            }
+
+            .description {
+                font-size: 16px;
+                line-height: 1.75;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .button {
+                width: 100%;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .button {
+                transition: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a class="brand" href="index.html">
+                <img src="assets/buddha-line.png" alt="">
+                <span>Buddha Korea</span>
+            </a>
+            <span class="header-label">Ghosa AI</span>
+        </div>
+    </header>
+
+    <main>
+        <section class="maintenance-card" aria-labelledby="maintenance-title">
+            <div class="symbol" aria-hidden="true">
+                <img src="assets/buddha-line.png" alt="">
+            </div>
+            <div class="status">
+                <span class="status-dot"></span>
+                Ghosa AI 시스템 정비 중
+            </div>
+            <h1 id="maintenance-title">더 나은 불교 문헌 안내를 위해<br>잠시 정비하고 있습니다</h1>
+            <p class="description">
+                보다 정확한 검색과 신뢰할 수 있는 출처를 제공하기 위해
+                Ghosa AI 시스템을 업그레이드하고 있습니다.
+                <span class="apology">이용에 불편을 드려 죄송합니다. 준비가 완료되는 대로 다시 열겠습니다.</span>
+            </p>
+            <div class="actions">
+                <a class="button button-primary" href="index.html">메인으로 돌아가기</a>
+                <a class="button button-secondary" href="sutra-writing.html">사경 둘러보기</a>
+            </div>
+            <p class="note">Ghosa AI 이외의 Buddha Korea 콘텐츠는 계속 이용하실 수 있습니다.</p>
+        </section>
+    </main>
+</body>
+</html>
