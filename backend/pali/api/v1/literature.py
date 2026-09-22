@@ -4,7 +4,7 @@ Literature CRUD endpoints.
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from ..deps import get_literature_service
+from ..read_dependencies import get_literature_service
 from ...services.literature_service import LiteratureService
 from ...schemas.literature import (
     LiteratureResponse, LiteratureListResponse,

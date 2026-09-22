@@ -1,0 +1,8 @@
+/* Site navigation stays identical; chat tools remain in their own second row. */
+.desktop-nav { top: 70px; z-index: 900; }
+.chat-history-sidebar { top: 130px; height: calc(100dvh - 130px); }
+.chat-section, .library-section, .methodology-section { padding-top: 130px; }
+@media(max-width:767px) {
+    .chat-section, .library-section, .methodology-section { padding-top: 60px; }
+    .chat-header { top: 60px; }
+}

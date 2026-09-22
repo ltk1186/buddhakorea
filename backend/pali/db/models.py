@@ -9,7 +9,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 
-from .database import Base
+from .base import Base
 
 
 class Literature(Base):
@@ -28,6 +28,7 @@ class Literature(Base):
     total_segments = Column(Integer, default=0)
     translated_segments = Column(Integer, default=0)
     source_pdf = Column(String(255))
+    content_type = Column(String(20), nullable=False, server_default="legacy", default="legacy")
     hierarchy_labels = Column(JSON().with_variant(JSONB, "postgresql"))  # {"level_1": "vagga", "level_2": "sutta"}
     display_metadata = Column(
         JSON().with_variant(JSONB, "postgresql"),

@@ -1,11 +1,14 @@
 """
 Database connection and session management.
 """
-from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
-from typing import Generator
+
+from collections.abc import Generator
+
+from sqlalchemy import create_engine, inspect
+from sqlalchemy.orm import sessionmaker
 
 from ..config import settings
+from .base import Base
 
 # Create SQLAlchemy engine
 engine = create_engine(
@@ -18,8 +21,31 @@ engine = create_engine(
 # Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Base class for declarative models
-Base = declarative_base()
+
+def init_db() -> None:
+    """Create SQLite test tables; PostgreSQL must be provisioned by Alembic."""
+    from . import models  # noqa: F401
+
+    if engine.dialect.name == "sqlite":
+        Base.metadata.create_all(bind=engine)
+        return
+
+    inspector = inspect(engine)
+    missing = []
+    for table in Base.metadata.sorted_tables:
+        if not inspector.has_table(table.name):
+            missing.append(table.name)
+            continue
+        columns = {column["name"] for column in inspector.get_columns(table.name)}
+        missing.extend(
+            f"{table.name}.{column.name}" for column in table.columns if column.name not in columns
+        )
+    if missing:
+        raise RuntimeError(
+            "Pali database schema is missing: "
+            + ", ".join(missing)
+            + ". Run the environment's Alembic upgrade head before starting the backend."
+        )
 
 
 def get_db() -> Generator:

@@ -43,9 +43,9 @@ async function logout() {
 
 // Function to update header auth UI
 async function updateHeaderAuthUI(containerId, isChatPage = false) {
-    const user = await checkAuthStatus();
     const container = document.getElementById(containerId);
     if (!container) return;
+    const user = await checkAuthStatus();
 
     container.textContent = '';
     

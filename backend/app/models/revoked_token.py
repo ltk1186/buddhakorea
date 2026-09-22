@@ -29,7 +29,7 @@ class RevokedToken(Base):
     reason = Column(String(255), nullable=True)  # 'logout', 'reauth', 'compromise', etc.
 
     # Additional context about revocation (user agent, IP, etc.)
-    metadata = Column(JSON, nullable=True)
+    revocation_metadata = Column("metadata", JSON, nullable=True)
 
     # Relationships
     social_account = relationship("SocialAccount")

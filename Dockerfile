@@ -3,7 +3,7 @@
 # ===========================================
 FROM node:20-alpine AS pali-builder
 
-WORKDIR /build
+WORKDIR /build/frontend/pali-studio
 
 # Copy package files first (better layer caching)
 COPY frontend/pali-studio/package*.json ./
@@ -13,6 +13,8 @@ RUN npm ci --silent
 
 # Copy source and build
 COPY frontend/pali-studio/ ./
+COPY frontend/css/ ../css/
+COPY frontend/js/ ../js/
 RUN npm run build
 
 # ===========================================
@@ -74,7 +76,7 @@ COPY --chown=buddha:buddha backend/rag/ ./rag/
 COPY --chown=buddha:buddha frontend/ ./frontend/
 
 # Copy Pali Studio build output from pali-builder stage
-COPY --from=pali-builder --chown=buddha:buddha /build/dist/ ./frontend/pali-studio/dist/
+COPY --from=pali-builder --chown=buddha:buddha /build/frontend/pali-studio/dist/ ./frontend/pali-studio/dist/
 
 # Copy source explorer data structure (actual data mounted via volume)
 COPY --chown=buddha:buddha backend/source_explorer ./source_explorer/

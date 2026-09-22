@@ -4,8 +4,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  /* Account for site header (40px) at the top */
-  padding-top: 40px;
+
 }
 
 /* Skip to main content link - visible only when focused */

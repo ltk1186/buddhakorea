@@ -53,8 +53,7 @@ from .routers.auth import create_auth_router
 from .routers.chat import create_chat_router
 from .routers.chat_history import create_chat_history_router
 from .routers.public import create_public_router
-from pali.db.database import Base as PaliBase, engine as pali_engine, SessionLocal as PaliSessionLocal
-from pali.db import models as pali_models  # Ensure models are registered
+from pali.db.database import SessionLocal as PaliSessionLocal, init_db as init_pali_db
 
 
 # ============================================================================
@@ -566,12 +565,9 @@ async def lifespan(app: FastAPI):
     await database.init_db()
     logger.info("✓ Database initialized")
 
-    # Initialize Pali DB (Sync)
-    try:
-        PaliBase.metadata.create_all(bind=pali_engine)
-        logger.info("✓ Pali Database initialized")
-    except Exception as e:
-        logger.error(f"Failed to initialize Pali DB: {e}")
+    # PostgreSQL schema is managed by Alembic; fail clearly if not migrated.
+    init_pali_db()
+    logger.info("✓ Pali Database schema verified")
 
     # Load response cache
     load_response_cache()
@@ -818,7 +814,9 @@ if FRONTEND_DIR.exists():
     app.mount("/admin", StaticFiles(directory=str(FRONTEND_DIR / "admin"), html=True), name="admin")
 
     # Mount Pali Studio SPA (React)
-    PALI_DIR = FRONTEND_DIR / "pali"
+    PALI_DIR = FRONTEND_DIR / "pali-studio" / "dist"
+    if not PALI_DIR.exists():
+        PALI_DIR = FRONTEND_DIR / "pali"
     if PALI_DIR.exists():
         app.mount("/pali", StaticFiles(directory=str(PALI_DIR), html=True), name="pali")
 else:

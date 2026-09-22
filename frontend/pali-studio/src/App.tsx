@@ -7,7 +7,7 @@
  * Phase 4b: Added DPD hover preview
  * Phase 5: Mobile-first UI with "One Task, One Screen" pattern
  */
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { SiteHeader, Header, Sidebar, MobileNav } from '@/components/layout';
 import { LiteraturePanel } from '@/components/literature';
 import { ChatPanel } from '@/components/chat';
@@ -18,8 +18,12 @@ import { useUIStore } from '@/store';
 import { useDpd, useIsDesktop, useIsMobile } from '@/hooks';
 import { normalizeWord, isValidLookupWord } from '@/utils/paliTokenizer';
 import styles from './App.module.css';
+import { PublishedReader } from './components/reader/PublishedReader';
+import { PublishedLibrary } from './components/reader/PublishedLibrary';
+import { getLiterature } from '@/api/literature';
+import type { Literature } from '@/types/literature';
 
-function App() {
+function StudioApp() {
   const {
     showChatPanel,
     showSidebar,
@@ -171,4 +175,29 @@ function App() {
   );
 }
 
-export default App;
+function SelectedLiterature({ literatureId }: { literatureId: string }) {
+    const [literature, setLiterature] = useState<Literature | null>(null);
+    const [error, setError] = useState('');
+    const [retry, setRetry] = useState(0);
+    useEffect(() => {
+        let cancelled = false;
+        setError('');
+        getLiterature(literatureId).then((result) => {
+            if (!cancelled) setLiterature(result);
+        }).catch(() => {
+            if (!cancelled) setError('문헌을 불러오지 못했습니다. 연결 상태를 확인하거나 목록에서 다시 선택해 주세요.');
+        });
+        return () => { cancelled = true; };
+    }, [literatureId, retry]);
+    if (error) return <><SiteHeader /><main style={{ padding: 32 }}><p role="alert">{error}</p><button onClick={() => setRetry((value) => value + 1)}>다시 불러오기</button><p><a href="/pali/">문헌 목록으로</a></p></main></>;
+    if (!literature) return <><SiteHeader /><main style={{ padding: 32 }}><p role="status">문헌을 불러오고 있습니다.</p><a href="/pali/">문헌 목록으로</a></main></>;
+    return literature.content_type === 'canonical' ? <PublishedReader literatureId={literatureId} /> : <StudioApp />;
+}
+
+export default function App() {
+    const params = new URLSearchParams(window.location.search);
+    const literatureId = params.get('lit');
+    if (literatureId) return <SelectedLiterature key={literatureId} literatureId={literatureId} />;
+    if (params.get('view') === 'studio') return <StudioApp />;
+    return <PublishedLibrary />;
+}

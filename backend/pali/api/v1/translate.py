@@ -9,7 +9,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from ...db.database import get_db
-from ...db.models import Segment
+from ...db.models import Segment, Literature
 from ..deps import get_literature_service, get_gemini_client
 from ...services.literature_service import LiteratureService
 from ...services.gemini_client import GeminiClient
@@ -149,17 +149,27 @@ async def generate_batch_translation_stream(
         yield f"event: error\ndata: {json.dumps({'error': str(e)})}\n\n"
 
 
+def guard_interactive_translation(service: LiteratureService, literature_id: str) -> None:
+    literature = service.db.get(Literature, literature_id)
+    if not literature:
+        raise HTTPException(404, "Literature not found")
+    if literature.content_type == "canonical":
+        raise HTTPException(409, "Published translations can only be changed through a new release")
+
+
 @router.post("")
 async def translate_segment(
     request: TranslateRequest,
     db: Session = Depends(get_db),
     service: LiteratureService = Depends(get_literature_service),
-    gemini: GeminiClient = Depends(get_gemini_client)
 ):
     """
     Translate a segment using Gemini AI with DPD hints.
     Returns SSE stream with translation progress.
     """
+    guard_interactive_translation(service, request.literature_id)
+    gemini = get_gemini_client()
+
     # Get the segment
     segment = service.get_segment_by_id(request.literature_id, request.segment_id)
 
@@ -194,7 +204,6 @@ async def translate_batch(
     request: BatchTranslateRequest,
     db: Session = Depends(get_db),
     service: LiteratureService = Depends(get_literature_service),
-    gemini: GeminiClient = Depends(get_gemini_client)
 ):
     """
     Translate multiple segments in batch using Gemini AI with DPD hints.
@@ -202,6 +211,9 @@ async def translate_batch(
 
     Max 5 segments per request.
     """
+    guard_interactive_translation(service, request.literature_id)
+    gemini = get_gemini_client()
+
     # Validate and fetch all segments
     segments = []
     already_translated = []
@@ -254,12 +266,14 @@ async def translate_batch(
 async def translate_segment_sync(
     request: TranslateRequest,
     service: LiteratureService = Depends(get_literature_service),
-    gemini: GeminiClient = Depends(get_gemini_client)
 ):
     """
     Translate a segment synchronously (non-streaming) with DPD hints.
     Useful for batch processing or when SSE is not supported.
     """
+    guard_interactive_translation(service, request.literature_id)
+    gemini = get_gemini_client()
+
     # Get the segment
     segment = service.get_segment_by_id(request.literature_id, request.segment_id)
 

@@ -25,6 +25,7 @@ class LiteratureCreate(LiteratureBase):
 class LiteratureResponse(LiteratureBase):
     """Schema for literature response."""
     id: str
+    content_type: str = "legacy"
     status: str
     total_segments: int
     translated_segments: int

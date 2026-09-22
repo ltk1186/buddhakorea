@@ -3,6 +3,7 @@
  */
 
 export interface Literature {
+  content_type?: 'legacy' | 'canonical';
   id: string;
   name: string;
   pali_name: string;

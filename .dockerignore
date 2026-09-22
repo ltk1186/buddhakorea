@@ -74,3 +74,8 @@ benchmark/
 
 # Data
 data/
+
+# Local builds and credentials must not enter the build context.
+**/node_modules/
+**/gcp-key.json
+frontend/pali-studio/dist/

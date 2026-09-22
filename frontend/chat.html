@@ -2377,6 +2377,8 @@
             font-size: 1.1rem;
         }
     </style>
+    <link rel="stylesheet" href="css/chat-site-header.css?v=20260910">
+    <script src="js/site-header.js?v=20260910" defer></script>
 </head>
 <body>
     <!-- Ambient Background -->
@@ -2386,14 +2388,12 @@
         <div class="ambient-orb ambient-orb-3"></div>
     </div>
 
-    <!-- Desktop Navigation -->
+    <buddha-site-header overlay></buddha-site-header>
+
+    <!-- Chat workspace tools -->
     <nav class="desktop-nav" id="desktopNav">
         <div class="desktop-nav-left">
-            <a href="/" class="desktop-nav-home" title="메인 사이트로">
-                <img src="assets/buddha-line.png" width="28" height="28" style="border-radius:6px;object-fit:cover;" alt="Buddha Korea">
-                <span>Buddha Korea</span>
-            </a>
-            <span class="desktop-nav-divider">|</span>
+
             <div class="desktop-nav-brand" onclick="switchTab('chat');">
                 <button class="sidebar-toggle-btn" onclick="toggleSidebar(); event.stopPropagation();" title="채팅 기록">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2408,9 +2408,7 @@
             <button class="desktop-nav-link" data-tab="library" onclick="switchTab('library')">라이브러리</button>
             <button class="desktop-nav-link" data-tab="methodology" onclick="switchTab('methodology')">방법론</button>
         </div>
-        <div class="desktop-nav-auth" id="desktopNavAuth">
-            <!-- Auth content injected by JS -->
-        </div>
+
     </nav>
 
     <!-- Chat History Sidebar (Desktop) -->

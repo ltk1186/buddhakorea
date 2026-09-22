@@ -3,9 +3,17 @@ Literature service for managing Pali literature data.
 """
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import func, cast, Integer
+from sqlalchemy import func, cast, Integer, or_, exists
 
 from ..db.models import Literature, Segment
+from ..db.publications import LiteraturePublication
+
+
+def visible_literature():
+    return or_(
+        Literature.content_type == "legacy",
+        exists().where(LiteraturePublication.literature_id == Literature.id),
+    )
 
 
 class LiteratureService:
@@ -16,7 +24,7 @@ class LiteratureService:
 
     def get_all_literatures(self) -> List[Literature]:
         """Get all literatures."""
-        return self.db.query(Literature).order_by(
+        return self.db.query(Literature).filter(visible_literature()).order_by(
             Literature.pitaka,
             Literature.nikaya,
             Literature.name
@@ -25,7 +33,7 @@ class LiteratureService:
     def get_literature_by_id(self, literature_id: str) -> Optional[Literature]:
         """Get a literature by ID."""
         return self.db.query(Literature).filter(
-            Literature.id == literature_id
+            Literature.id == literature_id, visible_literature()
         ).first()
 
     def create_literature(self, data: dict) -> Literature:
@@ -103,7 +111,8 @@ class LiteratureService:
         """Get a specific segment."""
         return self.db.query(Segment).filter(
             Segment.literature_id == literature_id,
-            Segment.id == segment_id
+            Segment.id == segment_id,
+            exists().where(Literature.id == Segment.literature_id).where(visible_literature()),
         ).first()
 
     def create_segment(self, data: dict) -> Segment:
@@ -147,6 +156,9 @@ class LiteratureService:
         if not segment:
             return None
 
+        literature = self.db.get(Literature, segment.literature_id)
+        if literature.content_type == "canonical":
+            raise ValueError("Published translations must be updated through a new release")
         segment.translation = translation
         segment.is_translated = True
         self.db.commit()

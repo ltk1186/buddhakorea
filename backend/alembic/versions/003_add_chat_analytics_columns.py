@@ -9,44 +9,33 @@ Adds missing columns for chat analytics:
 - latency_ms: Response generation time
 - sources_json: JSON array of source references
 """
-from typing import Sequence, Union
 
-from alembic import op
+from collections.abc import Sequence
+
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
 
-
-revision: str = '003'
-down_revision: Union[str, None] = '002'
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+revision: str = "003"
+down_revision: str | None = "002"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
     """Add missing analytics columns to chat_messages table."""
 
-    # Add tokens_used column
-    op.add_column(
-        'chat_messages',
-        sa.Column('tokens_used', sa.Integer(), nullable=True),
-    )
-
-    # Add latency_ms column
-    op.add_column(
-        'chat_messages',
-        sa.Column('latency_ms', sa.Integer(), nullable=True),
-    )
-
-    # Add sources_json column
-    op.add_column(
-        'chat_messages',
-        sa.Column('sources_json', postgresql.JSON(), nullable=True),
-    )
+    # 002 already creates these columns on fresh installs. Legacy installations
+    # stamped at 002 can still need this repair. Do not rewrite applied data.
+    existing = {column["name"] for column in sa.inspect(op.get_bind()).get_columns("chat_messages")}
+    for column in (
+        sa.Column("tokens_used", sa.Integer(), nullable=True),
+        sa.Column("latency_ms", sa.Integer(), nullable=True),
+        sa.Column("sources_json", postgresql.JSON(), nullable=True),
+    ):
+        if column.name not in existing:
+            op.add_column("chat_messages", column)
 
 
 def downgrade() -> None:
-    """Remove analytics columns from chat_messages table."""
-
-    op.drop_column('chat_messages', 'sources_json')
-    op.drop_column('chat_messages', 'latency_ms')
-    op.drop_column('chat_messages', 'tokens_used')
+    """002 owns these columns; preserve them when returning to 002."""

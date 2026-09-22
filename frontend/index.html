@@ -28,31 +28,15 @@
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="css/styles.css?v=2">
+    <link rel="stylesheet" href="css/styles.css?v=20260910">
+    <script src="js/site-header.js?v=20260910" defer></script>
 </head>
 <body>
     <!-- 고정 헤더 -->
-    <header class="site-header">
-        <div class="header-container">
-            <!-- 로고 -->
-            <a href="index.html" class="header-logo">
-                <img src="assets/buddha-line.png" alt="Buddha Korea" class="logo-icon">
-                <span class="logo-text">Buddha Korea</span>
-            </a>
-
-            <!-- 네비게이션 -->
-            <nav class="header-nav">
-                <a href="chat.html" class="header-btn">AI 채팅 시작</a>
-                <a href="sutra-writing.html" class="nav-link">사경</a>
-                <span id="auth-container" style="margin-left: 10px;">
-                    <!-- Auth content injected by auth.js -->
-                </span>
-            </nav>
-        </div>
-    </header>
+    <buddha-site-header></buddha-site-header>
 
     <!-- 헤더 높이만큼 스페이서 -->
-    <div class="header-spacer"></div>
+
 
     <!-- Interactive Background Element -->
     <div class="interactive-light"></div>
@@ -215,7 +199,7 @@
                     <div class="footer-col">
                         <h4>서비스</h4>
                         <a href="chat.html">AI 채팅</a>
-                        <a href="chat.html" onclick="localStorage.setItem('initialTab', 'library'); return true;">문헌 라이브러리</a>
+                        <a href="/pali/" data-reading-link>경전 읽기</a>
                         <a href="sutra-writing.html">디지털 사경</a>
                     </div>
                     <div class="footer-col">
@@ -362,8 +346,9 @@
     </style>
 
     <!-- JavaScript -->
+    <script src="js/reading-navigation.js?v=20260910"></script>
     <!-- Shared Auth JS -->
-    <script src="js/auth.js"></script>
+    <script src="js/auth.js?v=20260910"></script>
     <script src="js/main.js"></script>
     <script>
         // Initialize

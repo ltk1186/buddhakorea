@@ -21,9 +21,9 @@
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="css/styles.css?v=2">
+    <link rel="stylesheet" href="css/styles.css?v=20260910">
     <!-- Shared Auth JS -->
-    <script src="js/auth.js"></script>
+    <script src="js/auth.js?v=20260910"></script>
     <style>
         /* Mypage Specific Styles */
         .mypage-container {
@@ -316,26 +316,13 @@
             }
         }
     </style>
+    <script src="js/site-header.js?v=20260910" defer></script>
 </head>
 <body>
     <!-- Header -->
-    <header class="site-header">
-        <div class="header-container">
-            <a href="index.html" class="header-logo">
-                <img src="assets/buddha-line.png" alt="Buddha Korea" class="logo-icon">
-                <span class="logo-text">Buddha Korea</span>
-            </a>
+    <buddha-site-header></buddha-site-header>
 
-            <nav class="header-nav">
-                <a href="index.html" class="nav-link">홈</a>
-                <a href="chat.html" class="header-btn">AI 채팅 시작</a>
-                <a href="sutra-writing.html" class="nav-link">사경</a>
-                <span id="auth-container" style="margin-left: 10px;"></span>
-            </nav>
-        </div>
-    </header>
 
-    <div class="header-spacer"></div>
 
     <!-- Main Content -->
     <main class="mypage-container" id="mypage-content">

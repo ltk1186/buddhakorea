@@ -1,0 +1,34 @@
+.library { max-width: 1160px; padding: 64px 32px 80px; margin: 0 auto; }
+.introduction { padding-bottom: 48px; }
+.introduction h1 { font-size: 44px; font-weight: 500; letter-spacing: -1.5px; margin: 16px 0; }
+.introduction > p { color: var(--muted); line-height: 1.9; margin-bottom: 24px; }
+.tools { border-top: 1px solid var(--line); padding: 28px 0; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.tools h2 { font-size: 17px; font-weight: 500; }
+.tools h2 span { color: var(--muted); margin-left: 8px; font-size: 14px; }
+.search { display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--muted); }
+.search input { width: 240px; min-width: 0; padding: 12px 14px; background: white; border: 1px solid var(--line); border-radius: 6px; font: inherit; color: var(--ink); }
+.search input:focus-visible { outline: 2px solid #477c55; outline-offset: 3px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 24px; }
+.card { display: flex; flex-direction: column; padding: 30px; border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--ink); background: #fff; transition: border-color .15s, background .15s; overflow-wrap: anywhere; }
+.card:hover { border-color: var(--sage-light); background: var(--sage-glow); }
+.cardLabel { font-size: 11px; color: var(--sage-primary); }
+.card h3 { font-size: 29px; font-weight: 500; margin: 26px 0 7px; }
+.paliTitle { font-family: Georgia, serif; font-size: 18px; font-style: italic; color: #819182; }
+.description { color: var(--muted); font-size: 14px; line-height: 1.8; margin: 24px 0; }
+.cardFooter { display: flex; gap: 16px; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 20px; margin-top: auto; font-size: 12px; }
+.cardFooter > span:first-child { color: var(--muted); }
+.notice { color: var(--muted); font-size: 13px; margin-top: 36px; }
+@media (max-width: 700px) {
+    .library { padding: 38px 24px 60px; }
+    .introduction { padding-bottom: 32px; }
+    .introduction h1 { font-size: 36px; }
+    .introduction > p { font-size: 14px; }
+    .tools { align-items: stretch; flex-direction: column; gap: 20px; }
+    .search input { flex: 1; width: 0; }
+    .card { padding: 24px; }
+}
+
+.introduction .accessNote { font-size: 13px; margin: 16px 0 0; color: var(--color-text-muted); }
+.translationGuide { background: var(--color-background-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 18px 22px; margin: 0 0 36px; scroll-margin-top: 90px; }
+.translationGuide h2 { font-size: 13px; font-weight: 600; margin: 0 0 6px; }
+.translationGuide p { font-size: 13px; color: var(--muted); line-height: 1.8; margin: 0; word-break: keep-all; overflow-wrap: anywhere; }

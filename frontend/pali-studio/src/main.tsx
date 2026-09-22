@@ -7,6 +7,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as Sentry from '@sentry/react';
 import App from './App';
 import './styles/globals.css';
+import '../../css/design-tokens.css';
+import '../../js/site-header.js';
 
 // Initialize Sentry
 const sentryDsn = import.meta.env.VITE_SENTRY_DSN;

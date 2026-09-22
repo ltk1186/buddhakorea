@@ -13,8 +13,11 @@
 // ===== GLOBAL STATE =====
 
 if (typeof window.API_BASE_URL === 'undefined') {
-    // Always use same origin (let nginx handle routing to backend)
-    window.API_BASE_URL = '';
+    // The production nginx proxy serves the API from the same origin. When the
+    // static frontend is run locally, use the development FastAPI server.
+    const isLocalFrontend = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+        && window.location.port !== '8000';
+    window.API_BASE_URL = isLocalFrontend ? 'http://localhost:8000' : '';
 }
 const MAX_CACHED_CARDS = 1000;
 const CARDS_PER_PAGE = 100;

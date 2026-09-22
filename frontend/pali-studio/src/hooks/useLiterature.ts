@@ -53,6 +53,10 @@ export function useLiterature() {
 
     try {
       const literature = await getLiterature(literatureId);
+      if (literature.content_type === 'canonical') {
+        window.location.assign(`/pali/?lit=${encodeURIComponent(literatureId)}`);
+        return;
+      }
       selectLiterature(literature);
 
       // Fetch initial segments

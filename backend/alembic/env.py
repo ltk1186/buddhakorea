@@ -2,28 +2,31 @@
 Alembic Environment Configuration for Buddha Korea
 Supports both async PostgreSQL and SQLite
 """
+
 import asyncio
 import os
 import sys
 from logging.config import fileConfig
 
+from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
-
-from alembic import context
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import all models so Alembic can detect them
 from app.database import Base
-from app.models.admin_audit_log import AdminAuditLog
-from app.models.admin_query_review import AdminQueryReview
-from app.models.user import User
-from app.models.chat import ChatSession, ChatMessage
-from app.models.social_account import SocialAccount
-from app.models.user_usage import UserUsage
+from app.models.admin_audit_log import AdminAuditLog  # noqa: F401
+from app.models.admin_query_review import AdminQueryReview  # noqa: F401
+from app.models.chat import ChatMessage, ChatSession, SavedExchange  # noqa: F401
+from app.models.revoked_token import RevokedToken  # noqa: F401
+from app.models.social_account import SocialAccount  # noqa: F401
+from app.models.user import User  # noqa: F401
+from app.models.user_usage import AnonymousUsage, UserUsage  # noqa: F401
+from pali.db import models as pali_models  # noqa: F401
+from pali.db.base import Base as PaliBase
 
 # Alembic Config object
 config = context.config
@@ -33,7 +36,8 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Target metadata for autogenerate
-target_metadata = Base.metadata
+target_metadata = [Base.metadata, PaliBase.metadata]
+
 
 # Get database URL from environment
 def get_url():

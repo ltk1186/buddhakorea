@@ -3,55 +3,7 @@
    ========================================= */
 
 /* --- DESIGN TOKENS --- */
-:root {
-    --font-main: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
-
-    /* Colors - Light Theme (Sage Green) */
-    --color-background: #FFFFFF;
-    --color-background-subtle: #F8FAF8;
-    --color-text-primary: #1d1d1f;
-    --color-text-secondary: #6e6e73;
-    --color-text-muted: #86868b;
-
-    /* Sage Green Palette */
-    --sage-primary: #5A9A6E;
-    --sage-light: #8CB89C;
-    --sage-lighter: #B8D4C2;
-    --sage-pale: #E8F0EB;
-    --sage-glow: #F4F9F6;
-
-    /* Signature Gradient Colors */
-    --gradient-color-1: #8CB89C;
-    --gradient-color-2: #A3C9AE;
-    --gradient-color-3: #B8D4C2;
-
-    /* Surfaces */
-    --surface-primary: rgba(255, 255, 255, 0.95);
-    --surface-secondary: rgba(248, 250, 248, 0.9);
-    --border-subtle: rgba(90, 154, 110, 0.12);
-    --border-accent: rgba(90, 154, 110, 0.25);
-
-    /* Transitions */
-    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-    --transition-fast: 0.2s var(--ease-out);
-    --transition-normal: 0.4s var(--ease-out);
-
-    /* Spacing */
-    --space-xs: 4px;
-    --space-sm: 8px;
-    --space-md: 16px;
-    --space-lg: 24px;
-    --space-xl: 32px;
-    --space-2xl: 48px;
-    --space-3xl: 64px;
-
-    /* Border Radius */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 20px;
-    --radius-xl: 24px;
-    --radius-full: 100px;
-}
+@import url("design-tokens.css?v=20260910");
 
 /* --- RESET & BASE --- */
 *, *::before, *::after {

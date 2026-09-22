@@ -3,14 +3,7 @@
  */
 
 const apiBaseFromEnv = import.meta.env.VITE_API_BASE_URL;
-const host = window.location.hostname;
-const isLocal = host === 'localhost' || host === '127.0.0.1';
-
-const API_BASE_URL = apiBaseFromEnv
-  || (isLocal
-    ? 'http://localhost:8000/api/v1/pali'
-    : '/api/v1/pali');
-console.log('API_BASE_URL:', API_BASE_URL);
+const API_BASE_URL = apiBaseFromEnv || '/api/v1/pali';
 
 export interface RequestOptions extends RequestInit {
   params?: Record<string, string | number | undefined>;

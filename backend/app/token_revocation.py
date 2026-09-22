@@ -68,7 +68,7 @@ async def revoke_token(
             token_type=token_type,
             revoked_at=datetime.now(timezone.utc),
             reason=reason,
-            metadata=metadata or {}
+            revocation_metadata=metadata or {}
         )
         db.add(revoked_token)
         await db.commit()
