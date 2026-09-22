@@ -2,6 +2,8 @@
 
 번역 생성과 서비스 공개는 독립적이다. 아래 명령은 저장된 결과만 검증·반입하며 모델 API를 호출하지 않는다. DB와 웹 서버의 기존 운영 자원은 사용한다.
 
+2026-09-22 법구경 최초 공개 완료. [실제 배포와 검증 기록](DHAMMAPADA_LIVE_RELEASE.md), `config/pali_publication_receipts.json`을 참고한다.
+
 ## 원칙
 
 - 원문·번역 artifact와 SHA-256을 보존한다. 로컬 DB를 운영 DB에 덮어쓰거나 회원 데이터를 동기화하지 않는다.

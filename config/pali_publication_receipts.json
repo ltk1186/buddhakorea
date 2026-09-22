@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "note": "Deployment receipts only. Current publication pointers are authoritative in the production database; translation completion is tracked separately.",
+  "receipts": [
+    {
+      "literature_id": "vri-romn-s0502m-mul",
+      "release_id": "dhp-ko-20260907-v22",
+      "action": "published",
+      "date_kst": "2026-09-22",
+      "segment_count": 438,
+      "artifact_sha256": "1ecf63ef1424474f390361049559c9786c44baa686bca6dfbe7834d4d2f84334",
+      "code_commit": "1373020",
+      "database_revision": "014",
+      "url": "https://buddhakorea.com/pali/?lit=vri-romn-s0502m-mul",
+      "verification_record": "docs/DHAMMAPADA_LIVE_RELEASE.md"
+    }
+  ]
+}
